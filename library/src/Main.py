@@ -1,4 +1,5 @@
 import cv2
+import os
 
 from library.src.analyzers.OpenCVYTimeAnalyzer import OpenCVYTimeAnalyzer
 from library.src.cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
@@ -9,7 +10,10 @@ from library.src.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunct
 
 def main():
     # --- Configurazione ---
-    video_path = "../../videos/Crowd.mp4"
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    video_path = os.path.join(root_dir, "videos", "Crowd.mp4")
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"Video NON trovato: {video_path}")
     resize = (640, 480)
     fps = 30.0
     use_interactive_bbox = True  # Se True, selezioni la box col mouse
