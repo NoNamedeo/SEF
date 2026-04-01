@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-from typing import Any, Dict, Generator, Optional
-from library.src.abstractions.IExtractor import IExtractor
+from typing import Any, Dict, Generator
+from SEF.abstractions.IExtractor import IExtractor
 
 class OpenCVVideoExtractor(IExtractor):
     """

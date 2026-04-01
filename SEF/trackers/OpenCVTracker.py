@@ -1,8 +1,8 @@
 import cv2
-from typing import Tuple, List, Dict, Generator, Optional
+from typing import Tuple, List, Dict, Optional
 import numpy as np
-from library.src.abstractions.ITracker import ITracker
-from library.src.abstractions.IExtractor import IExtractor
+from SEF.abstractions.ITracker import ITracker
+from SEF.abstractions.IExtractor import IExtractor
 
 class OpenCVTracker(ITracker):
     """
