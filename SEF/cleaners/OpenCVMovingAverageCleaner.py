@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from library.src.abstractions.ICleaner import ICleaner
+from SEF.abstractions.ICleaner import ICleaner
 
 
 class OpenCVMovingAverageCleaner(ICleaner):

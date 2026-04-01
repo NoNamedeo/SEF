@@ -1,11 +1,11 @@
 import cv2
 import os
 
-from library.src.analyzers.OpenCVYTimeAnalyzer import OpenCVYTimeAnalyzer
-from library.src.cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
-from library.src.extractors.OpenCVVideoExtractor import OpenCVVideoExtractor
-from library.src.trackers.OpenCVTracker import OpenCVTracker
-from library.src.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+from SEF.analyzers.OpenCVYTimeAnalyzer import OpenCVYTimeAnalyzer
+from SEF.cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
+from SEF.extractors.OpenCVVideoExtractor import OpenCVVideoExtractor
+from SEF.trackers.OpenCVTracker import OpenCVTracker
+from SEF.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
 
 def main():

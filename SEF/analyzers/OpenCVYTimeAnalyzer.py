@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from library.src.abstractions.IAnalyzer import IAnalyzer
+from SEF.abstractions.IAnalyzer import IAnalyzer
 
 
 class OpenCVYTimeAnalyzer(IAnalyzer):
