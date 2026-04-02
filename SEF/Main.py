@@ -11,15 +11,6 @@ from SEF.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisua
 
 def main():
     # --- Configurazione ---
-    '''
-    TODO: non mi funziona, se quello messo sotto funziona anche a te, togli questa parte
-
-    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    video_path = os.path.join(root_dir, "videos", "Crowd.mp4")
-    if not os.path.exists(video_path):
-        raise FileNotFoundError(f"Video NON trovato: {video_path}")
-    '''
-
     root_dir = Path(__file__).resolve().parents[1]
     video_path = root_dir / "videos" / "Crowd.mp4"
 
