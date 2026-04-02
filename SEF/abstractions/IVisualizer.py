@@ -1,14 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from SEF.artifacts.FrameSequenceBuffer import FrameSequenceBuffer
-from SEF.artifacts.Signal import Signal
+from SEF.artifacts.Data import Data
 
-class ITracker(ABC):
+class IVisualizer(ABC):
 
     def __init__(self, config: Dict[str, Any] | None = None):
         self.config = config or {}
 
     @abstractmethod
-    def track(self, frames_buffer: FrameSequenceBuffer) -> Signal:
+    def visualize(self, data: Data):
         pass
