@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
+from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.abstractions.ISignal import ISignal
-from library.core.artifacts.Data import Data
 
-class IAnalyzer(ABC):
+class ISignalExtractor(ABC):
 
     def __init__(self, config: Dict[str, Any] | None = None):
         self.config = config or {}
 
     @abstractmethod
-    def analyze(self, signal: ISignal) -> Data:
+    def extract(self, buffer: FrameBuffer) -> ISignal:
         pass
