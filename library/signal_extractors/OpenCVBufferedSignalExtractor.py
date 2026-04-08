@@ -33,13 +33,13 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
                 cx = x + w // 2
                 cy = y + h // 2
                 results.append({
-                    'frame_idx': frame_number,
+                    'frame_number': frame_number,
                     'box': (x, y, w, h),
                     'centroid': (cx, cy)
                 })
             else:
                 results.append({
-                    'frame_idx': frame_number,
+                    'frame_number': frame_number,
                     'box': None,
                     'centroid': None
                 })

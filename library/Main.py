@@ -1,7 +1,7 @@
 import cv2
 from pathlib import Path
 
-from library.analyzers.OpenCVYTimeAnalyzer import OpenCVYTimeAnalyzer
+from library.analyzers.VerticalPositionAnalyzer import OpenCVYTimeAnalyzer
 from library.signal_cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor

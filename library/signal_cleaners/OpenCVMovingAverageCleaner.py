@@ -40,7 +40,7 @@ class OpenCVMovingAverageCleaner(ISignalCleaner):
 
             # copia il box originale
             cleaned.append({
-                'frame_idx': data[i]['frame_idx'],
+                'frame_number': data[i]['frame_number'],
                 'box': data[i]['box'],
                 'centroid': smoothed_centroid
             })

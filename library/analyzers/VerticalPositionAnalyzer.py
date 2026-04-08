@@ -1,11 +1,10 @@
-import cv2
 import numpy as np
 
 from library.core.abstractions.IAnalyzer import IAnalyzer
 from library.core.abstractions.ISignal import ISignal
 
 
-class OpenCVYTimeAnalyzer(IAnalyzer):
+class VerticalPositionAnalyzer(IAnalyzer):
 
     def __init__(self, config=None):
         super().__init__(config)
