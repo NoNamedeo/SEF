@@ -1,5 +1,7 @@
+from library.core.abstractions.ISignal import ISignal
+from typing import Any, Dict
 
+class Signal(ISignal):
 
-class Signal:
-    def __init__(self):
-        pass
+    def __init__(self, signal, config: Dict[str, Any] | None = None):
+        super().__init__(config, signal)

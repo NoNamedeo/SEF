@@ -1,5 +1,6 @@
+from library.core.abstractions.IData import IData
 
+class Data(IData):
 
-class Data:
-    def __init__(self):
-        pass
+    def __init__(self, data):
+        self.data = data

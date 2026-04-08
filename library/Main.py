@@ -1,16 +1,14 @@
 import cv2
-import os
 from pathlib import Path
 
 from library.analyzers.OpenCVYTimeAnalyzer import OpenCVYTimeAnalyzer
-from library.cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
-from library.extractors.OpenCVVideoExtractor import OpenCVVideoExtractor
-from library.trackers.OpenCVTracker import OpenCVTracker
+from library.signal_cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
+from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
 
 def main():
-    # --- Configurazione ---
     root_dir = Path(__file__).resolve().parents[1]
     video_path = root_dir / "videos" / "Crowd.mp4"
 
@@ -19,34 +17,29 @@ def main():
 
     resize = (640, 480)
     fps = 30.0
-    use_interactive_bbox = True  # Se True, selezioni la box col mouse
+    use_interactive_bbox = True  #Se True, selezioni la box col mouse
 
-    # --- Crea i componenti della pipeline ---
-    extractor = OpenCVVideoExtractor(config={
+    extractor = OpenCVBufferedFrameExtractor(config={
         "resize": resize,
         "gray": False,
         "stride": 5,
         "max_frames": None,
     })
-    tracker = OpenCVTracker(tracker_type="CSRT")
+    tracker = OpenCVBufferedSignalExtractor(tracker_type="CSRT")
     cleaner = OpenCVMovingAverageCleaner(config={"window_size": 5})
     analyzer = OpenCVYTimeAnalyzer(config={"fps": fps})
     visualizer = MatplotlibFunctionVisualizer()
 
-    # --- Estrai il primo frame ---
     first_frame = next(extractor.extract(video_path))
 
-    # --- Bounding box iniziale ---
     if use_interactive_bbox:
         init_bbox = cv2.selectROI("Seleziona oggetto da tracciare", first_frame, False, False)
         cv2.destroyWindow("Seleziona oggetto da tracciare")
     else:
         init_bbox = (300, 200, 80, 120)
 
-    # --- Inizializza il tracker ---
     tracker.init(first_frame, init_bbox)
 
-    # --- Tracking frame-by-frame ---
     tracking_results = []
     for frame_idx, frame in enumerate(extractor.extract(video_path)):
         if frame_idx == 0:
@@ -87,7 +80,6 @@ def main():
 
     cv2.destroyAllWindows()
 
-    # --- Pipeline finale ---
     raw_analysis = analyzer.analyze(tracking_results)
     cleaned_results = cleaner.clean(tracking_results)
     cleaned_analysis = analyzer.analyze(cleaned_results)
