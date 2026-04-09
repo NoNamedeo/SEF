@@ -4,7 +4,8 @@ from library.core.abstractions.ISignalCleaner import ISignalCleaner
 from library.core.abstractions.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.CompositeFrameCleaner import CompositeFrameCleaner
 from library.core.utils.NoOpFrameCleaner import NoOpFrameCleaner
-
+from library.core.validators.pipeline.PipelineValidator import PipelineValidator
+from library.core.validators.pipeline.IPipelineValidator import IPipelineValidator
 
 class Pipeline:
     """
@@ -16,18 +17,38 @@ class Pipeline:
     - analyzers: must be not an empty list
     """
 
-    def __init__(self):
+    def __init__(self, validator: IPipelineValidator | None = None):
+        """
+        Initializes a new pipeline with the given validator.
+
+        :param validator: Optional validator to use. If None, a default
+            validator is used.
+        :type validator: IPipelineValidator | None
+        """
         self.frame_extractor: IFrameExtractor | None = None
         self.composite_frame_cleaner: CompositeFrameCleaner | None = None
         self.signal_extractor: ISignalExtractor | None = None
         self.signal_cleaners: list[ISignalCleaner] = []
         self.analyzers: list[IAnalyzer] = []
+        self._validator = validator or PipelineValidator()
 
     def run(self):
-        self._validate_pipeline()
+        """
+        Runs the pipeline.
 
-        cleaner = self.composite_frame_cleaner or NoOpFrameCleaner()
-        buffer = self.frame_extractor.extract(cleaner)
+        This method validates the pipeline using the given validator.
+        Then it extracts frames from the given video using the frame extractor.
+        It cleans the frames using the composite frame cleaner.
+        Then it extracts signals from the frames using the signal extractor.
+        It cleans the signals using the signal cleaners.
+        Finally, it analyzes the signals using the analyzers.
+
+        Returns a list of Data objects, one for each analyzer.
+        """
+        self._validator.validate(self)
+
+        frame_cleaner = self.composite_frame_cleaner or NoOpFrameCleaner()
+        buffer = self.frame_extractor.extract(frame_cleaner)
 
         signal = self.signal_extractor.extract(buffer)
 
@@ -37,11 +58,3 @@ class Pipeline:
         data_list = [analyzer.analyze(signal) for analyzer in self.analyzers]
 
         return data_list
-
-    def _validate_pipeline(self):
-        if not self.frame_extractor:
-            raise ValueError("Frame extractor not valid, this step must be initialized")
-        if not self.signal_extractor:
-            raise ValueError("Signal extractor not valid, this step must be initialized")
-        if not self.analyzers:
-            raise ValueError("Analyzer list not valid, this step must be initialized")

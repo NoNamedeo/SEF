@@ -1,5 +1,2 @@
-from abc import ABC, abstractmethod
-
-class IData(ABC):
-    def __init__(self):
-        pass
+class IData:
+    """Marker base class for chart-ready analytical data."""

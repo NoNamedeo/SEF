@@ -1,35 +1,43 @@
-import numpy as np
+from __future__ import annotations
 
 from library.core.abstractions.IAnalyzer import IAnalyzer
 from library.core.abstractions.ISignal import ISignal
 from library.core.artifacts.Data import Data
-from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
 
 class VerticalPositionAnalyzer(IAnalyzer):
+    """Build a y-position series from extracted centroids."""
 
     def __init__(self, config=None):
         super().__init__(config)
+        self.use_timestamps = bool(self.config.get("use_timestamps", True))
 
-    def analyze(self, signal: ISignal):
-        if not signal.signal:
-            return np.array([]), np.array([])
+    def analyze(self, signal: ISignal) -> Data:
+        x_values: list[float] = []
+        y_values: list[float] = []
 
-        max_frame = max(item['frame_number'] for item in signal.signal)
+        for sample in signal:
+            if sample.centroid is None:
+                continue
 
-        y_positions = np.full((max_frame + 1,), np.nan, dtype=float)
-        frames = np.arange(max_frame + 1, dtype=int)
+            x_axis_value = (
+                sample.timestamp_seconds
+                if self.use_timestamps and sample.timestamp_seconds is not None
+                else float(sample.frame_index)
+            )
+            x_values.append(float(x_axis_value))
+            y_values.append(float(sample.centroid[1]))
 
-        for item in signal.signal:
-            frame_number = item['frame_number']
-            centroid = item['centroid']
-            if centroid is not None:
-                y_positions[frame_number] = centroid[1]
+        if not x_values:
+            raise ValueError("Signal does not contain valid centroid data")
 
-        MatplotlibFunctionVisualizer.visualize(frames, y_positions)
-
-        return Data({
-            'y_positions': y_positions,
-            'frames': frames,
-        })
-
+        x_label = "Time [s]" if self.use_timestamps else "Frame Index"
+        return Data(
+            x=x_values,
+            y=y_values,
+            label="Vertical Position",
+            title="Vertical Position Over Time",
+            x_label=x_label,
+            y_label="Y Position [px]",
+            metadata={"points": len(x_values)},
+        )
