@@ -1,24 +1,43 @@
-import numpy as np
+from __future__ import annotations
 
 from library.core.abstractions.IAnalyzer import IAnalyzer
 from library.core.abstractions.ISignal import ISignal
+from library.core.artifacts.Data import Data
 
 
 class VerticalPositionAnalyzer(IAnalyzer):
+    """Build a y-position series from extracted centroids."""
 
     def __init__(self, config=None):
         super().__init__(config)
+        self.use_timestamps = bool(self.config.get("use_timestamps", True))
 
-    def analyze(self, signal: ISignal):
-        data_list = []
+    def analyze(self, signal: ISignal) -> Data:
+        x_values: list[float] = []
+        y_values: list[float] = []
 
-        for item in signal.signal:
-            frame_idx = item['frame_idx']
-            centroid = item['centroid']
-            if centroid is not None:
-                y = centroid[1]
-                data_list.append([frame_idx, y])
+        for sample in signal:
+            if sample.centroid is None:
+                continue
 
-        data_array = np.array(data_list, dtype=float)
-        return data_array
+            x_axis_value = (
+                sample.timestamp_seconds
+                if self.use_timestamps and sample.timestamp_seconds is not None
+                else float(sample.frame_index)
+            )
+            x_values.append(float(x_axis_value))
+            y_values.append(float(sample.centroid[1]))
 
+        if not x_values:
+            raise ValueError("Signal does not contain valid centroid data")
+
+        x_label = "Time [s]" if self.use_timestamps else "Frame Index"
+        return Data(
+            x=x_values,
+            y=y_values,
+            label="Vertical Position",
+            title="Vertical Position Over Time",
+            x_label=x_label,
+            y_label="Y Position [px]",
+            metadata={"points": len(x_values)},
+        )

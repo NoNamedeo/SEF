@@ -47,8 +47,8 @@ class Pipeline:
         """
         self._validator.validate(self)
 
-        cleaner = self.composite_frame_cleaner or NoOpFrameCleaner()
-        buffer = self.frame_extractor.extract(cleaner)
+        frame_cleaner = self.composite_frame_cleaner or NoOpFrameCleaner()
+        buffer = self.frame_extractor.extract(frame_cleaner)
 
         signal = self.signal_extractor.extract(buffer)
 

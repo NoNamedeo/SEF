@@ -1,62 +1,100 @@
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
+
 import cv2
-from typing import Tuple
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
+
 from library.core.abstractions.ISignal import ISignal
+from library.core.abstractions.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
+from library.core.artifacts.SignalSample import BoundingBox, SignalSample
 
 
 class OpenCVBufferedSignalExtractor(ISignalExtractor):
+    """Track a single ROI through buffered frames using an OpenCV tracker."""
 
-    def __init__(self, tracker_type: str = "CSRT", start_box: Tuple[int, int, int, int] = [0,0,0,0]):
-        self.tracker = self._create_tracker(tracker_type)
-        self.box = start_box
+    def __init__(
+        self,
+        tracker_type: str = "CSRT",
+        start_box: BoundingBox = (0, 0, 0, 0),
+        tracker_factory: Callable[[], Any] | None = None,
+        config: dict[str, Any] | None = None,
+    ):
+        super().__init__(config)
+        self.tracker_type = tracker_type.upper()
+        self.start_box = start_box
+        self._tracker_factory = tracker_factory
+
+    def extract(self, buffer: FrameBuffer) -> ISignal:
+        if self.start_box[2] <= 0 or self.start_box[3] <= 0:
+            raise ValueError("start_box must have positive width and height")
+
+        tracker = self._build_tracker()
+        samples: list[SignalSample] = []
+        current_box: BoundingBox | None = None
+
+        for position, frame in enumerate(buffer):
+            frame_index = frame.index if frame.index is not None else position
+
+            if position == 0:
+                tracker.init(frame.frame, self.start_box)
+                current_box = self.start_box
+            else:
+                success, updated_box = tracker.update(frame.frame)
+                current_box = self._normalize_box(updated_box) if success else None
+
+            centroid = None
+            if current_box is not None:
+                x, y, w, h = current_box
+                centroid = (x + w / 2.0, y + h / 2.0)
+
+            samples.append(
+                SignalSample(
+                    frame_index=frame_index,
+                    box=current_box,
+                    centroid=centroid,
+                    timestamp_seconds=frame.timestamp_seconds,
+                    metadata=dict(frame.metadata),
+                )
+            )
+
+        return Signal(samples)
 
     def track(self, buffer: FrameBuffer) -> ISignal:
-        results = []
-        first_frame = True
+        """Backward-compatible alias."""
+        return self.extract(buffer)
 
-        for frame_number, frame in enumerate(buffer):
-            if first_frame:
-                self.tracker.init(frame.frame, self.box)
-                first_frame = False
-            else:
-                success, box = self.tracker.update(frame)
-                if not success:
-                    #TODO: aggiungere controllo nel caso di insuccesso
-                    pass
-                x, y, w, h = box
-                self.box = int(x), int(y), int(w), int(h)
-
-            if self.box:
-                x, y, w, h = self.box
-                cx = x + w // 2
-                cy = y + h // 2
-                results.append({
-                    'frame_number': frame_number,
-                    'box': (x, y, w, h),
-                    'centroid': (cx, cy)
-                })
-            else:
-                results.append({
-                    'frame_number': frame_number,
-                    'box': None,
-                    'centroid': None
-                })
-
-        return Signal(results)
-
+    def _build_tracker(self):
+        if self._tracker_factory is not None:
+            return self._tracker_factory()
+        return self._create_tracker(self.tracker_type)
 
     @staticmethod
-    def _create_tracker(tracker_type):
-        #TODO: vedere se effettivamente funzionano tutti
-        if tracker_type == "CSRT":
-            return cv2.legacy.TrackerCSRT_create()
-        elif tracker_type == "KCF":
-            return cv2.legacy.TrackerKCF_create()
-        elif tracker_type == "MIL":
-            return cv2.legacy.TrackerMIL_create()
-        elif tracker_type == "GOTURN":
-            return cv2.TrackerGOTURN_create()
-        else:
+    def _normalize_box(box) -> BoundingBox:
+        x, y, w, h = box
+        return int(x), int(y), int(w), int(h)
+
+    @staticmethod
+    def _create_tracker(tracker_type: str):
+        tracker_factories = {
+            "CSRT": [("legacy", "TrackerCSRT_create"), (None, "TrackerCSRT_create")],
+            "KCF": [("legacy", "TrackerKCF_create"), (None, "TrackerKCF_create")],
+            "MIL": [("legacy", "TrackerMIL_create"), (None, "TrackerMIL_create")],
+            "GOTURN": [(None, "TrackerGOTURN_create")],
+        }
+
+        if tracker_type not in tracker_factories:
             raise ValueError(f"Tracker {tracker_type} non supportato")
+
+        for namespace, factory_name in tracker_factories[tracker_type]:
+            module = cv2 if namespace is None else getattr(cv2, namespace, None)
+            if module is None:
+                continue
+
+            factory = getattr(module, factory_name, None)
+            if factory is not None:
+                return factory()
+
+        raise ValueError(f"Tracker factory not available for {tracker_type}")
