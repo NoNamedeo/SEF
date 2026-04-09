@@ -12,7 +12,7 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
         self.tracker = self._create_tracker(tracker_type)
         self.box = start_box
 
-    def track(self, buffer: FrameBuffer) -> ISignal:
+    def extract(self, buffer: FrameBuffer) -> ISignal:
         results = []
         first_frame = True
 

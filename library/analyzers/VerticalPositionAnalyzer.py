@@ -2,6 +2,8 @@ import numpy as np
 
 from library.core.abstractions.IAnalyzer import IAnalyzer
 from library.core.abstractions.ISignal import ISignal
+from library.core.artifacts.Data import Data
+from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
 
 class VerticalPositionAnalyzer(IAnalyzer):
@@ -10,15 +12,24 @@ class VerticalPositionAnalyzer(IAnalyzer):
         super().__init__(config)
 
     def analyze(self, signal: ISignal):
-        data_list = []
+        if not signal.signal:
+            return np.array([]), np.array([])
+
+        max_frame = max(item['frame_number'] for item in signal.signal)
+
+        y_positions = np.full((max_frame + 1,), np.nan, dtype=float)
+        frames = np.arange(max_frame + 1, dtype=int)
 
         for item in signal.signal:
-            frame_idx = item['frame_idx']
+            frame_number = item['frame_number']
             centroid = item['centroid']
             if centroid is not None:
-                y = centroid[1]
-                data_list.append([frame_idx, y])
+                y_positions[frame_number] = centroid[1]
 
-        data_array = np.array(data_list, dtype=float)
-        return data_array
+        MatplotlibFunctionVisualizer.visualize(frames, y_positions)
+
+        return Data({
+            'y_positions': y_positions,
+            'frames': frames,
+        })
 

@@ -10,5 +10,5 @@ class IAnalyzer(ABC):
         self.config = config or {}
 
     @abstractmethod
-    def analyze(self, signal: ISignal) -> Data:
+    def analyze(self, signal: ISignal):
         pass
