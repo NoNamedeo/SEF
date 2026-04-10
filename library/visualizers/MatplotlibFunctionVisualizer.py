@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from library.core.abstractions.IVisualizer import IVisualizer
-from library.core.artifacts.Data import Data
+from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 
 
 class MatplotlibFunctionVisualizer(IVisualizer):
@@ -23,7 +23,7 @@ class MatplotlibFunctionVisualizer(IVisualizer):
         self.scatter_color = self.config.get("scatter_color", "#7ee787")
         self.line_color = self.config.get("line_color", "#58a6ff")
 
-    def visualize(self, data: Data):
+    def visualize(self, data: TwoDimGraphData):
         x = np.asarray(data.x, dtype=float)
         y = np.asarray(data.y, dtype=float)
 

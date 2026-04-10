@@ -9,8 +9,7 @@ class FrameBuffer:
     """
     In-memory frame handoff between extractors and signal extractors.
 
-    The previous queue-based implementation implied asynchronous producer/
-    consumer semantics, but the current pipeline is synchronous. This buffer is
+    the pipeline is synchronous. This buffer is
     intentionally simple and deterministic so the core can be executed
     end-to-end without extra threading infrastructure.
     """

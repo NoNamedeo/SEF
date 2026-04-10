@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from library.core.abstractions.IAnalyzer import IAnalyzer
 from library.core.abstractions.ISignal import ISignal
-from library.core.artifacts.Data import Data
+from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 
 
 class VerticalPositionAnalyzer(IAnalyzer):
@@ -32,7 +32,8 @@ class VerticalPositionAnalyzer(IAnalyzer):
             raise ValueError("Signal does not contain valid centroid data")
 
         x_label = "Time [s]" if self.use_timestamps else "Frame Index"
-        return Data(
+
+        return TwoDimGraphData(
             x=x_values,
             y=y_values,
             label="Vertical Position",

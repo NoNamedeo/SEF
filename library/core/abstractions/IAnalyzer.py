@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from library.core.abstractions.ISignal import ISignal
-from library.core.artifacts.Data import Data
+from library.core.abstractions.IData import IData
 
 
 class IAnalyzer(ABC):
@@ -12,5 +12,5 @@ class IAnalyzer(ABC):
         self.config = config or {}
 
     @abstractmethod
-    def analyze(self, signal: ISignal) -> Data:
+    def analyze(self, signal: ISignal) -> IData:
         """Turn an extracted signal into analytical data."""

@@ -1,11 +1,12 @@
 from library.core.abstractions.IAnalyzer import IAnalyzer
+from library.core.abstractions.IData import IData
+from library.core.abstractions.IFrameCleaner import IFrameCleaner
 from library.core.abstractions.IFrameExtractor import IFrameExtractor
 from library.core.abstractions.ISignalCleaner import ISignalCleaner
 from library.core.abstractions.ISignalExtractor import ISignalExtractor
-from library.core.artifacts.CompositeFrameCleaner import CompositeFrameCleaner
 from library.core.utils.NoOpFrameCleaner import NoOpFrameCleaner
 from library.core.validators.pipeline.PipelineValidator import PipelineValidator
-from library.core.validators.pipeline.IPipelineValidator import IPipelineValidator
+from library.core.abstractions.IPipelineValidator import IPipelineValidator
 
 class Pipeline:
     """
@@ -26,13 +27,13 @@ class Pipeline:
         :type validator: IPipelineValidator | None
         """
         self.frame_extractor: IFrameExtractor | None = None
-        self.composite_frame_cleaner: CompositeFrameCleaner | None = None
+        self.frame_cleaners: list[IFrameCleaner] = []
         self.signal_extractor: ISignalExtractor | None = None
         self.signal_cleaners: list[ISignalCleaner] = []
         self.analyzers: list[IAnalyzer] = []
         self._validator = validator or PipelineValidator()
 
-    def run(self):
+    def run(self) -> list[IData]:
         """
         Runs the pipeline.
 
@@ -47,14 +48,15 @@ class Pipeline:
         """
         self._validator.validate(self)
 
-        frame_cleaner = self.composite_frame_cleaner or NoOpFrameCleaner()
-        buffer = self.frame_extractor.extract(frame_cleaner)
+        frame_cleaners = self.frame_cleaners
+
+        buffer = self.frame_extractor.extract(frame_cleaners)
 
         signal = self.signal_extractor.extract(buffer)
 
         for signal_cleaner in self.signal_cleaners:
             signal = signal_cleaner.clean(signal)
 
-        data_list = [analyzer.analyze(signal) for analyzer in self.analyzers]
+        data_list: list[IData] = [analyzer.analyze(signal) for analyzer in self.analyzers]
 
         return data_list

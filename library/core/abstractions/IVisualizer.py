@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from library.core.artifacts.Data import Data
+from library.core.abstractions.IData import IData
 
 
 class IVisualizer(ABC):
@@ -11,5 +11,5 @@ class IVisualizer(ABC):
         self.config = config or {}
 
     @abstractmethod
-    def visualize(self, data: Data):
+    def visualize(self, data: IData):
         """Render analytical data."""

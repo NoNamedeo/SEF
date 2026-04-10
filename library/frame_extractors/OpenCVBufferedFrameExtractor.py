@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from collections.abc import Iterable
 
 import cv2
 
@@ -30,7 +31,7 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
         if self.stride <= 0:
             raise ValueError("stride must be greater than 0")
 
-    def extract(self, frame_cleaner: IFrameCleaner) -> FrameBuffer:
+    def extract(self, frame_cleaners: Iterable[IFrameCleaner]) -> FrameBuffer:
         buffer = self.buffer.clone_empty()
         cap = cv2.VideoCapture(self.path)
 
@@ -62,7 +63,11 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
                     metadata={"source_path": self.path},
                 )
 
-                cleaned_frame = frame_cleaner.clean(frame)
+                cleaned_frame = frame
+
+                for cleaner in frame_cleaners:
+                    cleaned_frame = cleaner.clean(frame)
+
                 buffer.put(cleaned_frame)
                 yielded_frames += 1
 

@@ -7,7 +7,7 @@ from library.core.abstractions.IData import IData
 
 
 @dataclass(slots=True)
-class Data(IData):
+class TwoDimGraphData(IData):
     """Chart-ready series returned by analyzers."""
 
     x: list[float]
