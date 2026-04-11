@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 # ── Event system ─────────────────────────────────────────────────────────────
 
+
 class PipelineEvent(StrEnum):
     """
     Well-known lifecycle events emitted by the orchestrator.
@@ -24,27 +25,30 @@ class PipelineEvent(StrEnum):
     Using StrEnum keeps event names both type-safe (IDE autocompletion,
     mypy checks) and human-readable in logs/serialisation.
     """
-    BEFORE_RUN   = auto()   # emitted before Pipeline.run() is called
-    AFTER_RUN    = auto()   # emitted after a successful run
-    ON_ERROR     = auto()   # emitted when PipelineExecutionError is caught
-    ON_RETRY     = auto()   # emitted before each retry attempt
+
+    BEFORE_RUN = auto()  # emitted before Pipeline.run() is called
+    AFTER_RUN = auto()  # emitted after a successful run
+    ON_ERROR = auto()  # emitted when PipelineExecutionError is caught
+    ON_RETRY = auto()  # emitted before each retry attempt
 
 
 @dataclass
 class PipelineEventPayload:
     """Data bag passed to every event handler."""
-    event:    PipelineEvent
+
+    event: PipelineEvent
     pipeline: Pipeline
-    context:  PipelineContext
-    results:  list[IData]         = field(default_factory=list)
-    error:    Exception | None    = field(default=None)
-    attempt:  int                 = field(default=1)
+    context: PipelineContext
+    results: list[IData] = field(default_factory=list)
+    error: Exception | None = field(default=None)
+    attempt: int = field(default=1)
 
 
 EventHandler = Callable[[PipelineEventPayload], None]
 
 
 # ── Orchestrator ──────────────────────────────────────────────────────────────
+
 
 class PipelineOrchestrator:
     """
@@ -94,13 +98,13 @@ class PipelineOrchestrator:
 
     def __init__(
         self,
-        context:      PipelineContext,
+        context: PipelineContext,
         retry_policy: IRetryPolicy | None = None,
     ) -> None:
-        self._context      = context
-        self._pipeline     = Pipeline(context)
+        self._context = context
+        self._pipeline = Pipeline(context)
         self._retry_policy = retry_policy or NoRetryPolicy()
-        self._handlers:    dict[PipelineEvent, list[EventHandler]] = {
+        self._handlers: dict[PipelineEvent, list[EventHandler]] = {
             e: [] for e in PipelineEvent
         }
 
@@ -186,18 +190,18 @@ class PipelineOrchestrator:
 
     def _emit(
         self,
-        event:   PipelineEvent,
+        event: PipelineEvent,
         results: list[IData] | None = None,
-        error:   Exception | None = None,
-        attempt: int              = 1,
+        error: Exception | None = None,
+        attempt: int = 1,
     ) -> None:
         payload = PipelineEventPayload(
-            event    = event,
-            pipeline = self._pipeline,
-            context  = self._context,
-            results  = results or [],
-            error    = error,
-            attempt  = attempt,
+            event=event,
+            pipeline=self._pipeline,
+            context=self._context,
+            results=results or [],
+            error=error,
+            attempt=attempt,
         )
         for handler in self._handlers[event]:
             try:
