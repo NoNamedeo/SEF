@@ -12,7 +12,7 @@ class VerticalPositionAnalyzer(IAnalyzer):
         super().__init__(config)
         self.use_timestamps = bool(self.config.get("use_timestamps", True))
 
-    def analyze(self, signal: ISignal) -> Data:
+    def analyze(self, signal: ISignal) -> TwoDimGraphData:
         x_values: list[float] = []
         y_values: list[float] = []
 
