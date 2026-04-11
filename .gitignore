@@ -1,3 +1,20 @@
 .venv/
 .idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+
+# Claude Code
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+
+# Claude Code
 .claude/
