@@ -64,9 +64,8 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
                 )
 
                 cleaned_frame = frame
-
                 for cleaner in frame_cleaners:
-                    cleaned_frame = cleaner.clean(frame)
+                    cleaned_frame = cleaner.clean(cleaned_frame)
 
                 buffer.put(cleaned_frame)
                 yielded_frames += 1

@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 
 from library.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
-from library.signal_cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
+from library.signal_cleaners.MovingAverageCleaner import OpenCVMovingAverageCleaner
 
 
 class PluginRegistryTests(unittest.TestCase):

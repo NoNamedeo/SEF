@@ -3,10 +3,10 @@ from __future__ import annotations
 from library.core.abstractions.ISignal import ISignal
 from library.core.abstractions.ISignalCleaner import ISignalCleaner
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.SignalSample import SignalSample
+from library.core.artifacts.BoxSignalSample import BoxSignalSample
 
 
-class OpenCVMovingAverageCleaner(ISignalCleaner):
+class MovingAverageCleaner(ISignalCleaner):
     """Smooth centroid coordinates with a moving average window."""
 
     def __init__(self, window_size: int, config=None):
@@ -18,7 +18,7 @@ class OpenCVMovingAverageCleaner(ISignalCleaner):
 
     def clean(self, signal: ISignal) -> ISignal:
         samples = list(signal)
-        cleaned_samples: list[SignalSample] = []
+        cleaned_samples: list[BoxSignalSample] = []
         centroids = [sample.centroid for sample in samples]
 
         for index, sample in enumerate(samples):
@@ -34,7 +34,7 @@ class OpenCVMovingAverageCleaner(ISignalCleaner):
                 smoothed_centroid = (avg_x, avg_y)
 
             cleaned_samples.append(
-                SignalSample(
+                BoxSignalSample(
                     frame_index=sample.frame_index,
                     box=sample.box,
                     centroid=smoothed_centroid,

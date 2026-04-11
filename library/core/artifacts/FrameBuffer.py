@@ -40,5 +40,6 @@ class FrameBuffer:
         return FrameBuffer(buffer_size=self.capacity)
 
     def __iter__(self) -> Iterator[Frame]:
-        while self._frames:
-            yield self.get()
+        while not self.closed or self._frames:
+            if self._frames:
+                yield self.get()

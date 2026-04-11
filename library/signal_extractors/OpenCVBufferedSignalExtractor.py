@@ -9,7 +9,7 @@ from library.core.abstractions.ISignal import ISignal
 from library.core.abstractions.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.SignalSample import BoundingBox, SignalSample
+from library.core.artifacts.BoxSignalSample import BoundingBox, BoxSignalSample
 
 
 class OpenCVBufferedSignalExtractor(ISignalExtractor):
@@ -32,7 +32,7 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
             raise ValueError("start_box must have positive width and height")
 
         tracker = self._build_tracker()
-        samples: list[SignalSample] = []
+        samples: list[BoxSignalSample] = []
         current_box: BoundingBox | None = None
 
         for position, frame in enumerate(buffer):
@@ -50,8 +50,16 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
                 x, y, w, h = current_box
                 centroid = (x + w / 2.0, y + h / 2.0)
 
+            if self.config.get("show"):
+                if current_box is not None:
+                    cv2.rectangle(frame.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    cv2.imshow("Tracking", frame.frame)
+                    key = cv2.waitKey(1)
+                    if key == 27:  # ESC
+                        break
+
             samples.append(
-                SignalSample(
+                BoxSignalSample(
                     frame_index=frame_index,
                     box=current_box,
                     centroid=centroid,

@@ -62,7 +62,7 @@ def create_builtin_registry() -> PluginRegistry:
     from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
     from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
     from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-    from library.signal_cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
+    from library.signal_cleaners.MovingAverageCleaner import OpenCVMovingAverageCleaner
     from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
     from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 

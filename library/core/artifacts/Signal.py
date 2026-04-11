@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from library.core.abstractions.ISignal import ISignal
-from library.core.artifacts.SignalSample import SignalSample
+from library.core.abstractions.ISignalSample import ISignalSample
 
 
 class Signal(ISignal):
@@ -12,7 +12,7 @@ class Signal(ISignal):
 
     def __init__(
         self,
-        samples: Sequence[SignalSample],
+        samples: Sequence[ISignalSample],
         config: dict[str, Any] | None = None,
     ):
         super().__init__(samples, config)

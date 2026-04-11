@@ -6,8 +6,8 @@ from library.core.abstractions.ISignal import ISignal
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 
 
-class VerticalPositionAnalyzer(IAnalyzer):
-    """Build a y-position series from extracted centroids."""
+class HorizontalPositionAnalyzer(IAnalyzer):
+    """Build a x-position series from extracted centroids."""
 
     def __init__(self, config=None):
         super().__init__(config)
@@ -27,7 +27,7 @@ class VerticalPositionAnalyzer(IAnalyzer):
                 else float(sample.frame_index)
             )
             x_values.append(float(x_axis_value))
-            y_values.append(float(sample.centroid[1]))
+            y_values.append(float(sample.centroid[0]))
 
         if not x_values:
             raise ValueError("Signal does not contain valid centroid data")
@@ -37,9 +37,9 @@ class VerticalPositionAnalyzer(IAnalyzer):
         return TwoDimGraphData(
             x=x_values,
             y=y_values,
-            label="Vertical Position",
-            title="Vertical Position Over Time",
+            label="Horizontal Position",
+            title="Horizontal Position Over Time",
             x_label=x_label,
-            y_label="Y Position [px]",
+            y_label="X Position [px]",
             metadata={"points": len(x_values)},
         )

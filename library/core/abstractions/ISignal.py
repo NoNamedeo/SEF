@@ -4,7 +4,7 @@ from abc import ABC
 from collections.abc import Iterator, Sequence
 from typing import Any
 
-from library.core.artifacts.SignalSample import SignalSample
+from library.core.abstractions.ISignalSample import ISignalSample
 
 
 class ISignal(ABC):
@@ -12,18 +12,18 @@ class ISignal(ABC):
 
     def __init__(
         self,
-        samples: Sequence[SignalSample],
+        samples: Sequence[ISignalSample],
         config: dict[str, Any] | None = None,
     ):
         self.samples = list(samples)
         self.config = config or {}
 
     @property
-    def signal(self) -> list[SignalSample]:
+    def signal(self) -> list[ISignalSample]:
         """Backward-compatible alias for existing code."""
         return self.samples
 
-    def __iter__(self) -> Iterator[SignalSample]:
+    def __iter__(self) -> Iterator[ISignalSample]:
         return iter(self.samples)
 
     def __len__(self) -> int:
