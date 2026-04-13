@@ -2,91 +2,70 @@ from __future__ import annotations
 
 import logging
 import time
-from dataclasses import dataclass, field
-from enum import StrEnum, auto
-from typing import Callable
 
+from library.core.abstractions.IData import IData
 from library.core.abstractions.IRetryPolicy import IRetryPolicy
+from library.core.events.EventBus import EventBus
+from library.core.events.PipelineLifecycleBus import (
+    EventHandler,
+    LifecycleEventHandler,
+    PipelineEvent,
+    PipelineEventPayload,
+    PipelineLifecycleBus,
+)
+from library.core.pipeline.BranchingCoordinator import BranchingCoordinator
 from library.core.pipeline.Pipeline import Pipeline, PipelineExecutionError
 from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.abstractions.IData import IData
 from library.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 log = logging.getLogger(__name__)
 
 
-# ── Event system ─────────────────────────────────────────────────────────────
-
-
-class PipelineEvent(StrEnum):
-    """
-    Well-known lifecycle events emitted by the orchestrator.
-
-    Using StrEnum keeps event names both type-safe (IDE autocompletion,
-    mypy checks) and human-readable in logs/serialisation.
-    """
-
-    BEFORE_RUN = auto()  # emitted before Pipeline.run() is called
-    AFTER_RUN = auto()  # emitted after a successful run
-    ON_ERROR = auto()  # emitted when PipelineExecutionError is caught
-    ON_RETRY = auto()  # emitted before each retry attempt
-
-
-@dataclass
-class PipelineEventPayload:
-    """Data bag passed to every event handler."""
-
-    event: PipelineEvent
-    pipeline: Pipeline
-    context: PipelineContext
-    results: list[IData] = field(default_factory=list)
-    error: Exception | None = field(default=None)
-    attempt: int = field(default=1)
-
-
-EventHandler = Callable[[PipelineEventPayload], None]
-
-
-# ── Orchestrator ──────────────────────────────────────────────────────────────
+# Re-export for backward compatibility — these types used to live here.
+__all__ = [
+    "PipelineOrchestrator",
+    "PipelineEvent",
+    "PipelineEventPayload",
+    "PipelineLifecycleBus",
+    "LifecycleEventHandler",
+    "EventHandler",
+]
 
 
 class PipelineOrchestrator:
     """
-    Brain of the pipeline system.
+    Facade that coordinates pipeline execution.
 
     Design rationale
     ----------------
-    The orchestrator owns ALL decisions that Pipeline must not make:
+    The orchestrator is the single entry-point for running a pipeline.
+    Internally it delegates each concern to a specialised component:
 
-      • which context to use (construction / selection logic)
-      • retry policy on transient failures  ← pluggable via IRetryPolicy
-      • lifecycle event dispatch (hooks for logging, metrics, UI updates…)
-      • conditional branching (run a secondary pipeline based on results)
-      • future async scheduling
+    +--------------------------+----------------------------------------------+
+    | Concern                  | Component                                    |
+    +==========================+==============================================+
+    | Retry policy             | ``IRetryPolicy`` (Strategy)                  |
+    | Lifecycle events         | ``PipelineLifecycleBus`` (Observer)          |
+    | Branching + parallelism  | ``BranchingCoordinator`` (mediator)          |
+    | Step execution           | ``Pipeline`` (executor)                      |
+    +--------------------------+----------------------------------------------+
 
-    This strict separation means Pipeline stays a 'dumb executor' while
-    all system-level intelligence lives here, making both sides easy to
-    test, extend and reason about independently.
+    This decomposition respects the **Single Responsibility Principle**:
+    each class has exactly one reason to change.
 
-    Retry policy
-    ------------
-    Pass any :class:`~library.core.abstractions.IRetryPolicy` implementation
-    to control retry behaviour.  The default is ``NoRetryPolicy`` (fail fast).
-    Built-in policies live in ``library.retry_policies``:
+    The orchestrator itself is a **Facade**: it exposes convenience methods
+    (``subscribe``, ``collect_secondary_results``, ``shutdown``) that
+    delegate to the owned components, keeping the public API compact.
 
-    * ``NoRetryPolicy``                 – no retries (default)
-    * ``FixedRetryPolicy(n)``           – retry up to *n* times immediately
-    * ``ExponentialBackoffRetryPolicy`` – retry with exponential back-off
+    Lifecycle bus sharing
+    ---------------------
+    The ``PipelineLifecycleBus`` is injectable.  When the same bus is
+    passed to both the primary orchestrator and the ``BranchingCoordinator``,
+    lifecycle events from secondary pipelines (BEFORE_RUN, AFTER_RUN,
+    ON_ERROR) arrive at the same subscribers as the primary's events.
 
-    Custom strategies only need to implement ``IRetryPolicy``; no changes to
-    this class are required (Open/Closed Principle).
-
-    Event system
-    ------------
-    Handlers are registered per-event with ``subscribe()``.  Any number of
-    handlers may be attached to the same event; they are called in
-    registration order.  Handlers receive a ``PipelineEventPayload`` so they
-    can inspect context, results and errors without coupling to internals.
+    This solves the original limitation where secondary pipelines were
+    invisible to the lifecycle event system.
 
     Example
     -------
@@ -94,38 +73,78 @@ class PipelineOrchestrator:
     >>> orchestrator = PipelineOrchestrator(context, retry_policy=FixedRetryPolicy(3))
     >>> orchestrator.subscribe(PipelineEvent.AFTER_RUN, lambda p: print(p.results))
     >>> results = orchestrator.run()
+
+    Example with branching (via builder)
+    -------------------------------------
+    >>> orchestrator = (
+    ...     FluentPipelineBuilder()
+    ...     .with_frame_extractor(...)
+    ...     .with_signal_extractor(EventAwareTracker(...))
+    ...     .add_analyzer(...)
+    ...     .add_branching_rule(TrackingLostBranch())
+    ...     .build()
+    ... )
+    >>> primary = orchestrator.run()
+    >>> secondary = orchestrator.collect_secondary_results(timeout=30)
+    >>> orchestrator.shutdown()
     """
 
     def __init__(
         self,
         context: PipelineContext,
         retry_policy: IRetryPolicy | None = None,
+        lifecycle_bus: PipelineLifecycleBus | None = None,
+        branching: BranchingCoordinator | None = None,
+        event_bus: EventBus | None = None,
     ) -> None:
         self._context = context
-        self._pipeline = Pipeline(context)
         self._retry_policy = retry_policy or NoRetryPolicy()
-        self._handlers: dict[PipelineEvent, list[EventHandler]] = {
-            e: [] for e in PipelineEvent
-        }
+        self._lifecycle_bus = lifecycle_bus or PipelineLifecycleBus()
+        self._branching = branching
 
-    # ── Event API ────────────────────────────────────────────────────────────
+        # Resolve EventBus: explicit > from coordinator > None
+        effective_bus = event_bus
+        if effective_bus is None and branching is not None:
+            effective_bus = branching.event_bus
 
-    def subscribe(self, event: PipelineEvent, handler: EventHandler) -> None:
+        self._pipeline = Pipeline(context, event_bus=effective_bus)
+
+    # ── Lifecycle bus delegation ────────────────────────────────────────────
+
+    @property
+    def lifecycle_bus(self) -> PipelineLifecycleBus:
+        """The lifecycle event bus used by this orchestrator."""
+        return self._lifecycle_bus
+
+    def subscribe(self, event: PipelineEvent, handler: LifecycleEventHandler) -> None:
         """Register *handler* to be called when *event* is emitted."""
-        self._handlers[event].append(handler)
+        self._lifecycle_bus.subscribe(event, handler)
 
-    def unsubscribe(self, event: PipelineEvent, handler: EventHandler) -> None:
+    def unsubscribe(self, event: PipelineEvent, handler: LifecycleEventHandler) -> None:
         """Remove a previously registered handler (no-op if not found)."""
-        try:
-            self._handlers[event].remove(handler)
-        except ValueError:
-            pass
+        self._lifecycle_bus.unsubscribe(event, handler)
 
-    # ── Run ──────────────────────────────────────────────────────────────────
+    # ── Domain EventBus access ──────────────────────────────────────────────
+
+    @property
+    def event_bus(self) -> EventBus | None:
+        """Return the domain EventBus, or None if branching is not configured."""
+        if self._branching is not None:
+            return self._branching.event_bus
+        return None
+
+    # ── Run ─────────────────────────────────────────────────────────────────
 
     def run(self) -> list[IData]:
         """
         Execute the pipeline with the configured retry and event policy.
+
+        During execution, if any component emits domain events and
+        a ``BranchingCoordinator`` is configured, secondary pipelines
+        are automatically spawned in parallel.
+
+        After ``run()`` returns, call ``collect_secondary_results()`` to
+        retrieve results from any auto-spawned secondary pipelines.
 
         Returns
         -------
@@ -155,38 +174,64 @@ class PipelineOrchestrator:
 
                 delay = self._retry_policy.wait_seconds(attempt)
                 if delay > 0:
-                    log.info("Waiting %.1f s before retry…", delay)
+                    log.info("Waiting %.1f s before retry...", delay)
                     time.sleep(delay)
 
                 attempt += 1
-                log.warning("Retrying pipeline (attempt %d)…", attempt)
+                log.warning("Retrying pipeline (attempt %d)...", attempt)
                 self._emit(PipelineEvent.ON_RETRY, attempt=attempt)
 
-    # ── Secondary pipeline ───────────────────────────────────────────────────
+    # ── Secondary pipelines (manual) ────────────────────────────────────────
 
     def run_secondary(self, context: PipelineContext) -> list[IData]:
         """
-        Execute a secondary pipeline with a different context.
+        Execute a secondary pipeline with a different context (synchronous).
 
-        Use this for conditional branching: run a specialised pipeline
-        whose context was built by the caller based on the primary results.
-        The same retry policy and event handlers are propagated.
-
-        Example
-        -------
-        >>> primary_results = orchestrator.run()
-        >>> if needs_keypoint_analysis(primary_results):
-        ...     secondary_ctx = build_keypoint_context(primary_results)
-        ...     detail = orchestrator.run_secondary(secondary_ctx)
+        The same ``lifecycle_bus`` is shared so that lifecycle events from
+        the secondary pipeline are visible to handlers registered on the
+        primary orchestrator.
         """
-        log.info("Orchestrator: launching secondary pipeline.")
-        secondary = PipelineOrchestrator(context, retry_policy=self._retry_policy)
-        for event, handlers in self._handlers.items():
-            for handler in handlers:
-                secondary.subscribe(event, handler)
+        log.info("Orchestrator: launching secondary pipeline (manual).")
+        secondary = PipelineOrchestrator(
+            context,
+            retry_policy=NoRetryPolicy(),
+            lifecycle_bus=self._lifecycle_bus,
+        )
         return secondary.run()
 
-    # ── Internals ────────────────────────────────────────────────────────────
+    # ── Secondary pipelines (auto / parallel) delegation ────────────────────
+
+    def collect_secondary_results(
+        self,
+        timeout: float | None = None,
+    ) -> list[list[IData]]:
+        """
+        Wait for and return results from all auto-spawned secondary pipelines.
+
+        Delegates to ``BranchingCoordinator.collect()``.
+        Returns an empty list if no coordinator is configured.
+        """
+        if self._branching is None:
+            return []
+        return self._branching.collect(timeout)
+
+    @property
+    def pending_secondary_count(self) -> int:
+        """Number of secondary pipelines still in flight."""
+        if self._branching is None:
+            return 0
+        return self._branching.pending_count
+
+    def shutdown(self, wait: bool = True) -> None:
+        """
+        Shutdown the BranchingCoordinator's ThreadPoolExecutor.
+
+        Safe to call multiple times.  No-op if no coordinator is configured.
+        """
+        if self._branching is not None:
+            self._branching.shutdown(wait)
+
+    # ── Internals ───────────────────────────────────────────────────────────
 
     def _emit(
         self,
@@ -197,15 +242,10 @@ class PipelineOrchestrator:
     ) -> None:
         payload = PipelineEventPayload(
             event=event,
-            pipeline=self._pipeline,
             context=self._context,
             results=results or [],
             error=error,
             attempt=attempt,
+            pipeline=self._pipeline,
         )
-        for handler in self._handlers[event]:
-            try:
-                handler(payload)
-            except Exception as exc:
-                # Handlers must NEVER crash the orchestrator
-                log.warning("Event handler raised an exception (ignored): %s", exc)
+        self._lifecycle_bus.emit(payload)

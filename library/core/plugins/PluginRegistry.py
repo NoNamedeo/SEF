@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any, Callable
 
-
 # ── Category enum ─────────────────────────────────────────────────────────────
+
 
 class PluginCategory(StrEnum):
     """
@@ -21,15 +21,18 @@ class PluginCategory(StrEnum):
     value, so existing code that uses the string literal (e.g. "analyzer")
     continues to work without modification during migration.
     """
-    FRAME_EXTRACTOR  = "frame_extractor"
-    FRAME_CLEANER    = "frame_cleaner"
+
+    FRAME_EXTRACTOR = "frame_extractor"
+    FRAME_CLEANER = "frame_cleaner"
     SIGNAL_EXTRACTOR = "signal_extractor"
-    SIGNAL_CLEANER   = "signal_cleaner"
-    ANALYZER         = "analyzer"
-    VISUALIZER       = "visualizer"
+    SIGNAL_CLEANER = "signal_cleaner"
+    ANALYZER = "analyzer"
+    VISUALIZER = "visualizer"
+    BRANCHING_RULE = "branching_rule"
 
 
 # ── Plugin definition ─────────────────────────────────────────────────────────
+
 
 @dataclass(frozen=True, slots=True)
 class PluginDefinition:
@@ -39,13 +42,15 @@ class PluginDefinition:
     frozen=True  prevents accidental mutation after registration.
     slots=True   reduces memory overhead for registries with many plugins.
     """
-    category:    str
-    name:        str
-    factory:     Callable[..., Any]
+
+    category: str
+    name: str
+    factory: Callable[..., Any]
     description: str = ""
 
 
 # ── Registry ──────────────────────────────────────────────────────────────────
+
 
 class PluginRegistry:
     """
@@ -71,9 +76,9 @@ class PluginRegistry:
 
     def register(
         self,
-        category:    str | PluginCategory,
-        name:        str,
-        factory:     Callable[..., Any],
+        category: str | PluginCategory,
+        name: str,
+        factory: Callable[..., Any],
         description: str = "",
     ) -> PluginDefinition:
         """
@@ -87,14 +92,12 @@ class PluginRegistry:
         category = str(category)
         category_map = self._definitions.setdefault(category, {})
         if name in category_map:
-            raise ValueError(
-                f"Plugin '{name}' already registered in category '{category}'."
-            )
+            raise ValueError(f"Plugin '{name}' already registered in category '{category}'.")
         definition = PluginDefinition(
-            category    = category,
-            name        = name,
-            factory     = factory,
-            description = description,
+            category=category,
+            name=name,
+            factory=factory,
+            description=description,
         )
         category_map[name] = definition
         return definition
@@ -109,8 +112,7 @@ class PluginRegistry:
         except KeyError as exc:
             available = list(self._definitions.get(category, {}).keys())
             raise KeyError(
-                f"Plugin '{name}' not found in category '{category}'. "
-                f"Available: {available}"
+                f"Plugin '{name}' not found in category '{category}'. Available: {available}"
             ) from exc
 
     def create(self, category: str | PluginCategory, name: str, *args, **kwargs) -> Any:
@@ -130,6 +132,7 @@ class PluginRegistry:
 
 # ── Built-in registry factory ─────────────────────────────────────────────────
 
+
 def create_builtin_registry() -> PluginRegistry:
     """
     Register the built-in OpenCV and Matplotlib components and return the registry.
@@ -146,41 +149,57 @@ def create_builtin_registry() -> PluginRegistry:
     """
     from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
     from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
-    from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+    from library.frame_extractors.OpenCVBufferedFrameExtractor import (
+        OpenCVBufferedFrameExtractor,
+    )
     from library.signal_cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
-    from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+    from library.signal_extractors.OpenCVBufferedSignalExtractor import (
+        OpenCVBufferedSignalExtractor,
+    )
     from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
     registry = PluginRegistry()
 
-    registry.register(PluginCategory.FRAME_EXTRACTOR,  
-                      "opencv_buffered",
-                      OpenCVBufferedFrameExtractor,
-                      "Extract frames from a video using OpenCV.")
+    registry.register(
+        PluginCategory.FRAME_EXTRACTOR,
+        "opencv_buffered",
+        OpenCVBufferedFrameExtractor,
+        "Extract frames from a video using OpenCV.",
+    )
 
-    registry.register(PluginCategory.FRAME_CLEANER,    
-                      "opencv_gray",
-                      OpenCVGrayFrameCleaner,
-                      "Convert frames to grayscale.")
+    registry.register(
+        PluginCategory.FRAME_CLEANER,
+        "opencv_gray",
+        OpenCVGrayFrameCleaner,
+        "Convert frames to grayscale.",
+    )
 
-    registry.register(PluginCategory.SIGNAL_EXTRACTOR, 
-                      "opencv_tracker",
-                      OpenCVBufferedSignalExtractor,
-                      "Track a single ROI with an OpenCV tracker.")
+    registry.register(
+        PluginCategory.SIGNAL_EXTRACTOR,
+        "opencv_tracker",
+        OpenCVBufferedSignalExtractor,
+        "Track a single ROI with an OpenCV tracker.",
+    )
 
-    registry.register(PluginCategory.SIGNAL_CLEANER,   
-                      "moving_average",
-                      OpenCVMovingAverageCleaner,
-                      "Smooth centroid coordinates with a moving average.")
+    registry.register(
+        PluginCategory.SIGNAL_CLEANER,
+        "moving_average",
+        OpenCVMovingAverageCleaner,
+        "Smooth centroid coordinates with a moving average.",
+    )
 
-    registry.register(PluginCategory.ANALYZER,
-                      "vertical_position",
-                      VerticalPositionAnalyzer,
-                      "Extract the vertical position series from tracked centroids.")
+    registry.register(
+        PluginCategory.ANALYZER,
+        "vertical_position",
+        VerticalPositionAnalyzer,
+        "Extract the vertical position series from tracked centroids.",
+    )
 
-    registry.register(PluginCategory.VISUALIZER,       
-                      "matplotlib",
-                      MatplotlibFunctionVisualizer,
-                      "Plot analytical data with Matplotlib.")
+    registry.register(
+        PluginCategory.VISUALIZER,
+        "matplotlib",
+        MatplotlibFunctionVisualizer,
+        "Plot analytical data with Matplotlib.",
+    )
 
     return registry

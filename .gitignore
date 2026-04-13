@@ -1,20 +1,18 @@
+# Env
 .venv/
+
+# IDE
 .idea/
 
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-.venv/
 
-# Claude Code
-.claude/
+# Mac
+.DS_Store
 
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-.venv/
+# Outputs
+output/
 
-# Claude Code
+# Claude
 .claude/
