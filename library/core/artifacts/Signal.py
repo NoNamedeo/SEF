@@ -5,6 +5,8 @@ from typing import Any
 
 from library.core.abstractions.ISignal import ISignal
 from library.core.abstractions.ISignalSample import ISignalSample
+from library.core.artifacts.SignalSample import SignalSample
+from library.core.interfaces.ISignal import ISignal
 
 
 class Signal(ISignal):

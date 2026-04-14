@@ -3,6 +3,8 @@ from __future__ import annotations
 from library.core.abstractions.IAnalyzer import IAnalyzer
 from library.core.abstractions.IData import IData
 from library.core.abstractions.ISignal import ISignal
+from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.ISignal import ISignal
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 
 
@@ -12,6 +14,7 @@ class VerticalPositionAnalyzer(IAnalyzer):
     def __init__(self, config=None):
         super().__init__(config)
         self.use_timestamps = bool(self.config.get("use_timestamps", True))
+
 
     def analyze(self, signal: ISignal) -> IData:
         x_values: list[float] = []

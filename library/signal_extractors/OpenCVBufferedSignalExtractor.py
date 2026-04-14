@@ -5,8 +5,8 @@ from typing import Any
 
 import cv2
 
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.BoxSignalSample import BoundingBox, BoxSignalSample

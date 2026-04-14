@@ -1,0 +1,27 @@
+pipeline:
+  frame_extractor:
+    name: opencv_buffered
+    params:
+      path: videos/Baloons.mp4
+
+  frame_cleaners:
+    - name: opencv_gray
+
+  signal_extractor:
+    name: opencv_tracker
+    params:
+      start_box: [100, 200, 50, 80]
+
+  signal_cleaners:
+    - name: moving_average
+      params:
+        window_size: 5
+
+  analyzers:
+    - name: vertical_position
+
+  visualizers:
+    - name: matplotlib
+
+  orchestration:
+    max_retries: 2

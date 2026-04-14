@@ -1,2 +1,18 @@
+# Env
 .venv/
+
+# IDE
 .idea/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Mac
+.DS_Store
+
+# Outputs
+output/
+
+# Claude
+.claude/

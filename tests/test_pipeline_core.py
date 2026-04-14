@@ -10,7 +10,7 @@ import numpy as np
 from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.pipeline.PipelineBuilder import PipelineBuilder
+from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_cleaners.MovingAverageCleaner import OpenCVMovingAverageCleaner
@@ -45,7 +45,7 @@ class PipelineCoreTests(unittest.TestCase):
     def test_pipeline_runs_end_to_end_via_core_components(self):
         video_path = self._create_test_video()
         pipeline = (
-            PipelineBuilder()
+            FluentPipelineBuilder()
             .with_frame_extractor(
                 OpenCVBufferedFrameExtractor(
                     path=video_path,
