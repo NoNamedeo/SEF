@@ -16,3 +16,6 @@ output/
 
 # Claude
 .claude/
+
+# Videos
+.videos/
