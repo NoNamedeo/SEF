@@ -2,42 +2,34 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from library.analyzers.HoriziontalPositionAnalyzer import HorizontalPositionAnalyzer
-from library.analyzers.HorizontalFrequencyAnalyzer import HorizontalFrequencyAnalyzer
-from library.analyzers.MultiObjectBarrierCountingAnalyzer import MultiObjectBarrierCountingAnalyzer
-from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-from library.analyzers.VerticalFrequencyAnalyzer import VerticalFrequencyAnalyzer
-from library.core.pipeline.PipelineBuilder import PipelineBuilder
+from library.analyzers.MultiObjectBarrierCountingAnalyzer import (
+    MultiObjectBarrierCountingAnalyzer,
+)
+from library.core.pipeline import FluentPipelineBuilder
 from library.core.utils.OpenCVBarrierSelector import OpenCVBarrierSelector
 from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.frame_cleaners.SmoothingFrameCleaner import SmoothingFrameCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
-from library.signal_cleaners.SignalWidenerCleaner import SignalWidenerCleaner
-from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
-from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+from library.signal_extractors.OpenCVMultiObjectSignalExtractor import (
+    OpenCVMultiObjectSignalExtractor,
+)
 from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
 
 
 def build_demo_pipeline(video_path: str, initial_box=(300, 200, 80, 120), initial_barriers=None):
     """Create a runnable pipeline using only the public core components."""
     return (
-        PipelineBuilder()
-            .with_frame_extractor(
-                OpenCVBufferedFrameExtractor(
-                    path=video_path,
-                    config={"resize": (640, 480), "stride": 2, "max_frames": 420},
-                )
+        FluentPipelineBuilder()
+        .with_frame_extractor(
+            OpenCVBufferedFrameExtractor(
+                path=video_path,
+                config={"resize": (640, 480), "stride": 2, "max_frames": 420},
             )
-            .add_frame_cleaner(
-                SmoothingFrameCleaner()
-            )
-            .with_signal_extractor(
-                OpenCVMultiObjectSignalExtractor(start_box = initial_box, max_objects=2, config =  {"show": True})
-            )
-            .add_analyzer(MultiObjectBarrierCountingAnalyzer(barriers=initial_barriers))
-            .build()
+        )
+        .add_frame_cleaner(SmoothingFrameCleaner())
+        .with_signal_extractor(OpenCVMultiObjectSignalExtractor(start_box=initial_box, max_objects=2, config={"show": True}))
+        .add_analyzer(MultiObjectBarrierCountingAnalyzer(barriers=initial_barriers))
+        .build()
     )
 
 
@@ -49,9 +41,9 @@ def main():
         raise FileNotFoundError(f"Video non trovato: {video_path}")
 
     initial_box = OpenCVStartBoxSelector.select_start(str(video_path), (640, 480))
-    initial_barriers = OpenCVBarrierSelector().select_barriers(str(video_path), ["a","b","c"])
+    initial_barriers = OpenCVBarrierSelector().select_barriers(str(video_path), ["a", "b", "c"])
 
-    #TODO: mettere alcune librerie belle tipo: (vedi sotto)
+    # TODO: mettere alcune librerie belle tipo: (vedi sotto)
     """
     Black: Formatter automatico: riscrive il codice per renderlo uniforme e leggibile senza dover pensare allo stile.
     Ruff: Linter veloce: trova errori, import inutili e cattive pratiche nel codice.

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.abstractions.ISignalSample import ISignalSample
+from library.core.interfaces.ISignalSample import ISignalSample
 
 BoundingBox = tuple[int, int, int, int]
 Point2D = tuple[float, float]
@@ -13,6 +13,7 @@ Vector2D = tuple[float, float]
 @dataclass(slots=True)
 class MultiObjectTrack:
     """Represents a single tracked object inside a frame."""
+
     track_id: int
     box: BoundingBox | None
     centroid: Point2D | None = None
@@ -25,6 +26,7 @@ class MultiObjectSignalSample(ISignalSample):
     """
     A signal sample that contains multiple tracked objects per frame.
     """
+
     frame_index: int
     tracks: list[MultiObjectTrack]
 

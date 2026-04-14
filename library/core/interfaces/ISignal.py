@@ -4,7 +4,7 @@ from abc import ABC
 from collections.abc import Iterator, Sequence
 from typing import Any
 
-from library.core.abstractions.ISignalSample import ISignalSample
+from library.core.interfaces.ISignalSample import ISignalSample
 
 
 class ISignal(ABC):

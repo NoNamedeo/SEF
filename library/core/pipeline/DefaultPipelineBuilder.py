@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from library.core.artifacts.PipelineEvent import PipelineEvent
+# from library.core.artifacts.PipelineEvent import PipelineEvent
 from library.core.events.EventBus import EventBus
 from library.core.interfaces.pipeline.IPipelineBuilder import IPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
@@ -19,6 +19,6 @@ class DefaultPipelineBuilder(IPipelineBuilder):
     def __init__(self, domain_bus: EventBus | None = None) -> None:
         self._domain_bus = domain_bus
 
-    def build(self, event: PipelineEvent) -> Pipeline:
+    def build(self, event) -> Pipeline:
         PipelineContextValidator.validate(event.context)
         return Pipeline(event.context, event_bus=self._domain_bus)

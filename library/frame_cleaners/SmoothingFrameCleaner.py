@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-
 import numpy as np
 
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
 from library.core.artifacts.Frame import Frame
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
 
 
 class SmoothingFrameCleaner(IFrameCleaner):
@@ -36,7 +35,7 @@ class SmoothingFrameCleaner(IFrameCleaner):
     def clean(self, frame: Frame) -> Frame:
         image = frame.frame.astype(np.float32)
 
-        #differenza tra frame attuale e passato (se eccessiva (tipo cambio video), resetta)
+        # differenza tra frame attuale e passato (se eccessiva (tipo cambio video), resetta)
         difference = 0
         if self._previous_frame is not None:
             difference = np.mean(np.abs(image - self._previous_frame))
@@ -44,11 +43,8 @@ class SmoothingFrameCleaner(IFrameCleaner):
         if self._previous_frame is None or difference > self.reset_threshold:
             smoothed = image
         else:
-            #mischia i due frame
-            smoothed = (
-                self.alpha * image
-                + (1.0 - self.alpha) * self._previous_frame
-            )
+            # mischia i due frame
+            smoothed = self.alpha * image + (1.0 - self.alpha) * self._previous_frame
 
         self._previous_frame = smoothed
 

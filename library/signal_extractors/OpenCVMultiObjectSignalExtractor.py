@@ -6,16 +6,15 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-
 from library.core.artifacts.MultiObjectSignalSample import (
+    BoundingBox,
     MultiObjectSignalSample,
     MultiObjectTrack,
-    BoundingBox,
 )
+from library.core.artifacts.Signal import Signal
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalExtractor import ISignalExtractor
 
 
 class OpenCVMultiObjectSignalExtractor(ISignalExtractor):
@@ -67,7 +66,7 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor):
                 self._expand_tracks(img, tracks)
 
             if show:
-                #visualizzo cosa sta succedendo
+                # visualizzo cosa sta succedendo
 
                 vis_frame = img.copy()
 
@@ -76,23 +75,9 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor):
                         continue
 
                     x, y, w, h = t.box
-                    cv2.rectangle(
-                        vis_frame,
-                        (x, y),
-                        (x + w, y + h),
-                        (0, 255, 0),
-                        2
-                    )
+                    cv2.rectangle(vis_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-                    cv2.putText(
-                        vis_frame,
-                        f"ID {t.track_id}",
-                        (x, y - 5),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1
-                    )
+                    cv2.putText(vis_frame, f"ID {t.track_id}", (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
                 cv2.imshow("MultiObject Tracking", vis_frame)
 
@@ -156,7 +141,7 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor):
         TODO: questo è detection, non tracking, si potrebbe pensare di usare classe/i a parte
         """
 
-        #istogramma di partenza (detecterà in base a questo)
+        # istogramma di partenza (detecterà in base a questo)
         seed_hist = self._compute_reference_hist(frame, self.start_box)
 
         h, w = frame.shape[:2]
@@ -189,9 +174,9 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor):
     @staticmethod
     def _compute_reference_hist(frame: np.ndarray, box: BoundingBox):
         x, y, w, h = box
-        #seleziono la box tracciata
-        roi = frame[y:y+h, x:x+w]
-        #la trasformo in hsv
+        # seleziono la box tracciata
+        roi = frame[y : y + h, x : x + w]
+        # la trasformo in hsv
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
         # usa i canali 0 e 1 (H e S), crea un istogramma 2d da 30 bin per hue e 32 bin
@@ -209,9 +194,9 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor):
                 continue
             tx, ty, tw, th = t.box
 
-            if (x < tx + tw and x + w > tx and y < ty + th and y + h > ty):
-                #TODO: si potrebbe cambiare questo if costringendo a non avere sovrapposizione per nulla
-                #(e non come adesso che ammette sovrapposizione solo se totale)
+            if x < tx + tw and x + w > tx and y < ty + th and y + h > ty:
+                # TODO: si potrebbe cambiare questo if costringendo a non avere sovrapposizione per nulla
+                # (e non come adesso che ammette sovrapposizione solo se totale)
                 return True
 
         return False

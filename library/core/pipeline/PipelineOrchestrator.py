@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from library.core.artifacts.PipelineEvent import PipelineEvent
+# from library.core.artifacts.PipelineEvent import PipelineEvent
 from library.core.interfaces.pipeline.IEventBus import IEventBus
 from library.core.interfaces.pipeline.IPipelineBuilder import IPipelineBuilder
 from library.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
@@ -41,7 +41,7 @@ class PipelineOrchestrator:
         self._runner = runner
         self._monitor = monitor
         self._bus = bus
-        self._bus.subscribe(PipelineEvent.event_type, self._on_pipeline_event)
+        # self._bus.subscribe(PipelineEvent.event_type, self._on_pipeline_event)
 
     def terminate(self, pipeline_id: str) -> None:
         """
@@ -68,7 +68,7 @@ class PipelineOrchestrator:
         """
         return self._monitor.active_ids()
 
-    def _on_pipeline_event(self, event: PipelineEvent) -> None:
+    def _on_pipeline_event(self, event) -> None:
         try:
             pipeline = self._builder.build(event)
         except Exception as exc:

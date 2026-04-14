@@ -1,12 +1,3 @@
-
-from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.IData import IData
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
-from library.core.abstractions.IFrameExtractor import IFrameExtractor
-from library.core.abstractions.ISignalCleaner import ISignalCleaner
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
-from library.core.validators.pipeline.PipelineValidator import PipelineValidator
-from library.core.abstractions.IPipelineValidator import IPipelineValidator
 from __future__ import annotations
 
 import logging
@@ -20,6 +11,7 @@ if TYPE_CHECKING:
     from library.core.events.EventBus import EventBus
 
 log = logging.getLogger(__name__)
+
 
 class Pipeline:
     """
@@ -76,13 +68,9 @@ class Pipeline:
         self._inject_event_bus(self._event_bus)
         ctx = self._context
 
-        buffer = self._run_step(
-            "frame_extraction", lambda: ctx.frame_extractor.extract(ctx.frame_cleaners)
-        )
+        buffer = self._run_step("frame_extraction", lambda: ctx.frame_extractor.extract(ctx.frame_cleaners))
 
-        signal = self._run_step(
-            "signal_extraction", lambda: ctx.signal_extractor.extract(buffer)
-        )
+        signal = self._run_step("signal_extraction", lambda: ctx.signal_extractor.extract(buffer))
 
         for i, cleaner in enumerate(ctx.signal_cleaners):
             signal = self._run_step(
@@ -97,9 +85,7 @@ class Pipeline:
 
         for i, visualizer in enumerate(ctx.visualizers):
             for j, data in enumerate(results):
-                self._run_step(
-                    f"visualisation[{i}][{j}]", lambda v=visualizer, d=data: v.visualize(d)
-                )
+                self._run_step(f"visualisation[{i}][{j}]", lambda v=visualizer, d=data: v.visualize(d))
 
         return results
 

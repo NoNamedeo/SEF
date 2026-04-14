@@ -1,13 +1,12 @@
 from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-from library.core.interfaces.IEventEmitter import IEventEmitter
-from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
-from library.core.artifacts.PipelineEvent import PipelineEvent
 from library.core.events.DomainEvent import DomainEvent
 from library.core.events.EventBus import EventBus
 from library.core.events.PipelineLifecycleBus import (
     PipelineLifecycleEvent,
     PipelineLifecyclePayload,
 )
+from library.core.interfaces.IEventEmitter import IEventEmitter
+from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
 from library.core.interfaces.pipeline.IEventBus import IEventBus
 from library.core.interfaces.pipeline.IPipelineBuilder import IPipelineBuilder
 from library.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
@@ -21,15 +20,8 @@ from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
 from library.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-<<<<<<< HEAD
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-=======
-from library.signal_cleaners.OpenCVMovingAverageCleaner import OpenCVMovingAverageCleaner
-from library.signal_extractors.OpenCVBufferedSignalExtractor import (
-    OpenCVBufferedSignalExtractor,
-)
->>>>>>> eb5d889da439bccb64ff94585e7bcd3d40449f59
 from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
 __all__ = [
@@ -51,7 +43,6 @@ __all__ = [
     # ── Event system ────────────────────────────────────────────────────
     "EventBus",
     "DomainEvent",
-    "PipelineEvent",
     "PipelineLifecycleEvent",
     "PipelineLifecyclePayload",
     # ── Abstractions (user-facing) ───────────────────────────────────────

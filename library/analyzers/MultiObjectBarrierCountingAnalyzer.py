@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.ISignal import ISignal
 from library.core.artifacts.CategoryData import CategoryData
+from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.ISignal import ISignal
 
 
 class MultiObjectBarrierCountingAnalyzer(IAnalyzer):
@@ -30,7 +30,6 @@ class MultiObjectBarrierCountingAnalyzer(IAnalyzer):
         # lista di barriere già attraversate (dai track)
         self._crossed: dict[int, set[str]] = {}
 
-
     def analyze(self, signal: ISignal) -> CategoryData:
 
         # nome barriera e numero di passaggi
@@ -43,7 +42,6 @@ class MultiObjectBarrierCountingAnalyzer(IAnalyzer):
         categories = list(self.barriers.keys())
 
         for sample in signal:
-
             for track in sample.tracks:
                 if track.centroid is None:
                     continue
@@ -55,9 +53,7 @@ class MultiObjectBarrierCountingAnalyzer(IAnalyzer):
                     prev = self._prev_positions[tid]
 
                     for barrier_name, (a1, a2) in self.barriers.items():
-
                         if self._cross(prev, current, a1, a2):
-
                             if tid not in self._crossed:
                                 self._crossed[tid] = set()
 
@@ -81,7 +77,6 @@ class MultiObjectBarrierCountingAnalyzer(IAnalyzer):
             },
         )
 
-
     @staticmethod
     def _cross(p1, p2, a1, a2) -> bool:
         """
@@ -91,7 +86,4 @@ class MultiObjectBarrierCountingAnalyzer(IAnalyzer):
         def ccw(A, B, C):
             return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
 
-        return (
-            ccw(p1, a1, a2) != ccw(p2, a1, a2)
-            and ccw(p1, p2, a1) != ccw(p1, p2, a2)
-        )
+        return ccw(p1, a1, a2) != ccw(p2, a1, a2) and ccw(p1, p2, a1) != ccw(p1, p2, a2)

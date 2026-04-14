@@ -3,8 +3,8 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 
-from library.core.abstractions.IVisualizer import IVisualizer
 from library.core.artifacts.CategoryData import CategoryData
+from library.core.interfaces.IVisualizer import IVisualizer
 
 
 class MatplotlibHistogramVisualizer(IVisualizer):
@@ -33,10 +33,7 @@ class MatplotlibHistogramVisualizer(IVisualizer):
 
         x = np.arange(len(categories))
 
-        fig, ax = plt.subplots(
-            figsize=self.figure_size,
-            facecolor=self.figure_facecolor
-        )
+        fig, ax = plt.subplots(figsize=self.figure_size, facecolor=self.figure_facecolor)
 
         ax.set_facecolor(self.axes_facecolor)
 
@@ -55,15 +52,7 @@ class MatplotlibHistogramVisualizer(IVisualizer):
 
         # optional: value labels on top of bars
         for i, v in enumerate(values):
-            ax.text(
-                i,
-                v,
-                str(v),
-                ha="center",
-                va="bottom",
-                color=self.text_color,
-                fontsize=9
-            )
+            ax.text(i, v, str(v), ha="center", va="bottom", color=self.text_color, fontsize=9)
 
         plt.tight_layout()
 
