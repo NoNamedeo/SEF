@@ -13,11 +13,12 @@ from library.core.artifacts.MultiObjectSignalSample import (
     MultiObjectTrack,
 )
 from library.core.artifacts.Signal import Signal
+from library.core.interfaces.IEventEmitter import IEventEmitter
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 
 
-class OpenCVMultiObjectSignalExtractor(ISignalExtractor):
+class OpenCVMultiObjectSignalExtractor(ISignalExtractor, IEventEmitter):
     """
     Multi-object tracker starting from a seed ROI.
     Expands tracking to similar objects in the scene.

@@ -6,6 +6,7 @@ from library.analyzers.MultiObjectBarrierCountingAnalyzer import (
     MultiObjectBarrierCountingAnalyzer,
 )
 from library.core.pipeline import FluentPipelineBuilder
+from library.core.pipeline.Pipeline import Pipeline
 from library.core.utils.OpenCVBarrierSelector import OpenCVBarrierSelector
 from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.frame_cleaners.SmoothingFrameCleaner import SmoothingFrameCleaner
@@ -18,7 +19,7 @@ from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogra
 
 def build_demo_pipeline(video_path: str, initial_box=(300, 200, 80, 120), initial_barriers=None):
     """Create a runnable pipeline using only the public core components."""
-    return (
+    context = (
         FluentPipelineBuilder()
         .with_frame_extractor(
             OpenCVBufferedFrameExtractor(
@@ -29,8 +30,9 @@ def build_demo_pipeline(video_path: str, initial_box=(300, 200, 80, 120), initia
         .add_frame_cleaner(SmoothingFrameCleaner())
         .with_signal_extractor(OpenCVMultiObjectSignalExtractor(start_box=initial_box, max_objects=2, config={"show": True}))
         .add_analyzer(MultiObjectBarrierCountingAnalyzer(barriers=initial_barriers))
-        .build()
+        .build_context()
     )
+    return Pipeline(context)
 
 
 def main():
