@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from library.core.abstractions.IRetryPolicy import IRetryPolicy
 from library.core.events.EventBus import EventBus
+from library.core.interfaces.pipeline.IRetryPolicy import IRetryPolicy
 from library.core.pipeline.BranchingCoordinator import BranchingCoordinator
+from library.core.pipeline.DefaultPipelineBuilder import DefaultPipelineBuilder
+from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from library.retry_policies.FixedRetryPolicy import FixedRetryPolicy
 from library.retry_policies.NoRetryPolicy import NoRetryPolicy
@@ -90,27 +93,37 @@ class ConfigPipelineBuilder:
             FixedRetryPolicy(max_retries) if max_retries > 0 else NoRetryPolicy()
         )
 
+        # ── Build infrastructure components ─────────────────────────────
+        trigger_bus = EventBus()
+        monitor = InMemoryPipelineMonitor()
+
+        domain_bus = EventBus()
+        pipeline_builder = DefaultPipelineBuilder(domain_bus=domain_bus)
+
+        runner = ThreadedPipelineRunner(
+            monitor=monitor,
+            retry_policy=retry_policy,
+            lifecycle_bus=trigger_bus,
+        )
+
         # ── Resolve branching rules → BranchingCoordinator ──────────────
         rule_instances = self._build_list(
             PluginCategory.BRANCHING_RULE,
             cfg.get("branching_rules", []),
         )
 
-        event_bus: EventBus | None = None
-        branching: BranchingCoordinator | None = None
-
         if rule_instances:
-            event_bus = EventBus()
-            branching = BranchingCoordinator(
-                event_bus=event_bus,
+            BranchingCoordinator(
+                event_bus=domain_bus,
                 rules=rule_instances,
+                trigger_bus=trigger_bus,
             )
 
         return PipelineOrchestrator(
-            context,
-            retry_policy=retry_policy,
-            branching=branching,
-            event_bus=event_bus,
+            builder=pipeline_builder,
+            runner=runner,
+            monitor=monitor,
+            bus=trigger_bus,
         )
 
     # ── Internals ────────────────────────────────────────────────────────────
@@ -132,9 +145,7 @@ class ConfigPipelineBuilder:
                 PluginCategory.SIGNAL_CLEANER, cfg.get("signal_cleaners", [])
             ),
             analyzers=self._build_list(PluginCategory.ANALYZER, cfg["analyzers"]),
-            visualizers=self._build_list(
-                PluginCategory.VISUALIZER, cfg.get("visualizers", [])
-            ),
+            visualizers=self._build_list(PluginCategory.VISUALIZER, cfg.get("visualizers", [])),
         )
 
     def _create(self, category: PluginCategory, cfg: dict[str, Any]) -> Any:

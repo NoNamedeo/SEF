@@ -93,4 +93,4 @@ class IEventEmitter:
             payload=payload or {},
         )
         log.debug("IEventEmitter.emit: %s", event)
-        bus.publish(event)
+        bus.dispatch(event)

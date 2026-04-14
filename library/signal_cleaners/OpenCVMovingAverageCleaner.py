@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalCleaner import ISignalCleaner
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SignalSample import SignalSample
 

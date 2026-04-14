@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from collections.abc import Iterable
 
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
 from library.core.artifacts.FrameBuffer import FrameBuffer
 
 

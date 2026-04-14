@@ -1,4 +1,5 @@
 """Tests verifying retry policy wiring in both builders."""
+
 from __future__ import annotations
 
 import unittest
@@ -6,12 +7,12 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.IData import IData
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
-from library.core.abstractions.IFrameExtractor import IFrameExtractor
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.IData import IData
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameExtractor import IFrameExtractor
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
@@ -98,12 +99,7 @@ class FluentBuilderRetryTests(unittest.TestCase):
     def test_last_call_wins(self):
         """with_max_retries then with_retry_policy — last call takes precedence."""
         policy = ExponentialBackoffRetryPolicy(max_retries=1, base_delay=0.1)
-        orchestrator = (
-            _base_builder()
-            .with_max_retries(5)
-            .with_retry_policy(policy)
-            .build()
-        )
+        orchestrator = _base_builder().with_max_retries(5).with_retry_policy(policy).build()
         self.assertIsInstance(orchestrator._retry_policy, ExponentialBackoffRetryPolicy)
 
     def test_build_takes_no_parameters(self):

@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from library.core.abstractions.ISignal import ISignal
 from library.core.artifacts.SignalSample import SignalSample
+from library.core.interfaces.ISignal import ISignal
 
 
 class Signal(ISignal):

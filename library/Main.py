@@ -20,14 +20,14 @@ from typing import Any
 import yaml
 
 from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-from library.core.abstractions.IBranchingRule import IBranchingRule
-from library.core.abstractions.IEventEmitter import IEventEmitter
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SignalSample import BoundingBox, SignalSample
 from library.core.events.DomainEvent import DomainEvent
+from library.core.interfaces.IEventEmitter import IEventEmitter
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.PipelineContext import PipelineContext
@@ -461,6 +461,6 @@ def example_parallel_pipelines() -> None:
 # ════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    # example_fluent()
+    example_fluent()
     # example_config()
-    example_parallel_pipelines()
+    # example_parallel_pipelines()

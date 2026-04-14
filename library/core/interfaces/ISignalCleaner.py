@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from library.core.abstractions.ISignal import ISignal
+from library.core.interfaces.ISignal import ISignal
+
 
 class ISignalCleaner(ABC):
-
     def __init__(self, config: Dict[str, Any] | None = None):
         self.config = config or {}
 

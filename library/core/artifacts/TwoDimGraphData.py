@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.abstractions.IData import IData
+from library.core.interfaces.IData import IData
 
 
 @dataclass(slots=True)

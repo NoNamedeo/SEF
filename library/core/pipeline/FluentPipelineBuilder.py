@@ -2,71 +2,50 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.IBranchingRule import IBranchingRule
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
-from library.core.abstractions.IFrameExtractor import IFrameExtractor
-from library.core.abstractions.IRetryPolicy import IRetryPolicy
-from library.core.abstractions.ISignalCleaner import ISignalCleaner
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
-from library.core.abstractions.IVisualizer import IVisualizer
 from library.core.events.EventBus import EventBus
-from library.core.events.PipelineLifecycleBus import PipelineLifecycleBus
+from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameExtractor import IFrameExtractor
+from library.core.interfaces.ISignalCleaner import ISignalCleaner
+from library.core.interfaces.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.IVisualizer import IVisualizer
+from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
+from library.core.interfaces.pipeline.IEventBus import IEventBus
+from library.core.interfaces.pipeline.IRetryPolicy import IRetryPolicy
 from library.core.pipeline.BranchingCoordinator import BranchingCoordinator
+from library.core.pipeline.DefaultPipelineBuilder import DefaultPipelineBuilder
+from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-from library.core.validators.pipeline import PipelineContextValidator
-from library.retry_policies.FixedRetryPolicy import FixedRetryPolicy
+from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
 from library.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 
 class FluentPipelineBuilder:
     """
-    Programmatic, type-safe builder for PipelineOrchestrator.
+    Programmatic builder for PipelineOrchestrator and PipelineContext.
 
-    Design rationale
-    ----------------
-    Pipeline is an internal execution detail — callers never construct or
-    run it directly.  The only public product of this builder is a
-    ``PipelineOrchestrator``, which provides retry logic, lifecycle events,
-    domain-event-driven branching, and parallel secondary-pipeline support.
+    ``build()`` takes **no parameters**: all configuration is done via fluent
+    ``.with_*()`` / ``.add_*()`` methods.
 
-    ``build()`` takes **no parameters**: all configuration is done via
-    fluent ``.with_*()`` / ``.add_*()`` methods.  This is the pure Builder
-    pattern — ``build()`` only creates the product, it never configures it.
+    Trigger bus
+    -----------
+    The caller must supply a trigger bus via ``.with_trigger_bus()`` — or
+    accept the auto-created one — and keep a reference to it.  Pipeline
+    execution is initiated by dispatching a ``PipelineEvent`` onto that bus:
 
-    Validation
-    ----------
-    Deferred to ``build()``: the builder can be populated incrementally
-    (e.g. in test fixtures) without raising on every setter call.
-    Missing required components produce a ``ValueError`` with a clear
-    message listing exactly what is absent.
+        bus = EventBus()
+        orchestrator = FluentPipelineBuilder().with_trigger_bus(bus)...build()
+        bus.dispatch(PipelineEvent("run-1", context))
 
-    Usage
-    -----
-    >>> orchestrator = (
-    ...     FluentPipelineBuilder()
-    ...     .with_frame_extractor(OpenCVBufferedFrameExtractor(path))
-    ...     .with_signal_extractor(OpenCVBufferedSignalExtractor(roi))
-    ...     .add_analyzer(VerticalPositionAnalyzer())
-    ...     .with_max_retries(2)
-    ...     .build()
-    ... )
-    >>> results = orchestrator.run()
+    Event buses
+    -----------
+    * ``with_trigger_bus`` — receives ``PipelineEvent`` triggers and
+      ``PipelineLifecyclePayload`` lifecycle events.
+    * ``with_event_bus``   — domain EventBus injected into IEventEmitter
+      components; also consumed by BranchingCoordinator.
 
-    Usage with branching
-    --------------------
-    >>> orchestrator = (
-    ...     FluentPipelineBuilder()
-    ...     .with_frame_extractor(...)
-    ...     .with_signal_extractor(...)
-    ...     .add_analyzer(...)
-    ...     .add_branching_rule(TrackingLostBranch())
-    ...     .build()
-    ... )
-    >>> primary = orchestrator.run()
-    >>> secondary = orchestrator.collect_secondary_results()
-    >>> orchestrator.shutdown()
+    Both default to auto-created EventBus instances if not provided.
     """
 
     def __init__(self) -> None:
@@ -79,7 +58,7 @@ class FluentPipelineBuilder:
         self._branching_rules: list[IBranchingRule] = []
         self._retry_policy: IRetryPolicy | None = None
         self._event_bus: EventBus | None = None
-        self._lifecycle_bus: PipelineLifecycleBus | None = None
+        self._trigger_bus: IEventBus | None = None
         self._max_workers: int = 4
 
     # ── Pipeline components ─────────────────────────────────────────────────
@@ -127,40 +106,30 @@ class FluentPipelineBuilder:
     # ── Retry policy ────────────────────────────────────────────────────────
 
     def with_retry_policy(self, policy: IRetryPolicy) -> FluentPipelineBuilder:
-        """
-        Set a custom retry policy (full control).
-
-        Mutually exclusive with ``with_max_retries()`` — the last call wins.
-        """
         self._retry_policy = policy
         return self
 
-    def with_max_retries(self, n: int) -> FluentPipelineBuilder:
-        """
-        Convenience: set retry policy from a retry count.
-
-        * ``n > 0`` → ``FixedRetryPolicy(n)``
-        * ``n == 0`` → ``NoRetryPolicy()``
-
-        Mutually exclusive with ``with_retry_policy()`` — the last call wins.
-        """
-        self._retry_policy = FixedRetryPolicy(n) if n > 0 else NoRetryPolicy()
-        return self
-
-    # ── Branching & events ──────────────────────────────────────────────────
+    # ── Event buses ─────────────────────────────────────────────────────────
 
     def with_event_bus(self, bus: EventBus) -> FluentPipelineBuilder:
-        """
-        Inject a custom domain EventBus.
-
-        If not set, the builder creates one automatically when branching
-        rules are configured.
-        """
+        """Inject a custom domain EventBus for IEventEmitter components."""
         self._event_bus = bus
         return self
 
+    def with_trigger_bus(self, bus: IEventBus) -> FluentPipelineBuilder:
+        """
+        Inject the trigger bus.
+
+        The same bus receives PipelineEvent triggers (dispatched by the
+        caller to start a pipeline) and PipelineLifecyclePayload events
+        (dispatched by ThreadedPipelineRunner during execution).
+        """
+        self._trigger_bus = bus
+        return self
+
+    # ── Branching ───────────────────────────────────────────────────────────
+
     def add_branching_rule(self, rule: IBranchingRule) -> FluentPipelineBuilder:
-        """Add a branching rule for automatic event-driven pipeline spawning."""
         self._branching_rules.append(rule)
         return self
 
@@ -168,40 +137,22 @@ class FluentPipelineBuilder:
         self._branching_rules = list(rules)
         return self
 
-    # ── Lifecycle & workers ─────────────────────────────────────────────────
-
-    def with_lifecycle_bus(self, bus: PipelineLifecycleBus) -> FluentPipelineBuilder:
-        """
-        Inject a shared lifecycle bus.
-
-        When set, the same bus is passed to both the primary orchestrator
-        and the ``BranchingCoordinator``, making secondary-pipeline
-        lifecycle events visible to the primary's subscribers.
-        """
-        self._lifecycle_bus = bus
-        return self
-
     def with_max_workers(self, n: int) -> FluentPipelineBuilder:
-        """Maximum number of threads in the BranchingCoordinator's pool."""
         self._max_workers = n
         return self
 
-    # ── Build ───────────────────────────────────────────────────────────────
+    # ── Context helper ──────────────────────────────────────────────────────
 
-    def build(self) -> PipelineOrchestrator:
+    def build_context(self) -> PipelineContext:
         """
-        Validate and return a fully configured ``PipelineOrchestrator``.
+        Build and return the PipelineContext from the configured components.
 
-        All configuration must be done via fluent methods *before* calling
-        ``build()``.  This method takes **no parameters** — it only
-        assembles the product.
+        Use this to create the context to embed in a PipelineEvent trigger:
 
-        Raises
-        ------
-        ValueError
-            If the validation is failed.
+            context = builder.build_context()
+            bus.dispatch(PipelineEvent("run-1", context))
         """
-        context = PipelineContext(
+        return PipelineContext(
             frame_extractor=self._frame_extractor,
             signal_extractor=self._signal_extractor,
             frame_cleaners=list(self._frame_cleaners),
@@ -209,29 +160,42 @@ class FluentPipelineBuilder:
             analyzers=list(self._analyzers),
             visualizers=list(self._visualizers),
         )
-        PipelineContextValidator.validate(context)
 
-        retry_policy = self._retry_policy or NoRetryPolicy()
-        lifecycle_bus = self._lifecycle_bus
+    # ── Build ───────────────────────────────────────────────────────────────
 
-        # ── Assemble BranchingCoordinator if rules are present ──────────
-        event_bus = self._event_bus
-        branching: BranchingCoordinator | None = None
+    def build(self) -> PipelineOrchestrator:
+        """
+        Wire and return a fully configured PipelineOrchestrator.
 
-        if self._branching_rules:
-            if event_bus is None:
-                event_bus = EventBus()
-            branching = BranchingCoordinator(
-                event_bus=event_bus,
+        Takes **no parameters** — all configuration via fluent methods.
+        """
+        trigger_bus: IEventBus = self._trigger_bus or EventBus()
+        monitor = InMemoryPipelineMonitor()
+
+        domain_bus = self._event_bus
+        if self._branching_rules and domain_bus is None:
+            domain_bus = EventBus()
+
+        pipeline_builder = DefaultPipelineBuilder(domain_bus=domain_bus)
+
+        runner = ThreadedPipelineRunner(
+            monitor=monitor,
+            retry_policy=self._retry_policy or NoRetryPolicy(),
+            lifecycle_bus=trigger_bus,
+            max_workers=self._max_workers,
+        )
+
+        self._branching_coordinator = None
+        if self._branching_rules and domain_bus is not None:
+            self._branching_coordinator = BranchingCoordinator(
+                event_bus=domain_bus,
                 rules=list(self._branching_rules),
-                lifecycle_bus=lifecycle_bus,
-                max_workers=self._max_workers,
+                trigger_bus=trigger_bus,
             )
 
         return PipelineOrchestrator(
-            context,
-            retry_policy=retry_policy,
-            lifecycle_bus=lifecycle_bus,
-            branching=branching,
-            event_bus=event_bus,
+            builder=pipeline_builder,
+            runner=runner,
+            monitor=monitor,
+            bus=trigger_bus,
         )

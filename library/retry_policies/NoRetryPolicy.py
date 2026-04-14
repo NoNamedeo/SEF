@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from library.core.abstractions.IRetryPolicy import IRetryPolicy
+from library.core.interfaces.pipeline.interfaces.IRetryPolicy import IRetryPolicy
 
 
 class NoRetryPolicy(IRetryPolicy):

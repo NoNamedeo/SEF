@@ -8,7 +8,7 @@ import numpy as np
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 
-from library.core.abstractions.IVisualizer import IVisualizer
+from library.core.interfaces.IVisualizer import IVisualizer
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 
 log = logging.getLogger(__name__)

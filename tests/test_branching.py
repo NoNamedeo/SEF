@@ -1,6 +1,8 @@
-"""Tests for IBranchingRule, IEventEmitter, BranchingCoordinator, and lifecycle bus sharing."""
+"""Tests for IBranchingRule, IEventEmitter, BranchingCoordinator, and PipelineOrchestrator."""
+
 from __future__ import annotations
 
+import time
 import unittest
 from collections.abc import Iterable
 from typing import Any
@@ -8,37 +10,44 @@ from typing import Any
 import numpy as np
 
 from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.IBranchingRule import IBranchingRule
 from library.core.abstractions.IData import IData
-from library.core.abstractions.IEventEmitter import IEventEmitter
+from library.core.interfaces.IEventEmitter import IEventEmitter
+from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
 from library.core.abstractions.IFrameCleaner import IFrameCleaner
 from library.core.abstractions.IFrameExtractor import IFrameExtractor
 from library.core.abstractions.ISignal import ISignal
 from library.core.abstractions.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.PipelineEvent import PipelineEvent
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SignalSample import SignalSample
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.events.DomainEvent import DomainEvent
 from library.core.events.EventBus import EventBus
 from library.core.events.PipelineLifecycleBus import (
-    PipelineEvent,
-    PipelineEventPayload,
-    PipelineLifecycleBus,
+    PipelineLifecycleEvent,
+    PipelineLifecyclePayload,
 )
+from library.core.interfaces.pipeline.IEventBus import IEventBus
+from library.core.interfaces.pipeline.IPipelineBuilder import IPipelineBuilder
+from library.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
+from library.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
 from library.core.pipeline.BranchingCoordinator import BranchingCoordinator
+from library.core.pipeline.DefaultPipelineBuilder import DefaultPipelineBuilder
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
+from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
+from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
+from library.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 
 # ── Stub components ──────────────────────────────────────────────────────────
 
 
 class StubFrameExtractor(IFrameExtractor):
-    """Produces synthetic frames."""
-
     def __init__(self, num_frames: int = 4):
         super().__init__()
         self._num_frames = num_frames
@@ -53,8 +62,6 @@ class StubFrameExtractor(IFrameExtractor):
 
 
 class StubSignalExtractor(ISignalExtractor):
-    """Returns a fixed signal — no events."""
-
     def extract(self, buffer: FrameBuffer) -> ISignal:
         samples = [
             SignalSample(frame_index=i, box=(0, 0, 10, 10), centroid=(5.0, float(i)))
@@ -64,11 +71,7 @@ class StubSignalExtractor(ISignalExtractor):
 
 
 class EmittingSignalExtractor(ISignalExtractor, IEventEmitter):
-    """
-    Signal extractor that emits a domain event mid-extraction.
-
-    Emits ``"test_event"`` after processing the first frame.
-    """
+    """Emits ``"test_event"`` after processing the first frame."""
 
     def __init__(self, event_payload: dict[str, Any] | None = None):
         super().__init__()
@@ -78,11 +81,7 @@ class EmittingSignalExtractor(ISignalExtractor, IEventEmitter):
         samples: list[SignalSample] = []
         for i, frame in enumerate(buffer):
             samples.append(
-                SignalSample(
-                    frame_index=i,
-                    box=(0, 0, 10, 10),
-                    centroid=(5.0, float(i)),
-                )
+                SignalSample(frame_index=i, box=(0, 0, 10, 10), centroid=(5.0, float(i)))
             )
             if i == 0:
                 self.emit("test_event", self._event_payload)
@@ -90,8 +89,6 @@ class EmittingSignalExtractor(ISignalExtractor, IEventEmitter):
 
 
 class StubAnalyzer(IAnalyzer):
-    """Returns minimal TwoDimGraphData."""
-
     def analyze(self, signal: ISignal) -> IData:
         x = [float(s.frame_index) for s in signal]
         y = [float(s.centroid[1]) for s in signal if s.centroid]
@@ -102,13 +99,7 @@ class StubAnalyzer(IAnalyzer):
 
 
 class AlwaysMatchRule(IBranchingRule):
-    """Matches any event, builds a simple pipeline context."""
-
-    def __init__(self):
-        self._matched_events: list[DomainEvent] = []
-
     def matches(self, event: DomainEvent) -> bool:
-        self._matched_events.append(event)
         return True
 
     def build_context(self, event: DomainEvent) -> PipelineContext:
@@ -120,8 +111,6 @@ class AlwaysMatchRule(IBranchingRule):
 
 
 class SelectiveRule(IBranchingRule):
-    """Matches only events of a specific type."""
-
     def __init__(self, target_event_type: str):
         self._target = target_event_type
 
@@ -137,8 +126,6 @@ class SelectiveRule(IBranchingRule):
 
 
 class NeverMatchRule(IBranchingRule):
-    """Never matches — for testing selective branching."""
-
     def matches(self, event: DomainEvent) -> bool:
         return False
 
@@ -146,12 +133,55 @@ class NeverMatchRule(IBranchingRule):
         raise AssertionError("Should never be called")
 
 
+# ── Fake interface implementations for unit tests ────────────────────────────
+
+
+class FakePipelineBuilder(IPipelineBuilder):
+    def __init__(self) -> None:
+        self.built: list[PipelineEvent] = []
+
+    def build(self, event: PipelineEvent) -> Pipeline:
+        self.built.append(event)
+        return Pipeline(event.context)
+
+
+class FakePipelineRunner(IPipelineRunner):
+    def __init__(self) -> None:
+        self.submitted: list[tuple[str, Pipeline]] = []
+        self.cancelled: list[str] = []
+
+    def submit(self, pipeline_id: str, pipeline: Pipeline) -> None:
+        self.submitted.append((pipeline_id, pipeline))
+
+    def cancel(self, pipeline_id: str) -> None:
+        self.cancelled.append(pipeline_id)
+
+
+class FakePipelineMonitor(IPipelineMonitor):
+    def __init__(self) -> None:
+        self._active: set[str] = set()
+        self.completed: list[str] = []
+        self.terminated: list[str] = []
+
+    def register(self, pipeline_id: str) -> None:
+        self._active.add(pipeline_id)
+
+    def complete(self, pipeline_id: str) -> None:
+        self._active.discard(pipeline_id)
+        self.completed.append(pipeline_id)
+
+    def terminate(self, pipeline_id: str) -> None:
+        self._active.discard(pipeline_id)
+        self.terminated.append(pipeline_id)
+
+    def active_ids(self) -> list[str]:
+        return list(self._active)
+
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 
-def _make_context(
-    signal_extractor: ISignalExtractor | None = None,
-) -> PipelineContext:
+def _make_context(signal_extractor: ISignalExtractor | None = None) -> PipelineContext:
     return PipelineContext(
         frame_extractor=StubFrameExtractor(),
         signal_extractor=signal_extractor or StubSignalExtractor(),
@@ -162,37 +192,45 @@ def _make_context(
 def _make_orchestrator_with_branching(
     rules: list[IBranchingRule],
     signal_extractor: ISignalExtractor | None = None,
-    lifecycle_bus: PipelineLifecycleBus | None = None,
-) -> PipelineOrchestrator:
-    """
-    Build an orchestrator wired with a BranchingCoordinator.
-
-    Explicit construction — no builder magic — makes the wiring visible.
-    """
-    event_bus = EventBus()
-    branching = BranchingCoordinator(
-        event_bus=event_bus,
+) -> tuple[EventBus, PipelineOrchestrator]:
+    """Return (trigger_bus, orchestrator) wired with a BranchingCoordinator."""
+    trigger_bus = EventBus()
+    domain_bus = EventBus()
+    monitor = InMemoryPipelineMonitor()
+    runner = ThreadedPipelineRunner(
+        monitor=monitor,
+        retry_policy=NoRetryPolicy(),
+        lifecycle_bus=trigger_bus,
+    )
+    pipeline_builder = DefaultPipelineBuilder(domain_bus=domain_bus)
+    BranchingCoordinator(
+        event_bus=domain_bus,
         rules=rules,
-        lifecycle_bus=lifecycle_bus,
+        trigger_bus=trigger_bus,
     )
-    return PipelineOrchestrator(
-        _make_context(signal_extractor or EmittingSignalExtractor()),
-        branching=branching,
-        event_bus=event_bus,
-        lifecycle_bus=lifecycle_bus,
+    orchestrator = PipelineOrchestrator(
+        builder=pipeline_builder,
+        runner=runner,
+        monitor=monitor,
+        bus=trigger_bus,
     )
+    context = _make_context(signal_extractor or EmittingSignalExtractor())
+    trigger_bus.dispatch(PipelineEvent(pipeline_id="primary", context=context))
+    return trigger_bus, orchestrator
 
 
-# ── Test classes ─────────────────────────────────────────────────────────────
+def _wait_until_idle(orchestrator: PipelineOrchestrator, timeout: float = 10.0) -> None:
+    deadline = time.monotonic() + timeout
+    while orchestrator.active_ids() and time.monotonic() < deadline:
+        time.sleep(0.02)
+
+
+# ── Tests ────────────────────────────────────────────────────────────────────
 
 
 class IEventEmitterTests(unittest.TestCase):
-    """Verify IEventEmitter mixin behaviour."""
-
     def test_emit_without_bus_is_noop(self):
-        extractor = EmittingSignalExtractor()
-        # No bus injected — emit should silently do nothing
-        extractor.emit("test_event", {"key": "value"})
+        EmittingSignalExtractor().emit("test_event", {"key": "value"})
 
     def test_emit_with_bus_publishes(self):
         extractor = EmittingSignalExtractor()
@@ -201,7 +239,6 @@ class IEventEmitterTests(unittest.TestCase):
 
         received: list[DomainEvent] = []
         bus.subscribe("test_event", received.append)
-
         extractor.emit("test_event", {"key": "value"})
 
         self.assertEqual(len(received), 1)
@@ -212,21 +249,17 @@ class IEventEmitterTests(unittest.TestCase):
     def test_event_bus_property(self):
         extractor = EmittingSignalExtractor()
         self.assertIsNone(extractor.event_bus)
-
         bus = EventBus()
         extractor.event_bus = bus
         self.assertIs(extractor.event_bus, bus)
 
 
 class BranchingRuleTests(unittest.TestCase):
-    """Verify IBranchingRule contract."""
-
     def test_always_match_rule(self):
         rule = AlwaysMatchRule()
         event = DomainEvent("any_event", "src")
         self.assertTrue(rule.matches(event))
-        ctx = rule.build_context(event)
-        self.assertIsNotNone(ctx.frame_extractor)
+        self.assertIsNotNone(rule.build_context(event).frame_extractor)
 
     def test_selective_rule_matches_target(self):
         rule = SelectiveRule("tracking_lost")
@@ -234,230 +267,295 @@ class BranchingRuleTests(unittest.TestCase):
         self.assertFalse(rule.matches(DomainEvent("other_event", "src")))
 
     def test_never_match_rule(self):
-        rule = NeverMatchRule()
-        self.assertFalse(rule.matches(DomainEvent("any", "src")))
+        self.assertFalse(NeverMatchRule().matches(DomainEvent("any", "src")))
 
 
 class BranchingCoordinatorTests(unittest.TestCase):
-    """Verify BranchingCoordinator in isolation."""
-
-    def test_coordinator_exposes_event_bus(self):
+    def test_exposes_event_bus(self):
         bus = EventBus()
-        coord = BranchingCoordinator(event_bus=bus, rules=[])
+        trigger = EventBus()
+        coord = BranchingCoordinator(event_bus=bus, rules=[], trigger_bus=trigger)
         self.assertIs(coord.event_bus, bus)
-        coord.shutdown()
 
-    def test_shutdown_is_idempotent(self):
-        bus = EventBus()
-        coord = BranchingCoordinator(event_bus=bus, rules=[])
-        coord.shutdown()
-        coord.shutdown()  # no error
+    def test_no_dispatch_when_no_rules(self):
+        domain_bus = EventBus()
+        trigger_bus = EventBus()
+        dispatched: list = []
+        trigger_bus.subscribe(PipelineEvent.event_type, dispatched.append)
 
-    def test_collect_empty_when_no_events(self):
-        bus = EventBus()
-        coord = BranchingCoordinator(event_bus=bus, rules=[AlwaysMatchRule()])
-        # No events published → no spawns
-        self.assertEqual(coord.collect(timeout=1), [])
-        coord.shutdown()
+        BranchingCoordinator(event_bus=domain_bus, rules=[], trigger_bus=trigger_bus)
+        domain_bus.dispatch(DomainEvent("any", "src"))
 
-    def test_pending_count_starts_at_zero(self):
-        bus = EventBus()
-        coord = BranchingCoordinator(event_bus=bus, rules=[])
-        self.assertEqual(coord.pending_count, 0)
-        coord.shutdown()
+        self.assertEqual(dispatched, [])
 
+    def test_dispatch_on_matching_rule(self):
+        domain_bus = EventBus()
+        trigger_bus = EventBus()
+        dispatched: list[PipelineEvent] = []
+        trigger_bus.subscribe(PipelineEvent.event_type, dispatched.append)
 
-class OrchestratorAutoSpawnTests(unittest.TestCase):
-    """Verify that the orchestrator auto-spawns secondary pipelines on domain events."""
-
-    def test_no_branching_no_bus(self):
-        """Without branching, no EventBus is exposed."""
-        orchestrator = PipelineOrchestrator(_make_context())
-        self.assertIsNone(orchestrator.event_bus)
-        results = orchestrator.run()
-        self.assertEqual(len(results), 1)
-
-    def test_branching_exposes_event_bus(self):
-        """When BranchingCoordinator is configured, EventBus is accessible."""
-        orchestrator = _make_orchestrator_with_branching(
-            rules=[AlwaysMatchRule()],
+        BranchingCoordinator(
+            event_bus=domain_bus, rules=[AlwaysMatchRule()], trigger_bus=trigger_bus
         )
-        self.assertIsNotNone(orchestrator.event_bus)
-        orchestrator.shutdown()
+        domain_bus.dispatch(DomainEvent("any", "src"))
 
-    def test_auto_spawn_on_event(self):
-        """EmittingSignalExtractor emits → AlwaysMatchRule spawns → secondary results available."""
-        orchestrator = _make_orchestrator_with_branching(
-            rules=[AlwaysMatchRule()],
+        self.assertEqual(len(dispatched), 1)
+        self.assertTrue(dispatched[0].pipeline_id.startswith("secondary-"))
+
+    def test_no_dispatch_when_rule_does_not_match(self):
+        domain_bus = EventBus()
+        trigger_bus = EventBus()
+        dispatched: list = []
+        trigger_bus.subscribe(PipelineEvent.event_type, dispatched.append)
+
+        BranchingCoordinator(
+            event_bus=domain_bus,
+            rules=[SelectiveRule("other")],
+            trigger_bus=trigger_bus,
         )
+        domain_bus.dispatch(DomainEvent("test_event", "src"))
 
-        primary = orchestrator.run()
-        self.assertEqual(len(primary), 1)
+        self.assertEqual(dispatched, [])
 
-        # The emitting SE fires "test_event" once → AlwaysMatchRule spawns 1 secondary
-        secondary = orchestrator.collect_secondary_results(timeout=10)
-        self.assertEqual(len(secondary), 1)
-        self.assertEqual(len(secondary[0]), 1)  # 1 analyzer → 1 IData
-        self.assertEqual(secondary[0][0].title, "Stub Analysis")
 
-        orchestrator.shutdown()
+class PipelineOrchestratorUnitTests(unittest.TestCase):
+    """Unit tests using fake interface implementations — no real threads."""
+
+    def _make(
+        self,
+    ) -> tuple[
+        EventBus,
+        FakePipelineBuilder,
+        FakePipelineRunner,
+        FakePipelineMonitor,
+        PipelineOrchestrator,
+    ]:
+        bus = EventBus()
+        builder = FakePipelineBuilder()
+        runner = FakePipelineRunner()
+        monitor = FakePipelineMonitor()
+        orch = PipelineOrchestrator(builder=builder, runner=runner, monitor=monitor, bus=bus)
+        return bus, builder, runner, monitor, orch
+
+    def test_pipeline_event_triggers_builder_monitor_runner(self):
+        bus, builder, runner, monitor, orch = self._make()
+        context = _make_context()
+        bus.dispatch(PipelineEvent(pipeline_id="x", context=context))
+
+        self.assertEqual(len(builder.built), 1)
+        self.assertEqual(builder.built[0].pipeline_id, "x")
+        self.assertEqual(len(runner.submitted), 1)
+        self.assertEqual(runner.submitted[0][0], "x")
+        self.assertIn("x", monitor._active)
+
+    def test_active_ids_delegates_to_monitor(self):
+        bus, _, _, monitor, orch = self._make()
+        monitor.register("p1")
+        monitor.register("p2")
+        self.assertCountEqual(orch.active_ids(), ["p1", "p2"])
+
+    def test_terminate_calls_runner_cancel_and_monitor_terminate(self):
+        bus, _, runner, monitor, orch = self._make()
+        context = _make_context()
+        bus.dispatch(PipelineEvent(pipeline_id="p1", context=context))
+
+        orch.terminate("p1")
+
+        self.assertIn("p1", runner.cancelled)
+        self.assertIn("p1", monitor.terminated)
+
+    def test_multiple_events_each_trigger_chain(self):
+        bus, builder, runner, monitor, orch = self._make()
+        for i in range(3):
+            bus.dispatch(PipelineEvent(pipeline_id=f"p{i}", context=_make_context()))
+
+        self.assertEqual(len(builder.built), 3)
+        self.assertEqual(len(runner.submitted), 3)
+
+
+class PipelineOrchestratorIntegrationTests(unittest.TestCase):
+    """Integration tests with real threads, real pipelines."""
+
+    def test_pipeline_runs_and_emits_after_run(self):
+        bus = EventBus()
+        monitor = InMemoryPipelineMonitor()
+        runner = ThreadedPipelineRunner(monitor=monitor, lifecycle_bus=bus)
+        builder = DefaultPipelineBuilder()
+        orch = PipelineOrchestrator(builder=builder, runner=runner, monitor=monitor, bus=bus)
+
+        payloads: list[PipelineLifecyclePayload] = []
+        bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
+
+        context = _make_context()
+        bus.dispatch(PipelineEvent(pipeline_id="run-1", context=context))
+
+        _wait_until_idle(orch)
+
+        self.assertEqual(len(payloads), 1)
+        self.assertEqual(payloads[0].pipeline_id, "run-1")
+        self.assertEqual(len(payloads[0].results), 1)
+
+    def test_before_run_fires_before_after_run(self):
+        bus = EventBus()
+        monitor = InMemoryPipelineMonitor()
+        runner = ThreadedPipelineRunner(monitor=monitor, lifecycle_bus=bus)
+        builder = DefaultPipelineBuilder()
+        orch = PipelineOrchestrator(builder=builder, runner=runner, monitor=monitor, bus=bus)
+
+        order: list[str] = []
+        bus.subscribe(PipelineLifecycleEvent.BEFORE_RUN, lambda _: order.append("before"))
+        bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, lambda _: order.append("after"))
+
+        bus.dispatch(PipelineEvent(pipeline_id="x", context=_make_context()))
+        _wait_until_idle(orch)
+
+        self.assertEqual(order, ["before", "after"])
+
+    def test_no_active_ids_after_completion(self):
+        bus = EventBus()
+        monitor = InMemoryPipelineMonitor()
+        runner = ThreadedPipelineRunner(monitor=monitor, lifecycle_bus=bus)
+        builder = DefaultPipelineBuilder()
+        orch = PipelineOrchestrator(builder=builder, runner=runner, monitor=monitor, bus=bus)
+
+        bus.dispatch(PipelineEvent(pipeline_id="x", context=_make_context()))
+        _wait_until_idle(orch)
+
+        self.assertEqual(orch.active_ids(), [])
+
+
+class OrchestratorBranchingTests(unittest.TestCase):
+    def test_auto_spawn_on_domain_event(self):
+        trigger_bus, orch = _make_orchestrator_with_branching(rules=[AlwaysMatchRule()])
+        payloads: list[PipelineLifecyclePayload] = []
+        trigger_bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
+
+        _wait_until_idle(orch, timeout=10)
+
+        pipeline_ids = {p.pipeline_id for p in payloads}
+        self.assertIn("primary", pipeline_ids)
+        secondary_ids = {pid for pid in pipeline_ids if pid.startswith("secondary-")}
+        self.assertEqual(len(secondary_ids), 1)
 
     def test_selective_rule_ignores_non_matching(self):
-        """SelectiveRule for 'other_type' should NOT spawn on 'test_event'."""
-        orchestrator = _make_orchestrator_with_branching(
-            rules=[SelectiveRule("other_type")],
+        trigger_bus, orch = _make_orchestrator_with_branching(
+            rules=[SelectiveRule("other_event")]
         )
+        payloads: list[PipelineLifecyclePayload] = []
+        trigger_bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
 
-        orchestrator.run()
+        _wait_until_idle(orch, timeout=10)
 
-        secondary = orchestrator.collect_secondary_results(timeout=5)
-        self.assertEqual(len(secondary), 0)
+        self.assertEqual(len(payloads), 1)
+        self.assertEqual(payloads[0].pipeline_id, "primary")
 
-        orchestrator.shutdown()
-
-    def test_multiple_rules_multiple_spawns(self):
-        """Two rules that match → two secondary pipelines."""
-        orchestrator = _make_orchestrator_with_branching(
-            rules=[AlwaysMatchRule(), AlwaysMatchRule()],
+    def test_multiple_rules_spawn_multiple_secondaries(self):
+        trigger_bus, orch = _make_orchestrator_with_branching(
+            rules=[AlwaysMatchRule(), AlwaysMatchRule()]
         )
+        payloads: list[PipelineLifecyclePayload] = []
+        trigger_bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
 
-        orchestrator.run()
+        _wait_until_idle(orch, timeout=10)
 
-        secondary = orchestrator.collect_secondary_results(timeout=10)
-        self.assertEqual(len(secondary), 2)
+        secondary_ids = {
+            p.pipeline_id for p in payloads if p.pipeline_id.startswith("secondary-")
+        }
+        self.assertEqual(len(secondary_ids), 2)
 
-        orchestrator.shutdown()
+    def test_domain_events_do_not_reach_lifecycle_handlers(self):
+        trigger_bus, orch = _make_orchestrator_with_branching(rules=[AlwaysMatchRule()])
+        lifecycle_payloads: list = []
+        trigger_bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, lifecycle_payloads.append)
 
-    def test_pending_secondary_count_zero_without_branching(self):
-        """pending_secondary_count is 0 when no coordinator configured."""
-        orchestrator = PipelineOrchestrator(_make_context())
-        self.assertEqual(orchestrator.pending_secondary_count, 0)
+        _wait_until_idle(orch, timeout=10)
 
-    def test_collect_empty_without_branching(self):
-        """collect_secondary_results returns [] when no coordinator."""
-        orchestrator = PipelineOrchestrator(_make_context())
-        self.assertEqual(orchestrator.collect_secondary_results(), [])
-
-    def test_shutdown_safe_without_branching(self):
-        """shutdown is a no-op when no coordinator configured."""
-        orchestrator = PipelineOrchestrator(_make_context())
-        orchestrator.shutdown()  # no error
-
-
-class LifecycleBusSharingTests(unittest.TestCase):
-    """
-    Verify that lifecycle events from secondary pipelines reach the
-    primary's subscribers when a shared PipelineLifecycleBus is used.
-
-    This is the core fix for Problem 2: lifecycle events were invisible
-    on secondary pipelines before the PipelineLifecycleBus extraction.
-    """
-
-    def test_secondary_lifecycle_events_visible_on_shared_bus(self):
-        """AFTER_RUN from the secondary pipeline arrives at the shared bus."""
-        lifecycle_bus = PipelineLifecycleBus()
-        payloads: list[PipelineEventPayload] = []
-        lifecycle_bus.subscribe(PipelineEvent.AFTER_RUN, payloads.append)
-
-        orchestrator = _make_orchestrator_with_branching(
-            rules=[AlwaysMatchRule()],
-            lifecycle_bus=lifecycle_bus,
-        )
-
-        orchestrator.run()
-        orchestrator.collect_secondary_results(timeout=10)
-
-        # At least 2 AFTER_RUN events: 1 primary + 1 secondary
-        self.assertGreaterEqual(len(payloads), 2)
-
-        orchestrator.shutdown()
-
-    def test_before_run_events_from_both_pipelines(self):
-        """BEFORE_RUN fires for primary AND secondary pipelines."""
-        lifecycle_bus = PipelineLifecycleBus()
-        before_runs: list[PipelineEventPayload] = []
-        lifecycle_bus.subscribe(PipelineEvent.BEFORE_RUN, before_runs.append)
-
-        orchestrator = _make_orchestrator_with_branching(
-            rules=[AlwaysMatchRule()],
-            lifecycle_bus=lifecycle_bus,
-        )
-
-        orchestrator.run()
-        orchestrator.collect_secondary_results(timeout=10)
-
-        # At least 2: primary + secondary
-        self.assertGreaterEqual(len(before_runs), 2)
-
-        orchestrator.shutdown()
-
-    def test_no_shared_bus_means_secondary_events_isolated(self):
-        """Without a shared bus, secondary lifecycle events are NOT visible."""
-        primary_payloads: list[PipelineEventPayload] = []
-
-        # Build WITHOUT a shared lifecycle_bus — each orchestrator gets its own
-        orchestrator = _make_orchestrator_with_branching(
-            rules=[AlwaysMatchRule()],
-            lifecycle_bus=None,
-        )
-        # Subscribe on the primary's auto-created bus
-        orchestrator.subscribe(PipelineEvent.AFTER_RUN, primary_payloads.append)
-
-        orchestrator.run()
-        orchestrator.collect_secondary_results(timeout=10)
-
-        # Only the primary's AFTER_RUN — secondary used a different bus
-        self.assertEqual(len(primary_payloads), 1)
-
-        orchestrator.shutdown()
+        for p in lifecycle_payloads:
+            self.assertIsInstance(p, PipelineLifecyclePayload)
 
 
 class FluentBuilderBranchingTests(unittest.TestCase):
-    """Verify FluentPipelineBuilder assembles BranchingCoordinator correctly."""
-
     def test_fluent_builder_with_branching_rule(self):
+        bus = EventBus()
         orchestrator = (
             FluentPipelineBuilder()
+            .with_trigger_bus(bus)
             .with_frame_extractor(StubFrameExtractor())
             .with_signal_extractor(EmittingSignalExtractor())
             .add_analyzer(StubAnalyzer())
             .add_branching_rule(AlwaysMatchRule())
             .build()
         )
+        payloads: list[PipelineLifecyclePayload] = []
+        bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
 
-        self.assertIsNotNone(orchestrator.event_bus)
-
-        primary = orchestrator.run()
-        secondary = orchestrator.collect_secondary_results(timeout=10)
-
-        self.assertEqual(len(primary), 1)
-        self.assertEqual(len(secondary), 1)
-
-        orchestrator.shutdown()
-
-    def test_fluent_builder_with_shared_lifecycle_bus(self):
-        """Builder wires the shared lifecycle bus to both orchestrator and coordinator."""
-        lifecycle_bus = PipelineLifecycleBus()
-        payloads: list[PipelineEventPayload] = []
-        lifecycle_bus.subscribe(PipelineEvent.AFTER_RUN, payloads.append)
-
-        orchestrator = (
+        context = (
             FluentPipelineBuilder()
             .with_frame_extractor(StubFrameExtractor())
             .with_signal_extractor(EmittingSignalExtractor())
             .add_analyzer(StubAnalyzer())
-            .add_branching_rule(AlwaysMatchRule())
-            .with_lifecycle_bus(lifecycle_bus)
-            .build()
+            .build_context()
         )
+        bus.dispatch(PipelineEvent(pipeline_id="primary", context=context))
 
-        orchestrator.run()
-        orchestrator.collect_secondary_results(timeout=10)
+        _wait_until_idle(orchestrator, timeout=10)
 
-        # Primary + secondary AFTER_RUN
-        self.assertGreaterEqual(len(payloads), 2)
+        pipeline_ids = {p.pipeline_id for p in payloads}
+        self.assertIn("primary", pipeline_ids)
+        self.assertTrue(any(pid.startswith("secondary-") for pid in pipeline_ids))
 
-        orchestrator.shutdown()
+    def test_fluent_builder_build_context(self):
+        builder = (
+            FluentPipelineBuilder()
+            .with_frame_extractor(StubFrameExtractor())
+            .with_signal_extractor(StubSignalExtractor())
+            .add_analyzer(StubAnalyzer())
+        )
+        context = builder.build_context()
+        self.assertIsNotNone(context.frame_extractor)
+        self.assertIsNotNone(context.signal_extractor)
+        self.assertEqual(len(context.analyzers), 1)
+
+    def test_fluent_builder_without_branching(self):
+        bus = EventBus()
+        orchestrator = FluentPipelineBuilder().with_trigger_bus(bus).build()
+        payloads: list[PipelineLifecyclePayload] = []
+        bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
+
+        context = _make_context()
+        bus.dispatch(PipelineEvent(pipeline_id="solo", context=context))
+
+        _wait_until_idle(orchestrator, timeout=10)
+
+        self.assertEqual(len(payloads), 1)
+        self.assertEqual(payloads[0].pipeline_id, "solo")
+
+
+class InMemoryPipelineMonitorTests(unittest.TestCase):
+    def test_register_and_active_ids(self):
+        m = InMemoryPipelineMonitor()
+        m.register("a")
+        m.register("b")
+        self.assertCountEqual(m.active_ids(), ["a", "b"])
+
+    def test_complete_removes_from_active(self):
+        m = InMemoryPipelineMonitor()
+        m.register("a")
+        m.complete("a")
+        self.assertEqual(m.active_ids(), [])
+
+    def test_terminate_removes_from_active(self):
+        m = InMemoryPipelineMonitor()
+        m.register("a")
+        m.terminate("a")
+        self.assertEqual(m.active_ids(), [])
+
+    def test_complete_is_idempotent(self):
+        m = InMemoryPipelineMonitor()
+        m.register("a")
+        m.complete("a")
+        m.complete("a")
+        self.assertEqual(m.active_ids(), [])
 
 
 if __name__ == "__main__":

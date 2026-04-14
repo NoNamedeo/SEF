@@ -1,9 +1,8 @@
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
 from library.core.artifacts.Frame import Frame
 
 
 class CompositeFrameCleaner(IFrameCleaner):
-
     def __init__(self, cleaners: list[IFrameCleaner]):
         super().__init__()
         self.cleaners = cleaners

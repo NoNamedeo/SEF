@@ -6,8 +6,8 @@ from collections.abc import Iterable
 
 import cv2
 
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
-from library.core.abstractions.IFrameExtractor import IFrameExtractor
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
 

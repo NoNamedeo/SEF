@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
-from library.core.abstractions.IFrameExtractor import IFrameExtractor
-from library.core.abstractions.ISignalCleaner import ISignalCleaner
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
-from library.core.abstractions.IVisualizer import IVisualizer
+from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameExtractor import IFrameExtractor
+from library.core.interfaces.ISignalCleaner import ISignalCleaner
+from library.core.interfaces.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.IVisualizer import IVisualizer
 
 
 @dataclass(frozen=True)
@@ -42,9 +42,9 @@ class PipelineContext:
     # ── Required (no default) ───────────────────────────────────────────────
     frame_extractor: IFrameExtractor
     signal_extractor: ISignalExtractor
-    analyzers:       list[IAnalyzer]
+    analyzers: list[IAnalyzer]
 
     # ── Optional (with default) ─────────────────────────────────────────────
-    frame_cleaners:  list[IFrameCleaner]  = field(default_factory=list)
+    frame_cleaners: list[IFrameCleaner] = field(default_factory=list)
     signal_cleaners: list[ISignalCleaner] = field(default_factory=list)
-    visualizers:     list[IVisualizer]    = field(default_factory=list)
+    visualizers: list[IVisualizer] = field(default_factory=list)

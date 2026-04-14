@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.ISignal import ISignal
+from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.ISignal import ISignal
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 
 

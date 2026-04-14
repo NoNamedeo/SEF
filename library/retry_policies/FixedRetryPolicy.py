@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from library.core.abstractions.IRetryPolicy import IRetryPolicy
+from library.core.interfaces.pipeline.interfaces.IRetryPolicy import IRetryPolicy
 
 
 class FixedRetryPolicy(IRetryPolicy):
@@ -23,9 +23,7 @@ class FixedRetryPolicy(IRetryPolicy):
 
     def __init__(self, max_retries: int) -> None:
         if max_retries < 1:
-            raise ValueError(
-                "max_retries must be >= 1. Use NoRetryPolicy for zero retries."
-            )
+            raise ValueError("max_retries must be >= 1. Use NoRetryPolicy for zero retries.")
         self._max_retries = max_retries
 
     def should_retry(self, attempt: int, error: Exception) -> bool:

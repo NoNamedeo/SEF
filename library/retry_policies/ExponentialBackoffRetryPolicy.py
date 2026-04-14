@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from library.core.abstractions.IRetryPolicy import IRetryPolicy
+from library.core.interfaces.pipeline.interfaces.IRetryPolicy import IRetryPolicy
 
 
 class ExponentialBackoffRetryPolicy(IRetryPolicy):
@@ -32,8 +32,8 @@ class ExponentialBackoffRetryPolicy(IRetryPolicy):
     def __init__(
         self,
         max_retries: int,
-        base_delay:  float = 1.0,
-        max_delay:   float = 60.0,
+        base_delay: float = 1.0,
+        max_delay: float = 60.0,
     ) -> None:
         if max_retries < 1:
             raise ValueError("max_retries must be >= 1.")
@@ -42,8 +42,8 @@ class ExponentialBackoffRetryPolicy(IRetryPolicy):
         if max_delay < base_delay:
             raise ValueError("max_delay must be >= base_delay.")
         self._max_retries = max_retries
-        self._base_delay  = base_delay
-        self._max_delay   = max_delay
+        self._base_delay = base_delay
+        self._max_delay = max_delay
 
     def should_retry(self, attempt: int, error: Exception) -> bool:
         return attempt <= self._max_retries

@@ -3,8 +3,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Callable
 
-from library.core.abstractions.IData import IData
-from library.core.abstractions.IEventEmitter import IEventEmitter
+from library.core.interfaces.IData import IData
+from library.core.interfaces.IEventEmitter import IEventEmitter
 from library.core.pipeline.PipelineContext import PipelineContext
 
 if TYPE_CHECKING:
