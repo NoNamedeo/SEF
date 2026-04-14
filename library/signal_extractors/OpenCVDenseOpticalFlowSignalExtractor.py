@@ -5,15 +5,13 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.DenseOpticalFlowSignalSample import BoundingBox
-
 from library.core.artifacts.DenseOpticalFlowSignalSample import (
     DenseOpticalFlowSignalSample,
 )
+from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.Signal import Signal
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalExtractor import ISignalExtractor
 
 
 class OpenCVDenseFarnebackSignalExtractor(ISignalExtractor):
@@ -38,7 +36,7 @@ class OpenCVDenseFarnebackSignalExtractor(ISignalExtractor):
 
         for position, frame in enumerate(buffer):
             frame_index = frame.index if frame.index is not None else position
-            #TODO: da rendere un opzione
+            # TODO: da rendere un opzione
             gray = cv2.cvtColor(frame.frame, cv2.COLOR_BGR2GRAY)
 
             if prev_gray is None:
@@ -47,7 +45,6 @@ class OpenCVDenseFarnebackSignalExtractor(ISignalExtractor):
                 samples.append(
                     DenseOpticalFlowSignalSample(
                         frame_index=frame_index,
-                        box=self.start_box,
                         grid_shape=(0, 0),
                         cell_size=self.cell_size,
                         motion_field=[],
@@ -82,14 +79,11 @@ class OpenCVDenseFarnebackSignalExtractor(ISignalExtractor):
 
             for r in range(rows):
                 for c in range(cols):
-                    #faccio la media dei vettori contenuti nella cella
+                    # faccio la media dei vettori contenuti nella cella
                     y0 = r * self.cell_size
                     x0 = c * self.cell_size
 
-                    cell = flow[
-                        y0:y0 + self.cell_size,
-                        x0:x0 + self.cell_size
-                    ]
+                    cell = flow[y0 : y0 + self.cell_size, x0 : x0 + self.cell_size]
 
                     if cell.size == 0:
                         motion_field.append((0.0, 0.0))

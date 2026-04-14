@@ -1,15 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
-from collections.abc import Iterable
 
 import cv2
 
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameExtractor import IFrameExtractor
 
 
 class OpenCVBufferedFrameExtractor(IFrameExtractor):

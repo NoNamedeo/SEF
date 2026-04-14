@@ -3,8 +3,8 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 
-from library.core.abstractions.IVisualizer import IVisualizer
 from library.core.artifacts.TrajectoryData import TrajectoryData
+from library.core.interfaces.IVisualizer import IVisualizer
 
 
 class MatplotlibTrajectoryVisualizer(IVisualizer):

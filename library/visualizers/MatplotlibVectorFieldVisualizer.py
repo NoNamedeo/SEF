@@ -3,8 +3,8 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 
-from library.core.abstractions.IVisualizer import IVisualizer
 from library.core.artifacts.VectorFieldGraphData import VectorFieldGraphData
+from library.core.interfaces.IVisualizer import IVisualizer
 
 
 class MatplotlibVectorFieldVisualizer(IVisualizer):
@@ -45,7 +45,10 @@ class MatplotlibVectorFieldVisualizer(IVisualizer):
             magnitude = np.sqrt(u**2 + v**2)
 
             q = ax.quiver(
-                x, y, u, v,
+                x,
+                y,
+                u,
+                v,
                 magnitude,
                 angles="xy",
                 scale_units="xy",
@@ -60,7 +63,10 @@ class MatplotlibVectorFieldVisualizer(IVisualizer):
 
         else:
             ax.quiver(
-                x, y, u, v,
+                x,
+                y,
+                u,
+                v,
                 color=self.color,
                 angles="xy",
                 scale_units="xy",

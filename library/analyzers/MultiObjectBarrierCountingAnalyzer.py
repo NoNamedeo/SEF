@@ -60,6 +60,10 @@ class MultiObjectBarrierCountingAnalyzer(IAnalyzer):
                             # considero solo se è il primo attraversamento
                             if barrier_name not in self._crossed[tid]:
                                 self._crossed[tid].add(barrier_name)
+                                print(
+                                    "Crossed barrier",
+                                    barrier_name,
+                                )
 
                                 category_counts[barrier_name] += 1
 

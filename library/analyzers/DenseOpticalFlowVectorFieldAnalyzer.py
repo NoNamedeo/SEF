@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.IData import IData
-from library.core.abstractions.ISignal import ISignal
-
 from library.core.artifacts.DenseOpticalFlowSignalSample import (
     DenseOpticalFlowSignalSample,
 )
 from library.core.artifacts.VectorFieldGraphData import VectorFieldGraphData
+from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.IData import IData
+from library.core.interfaces.ISignal import ISignal
 
 
 class DenseOpticalFlowVectorFieldAnalyzer(IAnalyzer):
@@ -28,7 +27,7 @@ class DenseOpticalFlowVectorFieldAnalyzer(IAnalyzer):
         if len(signal) == 0:
             raise ValueError("Signal is empty")
 
-        sample = signal[self.sample_index]
+        sample = signal.samples[self.sample_index]
 
         if not isinstance(sample, DenseOpticalFlowSignalSample):
             raise TypeError("Expected DenseOpticalFlowSignalSample")

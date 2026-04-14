@@ -29,7 +29,7 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor, IEventEmitter):
         tracker_type: str = "CSRT",
         start_box: BoundingBox = (0, 0, 0, 0),
         max_objects: int = 10,
-        similarity_threshold: float = 0.6,
+        similarity_threshold: float = 0.9475,
         tracker_factory: Callable[[], Any] | None = None,
         config: dict[str, Any] | None = None,
     ):
