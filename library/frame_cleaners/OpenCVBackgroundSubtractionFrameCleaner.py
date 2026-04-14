@@ -12,7 +12,6 @@ from library.core.artifacts.Frame import Frame
 class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
     """
     Applies background subtraction to isolate moving objects.
-    NOTE: This cleaner is stateful (keeps background model internally).
     """
 
     def __init__(
@@ -40,16 +39,18 @@ class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
     def clean(self, frame: Frame) -> Frame:
         image = frame.frame
 
+        # restituisce una maschera che distingue i movimenti (foreground, valore 255) dallo
+        # sfondo (background, valore 0)
+        # se detectShadows == True, traccia anche le "ombre" (valore 127)
         fg_mask = self._bg_model.apply(image)
 
         kernel = np.ones((3, 3), np.uint8)
+        #rimozione punti di foreground isolati
         fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
+        #espansione del foreground
         fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_DILATE, kernel)
 
-        if len(image.shape) == 2:
-            cleaned = cv2.bitwise_and(image, image, mask=fg_mask)
-        else:
-            cleaned = cv2.bitwise_and(image, image, mask=fg_mask)
+        cleaned = cv2.bitwise_and(image, image, mask=fg_mask)
 
         return Frame(
             image=cleaned,

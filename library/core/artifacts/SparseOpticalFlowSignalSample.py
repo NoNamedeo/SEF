@@ -11,12 +11,13 @@ Vector2D = tuple[float, float]
 
 
 @dataclass(slots=True)
-class OpticalFlowSignalSample(ISignalSample):
+class SparseOpticalFlowSignalSample(ISignalSample):
     """Enhanced signal sample for optical-flow-based extraction."""
 
     frame_index: int
     box: BoundingBox | None
-    centroid: Point2D | None
+    points: list[Point2D] = field(default_factory=list)
+    point_vectors: list[Vector2D] = field(default_factory=list)
     motion_vector: Vector2D | None = None
     motion_magnitude: float | None = None
     motion_angle: float | None = None

@@ -16,7 +16,7 @@ class VerticalFrequencyAnalyzer(IAnalyzer):
 
     def analyze(self, signal: ISignal) -> IData:
         y_values: list[float] = []
-        timestamps = list[float] = []
+        timestamps: list[float] = []
 
         for sample in signal:
             if sample.centroid is None:

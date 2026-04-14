@@ -13,16 +13,16 @@ class SmoothingFrameCleaner(IFrameCleaner):
     """
     Temporal smoothing between consecutive frames.
     Reduces flicker and improves tracker stability by blending frames over time.
-    This cleaner is stateful.
     """
 
     def __init__(
         self,
-        alpha: float = 0.7,
+        alpha: float = 0.9,
+        reset_threshold: float = 40.0,
         config: dict[str, Any] | None = None,
     ):
         """
-        alpha: weight of current frame (0..1) (higher = less smoothing, more responsiveness)
+        alpha: weight of current frame (0 < alpha <= 1) (higher = less smoothing, more responsiveness)
         """
         super().__init__(config)
 
@@ -30,14 +30,21 @@ class SmoothingFrameCleaner(IFrameCleaner):
             raise ValueError("alpha must be in (0, 1]")
 
         self.alpha = alpha
+        self.reset_threshold = reset_threshold
         self._previous_frame: np.ndarray | None = None
 
     def clean(self, frame: Frame) -> Frame:
         image = frame.frame.astype(np.float32)
 
-        if self._previous_frame is None:
+        #differenza tra frame attuale e passato (se eccessiva (tipo cambio video), resetta)
+        difference = 0
+        if self._previous_frame is not None:
+            difference = np.mean(np.abs(image - self._previous_frame))
+
+        if self._previous_frame is None or difference > self.reset_threshold:
             smoothed = image
         else:
+            #mischia i due frame
             smoothed = (
                 self.alpha * image
                 + (1.0 - self.alpha) * self._previous_frame

@@ -29,7 +29,7 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
 
     def extract(self, buffer: FrameBuffer) -> ISignal:
         if self.start_box[2] <= 0 or self.start_box[3] <= 0:
-            raise ValueError("start_box must have positive width and height")
+            raise ValueError("example_box must have positive width and height")
 
         tracker = self._build_tracker()
         samples: list[BoxSignalSample] = []

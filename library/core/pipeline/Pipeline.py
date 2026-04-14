@@ -4,7 +4,6 @@ from library.core.abstractions.IFrameCleaner import IFrameCleaner
 from library.core.abstractions.IFrameExtractor import IFrameExtractor
 from library.core.abstractions.ISignalCleaner import ISignalCleaner
 from library.core.abstractions.ISignalExtractor import ISignalExtractor
-from library.core.utils.NoOpFrameCleaner import NoOpFrameCleaner
 from library.core.validators.pipeline.PipelineValidator import PipelineValidator
 from library.core.abstractions.IPipelineValidator import IPipelineValidator
 

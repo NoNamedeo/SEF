@@ -17,9 +17,11 @@ class OpenCVHistogramEqualizationFrameCleaner(IFrameCleaner):
     def clean(self, frame: Frame) -> Frame:
         image = frame.frame
 
-        if len(image.shape) == 2:
+        if len(image.shape) == 2: #cioe se è in grayscale
+            #aumento il contrasto (equalizzo)
             eq = cv2.equalizeHist(image)
         else:
+            # passo da bgr a y,cr,cb (luminosità e colore), equalizzo e torno a bgr
             ycrcb = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
             ycrcb[:, :, 0] = cv2.equalizeHist(ycrcb[:, :, 0])
             eq = cv2.cvtColor(ycrcb, cv2.COLOR_YCrCb2BGR)

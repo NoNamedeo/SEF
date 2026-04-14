@@ -4,18 +4,23 @@ from pathlib import Path
 
 from library.analyzers.HoriziontalPositionAnalyzer import HorizontalPositionAnalyzer
 from library.analyzers.HorizontalFrequencyAnalyzer import HorizontalFrequencyAnalyzer
+from library.analyzers.MultiObjectBarrierCountingAnalyzer import MultiObjectBarrierCountingAnalyzer
 from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 from library.analyzers.VerticalFrequencyAnalyzer import VerticalFrequencyAnalyzer
 from library.core.pipeline.PipelineBuilder import PipelineBuilder
+from library.core.utils.OpenCVBarrierSelector import OpenCVBarrierSelector
 from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
+from library.frame_cleaners.SmoothingFrameCleaner import SmoothingFrameCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_cleaners.SignalWidenerCleaner import SignalWidenerCleaner
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
 from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
 
 
-def build_demo_pipeline(video_path: str, initial_box=(300, 200, 80, 120)):
+def build_demo_pipeline(video_path: str, initial_box=(300, 200, 80, 120), initial_barriers=None):
     """Create a runnable pipeline using only the public core components."""
     return (
         PipelineBuilder()
@@ -25,30 +30,28 @@ def build_demo_pipeline(video_path: str, initial_box=(300, 200, 80, 120)):
                     config={"resize": (640, 480), "stride": 2, "max_frames": 420},
                 )
             )
-            .with_signal_extractor(
-                OpenCVBufferedSignalExtractor(tracker_type="CSRT", start_box=initial_box, config={"show": True})
+            .add_frame_cleaner(
+                SmoothingFrameCleaner()
             )
-            .add_signal_cleaner(MovingAverageCleaner(window_size=5))
-            .add_signal_cleaner(SignalWidenerCleaner(amplification=5))
-            .add_analyzer(HorizontalPositionAnalyzer(config={"use_timestamps": True}))
-            .add_analyzer(HorizontalFrequencyAnalyzer())
+            .with_signal_extractor(
+                OpenCVMultiObjectSignalExtractor(start_box = initial_box, max_objects=2, config =  {"show": True})
+            )
+            .add_analyzer(MultiObjectBarrierCountingAnalyzer(barriers=initial_barriers))
             .build()
     )
 
 
 def main():
     root_dir = Path(__file__).resolve().parents[1]
-    video_path = root_dir / "videos" / "Castle.mp4"
+    video_path = root_dir / "videos" / "Traffic.mp4"
 
     if not video_path.exists():
         raise FileNotFoundError(f"Video non trovato: {video_path}")
 
     initial_box = OpenCVStartBoxSelector.select_start(str(video_path), (640, 480))
+    initial_barriers = OpenCVBarrierSelector().select_barriers(str(video_path), ["a","b","c"])
 
-    #TODO: aggiungere altri tracker (signalExtractor, tipo optical flow) con un signalsample specifico
-    #TODO: aggiungere altri analyzers (tipo alcuni specifici per optical flow, altri per numero di macchine che vanno in una strada o in un altra, ecc)
-    #TODO: aggiungere altri visualizers, frame extractors se ne vengono in mente altri
-    #TODO: mettere alcune librerie fighe tipo: (vedi sotto)
+    #TODO: mettere alcune librerie belle tipo: (vedi sotto)
     """
     Black: Formatter automatico: riscrive il codice per renderlo uniforme e leggibile senza dover pensare allo stile.
     Ruff: Linter veloce: trova errori, import inutili e cattive pratiche nel codice.
@@ -57,10 +60,10 @@ def main():
     MkDocs: Generatore di documentazione: crea un sito web leggibile partendo da file Markdown. Utile oltre ai docstrings e al README.md
     """
 
-    pipeline = build_demo_pipeline(str(video_path), initial_box)
+    pipeline = build_demo_pipeline(str(video_path), initial_box, initial_barriers)
     analysis_results = pipeline.run()
 
-    visualizer = MatplotlibFunctionVisualizer(config={"show": True})
+    visualizer = MatplotlibHistogramVisualizer(config={"show": True})
     visualizer.visualize(analysis_results[0])
 
 
