@@ -4,7 +4,7 @@ from typing import Any
 
 import cv2
 
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
 from library.core.artifacts.Frame import Frame
 
 
@@ -17,8 +17,8 @@ class OpenCVHistogramEqualizationFrameCleaner(IFrameCleaner):
     def clean(self, frame: Frame) -> Frame:
         image = frame.frame
 
-        if len(image.shape) == 2: #cioe se è in grayscale
-            #aumento il contrasto (equalizzo)
+        if len(image.shape) == 2:  # cioe se è in grayscale
+            # aumento il contrasto (equalizzo)
             eq = cv2.equalizeHist(image)
         else:
             # passo da bgr a y,cr,cb (luminosità e colore), equalizzo e torno a bgr

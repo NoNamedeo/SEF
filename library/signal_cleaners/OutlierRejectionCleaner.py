@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalCleaner import ISignalCleaner
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.BoxSignalSample import BoxSignalSample
 
@@ -26,11 +26,7 @@ class OutlierRejectionCleaner(ISignalCleaner):
         samples = list(signal)
         cleaned_samples: list[BoxSignalSample] = []
 
-        centroids = np.array([
-            np.asarray(s.centroid, dtype=float)
-            for s in samples
-            if s.centroid is not None
-        ])
+        centroids = np.array([np.asarray(s.centroid, dtype=float) for s in samples if s.centroid is not None])
 
         if len(centroids) == 0:
             return signal
@@ -63,8 +59,7 @@ class OutlierRejectionCleaner(ISignalCleaner):
                     new_centroid = median
 
                 elif self.mode == "clip":
-                    clipped = np.clip(c, median - self.threshold * mad,
-                                        median + self.threshold * mad)
+                    clipped = np.clip(c, median - self.threshold * mad, median + self.threshold * mad)
                     new_centroid = clipped
 
                 else:

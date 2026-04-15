@@ -10,10 +10,11 @@ import numpy as np
 from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.signal_cleaners.MovingAverageCleaner import OpenCVMovingAverageCleaner
+from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 
 
@@ -44,7 +45,7 @@ class PipelineCoreTests(unittest.TestCase):
 
     def test_pipeline_runs_end_to_end_via_core_components(self):
         video_path = self._create_test_video()
-        pipeline = (
+        context = (
             FluentPipelineBuilder()
             .with_frame_extractor(
                 OpenCVBufferedFrameExtractor(
@@ -60,10 +61,11 @@ class PipelineCoreTests(unittest.TestCase):
                     tracker_factory=FakeTracker,
                 )
             )
-            .add_signal_cleaner(OpenCVMovingAverageCleaner(window_size=3))
+            .add_signal_cleaner(MovingAverageCleaner(window_size=3))
             .add_analyzer(VerticalPositionAnalyzer(config={"use_timestamps": False}))
-            .build()
+            .build_context()
         )
+        pipeline = Pipeline(context)
 
         results = pipeline.run()
 

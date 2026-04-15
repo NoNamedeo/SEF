@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.IData import IData
-from library.core.abstractions.ISignal import ISignal
+from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.IData import IData
+from library.core.interfaces.ISignal import ISignal
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 
 
@@ -21,11 +21,7 @@ class HorizontalVelocityAnalyzer(IAnalyzer):
             if sample.centroid is None:
                 continue
 
-            t = (
-                sample.timestamp_seconds
-                if self.use_timestamps and sample.timestamp_seconds is not None
-                else float(sample.frame_index)
-            )
+            t = sample.timestamp_seconds if self.use_timestamps and sample.timestamp_seconds is not None else float(sample.frame_index)
 
             x_values.append(float(sample.centroid[0]))
             t_values.append(float(t))
@@ -60,6 +56,5 @@ class HorizontalVelocityAnalyzer(IAnalyzer):
             title="Horizontal Velocity Over Time",
             x_label=x_label,
             y_label=y_label,
-            metadata={"points": len(dx_dt),
-                      "average_velocity": avg_velocity},
+            metadata={"points": len(dx_dt), "average_velocity": avg_velocity},
         )

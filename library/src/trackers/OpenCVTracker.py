@@ -1,8 +1,9 @@
 import cv2
 from typing import Tuple, List, Dict, Generator, Optional
 import numpy as np
-from library.src.abstractions.ITracker import ITracker
-from library.src.abstractions.IExtractor import IExtractor
+from library.src.interfaces.ITracker import ITracker
+from library.src.interfaces.IExtractor import IExtractor
+
 
 class OpenCVTracker(ITracker):
     """
@@ -77,16 +78,8 @@ class OpenCVTracker(ITracker):
                 x, y, w, h = bbox
                 cx = x + w // 2
                 cy = y + h // 2
-                results.append({
-                    'frame_idx': frame_idx,
-                    'bbox': (x, y, w, h),
-                    'centroid': (cx, cy)
-                })
+                results.append({"frame_idx": frame_idx, "bbox": (x, y, w, h), "centroid": (cx, cy)})
             else:
-                results.append({
-                    'frame_idx': frame_idx,
-                    'bbox': None,
-                    'centroid': None
-                })
+                results.append({"frame_idx": frame_idx, "bbox": None, "centroid": None})
 
         return results

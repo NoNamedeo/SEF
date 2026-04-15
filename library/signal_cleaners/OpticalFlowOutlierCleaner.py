@@ -5,14 +5,13 @@ import math
 
 import numpy as np
 
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalCleaner import ISignalCleaner
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SparseOpticalFlowSignalSample import SparseOpticalFlowSignalSample
 
 
 class OpticalFlowOutlierFilter(ISignalCleaner):
-
     def __init__(self, threshold: float = 3.0, config: dict[str, Any] | None = None):
         super().__init__(config)
         self.threshold = threshold
@@ -35,7 +34,6 @@ class OpticalFlowOutlierFilter(ISignalCleaner):
             # se ho stato precedente: confronto per punto
             # TODO: e se cambio video? ho sotto reset, ma c'è un modo più furbo?
             if self.prev_vectors is not None and len(self.prev_vectors) == len(vectors):
-
                 for (dx, dy), (pdx, pdy) in zip(vectors, self.prev_vectors):
                     dist = math.sqrt((dx - pdx) ** 2 + (dy - pdy) ** 2)
 

@@ -1,25 +1,26 @@
-"""Tests for EventBus and DomainEvent."""
+"""Tests for Event and EventBus."""
+
 from __future__ import annotations
 
 import threading
 import unittest
 
-from library.core.events.DomainEvent import DomainEvent
+from library.core.events.Event import Event
 from library.core.events.EventBus import EventBus
 
 
-class DomainEventTests(unittest.TestCase):
-    """Verify DomainEvent creation and immutability."""
+class EventTests(unittest.TestCase):
+    """Verify Event creation and immutability."""
 
     def test_creation_with_defaults(self):
-        event = DomainEvent(event_type="tracking_lost", source="MySE")
+        event = Event(event_type="tracking_lost", source="MySE")
         self.assertEqual(event.event_type, "tracking_lost")
         self.assertEqual(event.source, "MySE")
         self.assertEqual(event.payload, {})
         self.assertIsInstance(event.timestamp, float)
 
     def test_creation_with_payload(self):
-        event = DomainEvent(
+        event = Event(
             event_type="object_detected",
             source="Detector",
             payload={"frame_index": 42, "confidence": 0.95},
@@ -28,12 +29,12 @@ class DomainEventTests(unittest.TestCase):
         self.assertAlmostEqual(event.payload["confidence"], 0.95)
 
     def test_frozen_immutability(self):
-        event = DomainEvent(event_type="test", source="src")
+        event = Event(event_type="test", source="src")
         with self.assertRaises(AttributeError):
             event.event_type = "other"  # type: ignore[misc]
 
     def test_repr_is_readable(self):
-        event = DomainEvent("test_event", "source", {"key": "val"})
+        event = Event("test_event", "source", {"key": "val"})
         r = repr(event)
         self.assertIn("test_event", r)
         self.assertIn("source", r)
@@ -45,10 +46,10 @@ class EventBusPublishSubscribeTests(unittest.TestCase):
 
     def test_subscribe_and_publish(self):
         bus = EventBus()
-        received: list[DomainEvent] = []
+        received: list[Event] = []
         bus.subscribe("evt_a", received.append)
 
-        bus.publish(DomainEvent("evt_a", "src"))
+        bus.dispatch(Event("evt_a", "src"))
 
         self.assertEqual(len(received), 1)
         self.assertEqual(received[0].event_type, "evt_a")
@@ -59,30 +60,30 @@ class EventBusPublishSubscribeTests(unittest.TestCase):
         bus.subscribe("evt", lambda e: calls.append("h1"))
         bus.subscribe("evt", lambda e: calls.append("h2"))
 
-        bus.publish(DomainEvent("evt", "src"))
+        bus.dispatch(Event("evt", "src"))
 
         self.assertEqual(calls, ["h1", "h2"])
 
     def test_handler_not_called_for_different_event(self):
         bus = EventBus()
-        received: list[DomainEvent] = []
+        received: list[Event] = []
         bus.subscribe("evt_a", received.append)
 
-        bus.publish(DomainEvent("evt_b", "src"))
+        bus.dispatch(Event("evt_b", "src"))
 
         self.assertEqual(len(received), 0)
 
     def test_unsubscribe(self):
         bus = EventBus()
-        received: list[DomainEvent] = []
+        received: list[Event] = []
         handler = received.append
         bus.subscribe("evt", handler)
 
-        bus.publish(DomainEvent("evt", "src"))
+        bus.dispatch(Event("evt", "src"))
         self.assertEqual(len(received), 1)
 
         bus.unsubscribe("evt", handler)
-        bus.publish(DomainEvent("evt", "src"))
+        bus.dispatch(Event("evt", "src"))
         self.assertEqual(len(received), 1)  # unchanged
 
     def test_unsubscribe_nonexistent_handler_is_noop(self):
@@ -91,39 +92,39 @@ class EventBusPublishSubscribeTests(unittest.TestCase):
 
 
 class EventBusWildcardTests(unittest.TestCase):
-    """subscribe_all wildcard handler tests."""
+    """Wildcard handler tests."""
 
-    def test_subscribe_all_receives_every_event(self):
+    def test_wildcard_subscription_receives_every_event(self):
         bus = EventBus()
         received: list[str] = []
-        bus.subscribe_all(lambda e: received.append(e.event_type))
+        bus.subscribe(EventBus.WILDCARD, lambda e: received.append(e.event_type))
 
-        bus.publish(DomainEvent("evt_a", "src"))
-        bus.publish(DomainEvent("evt_b", "src"))
-        bus.publish(DomainEvent("evt_c", "src"))
+        bus.dispatch(Event("evt_a", "src"))
+        bus.dispatch(Event("evt_b", "src"))
+        bus.dispatch(Event("evt_c", "src"))
 
         self.assertEqual(received, ["evt_a", "evt_b", "evt_c"])
 
-    def test_unsubscribe_all_removes_wildcard(self):
+    def test_unsubscribe_removes_wildcard(self):
         bus = EventBus()
-        received: list[DomainEvent] = []
+        received: list[Event] = []
         handler = received.append
-        bus.subscribe_all(handler)
+        bus.subscribe(EventBus.WILDCARD, handler)
 
-        bus.publish(DomainEvent("evt", "src"))
+        bus.dispatch(Event("evt", "src"))
         self.assertEqual(len(received), 1)
 
-        bus.unsubscribe_all(handler)
-        bus.publish(DomainEvent("evt", "src"))
+        bus.unsubscribe(EventBus.WILDCARD, handler)
+        bus.dispatch(Event("evt", "src"))
         self.assertEqual(len(received), 1)  # unchanged
 
     def test_specific_and_wildcard_both_fire(self):
         bus = EventBus()
         calls: list[str] = []
         bus.subscribe("evt", lambda e: calls.append("specific"))
-        bus.subscribe_all(lambda e: calls.append("wildcard"))
+        bus.subscribe(EventBus.WILDCARD, lambda e: calls.append("wildcard"))
 
-        bus.publish(DomainEvent("evt", "src"))
+        bus.dispatch(Event("evt", "src"))
 
         self.assertEqual(calls, ["specific", "wildcard"])
 
@@ -135,13 +136,13 @@ class EventBusErrorIsolationTests(unittest.TestCase):
         bus = EventBus()
         calls: list[str] = []
 
-        def bad_handler(e: DomainEvent) -> None:
+        def bad_handler(e: Event) -> None:
             raise RuntimeError("boom")
 
         bus.subscribe("evt", bad_handler)
         bus.subscribe("evt", lambda e: calls.append("ok"))
 
-        bus.publish(DomainEvent("evt", "src"))
+        bus.dispatch(Event("evt", "src"))
 
         # Second handler still ran despite first raising
         self.assertEqual(calls, ["ok"])
@@ -152,23 +153,16 @@ class EventBusThreadSafetyTests(unittest.TestCase):
 
     def test_concurrent_publish(self):
         bus = EventBus()
-        received: list[DomainEvent] = []
+        received: list[Event] = []
         lock = threading.Lock()
 
-        def safe_append(e: DomainEvent) -> None:
+        def safe_append(e: Event) -> None:
             with lock:
                 received.append(e)
 
         bus.subscribe("evt", safe_append)
 
-        threads = [
-            threading.Thread(
-                target=lambda i=i: bus.publish(
-                    DomainEvent("evt", "src", {"i": i})
-                )
-            )
-            for i in range(50)
-        ]
+        threads = [threading.Thread(target=lambda i=i: bus.dispatch(Event("evt", "src", {"i": i}))) for i in range(50)]
         for t in threads:
             t.start()
         for t in threads:
@@ -182,12 +176,12 @@ class EventBusManagementTests(unittest.TestCase):
 
     def test_clear_removes_all_handlers(self):
         bus = EventBus()
-        received: list[DomainEvent] = []
+        received: list[Event] = []
         bus.subscribe("evt", received.append)
-        bus.subscribe_all(received.append)
+        bus.subscribe(EventBus.WILDCARD, received.append)
 
         bus.clear()
-        bus.publish(DomainEvent("evt", "src"))
+        bus.dispatch(Event("evt", "src"))
 
         self.assertEqual(len(received), 0)
 
@@ -202,7 +196,7 @@ class EventBusManagementTests(unittest.TestCase):
         bus = EventBus()
         self.assertFalse(bus.has_subscribers("any"))
 
-        bus.subscribe_all(lambda e: None)
+        bus.subscribe(EventBus.WILDCARD, lambda e: None)
         self.assertTrue(bus.has_subscribers("any"))
 
 

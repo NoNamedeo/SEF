@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable
+from typing import Callable
+
+from library.core.events.Event import Event
+
+EventHandler = Callable[[Event], None]
 
 
 class IEventBus(ABC):
@@ -19,14 +23,16 @@ class IEventBus(ABC):
     handlers from receiving the same event.
     """
 
-    @abstractmethod
-    def subscribe(self, event_type: str, handler: Callable[[Any], None]) -> None: ...
+    WILDCARD = "*"
 
     @abstractmethod
-    def unsubscribe(self, event_type: str, handler: Callable[[Any], None]) -> None: ...
+    def subscribe(self, event_type: str, handler: EventHandler) -> None: ...
 
     @abstractmethod
-    def dispatch(self, event: Any) -> None: ...
+    def unsubscribe(self, event_type: str, handler: EventHandler) -> None: ...
 
     @abstractmethod
-    async def publish(self, event: Any) -> None: ...
+    def dispatch(self, event: Event) -> None: ...
+
+    @abstractmethod
+    async def publish(self, event: Event) -> None: ...

@@ -3,14 +3,15 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 
-from library.core.abstractions.IVisualizer import IVisualizer
+from library.core.interfaces.IVisualizer import IVisualizer
 from library.core.artifacts.VectorFieldGraphData import VectorFieldGraphData
 
 
 class MatplotlibHeatmapVisualizer(IVisualizer):
     """Render vector field as a heatmap (magnitude / component / angle)."""
-    #TODO: il funzionamento dipende dal fatto o no che l'analyzer metta rows e columns
-    #TODO: dentro a metadata del data
+
+    # TODO: il funzionamento dipende dal fatto o no che l'analyzer metta rows e columns
+    # TODO: dentro a metadata del data
 
     def __init__(self, config=None):
         super().__init__(config)
@@ -71,7 +72,7 @@ class MatplotlibHeatmapVisualizer(IVisualizer):
             z,
             cmap=self.cmap,
             origin="upper",  # coerente con coordinate immagine
-            aspect="auto"
+            aspect="auto",
         )
 
         if self.show_colorbar:

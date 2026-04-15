@@ -2,17 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from library.core.events.EventBus import EventBus
-from library.core.interfaces.pipeline.IRetryPolicy import IRetryPolicy
-from library.core.pipeline.BranchingCoordinator import BranchingCoordinator
-from library.core.pipeline.DefaultPipelineBuilder import DefaultPipelineBuilder
-from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
 from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
+from library.core.pipeline.PipelineErrors import PipelineConfigurationError
+from library.core.pipeline.VisualizerBinding import VisualizerBinding
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
-from library.retry_policies.FixedRetryPolicy import FixedRetryPolicy
-from library.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 
 class ConfigPipelineBuilder:
@@ -55,21 +48,14 @@ class ConfigPipelineBuilder:
 
       visualizers:                      # optional list
         - name: matplotlib
-
-      branching_rules:                  # optional list
-        - name: tracking_lost_branch
-          params:
-            threshold: 0.5
-
-      orchestration:                    # optional orchestration settings
-        max_retries: 2
+          result_indices: [0]            # optional; omit to visualize all results
 
     Raises
     ------
-    KeyError
-        If a required section is missing from the config dict.
-    ValueError
-        If a plugin entry is missing its 'name' field.
+    PipelineConfigurationError
+        If a required section is missing, a plugin entry is malformed, a plugin
+        cannot be found, plugin construction fails, or the resulting context
+        violates PipelineContext invariants.
     """
 
     def __init__(self, registry: PluginRegistry) -> None:
@@ -77,83 +63,157 @@ class ConfigPipelineBuilder:
 
     # ── Public API ───────────────────────────────────────────────────────────
 
-    def build(self, config: dict) -> PipelineOrchestrator:
-        """
-        Build and return a fully configured PipelineOrchestrator from *config*.
+    def build_context(self, config: dict) -> PipelineContext:
+        cfg = self._required_mapping(config, "pipeline")
 
-        Orchestration settings are read from
-        ``config['pipeline']['orchestration']``.
-        """
-        context = self._build_context(config)
-        cfg = config.get("pipeline", {})
-
-        # ── Resolve retry policy ────────────────────────────────────────
-        max_retries = cfg.get("orchestration", {}).get("max_retries", 0)
-        retry_policy: IRetryPolicy = (
-            FixedRetryPolicy(max_retries) if max_retries > 0 else NoRetryPolicy()
-        )
-
-        # ── Build infrastructure components ─────────────────────────────
-        trigger_bus = EventBus()
-        monitor = InMemoryPipelineMonitor()
-
-        domain_bus = EventBus()
-        pipeline_builder = DefaultPipelineBuilder(domain_bus=domain_bus)
-
-        runner = ThreadedPipelineRunner(
-            monitor=monitor,
-            retry_policy=retry_policy,
-            lifecycle_bus=trigger_bus,
-        )
-
-        # ── Resolve branching rules → BranchingCoordinator ──────────────
-        rule_instances = self._build_list(
-            PluginCategory.BRANCHING_RULE,
-            cfg.get("branching_rules", []),
-        )
-
-        if rule_instances:
-            BranchingCoordinator(
-                event_bus=domain_bus,
-                rules=rule_instances,
-                trigger_bus=trigger_bus,
+        try:
+            return PipelineContext(
+                frame_extractor=self._create(
+                    PluginCategory.FRAME_EXTRACTOR,
+                    self._required_mapping(cfg, "frame_extractor", "pipeline.frame_extractor"),
+                    "pipeline.frame_extractor",
+                ),
+                signal_extractor=self._create(
+                    PluginCategory.SIGNAL_EXTRACTOR,
+                    self._required_mapping(cfg, "signal_extractor", "pipeline.signal_extractor"),
+                    "pipeline.signal_extractor",
+                ),
+                frame_cleaners=self._build_list(
+                    PluginCategory.FRAME_CLEANER,
+                    self._optional_list(cfg, "frame_cleaners", "pipeline.frame_cleaners"),
+                    "pipeline.frame_cleaners",
+                ),
+                signal_cleaners=self._build_list(
+                    PluginCategory.SIGNAL_CLEANER,
+                    self._optional_list(cfg, "signal_cleaners", "pipeline.signal_cleaners"),
+                    "pipeline.signal_cleaners",
+                ),
+                analyzers=self._build_list(
+                    PluginCategory.ANALYZER,
+                    self._required_list(cfg, "analyzers", "pipeline.analyzers"),
+                    "pipeline.analyzers",
+                ),
+                visualizers=self._build_list(
+                    PluginCategory.VISUALIZER,
+                    self._unbound_visualizers(cfg),
+                    "pipeline.visualizers",
+                ),
+                visualizer_bindings=self._visualizer_bindings(cfg),
             )
-
-        return PipelineOrchestrator(
-            builder=pipeline_builder,
-            runner=runner,
-            monitor=monitor,
-            bus=trigger_bus,
-        )
+        except PipelineConfigurationError:
+            raise
+        except Exception as exc:
+            raise PipelineConfigurationError(f"Invalid pipeline configuration: {exc}") from exc
 
     # ── Internals ────────────────────────────────────────────────────────────
 
-    def _build_context(self, config: dict) -> PipelineContext:
-        cfg = config["pipeline"]
+    def _create(self, category: PluginCategory, cfg: dict[str, Any], path: str) -> Any:
+        name = self._required_string(cfg, f"{path}.name")
+        params = cfg.get("params", {})
+        if not isinstance(params, dict):
+            raise PipelineConfigurationError(f"'{path}.params' must be a mapping.")
+        try:
+            return self._registry.create(category, name, **params)
+        except KeyError as exc:
+            raise PipelineConfigurationError(f"Unknown plugin '{name}' for '{path}' in category '{category}'.") from exc
+        except TypeError as exc:
+            raise PipelineConfigurationError(f"Invalid params for plugin '{name}' at '{path}': {exc}") from exc
+        except Exception as exc:
+            raise PipelineConfigurationError(f"Failed to create plugin '{name}' at '{path}': {exc}") from exc
 
-        return PipelineContext(
-            frame_extractor=self._create(
-                PluginCategory.FRAME_EXTRACTOR, cfg["frame_extractor"]
-            ),
-            signal_extractor=self._create(
-                PluginCategory.SIGNAL_EXTRACTOR, cfg["signal_extractor"]
-            ),
-            frame_cleaners=self._build_list(
-                PluginCategory.FRAME_CLEANER, cfg.get("frame_cleaners", [])
-            ),
-            signal_cleaners=self._build_list(
-                PluginCategory.SIGNAL_CLEANER, cfg.get("signal_cleaners", [])
-            ),
-            analyzers=self._build_list(PluginCategory.ANALYZER, cfg["analyzers"]),
-            visualizers=self._build_list(PluginCategory.VISUALIZER, cfg.get("visualizers", [])),
-        )
+    def _build_list(
+        self,
+        category: PluginCategory,
+        cfgs: list[dict[str, Any]],
+        path: str,
+    ) -> list:
+        return [self._create(category, self._ensure_mapping(item, f"{path}[{index}]"), f"{path}[{index}]") for index, item in enumerate(cfgs)]
 
-    def _create(self, category: PluginCategory, cfg: dict[str, Any]) -> Any:
-        if "name" not in cfg:
-            raise ValueError(
-                f"ConfigPipelineBuilder: missing 'name' in config for category '{category}'."
+    def _unbound_visualizers(self, cfg: dict[str, Any]) -> list[dict[str, Any]]:
+        return [
+            item
+            for item in self._optional_list(cfg, "visualizers", "pipeline.visualizers")
+            if "result_indices" not in item
+        ]
+
+    def _visualizer_bindings(self, cfg: dict[str, Any]) -> list[VisualizerBinding]:
+        bindings: list[VisualizerBinding] = []
+        visualizer_configs = self._optional_list(cfg, "visualizers", "pipeline.visualizers")
+        for index, item in enumerate(visualizer_configs):
+            path = f"pipeline.visualizers[{index}]"
+            if "result_indices" not in item:
+                continue
+            visualizer = self._create(
+                PluginCategory.VISUALIZER,
+                self._ensure_mapping(item, path),
+                path,
             )
-        return self._registry.create(category, cfg["name"], **cfg.get("params", {}))
+            bindings.append(
+                VisualizerBinding(
+                    visualizer=visualizer,
+                    result_indices=self._result_indices(item, f"{path}.result_indices"),
+                )
+            )
+        return bindings
 
-    def _build_list(self, category: PluginCategory, cfgs: list[dict]) -> list:
-        return [self._create(category, c) for c in cfgs]
+    @staticmethod
+    def _result_indices(config: dict[str, Any], path: str) -> tuple[int, ...]:
+        value = config.get("result_indices")
+        if not isinstance(value, list):
+            raise PipelineConfigurationError(f"'{path}' must be a list of non-negative integers.")
+        if any(not isinstance(index, int) or index < 0 for index in value):
+            raise PipelineConfigurationError(f"'{path}' must contain only non-negative integers.")
+        return tuple(value)
+
+    @staticmethod
+    def _required_mapping(
+        config: dict[str, Any],
+        key: str,
+        path: str | None = None,
+    ) -> dict[str, Any]:
+        display_path = path or key
+        if key not in config:
+            raise PipelineConfigurationError(f"Missing required config section '{display_path}'.")
+        return ConfigPipelineBuilder._ensure_mapping(config[key], display_path)
+
+    @staticmethod
+    def _required_list(
+        config: dict[str, Any],
+        key: str,
+        path: str | None = None,
+    ) -> list[dict[str, Any]]:
+        display_path = path or key
+        if key not in config:
+            raise PipelineConfigurationError(f"Missing required config section '{display_path}'.")
+        value = config[key]
+        if not isinstance(value, list):
+            raise PipelineConfigurationError(f"'{display_path}' must be a list.")
+        return value
+
+    @staticmethod
+    def _optional_list(
+        config: dict[str, Any],
+        key: str,
+        path: str | None = None,
+    ) -> list[dict[str, Any]]:
+        display_path = path or key
+        value = config.get(key, [])
+        if not isinstance(value, list):
+            raise PipelineConfigurationError(f"'{display_path}' must be a list.")
+        return value
+
+    @staticmethod
+    def _required_string(config: dict[str, Any], path: str) -> str:
+        key = path.rsplit(".", maxsplit=1)[-1]
+        if key not in config:
+            raise PipelineConfigurationError(f"Missing required config section '{path}'.")
+        value = config[key]
+        if not isinstance(value, str) or not value:
+            raise PipelineConfigurationError(f"'{path}' must be a non-empty string.")
+        return value
+
+    @staticmethod
+    def _ensure_mapping(value: Any, path: str) -> dict[str, Any]:
+        if not isinstance(value, dict):
+            raise PipelineConfigurationError(f"'{path}' must be a mapping.")
+        return value

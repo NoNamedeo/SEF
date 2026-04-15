@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Callable
+from typing import Any, Callable
 
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IEventEmitter import IEventEmitter
+from library.core.interfaces.pipeline.IEventBus import IEventBus
+from library.core.pipeline.FrameCleaningStage import FrameCleaningStage
 from library.core.pipeline.PipelineContext import PipelineContext
-
-if TYPE_CHECKING:
-    from library.core.events.EventBus import EventBus
+from library.core.pipeline.VisualizerBinding import VisualizerBinding
 
 log = logging.getLogger(__name__)
 
@@ -40,11 +40,10 @@ class Pipeline:
 
     Event injection
     ---------------
-    If an ``EventBus`` is provided, Pipeline inspects every component in
-    the context: those that implement ``IEventEmitter`` get the bus
-    injected via their ``event_bus`` setter **before** execution begins.
-    This allows components to emit domain events during their work
-    without any coupling to the Orchestrator.
+    Pipeline inspects every component in the context: those that implement
+    ``IEventEmitter`` get the current event bus and execution metadata
+    injected **before** execution begins. This allows components to emit
+    domain events during their work without any coupling to the Orchestrator.
 
     Raises
     ------
@@ -56,10 +55,13 @@ class Pipeline:
     def __init__(
         self,
         context: PipelineContext,
-        event_bus: EventBus | None = None,
+        event_bus: IEventBus | None = None,
+        pipeline_id: str | None = None,
     ) -> None:
         self._context = context
         self._event_bus = event_bus
+        self._pipeline_id = pipeline_id
+        self._frame_cleaning_stage = FrameCleaningStage()
 
     # ── Public API ──────────────────────────────────────────────────────────
 
@@ -68,7 +70,11 @@ class Pipeline:
         self._inject_event_bus(self._event_bus)
         ctx = self._context
 
-        buffer = self._run_step("frame_extraction", lambda: ctx.frame_extractor.extract(ctx.frame_cleaners))
+        buffer = self._run_step("frame_extraction", lambda: ctx.frame_extractor.extract())
+        buffer = self._run_step(
+            "frame_cleaning",
+            lambda: self._frame_cleaning_stage.apply(buffer, ctx.frame_cleaners),
+        )
 
         signal = self._run_step("signal_extraction", lambda: ctx.signal_extractor.extract(buffer))
 
@@ -83,23 +89,20 @@ class Pipeline:
             data = self._run_step(f"analysis[{i}]", lambda a=analyzer: a.analyze(signal))
             results.append(data)
 
-        for i, visualizer in enumerate(ctx.visualizers):
-            for j, data in enumerate(results):
-                self._run_step(f"visualisation[{i}][{j}]", lambda v=visualizer, d=data: v.visualize(d))
+        self._run_visualizers(results)
 
         return results
 
     # ── Internals ───────────────────────────────────────────────────────────
 
-    def _inject_event_bus(self, bus: EventBus | None) -> None:
+    def _inject_event_bus(self, bus: IEventBus | None) -> None:
         """
-        Walk every component in the context and inject the EventBus
+        Walk every component in the context and inject event dependencies
         into those that implement IEventEmitter.
 
-        Called once at the beginning of ``run()`` — no-op if *bus* is None.
+        Called once at the beginning of ``run()``. The bus may be None; in
+        that case emitters are explicitly reset to silent no-op mode.
         """
-        if bus is None:
-            return
         components: list[Any] = [
             self._context.frame_extractor,
             self._context.signal_extractor,
@@ -107,14 +110,54 @@ class Pipeline:
             *self._context.signal_cleaners,
             *self._context.analyzers,
             *self._context.visualizers,
+            *(binding.visualizer for binding in self._context.visualizer_bindings),
         ]
         for component in components:
             if isinstance(component, IEventEmitter):
                 component.event_bus = bus
+                component.event_metadata = self._event_metadata()
                 log.debug(
-                    "Injected EventBus into %s",
+                    "Injected event context into %s",
                     type(component).__name__,
                 )
+
+    def _event_metadata(self) -> dict[str, str]:
+        if self._pipeline_id is None:
+            return {}
+        return {"pipeline_id": self._pipeline_id}
+
+    def _run_visualizers(self, results: list[IData]) -> None:
+        bindings = [
+            *(VisualizerBinding(visualizer) for visualizer in self._context.visualizers),
+            *self._context.visualizer_bindings,
+        ]
+
+        for binding_index, binding in enumerate(bindings):
+            target_indexes = self._run_step(
+                f"visualisation[{binding_index}].targets",
+                lambda b=binding: self._resolve_visualizer_targets(b, len(results)),
+            )
+            for result_index in target_indexes:
+                data = results[result_index]
+                self._run_step(
+                    f"visualisation[{binding_index}][{result_index}]",
+                    lambda v=binding.visualizer, d=data: v.visualize(d),
+                )
+
+    @staticmethod
+    def _resolve_visualizer_targets(
+        binding: VisualizerBinding,
+        result_count: int,
+    ) -> tuple[int, ...]:
+        if binding.result_indices is None:
+            return tuple(range(result_count))
+        invalid = [index for index in binding.result_indices if index >= result_count]
+        if invalid:
+            raise ValueError(
+                f"Visualizer target index out of range: {invalid}; "
+                f"available result indexes: 0..{result_count - 1}."
+            )
+        return tuple(binding.result_indices)
 
     @staticmethod
     def _run_step(stage: str, fn: Callable[[], Any]) -> Any:

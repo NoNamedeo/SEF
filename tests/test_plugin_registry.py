@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 
 from library.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
-from library.signal_cleaners.MovingAverageCleaner import OpenCVMovingAverageCleaner
+from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 
 
 class PluginRegistryTests(unittest.TestCase):
@@ -14,7 +14,7 @@ class PluginRegistryTests(unittest.TestCase):
         self.assertIn("vertical_position", analyzer_names)
 
         cleaner = registry.create("signal_cleaner", "moving_average", window_size=5)
-        self.assertIsInstance(cleaner, OpenCVMovingAverageCleaner)
+        self.assertIsInstance(cleaner, MovingAverageCleaner)
 
     def test_register_rejects_duplicates(self):
         registry = PluginRegistry()

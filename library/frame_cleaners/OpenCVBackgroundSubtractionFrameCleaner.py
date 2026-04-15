@@ -5,7 +5,7 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
 from library.core.artifacts.Frame import Frame
 
 
@@ -28,9 +28,7 @@ class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
 
     def _create_model(self):
         if self.method == "MOG2":
-            return cv2.createBackgroundSubtractorMOG2(
-                detectShadows=self.detect_shadows
-            )
+            return cv2.createBackgroundSubtractorMOG2(detectShadows=self.detect_shadows)
         elif self.method == "KNN":
             return cv2.createBackgroundSubtractorKNN()
         else:
@@ -45,9 +43,9 @@ class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
         fg_mask = self._bg_model.apply(image)
 
         kernel = np.ones((3, 3), np.uint8)
-        #rimozione punti di foreground isolati
+        # rimozione punti di foreground isolati
         fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
-        #espansione del foreground
+        # espansione del foreground
         fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_DILATE, kernel)
 
         cleaned = cv2.bitwise_and(image, image, mask=fg_mask)

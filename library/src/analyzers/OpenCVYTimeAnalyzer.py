@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from library.src.abstractions.IAnalyzer import IAnalyzer
+from library.src.interfaces.IAnalyzer import IAnalyzer
 
 
 class OpenCVYTimeAnalyzer(IAnalyzer):
@@ -36,10 +36,7 @@ class OpenCVYTimeAnalyzer(IAnalyzer):
             raise ValueError("fps deve essere > 0")
 
     def analyze(self, signal):
-        valid_points = [
-            item for item in signal
-            if item.get("centroid") is not None and item.get("frame_idx") is not None
-        ]
+        valid_points = [item for item in signal if item.get("centroid") is not None and item.get("frame_idx") is not None]
 
         if not valid_points:
             raise ValueError("Nessun dato valido da analizzare")

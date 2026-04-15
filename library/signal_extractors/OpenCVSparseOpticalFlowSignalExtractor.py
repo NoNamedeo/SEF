@@ -5,8 +5,8 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SparseOpticalFlowSignalSample import (
@@ -59,7 +59,7 @@ class OpenCVSparseOpticalFlowSignalExtractor(ISignalExtractor):
         for position, frame in enumerate(buffer):
             frame_index = frame.index if frame.index is not None else position
 
-            #TODO va fatto diventare una configurazione
+            # TODO va fatto diventare una configurazione
             gray = cv2.cvtColor(frame.frame, cv2.COLOR_BGR2GRAY)
 
             if position == 0:
@@ -68,11 +68,11 @@ class OpenCVSparseOpticalFlowSignalExtractor(ISignalExtractor):
                 if self.example_box is not None:
                     x, y, w, h = self.example_box
                     mask = np.zeros_like(gray)
-                    mask[y:y + h, x:x + w] = 255
+                    mask[y : y + h, x : x + w] = 255
 
-                #traccia i "punti buoni" ispirandosi, se c'è, a quelli della example_box
-                #TODO sarebbe da fare una classe/sistema a parte per tracciare punti piu specifici
-                #(tipo allenato per riconoscere articolazioni braccio)
+                # traccia i "punti buoni" ispirandosi, se c'è, a quelli della example_box
+                # TODO sarebbe da fare una classe/sistema a parte per tracciare punti piu specifici
+                # (tipo allenato per riconoscere articolazioni braccio)
                 prev_points = cv2.goodFeaturesToTrack(
                     gray,
                     mask=mask,
@@ -85,10 +85,7 @@ class OpenCVSparseOpticalFlowSignalExtractor(ISignalExtractor):
                     SparseOpticalFlowSignalSample(
                         frame_index=frame_index,
                         box=self.example_box,
-                        points=(
-                            [tuple(p.ravel()) for p in prev_points]
-                            if prev_points is not None else []
-                        ),
+                        points=([tuple(p.ravel()) for p in prev_points] if prev_points is not None else []),
                         point_vectors=[],
                         motion_vector=None,
                         motion_magnitude=None,
@@ -117,7 +114,7 @@ class OpenCVSparseOpticalFlowSignalExtractor(ISignalExtractor):
                 prev_gray = gray
                 continue
 
-            #algoritmo di sparse optical flow
+            # algoritmo di sparse optical flow
             next_points, status, error = cv2.calcOpticalFlowPyrLK(
                 prev_gray,
                 gray,

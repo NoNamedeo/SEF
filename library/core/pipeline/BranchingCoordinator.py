@@ -3,9 +3,9 @@ from __future__ import annotations
 import logging
 import threading
 
+from library.core.events.Event import Event
+from library.core.events.PipelineEvent import PipelineEvent
 from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
-from library.core.events.DomainEvent import DomainEvent
-from library.core.events.EventBus import EventBus
 from library.core.interfaces.pipeline.IEventBus import IEventBus
 
 log = logging.getLogger(__name__)
@@ -22,11 +22,11 @@ class BranchingCoordinator:
     spawning.  It has no thread pool, no futures, and no retry logic — those
     responsibilities belong to IPipelineRunner and IRetryPolicy respectively.
 
-    When a rule matches a DomainEvent the coordinator builds the secondary
+    When a rule matches an Event the coordinator builds the secondary
     PipelineContext via IBranchingRule.build_context() and dispatches a
-    PipelineEvent onto the trigger bus.  The PipelineOrchestrator subscribed
-    to that bus picks it up and delegates execution through its own chain
-    (IPipelineBuilder → IPipelineMonitor → IPipelineRunner).
+    PipelineEvent onto the trigger bus. The PipelineOrchestrator subscribed
+    to that bus picks it up and delegates execution through its monitor and
+    runner.
 
     Rule isolation
     --------------
@@ -36,7 +36,7 @@ class BranchingCoordinator:
 
     def __init__(
         self,
-        event_bus: EventBus,
+        event_bus: IEventBus,
         rules: list[IBranchingRule],
         trigger_bus: IEventBus,
     ) -> None:
@@ -45,15 +45,13 @@ class BranchingCoordinator:
         self._trigger_bus = trigger_bus
         self._counter = 0
         self._lock = threading.Lock()
-        self._event_bus.subscribe_all(self._on_domain_event)
+        self._event_bus.subscribe(IEventBus.WILDCARD, self._on_domain_event)
 
     @property
-    def event_bus(self) -> EventBus:
+    def event_bus(self) -> IEventBus:
         return self._event_bus
 
-    def _on_domain_event(self, event: DomainEvent) -> None:
-        from library.core.artifacts.PipelineEvent import PipelineEvent
-
+    def _on_domain_event(self, event: Event) -> None:
         for rule in self._rules:
             try:
                 if not rule.matches(event):
@@ -69,8 +67,13 @@ class BranchingCoordinator:
                     pipeline_id,
                 )
                 self._trigger_bus.dispatch(
-                    PipelineEvent(pipeline_id=pipeline_id, context=context)
-                )  # noqa: E501
+                    PipelineEvent.create(
+                        pipeline_id=pipeline_id,
+                        context=context,
+                        source=type(self).__name__,
+                        correlation_id=event.correlation_id or event.event_id,
+                    )
+                )
             except Exception as exc:
                 log.error(
                     "Branching rule %s raised (skipped): %s",

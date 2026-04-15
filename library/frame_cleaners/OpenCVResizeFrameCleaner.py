@@ -4,7 +4,7 @@ from typing import Any, Tuple
 
 import cv2
 
-from library.core.abstractions.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
 from library.core.artifacts.Frame import Frame
 
 

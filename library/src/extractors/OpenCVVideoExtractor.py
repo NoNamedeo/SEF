@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 from typing import Any, Dict, Generator, Optional
-from library.src.abstractions.IExtractor import IExtractor
+from library.src.interfaces.IExtractor import IExtractor
+
 
 class OpenCVVideoExtractor(IExtractor):
     """
@@ -14,10 +15,10 @@ class OpenCVVideoExtractor(IExtractor):
     def __init__(self, config: Dict[str, Any] | None = None):
         super().__init__(config)
 
-        self.resize = self.config.get("resize", None)   # (width, height)
+        self.resize = self.config.get("resize", None)  # (width, height)
         self.gray = self.config.get("gray", False)
         self.max_frames = self.config.get("max_frames", None)
-        self.stride = self.config.get("stride", 1)      # ogni N frame
+        self.stride = self.config.get("stride", 1)  # ogni N frame
 
     def extract(self, path: str) -> Generator[np.ndarray, None, None]:
         """

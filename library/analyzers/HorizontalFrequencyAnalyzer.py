@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from library.core.abstractions.IAnalyzer import IAnalyzer
-from library.core.abstractions.IData import IData
-from library.core.abstractions.ISignal import ISignal
+from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.IData import IData
+from library.core.interfaces.ISignal import ISignal
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 
 
@@ -49,7 +49,5 @@ class HorizontalFrequencyAnalyzer(IAnalyzer):
             title="Horiziontal Frequency Spectrum",
             x_label="Frequency [Hz]",
             y_label="Amplitude",
-            metadata={"points": len(normalized_positive_amplitudes),
-                      "max_frequency": max_freq,
-                      "max_amplitude": max_amp},
+            metadata={"points": len(normalized_positive_amplitudes), "max_frequency": max_freq, "max_amplitude": max_amp},
         )

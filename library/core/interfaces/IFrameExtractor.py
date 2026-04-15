@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import Any
-from collections.abc import Iterable
 
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
 from library.core.artifacts.FrameBuffer import FrameBuffer
 
 
@@ -13,5 +11,5 @@ class IFrameExtractor(ABC):
         self.config = config or {}
 
     @abstractmethod
-    def extract(self, frame_cleaners: Iterable[IFrameCleaner]) -> FrameBuffer:
-        """Extract frames and return a buffer consumable by the pipeline."""
+    def extract(self) -> FrameBuffer:
+        """Extract raw frames and return them in a buffer."""

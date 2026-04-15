@@ -1,33 +1,47 @@
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.IEventEmitter import IEventEmitter
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalCleaner import ISignalCleaner
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
-from library.core.interfaces.pipeline.IEventBus import IEventBus
-from library.core.interfaces.pipeline.IPipelineBuilder import IPipelineBuilder
-from library.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
-from library.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
-from library.core.interfaces.pipeline.IPipelineValidator import IPipelineValidator
+from __future__ import annotations
 
-__all__ = [
-    "IAnalyzer",
-    "IBranchingRule",
-    "IData",
-    "IEventEmitter",
-    "IEventBus",
-    "IFrameCleaner",
-    "IFrameExtractor",
-    "IPipelineBuilder",
-    "IPipelineMonitor",
-    "IPipelineRunner",
-    "IPipelineValidator",
-    "ISignal",
-    "ISignalCleaner",
-    "ISignalExtractor",
-    "IVisualizer",
-]
+from importlib import import_module
+
+_EXPORTS = {
+    "IAnalyzer": ("library.core.interfaces.IAnalyzer", "IAnalyzer"),
+    "IBranchingRule": ("library.core.interfaces.pipeline.IBranchingRule", "IBranchingRule"),
+    "IData": ("library.core.interfaces.IData", "IData"),
+    "IEventEmitter": ("library.core.interfaces.IEventEmitter", "IEventEmitter"),
+    "IEventBus": ("library.core.interfaces.pipeline.IEventBus", "IEventBus"),
+    "IFrameCleaner": ("library.core.interfaces.IFrameCleaner", "IFrameCleaner"),
+    "IFrameExtractor": ("library.core.interfaces.IFrameExtractor", "IFrameExtractor"),
+    "IPipelineMonitor": (
+        "library.core.interfaces.pipeline.IPipelineMonitor",
+        "IPipelineMonitor",
+    ),
+    "IPipelineFactory": (
+        "library.core.interfaces.pipeline.IPipelineFactory",
+        "IPipelineFactory",
+    ),
+    "IPipelineRunner": (
+        "library.core.interfaces.pipeline.IPipelineRunner",
+        "IPipelineRunner",
+    ),
+    "IPipelineValidator": (
+        "library.core.interfaces.pipeline.IPipelineValidator",
+        "IPipelineValidator",
+    ),
+    "ISignal": ("library.core.interfaces.ISignal", "ISignal"),
+    "ISignalCleaner": ("library.core.interfaces.ISignalCleaner", "ISignalCleaner"),
+    "ISignalExtractor": ("library.core.interfaces.ISignalExtractor", "ISignalExtractor"),
+    "IVisualizer": ("library.core.interfaces.IVisualizer", "IVisualizer"),
+}
+
+__all__ = list(_EXPORTS)
+
+
+def __getattr__(name: str):
+    try:
+        module_name, attr_name = _EXPORTS[name]
+    except KeyError as exc:
+        raise AttributeError(name) from exc
+
+    module = import_module(module_name)
+    value = getattr(module, attr_name)
+    globals()[name] = value
+    return value

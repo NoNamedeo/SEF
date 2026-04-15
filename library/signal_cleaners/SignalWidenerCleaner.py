@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from library.core.abstractions.ISignal import ISignal
-from library.core.abstractions.ISignalCleaner import ISignalCleaner
+from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.BoxSignalSample import BoxSignalSample
 
@@ -18,11 +18,7 @@ class SignalWidenerCleaner(ISignalCleaner):
     def clean(self, signal: ISignal) -> ISignal:
         samples = list(signal)
         cleaned_samples: list[BoxSignalSample] = []
-        centroids = np.array([
-            np.asarray(sample.centroid, dtype=float)
-            for sample in samples
-            if sample.centroid is not None
-        ])
+        centroids = np.array([np.asarray(sample.centroid, dtype=float) for sample in samples if sample.centroid is not None])
         centroids_mean = np.mean(centroids, axis=0)
 
         for index, sample in enumerate(samples):

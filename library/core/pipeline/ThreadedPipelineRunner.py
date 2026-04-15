@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from concurrent.futures import Future, ThreadPoolExecutor
 
-from library.core.events.PipelineLifecycleBus import (
+from library.core.events.PipelineLifecycleEvent import (
     PipelineLifecycleEvent,
-    PipelineLifecyclePayload,
+    create_pipeline_lifecycle_event,
 )
 from library.core.interfaces.IData import IData
 from library.core.interfaces.pipeline.IEventBus import IEventBus
@@ -14,6 +15,8 @@ from library.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
 from library.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
 from library.core.interfaces.pipeline.IRetryPolicy import IRetryPolicy
 from library.core.pipeline.Pipeline import Pipeline, PipelineExecutionError
+from library.core.pipeline.PipelineErrors import PipelineRunAlreadyActiveError
+from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
 from library.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 log = logging.getLogger(__name__)
@@ -22,6 +25,14 @@ log = logging.getLogger(__name__)
 class ThreadedPipelineRunner(IPipelineRunner):
     """
     Executes pipelines on a ThreadPoolExecutor with retry and lifecycle events.
+
+    ``run`` and ``submit`` share the same active-id tracking: the same
+    pipeline id cannot be executed concurrently through either entry point.
+    ``submit`` returns the underlying Future so callers can observe async
+    results or failures.
+
+    ``cancel`` is best-effort: it can cancel queued work that has not started,
+    but it cannot interrupt a pipeline that is already running.
 
     Lifecycle events (BEFORE_RUN, AFTER_RUN, ON_ERROR, ON_RETRY) are
     dispatched synchronously to the provided IEventBus from within the
@@ -42,25 +53,99 @@ class ThreadedPipelineRunner(IPipelineRunner):
             max_workers=max_workers,
             thread_name_prefix="sef-pipeline",
         )
+        self._lock = threading.Lock()
         self._futures: dict[str, Future[list[IData]]] = {}
+        self._reserved_ids: set[str] = set()
 
-    def submit(self, pipeline_id: str, pipeline: Pipeline) -> None:
-        future: Future[list[IData]] = self._executor.submit(self._run, pipeline_id, pipeline)
-        self._futures[pipeline_id] = future
+    def run(self, pipeline_id: str, pipeline: Pipeline) -> list[IData]:
+        """Execute a pipeline synchronously through the same retry/lifecycle path."""
+        self._begin_sync(pipeline_id)
+        return self._execute(pipeline_id, pipeline)
 
-    def cancel(self, pipeline_id: str) -> None:
-        future = self._futures.pop(pipeline_id, None)
-        if future is not None and future.cancel():
-            self._monitor.complete(pipeline_id)
+    def submit(self, pipeline_id: str, pipeline: Pipeline) -> Future[list[IData]]:
+        rejected_error: PipelineRunAlreadyActiveError | None = None
+        submit_failed_error: Exception | None = None
+        future: Future[list[IData]] | None = None
+        with self._lock:
+            if pipeline_id in self._reserved_ids:
+                rejected_error = PipelineRunAlreadyActiveError(f"Pipeline '{pipeline_id}' is already running.")
+            else:
+                self._reserved_ids.add(pipeline_id)
+                registered = False
+                try:
+                    self._monitor.register(pipeline_id)
+                    registered = True
+                    future = self._executor.submit(
+                        self._execute,
+                        pipeline_id,
+                        pipeline,
+                    )
+                except Exception as exc:
+                    self._reserved_ids.discard(pipeline_id)
+                    if registered:
+                        self._monitor.fail(pipeline_id, exc, attempt=0)
+                    submit_failed_error = exc
+                else:
+                    self._futures[pipeline_id] = future
 
-    def _run(self, pipeline_id: str, pipeline: Pipeline) -> list[IData]:
+        if rejected_error is not None:
+            self._emit(PipelineLifecycleEvent.REJECTED, pipeline_id, error=rejected_error, attempt=0)
+            raise rejected_error
+        if submit_failed_error is not None:
+            self._emit(PipelineLifecycleEvent.SUBMIT_FAILED, pipeline_id, error=submit_failed_error, attempt=0)
+            raise submit_failed_error
+        if future is None:
+            raise RuntimeError(f"Pipeline '{pipeline_id}' submission did not create a Future.")
+        return future
+
+    def cancel(self, pipeline_id: str) -> bool:
+        with self._lock:
+            future = self._futures.get(pipeline_id)
+            if future is None:
+                return False
+            if not future.cancel():
+                return False
+            self._futures.pop(pipeline_id, None)
+            self._reserved_ids.discard(pipeline_id)
+        self._monitor.terminate(pipeline_id)
+        self._emit(PipelineLifecycleEvent.CANCELLED, pipeline_id, attempt=0)
+        return True
+
+    def active_ids(self) -> list[str]:
+        """Return the monitor-backed snapshot of active pipeline ids."""
+        return self._monitor.active_ids()
+
+    def snapshot(self, pipeline_id: str) -> PipelineRunSnapshot | None:
+        """Return the latest known state for a pipeline id."""
+        return self._monitor.snapshot(pipeline_id)
+
+    def snapshots(self) -> list[PipelineRunSnapshot]:
+        """Return latest known state for all tracked pipeline ids."""
+        return self._monitor.snapshots()
+
+    def shutdown(self, wait: bool = True) -> None:
+        """
+        Shut down the executor.
+
+        With ``wait=False`` pending tasks are cancelled best-effort. Running
+        pipelines are not interrupted and clean themselves up through _finish.
+        """
+        if not wait:
+            for pipeline_id in self._cancel_pending_futures():
+                self._monitor.terminate(pipeline_id)
+                self._emit(PipelineLifecycleEvent.CANCELLED, pipeline_id, attempt=0)
+        self._executor.shutdown(wait=wait, cancel_futures=not wait)
+
+    def _execute(self, pipeline_id: str, pipeline: Pipeline) -> list[IData]:
+        attempt = 1
         try:
             self._emit(PipelineLifecycleEvent.BEFORE_RUN, pipeline_id)
-            attempt = 1
             while True:
+                self._monitor.mark_running(pipeline_id, attempt)
                 try:
                     results = pipeline.run()
                     self._emit(PipelineLifecycleEvent.AFTER_RUN, pipeline_id, results=results)
+                    self._monitor.complete(pipeline_id)
                     return results
                 except PipelineExecutionError as exc:
                     self._emit(
@@ -76,15 +161,68 @@ class ThreadedPipelineRunner(IPipelineRunner):
                         exc,
                     )
                     if not self._retry_policy.should_retry(attempt, exc):
+                        self._monitor.fail(pipeline_id, exc, attempt)
                         raise
+                    next_attempt = attempt + 1
+                    self._emit(
+                        PipelineLifecycleEvent.ON_RETRY,
+                        pipeline_id,
+                        attempt=next_attempt,
+                    )
                     delay = self._retry_policy.wait_seconds(attempt)
                     if delay > 0:
                         time.sleep(delay)
-                    attempt += 1
-                    self._emit(PipelineLifecycleEvent.ON_RETRY, pipeline_id, attempt=attempt)
+                    attempt = next_attempt
+                except Exception as exc:
+                    self._monitor.fail(pipeline_id, exc, attempt)
+                    raise
+        except Exception as exc:
+            self._fail_if_not_terminal(pipeline_id, exc, attempt)
+            raise
         finally:
+            self._finish(pipeline_id)
+
+    def _begin_sync(self, pipeline_id: str) -> None:
+        rejected_error: PipelineRunAlreadyActiveError | None = None
+        with self._lock:
+            if pipeline_id in self._reserved_ids:
+                rejected_error = PipelineRunAlreadyActiveError(f"Pipeline '{pipeline_id}' is already running.")
+            else:
+                self._reserved_ids.add(pipeline_id)
+                try:
+                    self._monitor.register(pipeline_id)
+                except Exception:
+                    self._reserved_ids.discard(pipeline_id)
+                    raise
+        if rejected_error is not None:
+            self._emit(PipelineLifecycleEvent.REJECTED, pipeline_id, error=rejected_error, attempt=0)
+            raise rejected_error
+
+    def _finish(self, pipeline_id: str) -> None:
+        with self._lock:
             self._futures.pop(pipeline_id, None)
-            self._monitor.complete(pipeline_id)
+            self._reserved_ids.discard(pipeline_id)
+
+    def _fail_if_not_terminal(
+        self,
+        pipeline_id: str,
+        error: Exception | str,
+        attempt: int,
+    ) -> None:
+        snapshot = self._monitor.snapshot(pipeline_id)
+        if snapshot is None or snapshot.state in {PipelineRunState.QUEUED, PipelineRunState.RUNNING}:
+            self._monitor.fail(pipeline_id, error, attempt)
+
+    def _cancel_pending_futures(self) -> list[str]:
+        cancelled_ids: list[str] = []
+        with self._lock:
+            for pipeline_id, future in list(self._futures.items()):
+                if not future.cancel():
+                    continue
+                self._futures.pop(pipeline_id, None)
+                self._reserved_ids.discard(pipeline_id)
+                cancelled_ids.append(pipeline_id)
+        return cancelled_ids
 
     def _emit(
         self,
@@ -96,11 +234,12 @@ class ThreadedPipelineRunner(IPipelineRunner):
     ) -> None:
         if self._lifecycle_bus is None:
             return
-        payload = PipelineLifecyclePayload(
+        lifecycle_event = create_pipeline_lifecycle_event(
             event=event,
             pipeline_id=pipeline_id,
-            results=results or [],
+            source=type(self).__name__,
+            results=results,
             error=error,
             attempt=attempt,
         )
-        self._lifecycle_bus.dispatch(payload)
+        self._lifecycle_bus.dispatch(lifecycle_event)

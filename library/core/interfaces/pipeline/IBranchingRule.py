@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from library.core.events.DomainEvent import DomainEvent
+from library.core.events.Event import Event
 from library.core.pipeline.PipelineContext import PipelineContext
 
 
@@ -25,10 +25,10 @@ class IBranchingRule(ABC):
     Example
     -------
     >>> class TrackingLostBranch(IBranchingRule):
-    ...     def matches(self, event: DomainEvent) -> bool:
+    ...     def matches(self, event: Event) -> bool:
     ...         return event.event_type == "tracking_lost"
     ...
-    ...     def build_context(self, event: DomainEvent) -> PipelineContext:
+    ...     def build_context(self, event: Event) -> PipelineContext:
     ...         return PipelineContext(
     ...             frame_extractor=...,
     ...             signal_extractor=...,
@@ -37,7 +37,7 @@ class IBranchingRule(ABC):
     """
 
     @abstractmethod
-    def matches(self, event: DomainEvent) -> bool:
+    def matches(self, event: Event) -> bool:
         """
         Return ``True`` if *event* should trigger a secondary pipeline.
 
@@ -54,7 +54,7 @@ class IBranchingRule(ABC):
         """
 
     @abstractmethod
-    def build_context(self, event: DomainEvent) -> PipelineContext:
+    def build_context(self, event: Event) -> PipelineContext:
         """
         Build the PipelineContext for the secondary pipeline.
 

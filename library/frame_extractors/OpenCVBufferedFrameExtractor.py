@@ -8,12 +8,11 @@ import cv2
 
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 
 
 class OpenCVBufferedFrameExtractor(IFrameExtractor):
-    """Read a video with OpenCV and expose cleaned frames through a FrameBuffer."""
+    """Read a video with OpenCV and expose raw frames through a FrameBuffer."""
 
     def __init__(
         self,
@@ -31,7 +30,7 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
         if self.stride <= 0:
             raise ValueError("stride must be greater than 0")
 
-    def extract(self, frame_cleaners: Iterable[IFrameCleaner]) -> FrameBuffer:
+    def extract(self) -> FrameBuffer:
         buffer = self.buffer.clone_empty()
         cap = cv2.VideoCapture(self.path)
 
@@ -62,12 +61,7 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
                     timestamp_seconds=timestamp_seconds,
                     metadata={"source_path": self.path},
                 )
-
-                cleaned_frame = frame
-                for cleaner in frame_cleaners:
-                    cleaned_frame = cleaner.clean(cleaned_frame)
-
-                buffer.put(cleaned_frame)
+                buffer.put(frame)
                 yielded_frames += 1
 
                 if self.max_frames is not None and yielded_frames >= self.max_frames:

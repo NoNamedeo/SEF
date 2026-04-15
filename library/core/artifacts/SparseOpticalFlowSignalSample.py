@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.abstractions.ISignalSample import ISignalSample
+from library.core.interfaces.ISignalSample import ISignalSample
 
 BoundingBox = tuple[int, int, int, int]
 Point2D = tuple[float, float]

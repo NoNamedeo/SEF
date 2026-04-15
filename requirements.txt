@@ -1,5 +1,7 @@
 matplotlib
 numpy==2.4.4
 opencv-contrib-python==4.13.0.92
+Pillow>=10.0.0
 setuptools==82.0.1
 streamlit==1.56.0
+streamlit-drawable-canvas==0.9.3

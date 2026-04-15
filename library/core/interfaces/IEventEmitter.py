@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from collections.abc import Mapping
+from typing import Any
 
-if TYPE_CHECKING:
-    from library.core.events.EventBus import EventBus
+from library.core.events.Event import Event
+from library.core.interfaces.pipeline.IEventBus import IEventBus
 
 log = logging.getLogger(__name__)
 
@@ -38,10 +39,6 @@ class IEventEmitter:
     ...             if tracking_lost(frame):
     ...                 self.emit("tracking_lost", {"frame_index": frame.index})
     ...         return Signal(samples)
-
-    The Orchestrator will receive the event through the EventBus and
-    evaluate its IBranchingRules to decide whether to spawn a secondary
-    pipeline.
     """
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
@@ -51,18 +48,33 @@ class IEventEmitter:
     # ── EventBus injection ───────────────────────────────────────────────────
 
     @property
-    def event_bus(self) -> EventBus | None:
+    def event_bus(self) -> IEventBus | None:
         """Return the currently injected EventBus, or None."""
         return getattr(self, "_event_bus", None)
 
     @event_bus.setter
-    def event_bus(self, bus: EventBus | None) -> None:
+    def event_bus(self, bus: IEventBus | None) -> None:
         """
         Inject an EventBus.
 
         Called by Pipeline._inject_event_bus() before execution.
         """
         self._event_bus = bus
+
+    @property
+    def event_metadata(self) -> Mapping[str, Any]:
+        """Return metadata automatically attached to emitted events."""
+        return getattr(self, "_event_metadata", {})
+
+    @event_metadata.setter
+    def event_metadata(self, metadata: Mapping[str, Any]) -> None:
+        """
+        Inject execution metadata.
+
+        Pipeline uses this to propagate execution-scoped values, such as the
+        current pipeline id, without coupling components to the orchestrator.
+        """
+        self._event_metadata = dict(metadata)
 
     # ── Emit convenience ─────────────────────────────────────────────────────
 
@@ -85,12 +97,14 @@ class IEventEmitter:
         if bus is None:
             return
 
-        from library.core.events.DomainEvent import DomainEvent
-
-        event = DomainEvent(
+        event_payload = {
+            **(payload or {}),
+            **self.event_metadata,
+        }
+        event = Event(
             event_type=event_type,
             source=type(self).__name__,
-            payload=payload or {},
+            payload=event_payload,
         )
         log.debug("IEventEmitter.emit: %s", event)
         bus.dispatch(event)
