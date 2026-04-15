@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+from pathlib import Path
+from tempfile import gettempdir
 import time
 
+import cv2
 import numpy as np
 
+from library.analyzers.HorizontalVelocityAnalyzer import HorizontalVelocityAnalyzer
+from library.analyzers.VerticalFrequencyAnalyzer import VerticalFrequencyAnalyzer
+from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+from library.analyzers.VerticalVelocityAnalyzer import VerticalVelocityAnalyzer
 from library.core.artifacts.BoxSignalSample import BoxSignalSample
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
@@ -29,6 +36,16 @@ from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
+from library.frame_cleaners.OpenCVBackgroundSubtractionFrameCleaner import OpenCVBackgroundSubtractionFrameCleaner
+from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
+from library.frame_cleaners.OpenCVResizeFrameCleaner import OpenCVResizeFrameCleaner
+from library.frame_cleaners.SmoothingFrameCleaner import SmoothingFrameCleaner
+from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
+from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
+from library.visualizers.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
 
 # ---------------------------------------------------------------------------
 # Minimal in-memory components used by the examples.
@@ -100,11 +117,7 @@ class ScaleSignalCleaner(ISignalCleaner):
                 BoxSignalSample(
                     frame_index=sample.frame_index,
                     box=sample.box,
-                    centroid=(
-                        None
-                        if centroid is None
-                        else (centroid[0], centroid[1] * self._factor)
-                    ),
+                    centroid=(None if centroid is None else (centroid[0], centroid[1] * self._factor)),
                     timestamp_seconds=sample.timestamp_seconds,
                     metadata=sample.metadata,
                 )
@@ -143,7 +156,44 @@ class ConsoleVisualizer(IVisualizer):
 
     def visualize(self, data: IData) -> None:
         if isinstance(data, TwoDimGraphData):
-            print(f"visualizer received {data.label}: {data.y}")
+            print(f"visualizer received {data.label}: {format_series(data.y)}")
+
+
+class SyntheticVideoTracker:
+    """
+    Deterministic tracker used by the realistic example.
+
+    It keeps the example stable across machines while still exercising the
+    real OpenCV frame extraction, frame-cleaning, signal-cleaning and analyzer
+    pipeline.
+    """
+
+    def __init__(
+        self,
+        horizontal_speed: int = 3,
+        vertical_amplitude: int = 14,
+        vertical_period: float = 7.0,
+    ) -> None:
+        self._horizontal_speed = horizontal_speed
+        self._vertical_amplitude = vertical_amplitude
+        self._vertical_period = vertical_period
+        self._start_box = (0, 0, 0, 0)
+        self._frame_index = 0
+
+    def init(self, _frame: np.ndarray, box: tuple[int, int, int, int]) -> bool:
+        self._start_box = box
+        self._frame_index = 0
+        return True
+
+    def update(self, _frame: np.ndarray) -> tuple[bool, tuple[int, int, int, int]]:
+        self._frame_index += 1
+        return True, moving_object_box(
+            self._frame_index,
+            start_box=self._start_box,
+            horizontal_speed=self._horizontal_speed,
+            vertical_amplitude=self._vertical_amplitude,
+            vertical_period=self._vertical_period,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -204,6 +254,120 @@ def build_config_context() -> PipelineContext:
     return ConfigPipelineBuilder(build_example_registry()).build_context(config)
 
 
+def moving_object_box(
+    frame_index: int,
+    start_box: tuple[int, int, int, int] = (24, 70, 28, 24),
+    horizontal_speed: int = 3,
+    vertical_amplitude: int = 14,
+    vertical_period: float = 7.0,
+) -> tuple[int, int, int, int]:
+    """Deterministic motion model shared by the video generator and tracker."""
+    x, y, width, height = start_box
+    vertical_offset = int(vertical_amplitude * np.sin(frame_index / vertical_period))
+    return x + frame_index * horizontal_speed, y + vertical_offset, width, height
+
+
+def create_realistic_demo_video(
+    path: Path,
+    frame_count: int = 120,
+    size: tuple[int, int] = (320, 180),
+    fps: float = 24.0,
+) -> Path:
+    """
+    Create a deterministic synthetic traffic-like clip.
+
+    The file is intentionally generated at runtime so the example exercises
+    the real OpenCV video path without requiring checked-in media assets.
+    """
+    if path.exists():
+        return path
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    writer = cv2.VideoWriter(
+        str(path),
+        cv2.VideoWriter_fourcc(*"MJPG"),
+        fps,
+        size,
+    )
+    if not writer.isOpened():
+        raise RuntimeError(f"Cannot create demo video at {path}")
+
+    try:
+        width, height = size
+        for frame_index in range(frame_count):
+            frame = np.zeros((height, width, 3), dtype=np.uint8)
+
+            # Background lanes and static visual noise make cleaners meaningful.
+            cv2.line(frame, (0, 115), (width, 115), (45, 45, 45), 2)
+            cv2.line(frame, (0, 145), (width, 145), (35, 35, 35), 2)
+            cv2.rectangle(frame, (210, 35), (248, 58), (35, 65, 110), -1)
+
+            x, y, box_width, box_height = moving_object_box(frame_index)
+            cv2.rectangle(
+                frame,
+                (x, y),
+                (x + box_width, y + box_height),
+                (40, 210, 255),
+                -1,
+            )
+            cv2.circle(frame, (x + 6, y + box_height), 4, (20, 20, 20), -1)
+            cv2.circle(frame, (x + box_width - 6, y + box_height), 4, (20, 20, 20), -1)
+
+            writer.write(frame)
+    finally:
+        writer.release()
+
+    return path
+
+
+def build_realistic_sync_context(video_path: Path) -> PipelineContext:
+    """
+    Heavier real-world-style composition.
+
+    This example uses concrete OpenCV components but remains deterministic:
+    the video is generated locally and the tracker is injected, so no manual
+    ROI selection, camera, GUI window, or external file is required.
+    """
+    start_box = moving_object_box(0)
+    return (
+        FluentPipelineBuilder()
+        .with_frame_extractor(
+            OpenCVBufferedFrameExtractor(
+                path=video_path,
+                config={"resize": (320, 180), "stride": 1, "max_frames": 90},
+            )
+        )
+        .with_frame_cleaners(
+            [
+                OpenCVResizeFrameCleaner(size=(320, 180)),
+                SmoothingFrameCleaner(alpha=0.82, reset_threshold=65.0),
+                OpenCVBackgroundSubtractionFrameCleaner(method="MOG2"),
+                OpenCVGrayFrameCleaner(),
+            ]
+        )
+        .with_signal_extractor(
+            OpenCVBufferedSignalExtractor(
+                tracker_type="MIL",
+                start_box=start_box,
+                tracker_factory=SyntheticVideoTracker,
+                config={"show": True},
+            )
+        )
+        .add_signal_cleaner(MovingAverageCleaner(window_size=7))
+        .with_analyzers(
+            [
+                VerticalPositionAnalyzer(config={"use_timestamps": True}),
+                VerticalVelocityAnalyzer(config={"use_timestamps": True}),
+                HorizontalVelocityAnalyzer(config={"use_timestamps": True}),
+                VerticalFrequencyAnalyzer(),
+            ]
+        )
+        .add_visualizer_for_results(ConsoleVisualizer(), [0, 1, 2, 3])
+        .add_visualizer_for_results(MatplotlibFunctionVisualizer(config={"show": True}), [0])
+        .build_context()
+    )
+
+
 # ---------------------------------------------------------------------------
 # Usage examples.
 # ---------------------------------------------------------------------------
@@ -215,6 +379,27 @@ def example_sync_run() -> None:
     try:
         print_example_header("sync run")
         results = orchestrator.run(build_direct_context(), pipeline_id="sync-demo")
+        print_result_summary(results)
+    finally:
+        orchestrator.shutdown()
+
+
+def example_sync_run_2() -> None:
+    """
+    Realistic synchronous run with concrete OpenCV components.
+
+    It simulates a heavier application use case: video extraction, multiple
+    frame cleaners, signal extraction, signal smoothing, multiple analyzers
+    and selective visualization, all through the orchestrator facade.
+    """
+    video_path = create_realistic_demo_video(Path(gettempdir()) / "sef-realistic-sync-demo.avi")
+    orchestrator = PipelineOrchestrator()
+    try:
+        print_example_header("realistic sync run")
+        results = orchestrator.run(
+            build_realistic_sync_context(video_path),
+            pipeline_id="realistic-sync-demo",
+        )
         print_result_summary(results)
     finally:
         orchestrator.shutdown()
@@ -253,10 +438,7 @@ def example_async_multi_pipeline() -> None:
         orchestrator.submit(build_fluent_context(), pipeline_id="async-b")
         wait_until_idle(runner)
         for snapshot in runner.snapshots():
-            print(
-                f"snapshot {snapshot.pipeline_id}: "
-                f"state={snapshot.state}, attempt={snapshot.attempt}, error={snapshot.error}"
-            )
+            print(f"snapshot {snapshot.pipeline_id}: state={snapshot.state}, attempt={snapshot.attempt}, error={snapshot.error}")
     finally:
         runner.shutdown()
 
@@ -314,7 +496,7 @@ def print_example_header(title: str) -> None:
 def print_result_summary(results: list[IData]) -> None:
     for result in results:
         if isinstance(result, TwoDimGraphData):
-            print(f"- {result.label}: {result.y}")
+            print(f"- {result.label}: points={len(result.y)}, y={format_series(result.y)}, metadata={format_metadata(result.metadata)}")
         else:
             print(f"- {type(result).__name__}")
 
@@ -324,13 +506,25 @@ def print_event(event: Event) -> None:
     print(f"event {event.event_type} from {event.source} pipeline={pipeline_id}")
 
 
+def format_series(values: list[float], max_items: int = 8) -> list[float | str]:
+    if len(values) <= max_items:
+        return values
+    head = [round(value, 3) for value in values[: max_items // 2]]
+    tail = [round(value, 3) for value in values[-max_items // 2 :]]
+    return [*head, "...", *tail]
+
+
+def format_metadata(metadata: dict) -> dict:
+    return {key: round(float(value), 3) if isinstance(value, np.generic) else value for key, value in metadata.items()}
+
+
 def wait_until_idle(runner: ThreadedPipelineRunner, timeout: float = 3.0) -> None:
     deadline = time.monotonic() + timeout
     while runner.active_ids() and time.monotonic() < deadline:
         time.sleep(0.01)
 
 
-def main() -> None:
+def full_simple_example() -> None:
     """Run a compact tour of the core usage modes."""
     example_sync_run()
     example_fluent_builder()
@@ -340,5 +534,9 @@ def main() -> None:
     example_visualizer_targeting()
 
 
+def single_example() -> None:
+    example_sync_run_2()
+
+
 if __name__ == "__main__":
-    main()
+    single_example()
