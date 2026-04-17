@@ -72,6 +72,12 @@ class BranchingCoordinator:
                         context=context,
                         source=type(self).__name__,
                         correlation_id=event.correlation_id or event.event_id,
+                        execution_metadata={
+                            "parent_pipeline_id": str(event.payload.get("pipeline_id", "")) or None,
+                            "branch_rule": type(rule).__name__,
+                            "trigger_event_type": event.event_type,
+                            "trigger_source": event.source,
+                        },
                     )
                 )
             except Exception as exc:

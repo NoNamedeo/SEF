@@ -17,7 +17,7 @@ FIRST_FRAME      = "sef_first_frame"        # np.ndarray  BGR
 FRAME_META       = "sef_frame_meta"         # dict  {fps, width, height, total_frames, duration_s}
 ROI_BOX          = "sef_roi_box"            # tuple[int,int,int,int]  (x,y,w,h)
 BARRIERS         = "sef_barriers"           # dict[str, ((x1,y1),(x2,y2))]
-PIPELINE_RESULTS = "sef_pipeline_results"   # list[IData]
+PIPELINE_OUTPUTS = "sef_pipeline_outputs"   # PipelineOutputs
 PIPELINE_CONFIG  = "sef_pipeline_config"    # dict  — last config used in Config Builder
 LOG_RECORDS      = "sef_log_records"        # list[dict]
 
@@ -39,5 +39,5 @@ def clear(key: str) -> None:
 
 def clear_run_state() -> None:
     """Reset all pipeline-run-specific keys (call before a new run)."""
-    for k in (PIPELINE_RESULTS, ROI_BOX, BARRIERS):
+    for k in (PIPELINE_OUTPUTS, ROI_BOX, BARRIERS):
         clear(k)

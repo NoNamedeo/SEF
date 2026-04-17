@@ -23,7 +23,7 @@ if str(_ROOT) not in sys.path:
 from ui.components.video_selector import render_video_selector  # noqa: E402
 from ui.components.roi_selector import render_roi_selector  # noqa: E402
 from ui.components.barrier_selector import render_barrier_selector  # noqa: E402
-from ui.components.results_viewer import render_results  # noqa: E402
+from ui.components.pipeline_outputs_viewer import render_pipeline_outputs  # noqa: E402
 from ui.services.pipeline_service import run_sync  # noqa: E402
 from ui.state import session  # noqa: E402
 
@@ -59,7 +59,7 @@ with st.sidebar:
     last_resize_key = "pr_last_resize"
     previous_resize = st.session_state.get(last_resize_key, resize_val)
     if previous_resize != resize_val:
-        for k in (session.ROI_BOX, session.BARRIERS, session.PIPELINE_RESULTS):
+        for k in (session.ROI_BOX, session.BARRIERS, session.PIPELINE_OUTPUTS):
             session.clear(k)
     st.session_state[last_resize_key] = resize_val
 
@@ -119,13 +119,13 @@ video_path, first_frame, meta = render_video_selector()
 if video_path:
     previous_video = session.get(session.VIDEO_PATH)
     if previous_video != video_path:
-        for k in (session.ROI_BOX, session.BARRIERS, session.PIPELINE_RESULTS):
+        for k in (session.ROI_BOX, session.BARRIERS, session.PIPELINE_OUTPUTS):
             session.clear(k)
     session.put(session.VIDEO_PATH, video_path)
     session.put(session.FIRST_FRAME, first_frame)
     session.put(session.FRAME_META, meta)
 else:
-    for k in (session.VIDEO_PATH, session.FIRST_FRAME, session.FRAME_META, session.ROI_BOX, session.BARRIERS, session.PIPELINE_RESULTS):
+    for k in (session.VIDEO_PATH, session.FIRST_FRAME, session.FRAME_META, session.ROI_BOX, session.BARRIERS, session.PIPELINE_OUTPUTS):
         session.clear(k)
 
 # ── Gate: nothing below renders until a video is selected ────────────────────
@@ -169,7 +169,7 @@ with tab_roi:
         current_barrier_names = tuple(barrier_names)
         previous_barrier_names = st.session_state.get(last_barrier_names_key, current_barrier_names)
         if previous_barrier_names != current_barrier_names:
-            for k in (session.BARRIERS, session.PIPELINE_RESULTS):
+            for k in (session.BARRIERS, session.PIPELINE_OUTPUTS):
                 session.clear(k)
         st.session_state[last_barrier_names_key] = current_barrier_names
 
@@ -242,6 +242,7 @@ with tab_run:
                 signal_extractor = OpenCVBufferedSignalExtractor(
                     tracker_type=_tracker,
                     start_box=roi_box,
+                    config={"source_path": video_path},
                 )
                 signal_cleaners = []
                 if _mavg:
@@ -280,7 +281,7 @@ with tab_run:
                     start_box=roi_box,
                     max_objects=session.get("pr_max_obj") or 3,
                     similarity_threshold=session.get("pr_sim") or 0.6,
-                    config={"show": False},
+                    config={"show": False, "source_path": video_path},
                 )
                 signal_cleaners = []
                 analyzers = [MultiObjectBarrierCountingAnalyzer(barriers=barriers)]
@@ -299,14 +300,17 @@ with tab_run:
 
         with st.spinner("Analisi in corso…"):
             try:
-                results = run_sync(context)
-                session.put(session.PIPELINE_RESULTS, results)
-                st.success(f"Analisi completata — {len(results)} risultato/i.")
+                outputs = run_sync(context)
+                session.put(session.PIPELINE_OUTPUTS, outputs)
+                st.success(
+                    "Analisi completata — "
+                    f"{len(outputs.results)} risultato/i, {len(outputs.artifacts)} artifact."
+                )
             except Exception as exc:
                 st.error(f"Pipeline fallita: {exc}")
                 st.stop()
 
-    results = session.get(session.PIPELINE_RESULTS)
-    if results:
+    outputs = session.get(session.PIPELINE_OUTPUTS)
+    if outputs:
         st.divider()
-        render_results(results)
+        render_pipeline_outputs(outputs, title="Pipeline outputs")

@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from library.core.interfaces.IData import IData
+from library.core.visualization.VisualArtifact import VisualArtifact
+from library.core.visualization.VisualizationContext import VisualizationContext
 
 
 class IVisualizer(ABC):
@@ -11,5 +13,9 @@ class IVisualizer(ABC):
         self.config = config or {}
 
     @abstractmethod
-    def visualize(self, data: IData):
-        """Render analytical data."""
+    def render(
+        self,
+        data: IData,
+        context: VisualizationContext | None = None,
+    ) -> tuple[VisualArtifact, ...]:
+        """Build UI-agnostic visual artifacts from analytical data."""

@@ -40,7 +40,7 @@ if str(_ROOT) not in sys.path:
 
 from ui.services.registry_bootstrap import get_registry  # noqa: E402
 from ui.services.pipeline_service import run_sync, context_from_config  # noqa: E402
-from ui.components.results_viewer import render_results  # noqa: E402
+from ui.components.pipeline_outputs_viewer import render_pipeline_outputs  # noqa: E402
 from ui.state import session  # noqa: E402
 
 st.set_page_config(page_title="Config Builder — SEF", layout="wide", page_icon="⚙️")
@@ -168,14 +168,17 @@ if st.button("Costruisci ed esegui", type="primary", width="stretch", disabled=r
 
     with st.spinner("Pipeline in esecuzione…"):
         try:
-            results = run_sync(ctx)
-            session.put(session.PIPELINE_RESULTS, results)
-            st.success(f"Pipeline completata — {len(results)} risultato/i.")
+            outputs = run_sync(ctx)
+            session.put(session.PIPELINE_OUTPUTS, outputs)
+            st.success(
+                "Pipeline completata — "
+                f"{len(outputs.results)} risultato/i, {len(outputs.artifacts)} artifact."
+            )
         except Exception as exc:
             st.error(f"Pipeline fallita: {exc}")
             st.stop()
 
-results = session.get(session.PIPELINE_RESULTS)
-if results:
+outputs = session.get(session.PIPELINE_OUTPUTS)
+if outputs:
     st.divider()
-    render_results(results)
+    render_pipeline_outputs(outputs, title="Pipeline outputs")

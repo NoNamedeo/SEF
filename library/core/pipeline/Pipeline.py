@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import logging
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IEventEmitter import IEventEmitter
@@ -9,6 +10,10 @@ from library.core.interfaces.pipeline.IEventBus import IEventBus
 from library.core.pipeline.FrameCleaningStage import FrameCleaningStage
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
+from library.core.visualization.PipelineOutputs import PipelineOutputs
+from library.core.visualization.PipelineRunMetadata import PipelineRunMetadata
+from library.core.visualization.VisualArtifact import VisualArtifact
+from library.core.visualization.VisualizationContext import VisualizationContext
 
 log = logging.getLogger(__name__)
 
@@ -57,16 +62,18 @@ class Pipeline:
         context: PipelineContext,
         event_bus: IEventBus | None = None,
         pipeline_id: str | None = None,
+        execution_metadata: Mapping[str, Any] | None = None,
     ) -> None:
         self._context = context
         self._event_bus = event_bus
         self._pipeline_id = pipeline_id
+        self._execution_metadata = dict(execution_metadata or {})
         self._frame_cleaning_stage = FrameCleaningStage()
 
     # ── Public API ──────────────────────────────────────────────────────────
 
-    def run(self) -> list[IData]:
-        """Execute the full pipeline and return one IData per analyzer."""
+    def run(self) -> PipelineOutputs:
+        """Execute the full pipeline and return results plus visual artifacts."""
         self._inject_event_bus(self._event_bus)
         ctx = self._context
 
@@ -89,9 +96,17 @@ class Pipeline:
             data = self._run_step(f"analysis[{i}]", lambda a=analyzer: a.analyze(signal))
             results.append(data)
 
-        self._run_visualizers(results)
-
-        return results
+        artifacts = self._run_visualizers(results)
+        outputs = PipelineOutputs(
+            results=tuple(results),
+            artifacts=tuple(artifacts),
+            metadata=PipelineRunMetadata(
+                pipeline_id=self._resolved_pipeline_id(),
+                generated_at=datetime.now(timezone.utc),
+                execution_metadata=dict(self._execution_metadata),
+            ),
+        )
+        return outputs
 
     # ── Internals ───────────────────────────────────────────────────────────
 
@@ -122,15 +137,23 @@ class Pipeline:
                 )
 
     def _event_metadata(self) -> dict[str, str]:
-        if self._pipeline_id is None:
-            return {}
-        return {"pipeline_id": self._pipeline_id}
+        return self._runtime_metadata()
 
-    def _run_visualizers(self, results: list[IData]) -> None:
+    def _runtime_metadata(self) -> dict[str, Any]:
+        metadata = dict(self._execution_metadata)
+        if self._pipeline_id is not None:
+            metadata.setdefault("pipeline_id", self._pipeline_id)
+        return metadata
+
+    def _resolved_pipeline_id(self) -> str:
+        return self._pipeline_id or "pipeline-unknown"
+
+    def _run_visualizers(self, results: list[IData]) -> list[VisualArtifact]:
         bindings = [
             *(VisualizerBinding(visualizer) for visualizer in self._context.visualizers),
             *self._context.visualizer_bindings,
         ]
+        artifacts: list[VisualArtifact] = []
 
         for binding_index, binding in enumerate(bindings):
             target_indexes = self._run_step(
@@ -139,10 +162,33 @@ class Pipeline:
             )
             for result_index in target_indexes:
                 data = results[result_index]
-                self._run_step(
+                rendered = self._run_step(
                     f"visualisation[{binding_index}][{result_index}]",
-                    lambda v=binding.visualizer, d=data: v.visualize(d),
+                    lambda v=binding.visualizer, d=data, ctx=self._visualization_context(binding, result_index, data): v.render(d, ctx),
                 )
+                artifacts.extend(rendered)
+        return artifacts
+
+    def _visualization_context(
+        self,
+        binding: VisualizerBinding,
+        result_index: int,
+        data: IData,
+    ) -> VisualizationContext:
+        analyzer_name = None
+        if result_index < len(self._context.analyzers):
+            analyzer_name = type(self._context.analyzers[result_index]).__name__
+        source_metadata = getattr(data, "metadata", {})
+        if not isinstance(source_metadata, Mapping):
+            source_metadata = {}
+        return VisualizationContext(
+            pipeline_id=self._pipeline_id,
+            analyzer_name=analyzer_name,
+            visualizer_name=type(binding.visualizer).__name__,
+            result_index=result_index,
+            source_metadata=source_metadata,
+            execution_metadata=dict(self._execution_metadata),
+        )
 
     @staticmethod
     def _resolve_visualizer_targets(

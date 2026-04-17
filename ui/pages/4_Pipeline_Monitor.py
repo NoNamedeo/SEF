@@ -30,12 +30,14 @@ from ui.services.pipeline_service import (  # noqa: E402
     event_records,
     clear_event_records,
     context_from_config,
+    pipeline_outputs,
 )
 from ui.state import session  # noqa: E402
 from ui.components.pipeline_status_dashboard import (  # noqa: E402
     render_event_timeline,
     render_pipeline_status_dashboard,
 )
+from ui.components.pipeline_outputs_viewer import render_pipeline_outputs  # noqa: E402
 
 st.set_page_config(page_title="Pipeline Monitor — SEF", layout="wide", page_icon="📊")
 st.title("📊 Pipeline Monitor")
@@ -118,9 +120,8 @@ with col_info:
     3. Lo stato viene tracciato da `InMemoryPipelineMonitor`.
     4. Puoi cancellare una pipeline attiva dal pannello **Controls**.
 
-    > **Nota**: i risultati di pipeline asincrone non vengono (ancora) persistiti
-    > automaticamente in questa UI — usa il **Pipeline Runner** per risultati
-    > interattivi.
+    > Gli output completati vengono persistiti nello store applicativo e
+    > possono essere ispezionati direttamente da questa pagina.
     """)
 
     st.markdown("**Architettura**")
@@ -171,5 +172,29 @@ with st.expander("🚧 Funzionalità in sviluppo", expanded=False):
     | Pipeline condizionali | `BranchingCoordinator` + `IBranchingRule` | ✅ Disponibile |
     | Retry configurabili | `FixedRetryPolicy` / `ExponentialBackoffRetryPolicy` | ✅ Disponibile oggi |
     | Lifecycle events | `EventBus` + `PipelineLifecycleEvent` | ✅ Disponibile oggi |
-    | Risultati persistiti async | — | 🔴 Da implementare |
+    | Output persistiti async | `IPipelineOutputStore` | ✅ Disponibile |
     """)
+
+
+def render_stored_outputs_browser() -> None:
+    available_ids = [
+        snapshot.pipeline_id
+        for snapshot in snapshots()
+        if pipeline_outputs(snapshot.pipeline_id) is not None
+    ]
+    if not available_ids:
+        return
+
+    st.markdown("### Stored outputs")
+    selected_pipeline_id = st.selectbox(
+        "Inspect pipeline outputs",
+        available_ids,
+        index=len(available_ids) - 1,
+        key="monitor_stored_output_pipeline_id",
+    )
+    outputs = pipeline_outputs(selected_pipeline_id)
+    if outputs is not None:
+        render_pipeline_outputs(outputs, title=selected_pipeline_id)
+
+
+render_stored_outputs_browser()

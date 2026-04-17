@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, Mapping
 from uuid import uuid4
 
 from library.core.events.Event import Event
 from library.core.events.PipelineEvent import PipelineEvent
-from library.core.interfaces.IData import IData
 from library.core.interfaces.pipeline.IEventBus import IEventBus
 from library.core.interfaces.pipeline.IPipelineFactory import IPipelineFactory
 from library.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
@@ -18,6 +18,7 @@ from library.core.pipeline.PipelineErrors import (
     PipelineRunAlreadyActiveError,
 )
 from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
+from library.core.visualization.PipelineOutputs import PipelineOutputs
 
 __all__ = ["PipelineOrchestrator"]
 log = logging.getLogger(__name__)
@@ -55,7 +56,8 @@ class PipelineOrchestrator:
         self,
         context: PipelineContext,
         pipeline_id: str | None = None,
-    ) -> list[IData]:
+        execution_metadata: Mapping[str, Any] | None = None,
+    ) -> PipelineOutputs:
         """
         Execute a pipeline synchronously and return analyzer results.
 
@@ -63,7 +65,7 @@ class PipelineOrchestrator:
         it is injected into event-emitting components before execution.
         """
         resolved_pipeline_id = pipeline_id or self._new_pipeline_id()
-        pipeline = self._build_pipeline(context, resolved_pipeline_id)
+        pipeline = self._build_pipeline(context, resolved_pipeline_id, execution_metadata=execution_metadata)
 
         return self._runner.run(resolved_pipeline_id, pipeline)
 
@@ -71,10 +73,11 @@ class PipelineOrchestrator:
         self,
         context: PipelineContext,
         pipeline_id: str | None = None,
+        execution_metadata: Mapping[str, Any] | None = None,
     ) -> str:
         """Submit a pipeline for background execution and return its id."""
         resolved_pipeline_id = pipeline_id or self._new_pipeline_id()
-        pipeline = self._build_pipeline(context, resolved_pipeline_id)
+        pipeline = self._build_pipeline(context, resolved_pipeline_id, execution_metadata=execution_metadata)
 
         self._runner.submit(resolved_pipeline_id, pipeline)
         return resolved_pipeline_id
@@ -126,17 +129,28 @@ class PipelineOrchestrator:
             return
 
         try:
-            self.submit(trigger.context, pipeline_id=trigger.pipeline_id)
+            self.submit(
+                trigger.context,
+                pipeline_id=trigger.pipeline_id,
+                execution_metadata=trigger.execution_metadata,
+            )
         except PipelineRunAlreadyActiveError:
             log.info("Pipeline trigger ignored because '%s' is already running.", trigger.pipeline_id)
         except Exception:
             log.exception("Pipeline trigger submit failed for %s", trigger.pipeline_id)
 
-    def _build_pipeline(self, context: PipelineContext, pipeline_id: str) -> Pipeline:
+    def _build_pipeline(
+        self,
+        context: PipelineContext,
+        pipeline_id: str,
+        *,
+        execution_metadata: Mapping[str, Any] | None = None,
+    ) -> Pipeline:
         return self._pipeline_factory.create(
             context,
             event_bus=self._domain_bus,
             pipeline_id=pipeline_id,
+            execution_metadata=execution_metadata,
         )
 
     @staticmethod

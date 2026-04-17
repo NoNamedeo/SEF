@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Any
 
 from library.core.events.Event import Event
 
@@ -20,7 +19,8 @@ def create_pipeline_lifecycle_event(
     event: PipelineLifecycleEvent,
     pipeline_id: str,
     source: str,
-    results: list[Any] | None = None,
+    result_count: int | None = None,
+    artifact_count: int | None = None,
     error: Exception | None = None,
     attempt: int = 1,
     correlation_id: str | None = None,
@@ -32,7 +32,8 @@ def create_pipeline_lifecycle_event(
         correlation_id=correlation_id or pipeline_id,
         payload={
             "pipeline_id": pipeline_id,
-            "results": None if results is None else list(results),
+            "result_count": result_count,
+            "artifact_count": artifact_count,
             "error": error,
             "attempt": attempt,
         },

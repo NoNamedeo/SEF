@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Mapping
 
 from library.core.events.Event import Event
 from library.core.pipeline.PipelineErrors import InvalidPipelineTriggerEventError
@@ -14,6 +14,7 @@ class PipelineTrigger:
 
     pipeline_id: str
     context: PipelineContext
+    execution_metadata: Mapping[str, Any]
 
 
 class PipelineEvent:
@@ -32,6 +33,7 @@ class PipelineEvent:
         context: PipelineContext,
         source: str,
         correlation_id: str | None = None,
+        execution_metadata: Mapping[str, Any] | None = None,
     ) -> Event:
         return Event(
             event_type=PipelineEvent.event_type,
@@ -40,6 +42,7 @@ class PipelineEvent:
             payload={
                 "pipeline_id": pipeline_id,
                 "context": context,
+                "execution_metadata": dict(execution_metadata or {}),
             },
         )
 
@@ -63,7 +66,17 @@ class PipelineEvent:
                 "Pipeline trigger payload field 'context' must be a PipelineContext."
             )
 
-        return PipelineTrigger(pipeline_id=pipeline_id, context=context)
+        execution_metadata = event.payload.get("execution_metadata", {})
+        if not isinstance(execution_metadata, Mapping):
+            raise InvalidPipelineTriggerEventError(
+                "Pipeline trigger payload field 'execution_metadata' must be a mapping."
+            )
+
+        return PipelineTrigger(
+            pipeline_id=pipeline_id,
+            context=context,
+            execution_metadata=dict(execution_metadata),
+        )
 
     @staticmethod
     def _require_string(event: Event, key: str) -> str:

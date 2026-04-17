@@ -21,21 +21,23 @@ if str(_ROOT) not in sys.path:
 from library.core.events.Event import Event  # noqa: E402
 from library.core.events.EventBus import EventBus  # noqa: E402
 from library.core.events.PipelineEvent import PipelineEvent  # noqa: E402
-from library.core.interfaces.IData import IData  # noqa: E402
 from library.core.pipeline.BranchingCoordinator import BranchingCoordinator  # noqa: E402
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder  # noqa: E402
 from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor  # noqa: E402
+from library.core.pipeline.InMemoryPipelineOutputStore import InMemoryPipelineOutputStore  # noqa: E402
 from library.core.pipeline.PipelineContext import PipelineContext  # noqa: E402
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator  # noqa: E402
 from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot  # noqa: E402
 from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner  # noqa: E402
 from library.core.plugins.PluginRegistry import PluginRegistry  # noqa: E402
 from library.core.plugins.PluginRegistry import PluginCategory  # noqa: E402
+from library.core.visualization.PipelineOutputs import PipelineOutputs  # noqa: E402
 from library.retry_policies.NoRetryPolicy import NoRetryPolicy  # noqa: E402
 
 log = logging.getLogger(__name__)
 
 _monitor: InMemoryPipelineMonitor | None = None
+_output_store: InMemoryPipelineOutputStore | None = None
 _runner: ThreadedPipelineRunner | None = None
 _orchestrator: PipelineOrchestrator | None = None
 _lifecycle_bus: EventBus | None = None
@@ -76,11 +78,19 @@ def _get_monitor() -> InMemoryPipelineMonitor:
     return _monitor
 
 
+def _get_output_store() -> InMemoryPipelineOutputStore:
+    global _output_store
+    if _output_store is None:
+        _output_store = InMemoryPipelineOutputStore(max_entries=48)
+    return _output_store
+
+
 def _get_runner() -> ThreadedPipelineRunner:
     global _runner
     if _runner is None:
         _runner = ThreadedPipelineRunner(
             monitor=_get_monitor(),
+            output_store=_get_output_store(),
             retry_policy=NoRetryPolicy(),
             lifecycle_bus=_get_lifecycle_bus(),
             max_workers=4,
@@ -99,8 +109,8 @@ def _get_orchestrator() -> PipelineOrchestrator:
     return _orchestrator
 
 
-def run_sync(context: PipelineContext, pipeline_id: str | None = None) -> list[IData]:
-    """Execute a pipeline synchronously and return analyzer results."""
+def run_sync(context: PipelineContext, pipeline_id: str | None = None) -> PipelineOutputs:
+    """Execute a pipeline synchronously and return full pipeline outputs."""
     return _get_orchestrator().run(context, pipeline_id=pipeline_id)
 
 
@@ -124,6 +134,11 @@ def active_ids() -> list[str]:
 def snapshots() -> list[PipelineRunSnapshot]:
     """Return rich snapshots for all known pipeline runs."""
     return _get_runner().snapshots()
+
+
+def pipeline_outputs(pipeline_id: str) -> PipelineOutputs | None:
+    """Return persisted outputs for a completed pipeline, if available."""
+    return _get_output_store().get(pipeline_id)
 
 
 def event_records() -> list[Event]:
@@ -217,5 +232,24 @@ def _normalise_config(config: dict[str, Any]) -> dict[str, Any]:
         if extractor_config:
             params["config"] = extractor_config
         frame_extractor["params"] = params
+
+    frame_source_path = None
+    if isinstance(frame_extractor, dict):
+        params = frame_extractor.get("params", {})
+        if isinstance(params, dict):
+            raw_path = params.get("path")
+            if isinstance(raw_path, str) and raw_path:
+                frame_source_path = raw_path
+
+    signal_extractor = pipeline.get("signal_extractor")
+    if isinstance(signal_extractor, dict):
+        params = dict(signal_extractor.get("params", {}))
+        extractor_config = dict(params.get("config", {}))
+        extractor_name = str(signal_extractor.get("name", ""))
+        if extractor_name in {"opencv_tracker", "opencv_multi_tracker"} and frame_source_path and "source_path" not in extractor_config:
+            extractor_config["source_path"] = frame_source_path
+        if extractor_config:
+            params["config"] = extractor_config
+        signal_extractor["params"] = params
 
     return normalised

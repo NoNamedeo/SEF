@@ -9,15 +9,16 @@ from library.core.events.PipelineLifecycleEvent import (
     PipelineLifecycleEvent,
     create_pipeline_lifecycle_event,
 )
-from library.core.interfaces.IData import IData
 from library.core.interfaces.pipeline.IEventBus import IEventBus
 from library.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
+from library.core.interfaces.pipeline.IPipelineOutputStore import IPipelineOutputStore
 from library.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
 from library.core.interfaces.pipeline.IRetryPolicy import IRetryPolicy
 from library.core.pipeline.Pipeline import Pipeline, PipelineExecutionError
 from library.core.pipeline.PipelineErrors import PipelineRunAlreadyActiveError
 from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
 from library.retry_policies.NoRetryPolicy import NoRetryPolicy
+from library.core.visualization.PipelineOutputs import PipelineOutputs
 
 log = logging.getLogger(__name__)
 
@@ -42,11 +43,13 @@ class ThreadedPipelineRunner(IPipelineRunner):
     def __init__(
         self,
         monitor: IPipelineMonitor,
+        output_store: IPipelineOutputStore | None = None,
         retry_policy: IRetryPolicy | None = None,
         lifecycle_bus: IEventBus | None = None,
         max_workers: int = 4,
     ) -> None:
         self._monitor = monitor
+        self._output_store = output_store
         self._retry_policy = retry_policy or NoRetryPolicy()
         self._lifecycle_bus = lifecycle_bus
         self._executor = ThreadPoolExecutor(
@@ -54,18 +57,18 @@ class ThreadedPipelineRunner(IPipelineRunner):
             thread_name_prefix="sef-pipeline",
         )
         self._lock = threading.Lock()
-        self._futures: dict[str, Future[list[IData]]] = {}
+        self._futures: dict[str, Future[PipelineOutputs]] = {}
         self._reserved_ids: set[str] = set()
 
-    def run(self, pipeline_id: str, pipeline: Pipeline) -> list[IData]:
+    def run(self, pipeline_id: str, pipeline: Pipeline) -> PipelineOutputs:
         """Execute a pipeline synchronously through the same retry/lifecycle path."""
         self._begin_sync(pipeline_id)
         return self._execute(pipeline_id, pipeline)
 
-    def submit(self, pipeline_id: str, pipeline: Pipeline) -> Future[list[IData]]:
+    def submit(self, pipeline_id: str, pipeline: Pipeline) -> Future[PipelineOutputs]:
         rejected_error: PipelineRunAlreadyActiveError | None = None
         submit_failed_error: Exception | None = None
-        future: Future[list[IData]] | None = None
+        future: Future[PipelineOutputs] | None = None
         with self._lock:
             if pipeline_id in self._reserved_ids:
                 rejected_error = PipelineRunAlreadyActiveError(f"Pipeline '{pipeline_id}' is already running.")
@@ -73,6 +76,7 @@ class ThreadedPipelineRunner(IPipelineRunner):
                 self._reserved_ids.add(pipeline_id)
                 registered = False
                 try:
+                    self._clear_previous_outputs(pipeline_id)
                     self._monitor.register(pipeline_id)
                     registered = True
                     future = self._executor.submit(
@@ -107,6 +111,7 @@ class ThreadedPipelineRunner(IPipelineRunner):
                 return False
             self._futures.pop(pipeline_id, None)
             self._reserved_ids.discard(pipeline_id)
+        self._delete_outputs(pipeline_id)
         self._monitor.terminate(pipeline_id)
         self._emit(PipelineLifecycleEvent.CANCELLED, pipeline_id, attempt=0)
         return True
@@ -136,17 +141,23 @@ class ThreadedPipelineRunner(IPipelineRunner):
                 self._emit(PipelineLifecycleEvent.CANCELLED, pipeline_id, attempt=0)
         self._executor.shutdown(wait=wait, cancel_futures=not wait)
 
-    def _execute(self, pipeline_id: str, pipeline: Pipeline) -> list[IData]:
+    def _execute(self, pipeline_id: str, pipeline: Pipeline) -> PipelineOutputs:
         attempt = 1
         try:
             self._emit(PipelineLifecycleEvent.BEFORE_RUN, pipeline_id)
             while True:
                 self._monitor.mark_running(pipeline_id, attempt)
                 try:
-                    results = pipeline.run()
-                    self._emit(PipelineLifecycleEvent.AFTER_RUN, pipeline_id, results=results)
+                    outputs = pipeline.run()
+                    self._save_outputs(pipeline_id, outputs)
+                    self._emit(
+                        PipelineLifecycleEvent.AFTER_RUN,
+                        pipeline_id,
+                        result_count=len(outputs.results),
+                        artifact_count=len(outputs.artifacts),
+                    )
                     self._monitor.complete(pipeline_id)
-                    return results
+                    return outputs
                 except PipelineExecutionError as exc:
                     self._emit(
                         PipelineLifecycleEvent.ON_ERROR,
@@ -174,9 +185,11 @@ class ThreadedPipelineRunner(IPipelineRunner):
                         time.sleep(delay)
                     attempt = next_attempt
                 except Exception as exc:
+                    self._delete_outputs(pipeline_id)
                     self._monitor.fail(pipeline_id, exc, attempt)
                     raise
         except Exception as exc:
+            self._delete_outputs(pipeline_id)
             self._fail_if_not_terminal(pipeline_id, exc, attempt)
             raise
         finally:
@@ -190,6 +203,7 @@ class ThreadedPipelineRunner(IPipelineRunner):
             else:
                 self._reserved_ids.add(pipeline_id)
                 try:
+                    self._clear_previous_outputs(pipeline_id)
                     self._monitor.register(pipeline_id)
                 except Exception:
                     self._reserved_ids.discard(pipeline_id)
@@ -222,13 +236,30 @@ class ThreadedPipelineRunner(IPipelineRunner):
                 self._futures.pop(pipeline_id, None)
                 self._reserved_ids.discard(pipeline_id)
                 cancelled_ids.append(pipeline_id)
+                self._delete_outputs(pipeline_id)
         return cancelled_ids
+
+    def _clear_previous_outputs(self, pipeline_id: str) -> None:
+        if self._output_store is None:
+            return
+        self._output_store.delete(pipeline_id)
+
+    def _save_outputs(self, pipeline_id: str, outputs: PipelineOutputs) -> None:
+        if self._output_store is None:
+            return
+        self._output_store.save(pipeline_id, outputs)
+
+    def _delete_outputs(self, pipeline_id: str) -> None:
+        if self._output_store is None:
+            return
+        self._output_store.delete(pipeline_id)
 
     def _emit(
         self,
         event: PipelineLifecycleEvent,
         pipeline_id: str,
-        results: list[IData] | None = None,
+        result_count: int | None = None,
+        artifact_count: int | None = None,
         error: Exception | None = None,
         attempt: int = 1,
     ) -> None:
@@ -238,7 +269,8 @@ class ThreadedPipelineRunner(IPipelineRunner):
             event=event,
             pipeline_id=pipeline_id,
             source=type(self).__name__,
-            results=results,
+            result_count=result_count,
+            artifact_count=artifact_count,
             error=error,
             attempt=attempt,
         )

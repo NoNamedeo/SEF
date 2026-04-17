@@ -16,10 +16,12 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from ui.components.visual_artifact_viewer import render_visual_artifacts  # noqa: E402
+
 
 def render_results(results: list) -> None:
     """
-    Render a list of IData objects returned by PipelineOrchestrator.run().
+    Render analytical IData results.
 
     Supports
     --------
@@ -68,8 +70,7 @@ def _render_two_dim(data, idx: int = 0) -> None:
     st.subheader(data.title or f"Risultato {idx + 1}")
 
     viz = MatplotlibFunctionVisualizer(config={"show": False, "show_scatter": True})
-    fig, _ = viz.visualize(data)
-    st.pyplot(fig, width="stretch")
+    render_visual_artifacts(viz.render(data), show_metadata=False, show_title=False, key_prefix=f"two_dim_{idx}")
 
     # Summary metrics
     if data.x and data.y:
@@ -92,8 +93,7 @@ def _render_category(data, idx: int = 0) -> None:
     st.subheader(f"Conteggio attraversamenti barriere")
 
     viz = MatplotlibHistogramVisualizer(config={"show": False})
-    fig, _ = viz.visualize(data)
-    st.pyplot(fig, width="stretch")
+    render_visual_artifacts(viz.render(data), show_metadata=False, show_title=False, key_prefix=f"category_{idx}")
 
     # Metrics per category
     if data.categories:
@@ -119,8 +119,7 @@ def _render_trajectory(data, idx: int = 0) -> None:
 
         st.subheader("Traiettoria")
         viz = MatplotlibTrajectoryVisualizer(config={"show": False})
-        fig, _ = viz.visualize(data)
-        st.pyplot(fig, width="stretch")
+        render_visual_artifacts(viz.render(data), show_metadata=False, show_title=False, key_prefix=f"trajectory_{idx}")
     except Exception as exc:
         st.warning(f"Visualizzazione traiettoria non disponibile: {exc}")
         st.code(str(data))

@@ -36,6 +36,9 @@ from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
+from library.core.visualization.PipelineOutputs import PipelineOutputs
+from library.core.visualization.VisualArtifact import TextArtifact, VisualArtifact
+from library.core.visualization.VisualizationContext import VisualizationContext
 from library.frame_cleaners.OpenCVBackgroundSubtractionFrameCleaner import OpenCVBackgroundSubtractionFrameCleaner
 from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
 from library.frame_cleaners.OpenCVResizeFrameCleaner import OpenCVResizeFrameCleaner
@@ -154,9 +157,20 @@ class VelocityAnalyzer(IAnalyzer):
 class ConsoleVisualizer(IVisualizer):
     """Small visualizer that prints which analysis result it received."""
 
-    def visualize(self, data: IData) -> None:
+    def render(
+        self,
+        data: IData,
+        context: VisualizationContext | None = None,
+    ) -> tuple[VisualArtifact, ...]:
         if isinstance(data, TwoDimGraphData):
-            print(f"visualizer received {data.label}: {format_series(data.y)}")
+            return (
+                TextArtifact(
+                    kind="text",
+                    title=f"Console summary · {data.label}",
+                    content=str(format_series(data.y)),
+                ),
+            )
+        return ()
 
 
 class SyntheticVideoTracker:
@@ -378,8 +392,8 @@ def example_sync_run() -> None:
     orchestrator = PipelineOrchestrator()
     try:
         print_example_header("sync run")
-        results = orchestrator.run(build_direct_context(), pipeline_id="sync-demo")
-        print_result_summary(results)
+        outputs = orchestrator.run(build_direct_context(), pipeline_id="sync-demo")
+        print_result_summary(outputs)
     finally:
         orchestrator.shutdown()
 
@@ -396,11 +410,11 @@ def example_sync_run_2() -> None:
     orchestrator = PipelineOrchestrator()
     try:
         print_example_header("realistic sync run")
-        results = orchestrator.run(
+        outputs = orchestrator.run(
             build_realistic_sync_context(video_path),
             pipeline_id="realistic-sync-demo",
         )
-        print_result_summary(results)
+        print_result_summary(outputs)
     finally:
         orchestrator.shutdown()
 
@@ -410,8 +424,8 @@ def example_fluent_builder() -> None:
     orchestrator = PipelineOrchestrator()
     try:
         print_example_header("fluent builder")
-        results = orchestrator.run(build_fluent_context(), pipeline_id="fluent-demo")
-        print_result_summary(results)
+        outputs = orchestrator.run(build_fluent_context(), pipeline_id="fluent-demo")
+        print_result_summary(outputs)
     finally:
         orchestrator.shutdown()
 
@@ -421,8 +435,8 @@ def example_config_builder() -> None:
     orchestrator = PipelineOrchestrator()
     try:
         print_example_header("config builder")
-        results = orchestrator.run(build_config_context(), pipeline_id="config-demo")
-        print_result_summary(results)
+        outputs = orchestrator.run(build_config_context(), pipeline_id="config-demo")
+        print_result_summary(outputs)
     finally:
         orchestrator.shutdown()
 
@@ -493,12 +507,13 @@ def print_example_header(title: str) -> None:
     print(f"\n[{title}]")
 
 
-def print_result_summary(results: list[IData]) -> None:
-    for result in results:
+def print_result_summary(outputs: PipelineOutputs) -> None:
+    for result in outputs.results:
         if isinstance(result, TwoDimGraphData):
             print(f"- {result.label}: points={len(result.y)}, y={format_series(result.y)}, metadata={format_metadata(result.metadata)}")
         else:
             print(f"- {type(result).__name__}")
+    print(f"- artifacts: {len(outputs.artifacts)}")
 
 
 def print_event(event: Event) -> None:

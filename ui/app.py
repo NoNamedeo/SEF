@@ -33,7 +33,7 @@ from ui.components.pipeline_status_dashboard import (  # noqa: E402
     render_event_timeline,
     render_pipeline_status_dashboard,
 )
-from ui.components.results_viewer import render_results  # noqa: E402
+from ui.components.pipeline_outputs_viewer import render_pipeline_outputs  # noqa: E402
 from ui.components.roi_selector import render_roi_selector  # noqa: E402
 from ui.components.video_selector import render_video_selector  # noqa: E402
 from ui.services.pipeline_canvas_service import build_pipeline_canvas_model  # noqa: E402
@@ -46,6 +46,7 @@ from ui.services.pipeline_service import (  # noqa: E402
     dispatch_trigger,
     event_integration_status,
     event_records,
+    pipeline_outputs,
     run_sync,
     snapshots,
     submit_async,
@@ -237,7 +238,7 @@ def render_video_and_geometry() -> None:
     if video_path:
         previous_video = session.get(session.VIDEO_PATH)
         if previous_video != video_path:
-            for key in (session.ROI_BOX, session.BARRIERS, session.PIPELINE_RESULTS):
+            for key in (session.ROI_BOX, session.BARRIERS, session.PIPELINE_OUTPUTS):
                 session.clear(key)
         session.put(session.VIDEO_PATH, video_path)
         session.put(session.FIRST_FRAME, first_frame)
@@ -259,7 +260,7 @@ def render_video_and_geometry() -> None:
     last_resize_key = "studio_last_resize"
     previous_resize = st.session_state.get(last_resize_key, resize)
     if previous_resize != resize:
-        for key in (session.ROI_BOX, session.BARRIERS, session.PIPELINE_RESULTS):
+        for key in (session.ROI_BOX, session.BARRIERS, session.PIPELINE_OUTPUTS):
             session.clear(key)
     st.session_state[last_resize_key] = resize
 
@@ -267,7 +268,7 @@ def render_video_and_geometry() -> None:
     last_barrier_names_key = "studio_last_barrier_names"
     previous_barrier_names = st.session_state.get(last_barrier_names_key, barrier_names)
     if previous_barrier_names != barrier_names:
-        for key in (session.BARRIERS, session.PIPELINE_RESULTS):
+        for key in (session.BARRIERS, session.PIPELINE_OUTPUTS):
             session.clear(key)
     st.session_state[last_barrier_names_key] = barrier_names
 
@@ -659,7 +660,7 @@ def render_execution(registry) -> None:
         for issue in issues:
             st.warning(issue)
 
-    col_run, col_monitor = st.columns([0.95, 1.05], gap="large")
+    col_run, col_monitor = st.columns([0.55, 1.45], gap="large")
     with col_run:
         st.markdown("### Esecuzione")
         pipeline_id = st.text_input(
@@ -667,22 +668,22 @@ def render_execution(registry) -> None:
             value=f"ui-{uuid.uuid4().hex[:8]}",
             key="sef_run_pipeline_id",
         )
-        c1, c2 = st.columns(2)
-        sync_clicked = c1.button("Run sync", type="primary", width="stretch", disabled=bool(issues))
-        async_clicked = c2.button("Submit async", width="stretch", disabled=bool(issues))
+        sync_clicked = st.button("Run sync", type="primary", width="stretch", disabled=bool(issues))
+        async_clicked = st.button("Submit async", width="stretch", disabled=bool(issues))
 
         if sync_clicked:
             execute_sync(registry, config, pipeline_id)
         if async_clicked:
             execute_async(registry, config, pipeline_id)
 
-        results = session.get(session.PIPELINE_RESULTS)
-        if results:
-            render_results(results)
+        outputs = session.get(session.PIPELINE_OUTPUTS)
+        if outputs:
+            render_pipeline_outputs(outputs, title="Current run outputs")
 
     with col_monitor:
         render_pipeline_status_dashboard(snapshots(), event_records(), title="Pipeline status")
         render_event_timeline(event_records())
+        render_stored_outputs_browser()
         with st.expander("Controls", expanded=False):
             c1, c2 = st.columns(2)
             if c1.button("Refresh", width="stretch"):
@@ -772,10 +773,10 @@ def render_config_lab(registry) -> None:
         try:
             config = json.loads(raw_config)
             context = context_from_config(config, registry)
-            results = run_sync(context, pipeline_id=f"config-{uuid.uuid4().hex[:8]}")
-            session.put(session.PIPELINE_RESULTS, results)
-            st.success(f"Pipeline completata: {len(results)} risultati.")
-            render_results(results)
+            outputs = run_sync(context, pipeline_id=f"config-{uuid.uuid4().hex[:8]}")
+            session.put(session.PIPELINE_OUTPUTS, outputs)
+            st.success(f"Pipeline completata: {len(outputs.results)} risultati, {len(outputs.artifacts)} artifact.")
+            render_pipeline_outputs(outputs, title="Config outputs")
         except Exception as exc:
             st.error(f"Esecuzione fallita: {exc}")
 
@@ -784,9 +785,9 @@ def execute_sync(registry, config: dict[str, Any], pipeline_id: str) -> None:
     try:
         context = context_from_config(config, registry)
         with st.spinner("Pipeline in esecuzione..."):
-            results = run_sync(context, pipeline_id=pipeline_id)
-        session.put(session.PIPELINE_RESULTS, results)
-        st.success(f"Pipeline completata: {len(results)} risultati.")
+            outputs = run_sync(context, pipeline_id=pipeline_id)
+        session.put(session.PIPELINE_OUTPUTS, outputs)
+        st.success(f"Pipeline completata: {len(outputs.results)} risultati, {len(outputs.artifacts)} artifact.")
     except Exception as exc:
         st.error(f"Pipeline fallita: {exc}")
 
@@ -871,7 +872,10 @@ def build_signal_extractor_config(extractor: str) -> dict[str, Any]:
     params: dict[str, Any] = {
         "tracker_type": st.session_state["sef_builder_tracker"],
         "start_box": roi,
-        "config": {"show": st.session_state["sef_builder_show_windows"]},
+        "config": {
+            "show": st.session_state["sef_builder_show_windows"],
+            "source_path": session.get(session.VIDEO_PATH),
+        },
     }
     if extractor == "opencv_multi_tracker":
         params.update(
@@ -881,6 +885,23 @@ def build_signal_extractor_config(extractor: str) -> dict[str, Any]:
             }
         )
     return {"name": extractor, "params": params}
+
+
+def render_stored_outputs_browser() -> None:
+    available_ids = [snapshot.pipeline_id for snapshot in snapshots() if pipeline_outputs(snapshot.pipeline_id) is not None]
+    if not available_ids:
+        return
+
+    st.markdown("### Stored outputs")
+    selected_pipeline_id = st.selectbox(
+        "Inspect pipeline outputs",
+        available_ids,
+        index=len(available_ids) - 1,
+        key="sef_stored_output_pipeline_id",
+    )
+    outputs = pipeline_outputs(selected_pipeline_id)
+    if outputs is not None:
+        render_pipeline_outputs(outputs, title=selected_pipeline_id)
 
 
 def build_signal_cleaner_config() -> list[dict[str, Any]]:
