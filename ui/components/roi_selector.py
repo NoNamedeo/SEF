@@ -1,29 +1,59 @@
-"""
-Interactive ROI selector component.
+"""Interactive ROI selector with a direct overlay on the first frame.
 
-The user draws a rectangle on the first frame with the mouse.
-Returns (x, y, w, h) in the *resized* frame's coordinate space,
-or None if nothing has been drawn yet.
+The user draws the ROI on top of the frame itself. The selection is stored in
+session state as ``(x, y, w, h)`` in the same coordinate space used by the
+pipeline configuration.
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
+from typing import Any
 
 import cv2
 import numpy as np
 import streamlit as st
-from PIL import Image
 
-_ROOT = Path(__file__).resolve().parents[2]
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
+from ui.components.frame_overlay_editor import render_frame_overlay_editor
 
-# Apply compatibility patch BEFORE importing streamlit_drawable_canvas.
-from ui.components import _canvas_compat  # noqa: F401, E402
 
-# Maximum canvas width in the Streamlit layout (px).
-_CANVAS_MAX_W = 720
+def _to_rect(selection: dict[str, Any]) -> tuple[int, int, int, int]:
+    """Convert a component payload into an integer rectangle."""
+    x = int(round(float(selection.get("x", 0))))
+    y = int(round(float(selection.get("y", 0))))
+    w = int(round(float(selection.get("w", 1))))
+    h = int(round(float(selection.get("h", 1))))
+    return x, y, w, h
+
+
+def _clamp_rect(rect: tuple[int, int, int, int], width: int, height: int) -> tuple[int, int, int, int]:
+    """Clamp a rectangle to the bounds of the current frame."""
+    x, y, w, h = rect
+    max_x = max(0, width - 1)
+    max_y = max(0, height - 1)
+    x = max(0, min(x, max_x))
+    y = max(0, min(y, max_y))
+    w = max(1, min(w, width - x))
+    h = max(1, min(h, height - y))
+    return x, y, w, h
+
+
+def _current_roi(state_key: str) -> tuple[int, int, int, int] | None:
+    value = st.session_state.get(state_key)
+    if value is None:
+        return None
+    x, y, w, h = value
+    return int(x), int(y), int(w), int(h)
+
+
+def _is_new_event(event: dict[str, Any], state_key: str) -> bool:
+    """Return True only for unprocessed component events."""
+    event_id = event.get("event_id")
+    if not event_id:
+        return False
+    processed_key = f"{state_key}_last_event_id"
+    if st.session_state.get(processed_key) == event_id:
+        return False
+    st.session_state[processed_key] = event_id
+    return True
 
 
 def render_roi_selector(
@@ -31,85 +61,41 @@ def render_roi_selector(
     resize: tuple[int, int] | None = None,
     key: str = "roi_canvas",
 ) -> tuple[int, int, int, int] | None:
-    """
-    Render an interactive ROI-drawing canvas.
+    """Render the ROI selector and return the confirmed ROI, if any."""
+    target = cv2.resize(frame_bgr, resize) if resize is not None else frame_bgr
+    height, width = target.shape[:2]
 
-    Parameters
-    ----------
-    frame_bgr : np.ndarray
-        First video frame in BGR (as returned by cv2).
-    resize : (width, height) | None
-        If provided the frame is resized to this resolution before display;
-        returned coordinates are in *this* space (matching the pipeline config).
-    key : str
-        Streamlit widget key — must be unique per page.
+    state_key = f"{key}_roi_box"
+    current_roi = _current_roi(state_key)
+    current_shape = None if current_roi is None else {
+        "x": current_roi[0],
+        "y": current_roi[1],
+        "w": current_roi[2],
+        "h": current_roi[3],
+    }
 
-    Returns
-    -------
-    (x, y, w, h) in the (possibly resized) frame's coordinate space,
-    or None if no rectangle has been drawn.
-    """
-    try:
-        from streamlit_drawable_canvas import st_canvas
-    except ImportError:
-        st.error("Installa `streamlit-drawable-canvas` per usare il selettore ROI interattivo.")
-        return None
+    st.caption("Trascina il rettangolo direttamente sul frame e rilascia per confermare.")
 
-    # ── Prepare the background image ──────────────────────────────────────────
-    if resize is not None:
-        target = cv2.resize(frame_bgr, resize)
-    else:
-        target = frame_bgr
-
-    h_ref, w_ref = target.shape[:2]
-
-    # Scale down to fit the UI column (never upscale).
-    ui_scale = min(1.0, _CANVAS_MAX_W / w_ref)
-    ui_w = int(w_ref * ui_scale)
-    ui_h = int(h_ref * ui_scale)
-
-    display = cv2.resize(target, (ui_w, ui_h)) if ui_scale < 1.0 else target
-    pil_bg  = Image.fromarray(cv2.cvtColor(display, cv2.COLOR_BGR2RGB))
-
-    st.caption("🖱 Disegna un rettangolo attorno all'oggetto da tracciare.")
-
-    canvas_result = st_canvas(
-        fill_color   = "rgba(64, 214, 124, 0.15)",
-        stroke_width = 2,
-        stroke_color = "#40d67c",
-        background_image = pil_bg,
-        update_streamlit = True,
-        height       = ui_h,
-        width        = ui_w,
-        drawing_mode = "rect",
-        key          = key,
+    event = render_frame_overlay_editor(
+        target,
+        mode="rect",
+        current_shape=current_shape,
+        confirmed_shapes=[],
+        current_label="ROI",
+        instruction="Trascina il rettangolo sopra il frame. Rilascia per confermare. Usa Azzera per rimuoverla.",
+        stroke_color="#40d67c",
+        fill_color="rgba(64, 214, 124, 0.18)",
+        key=f"{key}_editor",
     )
 
-    # ── Parse canvas output ───────────────────────────────────────────────────
-    if (
-        canvas_result.json_data is None
-        or not canvas_result.json_data.get("objects")
-    ):
-        return None
+    if isinstance(event, dict) and _is_new_event(event, state_key):
+        action = event.get("action")
+        if action == "draw":
+            shape = event.get("shape")
+            if isinstance(shape, dict):
+                st.session_state[state_key] = _clamp_rect(_to_rect(shape), width, height)
+        elif action == "clear":
+            if state_key in st.session_state:
+                del st.session_state[state_key]
 
-    obj = canvas_result.json_data["objects"][-1]
-
-    # Canvas coords → reference-frame coords
-    x = int(obj.get("left",   0) / ui_scale)
-    y = int(obj.get("top",    0) / ui_scale)
-    w = int(obj.get("width",  1) / ui_scale)
-    h = int(obj.get("height", 1) / ui_scale)
-
-    # Normalise negative dimensions (drawn right→left or bottom→top).
-    if w < 0:
-        x, w = x + w, -w
-    if h < 0:
-        y, h = y + h, -h
-
-    # Clamp to frame bounds.
-    x = max(0, min(x, w_ref - 1))
-    y = max(0, min(y, h_ref - 1))
-    w = max(1, min(w, w_ref - x))
-    h = max(1, min(h, h_ref - y))
-
-    return x, y, w, h
+    return _current_roi(state_key)

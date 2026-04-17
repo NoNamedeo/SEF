@@ -7,6 +7,7 @@ InMemoryPipelineMonitor per tracciare gli ID attivi e cancellare esecuzioni.
 Nota: il wiring event-driven (PipelineOrchestrator + PipelineEvent) è
 in sviluppo — questa pagina usa il runner direttamente via pipeline_service.
 """
+
 from __future__ import annotations
 
 import sys
@@ -20,73 +21,83 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from ui.services.registry_bootstrap import get_registry      # noqa: E402
-from ui.services.pipeline_service   import (                 # noqa: E402
+from ui.services.registry_bootstrap import get_registry  # noqa: E402
+from ui.services.pipeline_service import (  # noqa: E402
     submit_async,
     cancel_async,
     active_ids,
+    snapshots,
+    event_records,
+    clear_event_records,
     context_from_config,
 )
-from ui.state import session                                  # noqa: E402
+from ui.state import session  # noqa: E402
+from ui.components.pipeline_status_dashboard import (  # noqa: E402
+    render_event_timeline,
+    render_pipeline_status_dashboard,
+)
 
 st.set_page_config(page_title="Pipeline Monitor — SEF", layout="wide", page_icon="📊")
 st.title("📊 Pipeline Monitor")
-st.caption(
-    "Sottometti pipeline in background con ThreadedPipelineRunner, "
-    "monitora gli ID attivi e cancella esecuzioni."
-)
+st.caption("Sottometti pipeline in background con ThreadedPipelineRunner, monitora gli ID attivi e cancella esecuzioni.")
 
 registry = get_registry()
 
-# ── Active pipelines ──────────────────────────────────────────────────────────
-st.subheader("Pipeline attive")
+render_pipeline_status_dashboard(
+    snapshots=snapshots(),
+    events=event_records(),
+    title="Pipeline status",
+)
+render_event_timeline(event_records())
 
-ids = active_ids()
-if ids:
-    st.success(f"{len(ids)} pipeline in esecuzione.")
-    for pid in ids:
-        col_id, col_cancel = st.columns([4, 1])
-        col_id.markdown(f"🔄 `{pid}`")
-        if col_cancel.button("✕ Cancella", key=f"cancel_{pid}"):
-            cancel_async(pid)
-            st.success(f"Richiesta di cancellazione inviata per `{pid}`.")
-            st.rerun()
-else:
-    st.info("Nessuna pipeline attiva al momento.")
+with st.expander("Controls", expanded=False):
+    c1, c2 = st.columns(2)
+    if c1.button("Refresh", width="stretch"):
+        st.rerun()
+    if c2.button("Clear events", width="stretch"):
+        clear_event_records()
+        st.rerun()
 
-if st.button("🔄 Aggiorna stato", key="mon_refresh"):
-    st.rerun()
-
-st.divider()
+    ids = active_ids()
+    if ids:
+        st.markdown("**Cancel best-effort**")
+        for pid in ids:
+            if st.button(f"Cancel {pid}", key=f"cancel_{pid}"):
+                cancel_async(pid)
+                st.success(f"Richiesta di cancellazione inviata per `{pid}`.")
+                st.rerun()
 
 # ── Submit new pipeline ───────────────────────────────────────────────────────
 st.subheader("Sottometti nuova pipeline")
 
-st.caption(
-    "Usa la configurazione salvata nel **Config Builder** oppure "
-    "incolla una nuova configurazione JSON."
-)
+st.caption("Usa la configurazione salvata nel **Config Builder** oppure incolla una nuova configurazione JSON.")
 
 import json
 
-saved_cfg  = session.get(session.PIPELINE_CONFIG)
-default_json = json.dumps(saved_cfg, indent=2) if saved_cfg else json.dumps({
-    "pipeline": {
-        "frame_extractor": {
-            "name": "opencv_buffered",
-            "params": {"path": str(_ROOT / "videos" / "Traffic.mp4"),
-                       "resize": [640, 480], "stride": 3, "max_frames": 200},
+saved_cfg = session.get(session.PIPELINE_CONFIG)
+default_json = (
+    json.dumps(saved_cfg, indent=2)
+    if saved_cfg
+    else json.dumps(
+        {
+            "pipeline": {
+                "frame_extractor": {
+                    "name": "opencv_buffered",
+                    "params": {"path": str(_ROOT / "videos" / "Traffic.mp4"), "resize": [640, 480], "stride": 3, "max_frames": 200},
+                },
+                "frame_cleaners": [{"name": "smoothing"}],
+                "signal_extractor": {
+                    "name": "opencv_tracker",
+                    "params": {"tracker_type": "CSRT", "start_box": [260, 160, 120, 160]},
+                },
+                "signal_cleaners": [{"name": "moving_average", "params": {"window_size": 5}}],
+                "analyzers": [{"name": "vertical_position"}],
+                "visualizers": [],
+            }
         },
-        "frame_cleaners": [{"name": "smoothing"}],
-        "signal_extractor": {
-            "name": "opencv_tracker",
-            "params": {"tracker_type": "CSRT", "start_box": [260, 160, 120, 160]},
-        },
-        "signal_cleaners": [{"name": "moving_average", "params": {"window_size": 5}}],
-        "analyzers": [{"name": "vertical_position"}],
-        "visualizers": [],
-    }
-}, indent=2)
+        indent=2,
+    )
+)
 
 col_form, col_info = st.columns([2, 1])
 
@@ -97,7 +108,7 @@ with col_form:
         key="mon_pid",
     )
 
-    submit_clicked = st.button("▶ Sottometti in background", type="primary", use_container_width=True)
+    submit_clicked = st.button("Sottometti in background", type="primary", width="stretch")
 
 with col_info:
     st.markdown("**Come funziona**")
@@ -105,7 +116,7 @@ with col_info:
     1. Il context viene creato dal config JSON e affidato al `PipelineOrchestrator`.
     2. L'esecuzione avviene su un thread separato: la UI rimane reattiva.
     3. Lo stato viene tracciato da `InMemoryPipelineMonitor`.
-    4. Puoi cancellare una pipeline attiva con il pulsante **✕ Cancella** qui sopra.
+    4. Puoi cancellare una pipeline attiva dal pannello **Controls**.
 
     > **Nota**: i risultati di pipeline asincrone non vengono (ancora) persistiti
     > automaticamente in questa UI — usa il **Pipeline Runner** per risultati
@@ -113,13 +124,16 @@ with col_info:
     """)
 
     st.markdown("**Architettura**")
-    st.code("""
+    st.code(
+        """
 PipelineOrchestrator
   .submit(context, id)
     → ThreadedPipelineRunner
       → Pipeline.run()
       → monitor.complete(id)
-    """, language="text")
+    """,
+        language="text",
+    )
 
 if submit_clicked:
     try:
@@ -134,11 +148,11 @@ if submit_clicked:
         st.error(f"Costruzione contesto fallita: {exc}")
         st.stop()
 
-    pid = (pipeline_id_input.strip() or f"pipeline-{uuid.uuid4().hex[:8]}")
+    pid = pipeline_id_input.strip() or f"pipeline-{uuid.uuid4().hex[:8]}"
     try:
         submit_async(pid, ctx)
         st.success(f"Pipeline `{pid}` sottomessa. Aggiorna il monitor per vedere lo stato.")
-        time.sleep(0.3)   # give the thread a moment to register
+        time.sleep(0.3)  # give the thread a moment to register
         st.rerun()
     except Exception as exc:
         st.error(f"Errore nella sottomissione: {exc}")
@@ -153,8 +167,8 @@ with st.expander("🚧 Funzionalità in sviluppo", expanded=False):
 
     | Funzionalità | Contratto | Stato |
     |---|---|---|
-    | Trigger event-driven | `PipelineOrchestrator` + `PipelineEvent` | 🔶 Subscription commentata |
-    | Pipeline condizionali | `BranchingCoordinator` + `IBranchingRule` | 🔶 Pronto, non wired |
+    | Trigger event-driven | `PipelineOrchestrator` + `PipelineEvent` | ✅ Disponibile |
+    | Pipeline condizionali | `BranchingCoordinator` + `IBranchingRule` | ✅ Disponibile |
     | Retry configurabili | `FixedRetryPolicy` / `ExponentialBackoffRetryPolicy` | ✅ Disponibile oggi |
     | Lifecycle events | `EventBus` + `PipelineLifecycleEvent` | ✅ Disponibile oggi |
     | Risultati persistiti async | — | 🔴 Da implementare |

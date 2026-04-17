@@ -62,6 +62,39 @@ def get_registry() -> PluginRegistry:
     except Exception as exc:
         log.warning("SmoothingFrameCleaner non disponibile: %s", exc)
 
+    try:
+        from library.frame_cleaners.OpenCVResizeFrameCleaner import OpenCVResizeFrameCleaner
+
+        _try_register(registry, PluginCategory.FRAME_CLEANER, "opencv_resize", OpenCVResizeFrameCleaner, "Ridimensiona i frame a una risoluzione fissa.")
+    except Exception as exc:
+        log.warning("OpenCVResizeFrameCleaner non disponibile: %s", exc)
+
+    try:
+        from library.frame_cleaners.OpenCVBackgroundSubtractionFrameCleaner import OpenCVBackgroundSubtractionFrameCleaner
+
+        _try_register(
+            registry,
+            PluginCategory.FRAME_CLEANER,
+            "background_subtraction",
+            OpenCVBackgroundSubtractionFrameCleaner,
+            "Isola oggetti in movimento tramite background subtraction.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVBackgroundSubtractionFrameCleaner non disponibile: %s", exc)
+
+    try:
+        from library.frame_cleaners.OpenCVHistogramEqualizationFrameCleaner import OpenCVHistogramEqualizationFrameCleaner
+
+        _try_register(
+            registry,
+            PluginCategory.FRAME_CLEANER,
+            "histogram_equalization",
+            OpenCVHistogramEqualizationFrameCleaner,
+            "Migliora il contrasto dei frame tramite equalizzazione istogramma.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVHistogramEqualizationFrameCleaner non disponibile: %s", exc)
+
     # ── Signal extractors ─────────────────────────────────────────────────────
     try:
         from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
@@ -85,6 +118,19 @@ def get_registry() -> PluginRegistry:
     except Exception as exc:
         log.warning("OpenCVMultiObjectSignalExtractor non disponibile: %s", exc)
 
+    try:
+        from library.signal_extractors.OpenCVDenseOpticalFlowSignalExtractor import OpenCVDenseFarnebackSignalExtractor
+
+        _try_register(
+            registry,
+            PluginCategory.SIGNAL_EXTRACTOR,
+            "dense_optical_flow",
+            OpenCVDenseFarnebackSignalExtractor,
+            "Estrae un campo di moto denso con Farneback optical flow.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVDenseFarnebackSignalExtractor non disponibile: %s", exc)
+
     # ── Signal cleaners ───────────────────────────────────────────────────────
     try:
         from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
@@ -99,6 +145,13 @@ def get_registry() -> PluginRegistry:
         _try_register(registry, PluginCategory.SIGNAL_CLEANER, "outlier_rejection", OutlierRejectionCleaner, "Rimozione outlier dal segnale.")
     except Exception as exc:
         log.warning("OutlierRejectionCleaner non disponibile: %s", exc)
+
+    try:
+        from library.signal_cleaners.SignalWidenerCleaner import SignalWidenerCleaner
+
+        _try_register(registry, PluginCategory.SIGNAL_CLEANER, "signal_widener", SignalWidenerCleaner, "Amplifica gli spostamenti del segnale rispetto alla media.")
+    except Exception as exc:
+        log.warning("SignalWidenerCleaner non disponibile: %s", exc)
 
     # ── Analyzers ─────────────────────────────────────────────────────────────
     try:
@@ -164,6 +217,19 @@ def get_registry() -> PluginRegistry:
     except Exception as exc:
         log.warning("MultiObjectBarrierCountingAnalyzer non disponibile: %s", exc)
 
+    try:
+        from library.analyzers.DenseOpticalFlowVectorFieldAnalyzer import DenseOpticalFlowVectorFieldAnalyzer
+
+        _try_register(
+            registry,
+            PluginCategory.ANALYZER,
+            "dense_vector_field",
+            DenseOpticalFlowVectorFieldAnalyzer,
+            "Costruisce dati vettoriali da dense optical flow.",
+        )
+    except Exception as exc:
+        log.warning("DenseOpticalFlowVectorFieldAnalyzer non disponibile: %s", exc)
+
     # ── Visualizers ───────────────────────────────────────────────────────────
     try:
         from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
@@ -189,6 +255,46 @@ def get_registry() -> PluginRegistry:
         )
     except Exception as exc:
         log.warning("MatplotlibTrajectoryVisualizer non disponibile: %s", exc)
+
+    try:
+        from library.visualizers.MatplotlibVectorFieldVisualizer import MatplotlibVectorFieldVisualizer
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "matplotlib_vector_field",
+            MatplotlibVectorFieldVisualizer,
+            "Visualizzazione campi vettoriali Matplotlib.",
+        )
+    except Exception as exc:
+        log.warning("MatplotlibVectorFieldVisualizer non disponibile: %s", exc)
+
+    # ── Branching rules ───────────────────────────────────────────────────────
+    try:
+        from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
+
+        _try_register(
+            registry,
+            PluginCategory.BRANCHING_RULE,
+            "default_track_branch",
+            NewTrackBranchingRule,
+            "Branch once when the primary multi-object tracker creates its seed track.",
+        )
+    except Exception as exc:
+        log.warning("NewTrackBranchingRule non disponibile: %s", exc)
+
+    try:
+        from library.visualizers.MatplotlibHeatmapVisualizer import MatplotlibHeatmapVisualizer
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "matplotlib_heatmap",
+            MatplotlibHeatmapVisualizer,
+            "Visualizzazione heatmap Matplotlib.",
+        )
+    except Exception as exc:
+        log.warning("MatplotlibHeatmapVisualizer non disponibile: %s", exc)
 
     loaded = len(registry.list())
     log.info("PluginRegistry pronto: %d plugin caricati.", loaded)

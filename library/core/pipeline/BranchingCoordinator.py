@@ -75,6 +75,19 @@ class BranchingCoordinator:
                     )
                 )
             except Exception as exc:
+                self._trigger_bus.dispatch(
+                    Event(
+                        event_type="pipeline.branching_failed",
+                        source=type(self).__name__,
+                        correlation_id=event.correlation_id or event.event_id,
+                        payload={
+                            "pipeline_id": str(event.payload.get("pipeline_id", "-")),
+                            "rule": type(rule).__name__,
+                            "trigger_event_type": event.event_type,
+                            "error": str(exc),
+                        },
+                    )
+                )
                 log.error(
                     "Branching rule %s raised (skipped): %s",
                     type(rule).__name__,

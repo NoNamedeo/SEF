@@ -152,6 +152,7 @@ def create_builtin_registry() -> PluginRegistry:
     from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
     from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
     from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+    from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
     from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
     registry = PluginRegistry()
@@ -196,6 +197,13 @@ def create_builtin_registry() -> PluginRegistry:
         "matplotlib",
         MatplotlibFunctionVisualizer,
         "Plot analytical data with Matplotlib.",
+    )
+
+    registry.register(
+        PluginCategory.BRANCHING_RULE,
+        "default_track_branch",
+        NewTrackBranchingRule,
+        "Branch once when the primary multi-object tracker creates its seed track.",
     )
 
     return registry

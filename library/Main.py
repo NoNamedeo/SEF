@@ -362,8 +362,8 @@ def build_realistic_sync_context(video_path: Path) -> PipelineContext:
                 VerticalFrequencyAnalyzer(),
             ]
         )
-        .add_visualizer_for_results(ConsoleVisualizer(), [0, 1, 2, 3])
-        .add_visualizer_for_results(MatplotlibFunctionVisualizer(config={"show": True}), [0])
+        .add_visualizer_for_results(ConsoleVisualizer(), [0, 3])
+        .add_visualizer_for_results(MatplotlibFunctionVisualizer(config={"show": True}), [0, 1, 2, 3])
         .build_context()
     )
 

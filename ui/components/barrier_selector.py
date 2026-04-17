@@ -1,63 +1,95 @@
-"""
-Interactive barrier-drawing component.
+"""Interactive barrier selector with a live overlay on the first frame.
 
-The user draws one line per barrier sequentially; each confirmed line is
-overlaid on the background frame.  Returns a dict of
-{barrier_name: ((x1, y1), (x2, y2))} in reference-frame coordinates.
+Each barrier is drawn directly on top of the reference frame. The current
+segment is confirmed as soon as the user releases the pointer, and the last
+confirmed barrier can be undone with the component reset button.
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
+import hashlib
+from typing import Any
 
 import cv2
 import numpy as np
 import streamlit as st
-from PIL import Image, ImageDraw, ImageFont
 
-_ROOT = Path(__file__).resolve().parents[2]
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
-
-# Apply compatibility patch BEFORE importing streamlit_drawable_canvas.
-from ui.components import _canvas_compat  # noqa: F401, E402
-
-_CANVAS_MAX_W = 720
-_PALETTE = ["#FFD232", "#FF6B6B", "#6BAAFF", "#B86BFF", "#6BFFB8", "#FF9F40"]
+from ui.components.frame_overlay_editor import render_frame_overlay_editor
 
 Barrier = tuple[tuple[float, float], tuple[float, float]]
 
+_PALETTE = ["#FFD232", "#FF6B6B", "#6BAAFF", "#B86BFF", "#6BFFB8", "#FF9F40"]
 
-def _overlay_confirmed(
-    frame_bgr: np.ndarray,
+
+def _to_barrier(selection: dict[str, Any]) -> Barrier:
+    """Convert a component payload into a barrier segment."""
+    x1 = float(selection.get("x1", 0))
+    y1 = float(selection.get("y1", 0))
+    x2 = float(selection.get("x2", 0))
+    y2 = float(selection.get("y2", 0))
+    return ((x1, y1), (x2, y2))
+
+
+def _clamp_barrier(barrier: Barrier, width: int, height: int) -> Barrier:
+    """Clamp a barrier to the frame bounds."""
+    (x1, y1), (x2, y2) = barrier
+    max_x = max(0, width - 1)
+    max_y = max(0, height - 1)
+    x1 = float(max(0, min(int(round(x1)), max_x)))
+    y1 = float(max(0, min(int(round(y1)), max_y)))
+    x2 = float(max(0, min(int(round(x2)), max_x)))
+    y2 = float(max(0, min(int(round(y2)), max_y)))
+    return ((x1, y1), (x2, y2))
+
+
+def _barrier_shape(barrier: Barrier) -> dict[str, float]:
+    """Return a JSON-serialisable shape for the overlay component."""
+    (x1, y1), (x2, y2) = barrier
+    return {
+        "x1": float(x1),
+        "y1": float(y1),
+        "x2": float(x2),
+        "y2": float(y2),
+    }
+
+
+def _names_signature(barrier_names: list[str]) -> str:
+    """Return a short hash for the current ordered list of barrier names."""
+    hasher = hashlib.sha1()
+    for name in barrier_names:
+        hasher.update(name.encode("utf-8"))
+        hasher.update(b"\0")
+    return hasher.hexdigest()[:12]
+
+
+def _confirmed_shapes(
     drawn: dict[str, Barrier],
     barrier_names: list[str],
-    ui_scale: float,
-) -> Image.Image:
-    """Return a PIL image with already-confirmed barriers drawn on top."""
-    rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
-    h, w = rgb.shape[:2]
-    ui_w, ui_h = int(w * ui_scale), int(h * ui_scale)
-    if ui_scale < 1.0:
-        rgb = cv2.resize(rgb, (ui_w, ui_h))
-    img = Image.fromarray(rgb)
-    draw = ImageDraw.Draw(img)
-
-    for idx, name in enumerate(barrier_names):
+) -> list[dict[str, Any]]:
+    """Build the confirmed-shape payload expected by the overlay component."""
+    shapes: list[dict[str, Any]] = []
+    for index, name in enumerate(barrier_names):
         if name not in drawn:
             continue
-        (x1, y1), (x2, y2) = drawn[name]
-        color = _PALETTE[idx % len(_PALETTE)]
-        sx1, sy1 = int(x1 * ui_scale), int(y1 * ui_scale)
-        sx2, sy2 = int(x2 * ui_scale), int(y2 * ui_scale)
-        draw.line([(sx1, sy1), (sx2, sy2)], fill=color, width=3)
-        # label near start point
-        lx = min(sx1, sx2) + 4
-        ly = min(sy1, sy2) - 18
-        draw.rectangle([lx - 2, ly - 2, lx + len(name) * 8, ly + 16], fill="#00000099")
-        draw.text((lx, ly), name, fill=color)
+        shapes.append(
+            {
+                "label": name,
+                "color": _PALETTE[index % len(_PALETTE)],
+                "shape": _barrier_shape(drawn[name]),
+            }
+        )
+    return shapes
 
-    return img
+
+def _is_new_event(event: dict[str, Any], state_key: str) -> bool:
+    """Return True only for unprocessed component events."""
+    event_id = event.get("event_id")
+    if not event_id:
+        return False
+    processed_key = f"{state_key}_last_event_id"
+    if st.session_state.get(processed_key) == event_id:
+        return False
+    st.session_state[processed_key] = event_id
+    return True
 
 
 def render_barrier_selector(
@@ -66,43 +98,30 @@ def render_barrier_selector(
     resize: tuple[int, int] | None = None,
     state_key: str = "barriers",
 ) -> dict[str, Barrier]:
-    """
-    Step-by-step interactive barrier-drawing widget.
+    """Render the barrier selector and return the confirmed barriers.
 
     Parameters
     ----------
-    frame_bgr : np.ndarray
-        Reference frame (BGR).
-    barrier_names : list[str]
-        Ordered list of barrier names the user must draw.
-    resize : (width, height) | None
-        Optional resize applied to the reference frame (must match the
-        pipeline's frame_extractor resize setting so coordinates align).
-    state_key : str
-        Prefix for Streamlit session-state keys (unique per page use).
-
-    Returns
-    -------
-    dict  {barrier_name: ((x1, y1), (x2, y2))}  in reference-frame coords.
+    frame_bgr:
+        First frame in BGR format.
+    barrier_names:
+        Ordered names that define the drawing sequence.
+    resize:
+        Optional working resolution used by the pipeline.
+    state_key:
+        Prefix for the selector's internal session-state keys.
     """
-    try:
-        from streamlit_drawable_canvas import st_canvas
-    except ImportError:
-        st.error("Installa `streamlit-drawable-canvas` per disegnare le barriere.")
-        return {}
-
     if not barrier_names:
         st.info("Nessuna barriera richiesta.")
         return {}
 
-    # ── Apply optional resize to the reference frame ──────────────────────────
-    ref = cv2.resize(frame_bgr, resize) if resize else frame_bgr
-    h_ref, w_ref = ref.shape[:2]
-    ui_scale = min(1.0, _CANVAS_MAX_W / w_ref)
+    target = cv2.resize(frame_bgr, resize) if resize is not None else frame_bgr
+    height, width = target.shape[:2]
 
-    # ── Session state keys ────────────────────────────────────────────────────
-    k_data = f"{state_key}_data"
-    k_idx  = f"{state_key}_idx"
+    selector_sig = f"{width}x{height}_{_names_signature(barrier_names)}"
+    k_data = f"{state_key}_{selector_sig}_data"
+    k_idx = f"{state_key}_{selector_sig}_idx"
+    k_final_reset = f"{state_key}_{selector_sig}_reset_done"
 
     if k_data not in st.session_state:
         st.session_state[k_data] = {}
@@ -110,78 +129,78 @@ def render_barrier_selector(
         st.session_state[k_idx] = 0
 
     drawn: dict[str, Barrier] = st.session_state[k_data]
-    cur_idx: int               = st.session_state[k_idx]
+    cur_idx = int(st.session_state[k_idx])
+    cur_idx = max(0, min(cur_idx, len(barrier_names)))
+    st.session_state[k_idx] = cur_idx
 
-    # ── All barriers confirmed ────────────────────────────────────────────────
+    confirmed_shapes = _confirmed_shapes(drawn, barrier_names)
+
     if cur_idx >= len(barrier_names):
-        final_img = _overlay_confirmed(ref, drawn, barrier_names, ui_scale)
-        st.success(f"✅ Tutte le {len(barrier_names)} barriere definite.")
-        col_img, col_ctrl = st.columns([2, 1])
-        col_img.image(final_img, use_container_width=True)
-        with col_ctrl:
-            st.markdown("**Barriere confermate**")
-            for name, ((x1, y1), (x2, y2)) in drawn.items():
-                st.write(f"• **{name}**: ({x1:.0f},{y1:.0f}) → ({x2:.0f},{y2:.0f})")
-            if st.button("↺ Ridisegna tutto", key=f"{state_key}_reset_done"):
-                st.session_state[k_data] = {}
-                st.session_state[k_idx]  = 0
-                st.rerun()
+        st.success(f"✅ Tutte le {len(barrier_names)} barriere sono state definite.")
+        render_frame_overlay_editor(
+            target,
+            mode="line",
+            current_shape=None,
+            confirmed_shapes=confirmed_shapes,
+            current_label="Barriere confermate",
+            instruction="Barriere completate. Usa Ridisegna tutto per ripartire.",
+            stroke_color=_PALETTE[0],
+            fill_color="rgba(255, 210, 50, 0.12)",
+            disabled=True,
+            key=f"{state_key}_editor_{selector_sig}",
+        )
+
+        st.markdown("**Barriere confermate**")
+        for name in barrier_names:
+            if name not in drawn:
+                continue
+            (x1, y1), (x2, y2) = drawn[name]
+            st.write(f"- **{name}**: ({x1:.0f}, {y1:.0f}) → ({x2:.0f}, {y2:.0f})")
+
+        if st.button("↺ Ridisegna tutto", key=k_final_reset):
+            st.session_state[k_data] = {}
+            st.session_state[k_idx] = 0
+
         return drawn
 
-    # ── Draw current barrier ──────────────────────────────────────────────────
-    cur_name  = barrier_names[cur_idx]
-    cur_color = _PALETTE[cur_idx % len(_PALETTE)]
+    cur_name = barrier_names[cur_idx]
+    color = _PALETTE[cur_idx % len(_PALETTE)]
 
     st.info(
-        f"**Barriera {cur_idx + 1} / {len(barrier_names)}: "
-        f"`{cur_name}`** — clicca e trascina per disegnare la linea."
+        f"**Barriera {cur_idx + 1} / {len(barrier_names)}: `{cur_name}`** "
+        "Trascina una linea sopra il frame e rilascia per confermare. "
+        "Azzera annulla l'ultima barriera."
     )
 
-    bg_img = _overlay_confirmed(ref, drawn, barrier_names, ui_scale)
-    ui_w   = int(w_ref * ui_scale)
-    ui_h   = int(h_ref * ui_scale)
-
-    canvas_result = st_canvas(
-        stroke_width     = 3,
-        stroke_color     = cur_color,
-        background_image = bg_img,
-        update_streamlit = True,
-        height           = ui_h,
-        width            = ui_w,
-        drawing_mode     = "line",
-        key              = f"{state_key}_canvas_{cur_idx}",
+    event = render_frame_overlay_editor(
+        target,
+        mode="line",
+        current_shape=None,
+        confirmed_shapes=confirmed_shapes,
+        current_label=cur_name,
+        instruction="Trascina una linea sopra il frame. Rilascia per confermare. Usa Azzera per annullare l'ultima barriera.",
+        stroke_color=color,
+        fill_color="rgba(255, 210, 50, 0.12)",
+        key=f"{state_key}_editor_{selector_sig}",
     )
 
-    has_line = (
-        canvas_result.json_data is not None
-        and canvas_result.json_data.get("objects")
-    )
-
-    col_ok, col_skip, col_reset = st.columns(3)
-
-    if col_ok.button("✓ Conferma", disabled=not has_line, key=f"{state_key}_ok_{cur_idx}"):
-        obj = canvas_result.json_data["objects"][-1]
-        # st_canvas line objects expose x1/y1/x2/y2
-        raw_x1 = float(obj.get("x1", obj.get("left",  0)))
-        raw_y1 = float(obj.get("y1", obj.get("top",   0)))
-        raw_x2 = float(obj.get("x2", raw_x1 + obj.get("width",  0)))
-        raw_y2 = float(obj.get("y2", raw_y1 + obj.get("height", 0)))
-        # scale back to reference-frame coordinates
-        drawn[cur_name] = (
-            (raw_x1 / ui_scale, raw_y1 / ui_scale),
-            (raw_x2 / ui_scale, raw_y2 / ui_scale),
-        )
-        st.session_state[k_data] = drawn
-        st.session_state[k_idx]  = cur_idx + 1
-        st.rerun()
-
-    if col_skip.button("→ Salta", key=f"{state_key}_skip_{cur_idx}"):
-        st.session_state[k_idx] = cur_idx + 1
-        st.rerun()
-
-    if col_reset.button("↺ Azzera tutto", key=f"{state_key}_reset_{cur_idx}"):
-        st.session_state[k_data] = {}
-        st.session_state[k_idx]  = 0
-        st.rerun()
+    if isinstance(event, dict) and _is_new_event(event, f"{state_key}_{selector_sig}"):
+        action = event.get("action")
+        if action == "draw":
+            shape = event.get("shape")
+            if isinstance(shape, dict):
+                drawn[cur_name] = _clamp_barrier(_to_barrier(shape), width, height)
+                st.session_state[k_data] = drawn
+                st.session_state[k_idx] = cur_idx + 1
+        elif action == "clear":
+            if cur_idx > 0:
+                last_name = barrier_names[cur_idx - 1]
+                drawn.pop(last_name, None)
+                st.session_state[k_data] = drawn
+                st.session_state[k_idx] = cur_idx - 1
+            else:
+                if drawn:
+                    drawn.clear()
+                    st.session_state[k_data] = drawn
 
     return drawn

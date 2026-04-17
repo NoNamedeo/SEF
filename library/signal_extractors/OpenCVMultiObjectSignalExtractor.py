@@ -22,6 +22,9 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor, IEventEmitter):
     """
     Multi-object tracker starting from a seed ROI.
     Expands tracking to similar objects in the scene.
+
+    extends IEventEmitter, this means that this class can emit events, in particular can emit one type
+    of event to notify that a new track has been found (event_type="new_track", payload={"track_id": track_id})
     """
 
     def __init__(
@@ -60,11 +63,11 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor, IEventEmitter):
             if position == 0:
                 self._init_seed_tracker(img)
 
-            tracks = self._update_all_trackers(img)
+            tracks, lost_track_ids = self._update_all_trackers(img, frame_index=frame_index)
 
             # aggiungo nuovi oggetti da tracciare, se ne trovo altri
             if len(self._trackers) < self.max_objects:
-                self._expand_tracks(img, tracks)
+                self._expand_tracks(img, tracks, frame_index=frame_index)
 
             if show:
                 # visualizzo cosa sta succedendo
@@ -103,10 +106,20 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor, IEventEmitter):
         tracker = self._build_tracker()
         tracker.init(frame, self.start_box)
 
-        self._trackers[self._next_id] = tracker
+        track_id = self._next_id
+        self._trackers[track_id] = tracker
         self._next_id += 1
+        self.emit(
+            "track_created",
+            {
+                "track_id": track_id,
+                "box": self.start_box,
+                "kind": "seed",
+                "source_path": self.config.get("source_path"),
+            },
+        )
 
-    def _update_all_trackers(self, frame: np.ndarray) -> list[MultiObjectTrack]:
+    def _update_all_trackers(self, frame: np.ndarray, frame_index: int) -> tuple[list[MultiObjectTrack], list[int]]:
         results: list[MultiObjectTrack] = []
 
         dead_ids = []
@@ -132,10 +145,17 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor, IEventEmitter):
         # remove lost trackers
         for tid in dead_ids:
             del self._trackers[tid]
+            self.emit(
+                "track_lost",
+                {
+                    "track_id": tid,
+                    "frame_index": frame_index,
+                },
+            )
 
-        return results
+        return results, dead_ids
 
-    def _expand_tracks(self, frame: np.ndarray, existing_tracks: list[MultiObjectTrack]):
+    def _expand_tracks(self, frame: np.ndarray, existing_tracks: list[MultiObjectTrack], frame_index: int):
         """
         Find new objects similar to the seed and start tracking them.
         Default heuristic: simple patch similarity (HSV histogram).
@@ -160,17 +180,29 @@ class OpenCVMultiObjectSignalExtractor(ISignalExtractor, IEventEmitter):
                 score = cv2.compareHist(seed_hist, candidate_hist, cv2.HISTCMP_CORREL)
 
                 if score > self.similarity_threshold:
-                    self._add_tracker(frame, candidate_box)
+                    self._add_tracker(frame, candidate_box, frame_index=frame_index)
 
                 if len(self._trackers) >= self.max_objects:
                     return
 
-    def _add_tracker(self, frame: np.ndarray, box: BoundingBox):
+    def _add_tracker(self, frame: np.ndarray, box: BoundingBox, frame_index: int):
         tracker = self._build_tracker()
         tracker.init(frame, box)
 
-        self._trackers[self._next_id] = tracker
+        track_id = self._next_id
+        self._trackers[track_id] = tracker
         self._next_id += 1
+
+        self.emit(
+            "track_created",
+            {
+                "track_id": track_id,
+                "box": box,
+                "frame_index": frame_index,
+                "kind": "expanded",
+                "source_path": self.config.get("source_path"),
+            },
+        )
 
     @staticmethod
     def _compute_reference_hist(frame: np.ndarray, box: BoundingBox):

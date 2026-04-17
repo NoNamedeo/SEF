@@ -1,124 +1,221 @@
 """
-Thin service wrappers around the SEF Pipeline infrastructure.
+Application service layer for the Streamlit UI.
 
-Design intent
--------------
-Pages import ONLY from this module — they never construct Pipeline or
-PipelineContext directly.  When the library evolves (e.g. the async
-PipelineOrchestrator becomes fully wired) only this file changes.
+The UI talks to the pipeline core only through this module.  This keeps pages
+focused on interaction and presentation while this service owns orchestration,
+runner lifecycle, monitor snapshots and event recording.
 """
+
 from __future__ import annotations
 
 import logging
 import sys
+import threading
 from pathlib import Path
 from typing import Any
 
-# ── project-root on sys.path ──────────────────────────────────────────────────
 _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from library.core.interfaces.IData import IData                                    # noqa: E402
+from library.core.events.Event import Event  # noqa: E402
+from library.core.events.EventBus import EventBus  # noqa: E402
+from library.core.events.PipelineEvent import PipelineEvent  # noqa: E402
+from library.core.interfaces.IData import IData  # noqa: E402
+from library.core.pipeline.BranchingCoordinator import BranchingCoordinator  # noqa: E402
+from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder  # noqa: E402
 from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor  # noqa: E402
-from library.core.pipeline.PipelineContext import PipelineContext                  # noqa: E402
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator        # noqa: E402
-from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner    # noqa: E402
-from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry    # noqa: E402
-from library.retry_policies.NoRetryPolicy import NoRetryPolicy                    # noqa: E402
+from library.core.pipeline.PipelineContext import PipelineContext  # noqa: E402
+from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator  # noqa: E402
+from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot  # noqa: E402
+from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner  # noqa: E402
+from library.core.plugins.PluginRegistry import PluginRegistry  # noqa: E402
+from library.core.plugins.PluginRegistry import PluginCategory  # noqa: E402
+from library.retry_policies.NoRetryPolicy import NoRetryPolicy  # noqa: E402
 
 log = logging.getLogger(__name__)
 
-# ── Shared runner / monitor (process-level singletons) ────────────────────────
 _monitor: InMemoryPipelineMonitor | None = None
-_runner:  ThreadedPipelineRunner | None  = None
+_runner: ThreadedPipelineRunner | None = None
 _orchestrator: PipelineOrchestrator | None = None
+_lifecycle_bus: EventBus | None = None
+_domain_bus: EventBus | None = None
+_branching_coordinator: BranchingCoordinator | None = None
+_branching_rule_names: tuple[str, ...] = ()
+_event_lock = threading.Lock()
+_event_records: list[Event] = []
+
+
+def _record_event(event: Event) -> None:
+    """Store a bounded in-memory event log for UI observability."""
+    with _event_lock:
+        _event_records.append(event)
+        del _event_records[:-250]
+
+
+def _get_lifecycle_bus() -> EventBus:
+    global _lifecycle_bus
+    if _lifecycle_bus is None:
+        _lifecycle_bus = EventBus()
+        _lifecycle_bus.subscribe(EventBus.WILDCARD, _record_event)
+    return _lifecycle_bus
+
+
+def _get_domain_bus() -> EventBus:
+    global _domain_bus
+    if _domain_bus is None:
+        _domain_bus = EventBus()
+        _domain_bus.subscribe(EventBus.WILDCARD, _record_event)
+    return _domain_bus
+
+
+def _get_monitor() -> InMemoryPipelineMonitor:
+    global _monitor
+    if _monitor is None:
+        _monitor = InMemoryPipelineMonitor()
+    return _monitor
+
+
+def _get_runner() -> ThreadedPipelineRunner:
+    global _runner
+    if _runner is None:
+        _runner = ThreadedPipelineRunner(
+            monitor=_get_monitor(),
+            retry_policy=NoRetryPolicy(),
+            lifecycle_bus=_get_lifecycle_bus(),
+            max_workers=4,
+        )
+    return _runner
 
 
 def _get_orchestrator() -> PipelineOrchestrator:
-    global _monitor, _runner, _orchestrator
-    if _monitor is None:
-        _monitor = InMemoryPipelineMonitor()
-    if _runner is None:
-        _runner = ThreadedPipelineRunner(
-            monitor=_monitor,
-            retry_policy=NoRetryPolicy(),
-            max_workers=4,
-        )
+    global _orchestrator
     if _orchestrator is None:
         _orchestrator = PipelineOrchestrator(
-            runner=_runner,
-            monitor=_monitor,
+            runner=_get_runner(),
+            bus=_get_lifecycle_bus(),
+            domain_bus=_get_domain_bus(),
         )
     return _orchestrator
 
 
-# ── Synchronous execution ─────────────────────────────────────────────────────
-
-def run_sync(context: PipelineContext) -> list[IData]:
-    """Execute *context* synchronously and return results. Blocks the caller."""
-    return _get_orchestrator().run(context)
+def run_sync(context: PipelineContext, pipeline_id: str | None = None) -> list[IData]:
+    """Execute a pipeline synchronously and return analyzer results."""
+    return _get_orchestrator().run(context, pipeline_id=pipeline_id)
 
 
-# ── Async / threaded execution ────────────────────────────────────────────────
+def submit_async(pipeline_id: str, context: PipelineContext) -> str:
+    """Submit a pipeline for background execution and return its id."""
+    submitted_id = _get_orchestrator().submit(context, pipeline_id=pipeline_id)
+    log.info("Pipeline '%s' submitted.", submitted_id)
+    return submitted_id
 
-def submit_async(pipeline_id: str, context: PipelineContext) -> None:
-    """Submit *context* for background execution under *pipeline_id*."""
-    _get_orchestrator().submit(context, pipeline_id=pipeline_id)
-    log.info("Pipeline '%s' submitted.", pipeline_id)
 
-
-def cancel_async(pipeline_id: str) -> None:
-    """Cancel a background pipeline by ID (best-effort)."""
-    _get_orchestrator().terminate(pipeline_id)
+def cancel_async(pipeline_id: str) -> bool:
+    """Cancel a queued background pipeline when possible."""
+    return _get_orchestrator().terminate(pipeline_id)
 
 
 def active_ids() -> list[str]:
-    """Return IDs of currently running pipelines."""
+    """Return IDs of currently active pipelines."""
     return _get_orchestrator().active_ids()
 
 
-# ── Config-dict → PipelineContext ─────────────────────────────────────────────
+def snapshots() -> list[PipelineRunSnapshot]:
+    """Return rich snapshots for all known pipeline runs."""
+    return _get_runner().snapshots()
+
+
+def event_records() -> list[Event]:
+    """Return a snapshot of recorded lifecycle and domain events."""
+    with _event_lock:
+        return list(_event_records)
+
+
+def clear_event_records() -> None:
+    """Clear the UI event log."""
+    with _event_lock:
+        _event_records.clear()
+
+
+def dispatch_trigger(pipeline_id: str, context: PipelineContext) -> None:
+    """Start a pipeline through the trigger event path instead of direct submit."""
+    _get_lifecycle_bus().dispatch(
+        PipelineEvent.create(
+            pipeline_id=pipeline_id,
+            context=context,
+            source="SEFStudio",
+        )
+    )
+
+
+def configure_branching_rules(registry: PluginRegistry, rule_names: list[str]) -> tuple[bool, str]:
+    """
+    Attach BranchingCoordinator once for the selected branching rules.
+
+    The current BranchingCoordinator contract does not support live unsubscription
+    or hot-swapping rules, so changing an already configured set requires a server
+    restart. Initial activation is fully supported.
+    """
+    global _branching_coordinator, _branching_rule_names
+
+    selected = tuple(dict.fromkeys(name for name in rule_names if name))
+    if selected == _branching_rule_names:
+        return True, "Branching già configurato."
+    if _branching_coordinator is not None and selected != _branching_rule_names:
+        return (
+            False,
+            "Il core attuale non supporta hot-swap delle branching rules: riavvia Streamlit per cambiare set di regole.",
+        )
+    if not selected:
+        _branching_rule_names = ()
+        return True, "Nessuna branching rule attiva."
+
+    rules = [registry.create(PluginCategory.BRANCHING_RULE, name) for name in selected]
+    _branching_coordinator = BranchingCoordinator(
+        event_bus=_get_domain_bus(),
+        rules=rules,
+        trigger_bus=_get_lifecycle_bus(),
+    )
+    _branching_rule_names = selected
+    return True, f"Branching attivato con {len(selected)} regola/e."
+
+
+def event_integration_status() -> dict[str, object]:
+    """Return current UI-facing status for lifecycle/domain/branching integration."""
+    return {
+        "lifecycle_bus": _lifecycle_bus is not None,
+        "domain_bus": _domain_bus is not None,
+        "branching_enabled": _branching_coordinator is not None,
+        "branching_rules": list(_branching_rule_names),
+    }
+
 
 def context_from_config(config: dict[str, Any], registry: PluginRegistry) -> PipelineContext:
+    """Build a PipelineContext from a config dictionary using ConfigPipelineBuilder."""
+    return ConfigPipelineBuilder(registry).build_context(_normalise_config(config))
+
+
+def _normalise_config(config: dict[str, Any]) -> dict[str, Any]:
     """
-    Build a PipelineContext from a config dictionary using the PluginRegistry.
+    Accept both the current ConfigPipelineBuilder schema and the older UI shape.
 
-    Config schema (mirrors ConfigPipelineBuilder)
-    ----------------------------------------------
-    pipeline:
-      frame_extractor:
-        name: opencv_buffered
-        params: {path: "/video.mp4", ...}
-      frame_cleaners:
-        - name: smoothing
-      signal_extractor:
-        name: opencv_tracker
-        params: {tracker_type: CSRT, start_box: [x, y, w, h]}
-      signal_cleaners:
-        - name: moving_average
-          params: {window_size: 5}
-      analyzers:
-        - name: vertical_position
-      visualizers: []
+    New UI-generated configs already pass constructor-specific params.  Older
+    saved configs may still put frame-extractor options directly in params; this
+    moves them under OpenCVBufferedFrameExtractor.config.
     """
-    cfg = config.get("pipeline", config)   # tolerate both wrapped and flat dicts
+    pipeline = dict(config.get("pipeline", config))
+    normalised = {"pipeline": pipeline}
 
-    def _make(category: PluginCategory, entry: dict) -> Any:
-        name = entry.get("name")
-        if not name:
-            raise ValueError(f"Missing 'name' in config entry for category '{category}'.")
-        params: dict = entry.get("params", {})
-        return registry.create(category, name, **params)
+    frame_extractor = pipeline.get("frame_extractor")
+    if isinstance(frame_extractor, dict):
+        params = dict(frame_extractor.get("params", {}))
+        extractor_config = dict(params.get("config", {}))
+        for key in ("resize", "stride", "max_frames"):
+            if key in params:
+                extractor_config[key] = params.pop(key)
+        if extractor_config:
+            params["config"] = extractor_config
+        frame_extractor["params"] = params
 
-    def _make_list(category: PluginCategory, entries: list[dict]) -> list:
-        return [_make(category, e) for e in entries]
-
-    return PipelineContext(
-        frame_extractor=_make(PluginCategory.FRAME_EXTRACTOR, cfg["frame_extractor"]),
-        signal_extractor=_make(PluginCategory.SIGNAL_EXTRACTOR, cfg["signal_extractor"]),
-        analyzers=_make_list(PluginCategory.ANALYZER, cfg.get("analyzers", [])),
-        frame_cleaners=_make_list(PluginCategory.FRAME_CLEANER, cfg.get("frame_cleaners", [])),
-        signal_cleaners=_make_list(PluginCategory.SIGNAL_CLEANER, cfg.get("signal_cleaners", [])),
-        visualizers=_make_list(PluginCategory.VISUALIZER, cfg.get("visualizers", [])),
-    )
+    return normalised

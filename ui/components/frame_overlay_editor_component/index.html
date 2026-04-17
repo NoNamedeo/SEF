@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Frame Overlay Editor</title>
+  <style>
+    :root {
+      color-scheme: normal;
+      --bg: rgba(12, 18, 28, 0.04);
+      --panel: rgba(12, 18, 28, 0.72);
+      --panel-border: rgba(12, 18, 28, 0.12);
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #40d67c;
+      --accent-soft: rgba(64, 214, 124, 0.16);
+      --barrier: #ffd232;
+      --barrier-soft: rgba(255, 210, 50, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    #root {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 0;
+    }
+
+    #stage {
+      position: relative;
+      width: 100%;
+      display: block;
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(248,250,252,0.9));
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+    }
+
+    #frame {
+      display: block;
+      width: 100%;
+      height: auto;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .chip {
+      position: absolute;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: white;
+      font-size: 12px;
+      line-height: 1;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+      max-width: calc(100% - 24px);
+    }
+
+    #instruction {
+      left: 12px;
+      top: 12px;
+    }
+
+    #currentLabel {
+      left: 12px;
+      bottom: 12px;
+      background: rgba(17, 24, 39, 0.78);
+    }
+
+    #clearButton {
+      position: absolute;
+      z-index: 4;
+      right: 12px;
+      top: 12px;
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    #clearButton:hover {
+      background: white;
+    }
+
+    #emptyState {
+      padding: 16px 18px;
+      border: 1px dashed rgba(15, 23, 42, 0.18);
+      border-radius: 16px;
+      background: rgba(248, 250, 252, 0.95);
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div id="stage" aria-label="Frame overlay editor">
+      <img id="frame" alt="Frame di riferimento" />
+      <canvas id="overlay"></canvas>
+      <div id="instruction" class="chip"></div>
+      <div id="currentLabel" class="chip"></div>
+      <button id="clearButton" type="button">Azzera</button>
+    </div>
+    <div id="emptyState" hidden>Caricamento frame in corso…</div>
+  </div>
+
+  <script>
+    (() => {
+      const frameEl = document.getElementById("frame");
+      const stageEl = document.getElementById("stage");
+      const canvasEl = document.getElementById("overlay");
+      const instructionEl = document.getElementById("instruction");
+      const labelEl = document.getElementById("currentLabel");
+      const clearButton = document.getElementById("clearButton");
+      const emptyState = document.getElementById("emptyState");
+      const ctx = canvasEl.getContext("2d");
+
+      const state = {
+        args: {},
+        readySent: false,
+        imageLoaded: false,
+        resetToken: null,
+        dragging: false,
+        dragStart: null,
+        pointerId: null,
+        currentShape: null,
+        confirmedShapes: [],
+        naturalWidth: 0,
+        naturalHeight: 0,
+        displayWidth: 0,
+        displayHeight: 0,
+        lastImageUrl: "",
+        eventSeq: 0,
+      };
+
+      function postToHost(type, payload = {}) {
+        window.parent.postMessage({ isStreamlitMessage: true, type, ...payload }, "*");
+      }
+
+      function sendReady() {
+        if (state.readySent) return;
+        state.readySent = true;
+        postToHost("streamlit:componentReady", { apiVersion: 1 });
+      }
+
+      function sendHeight() {
+        const height = Math.ceil(stageEl.getBoundingClientRect().height + 2);
+        postToHost("streamlit:setFrameHeight", { height });
+      }
+
+      function sendValue(value) {
+        postToHost("streamlit:setComponentValue", { value });
+      }
+
+      function sendEvent(action, shape = null) {
+        state.eventSeq += 1;
+        const eventId = `${Date.now()}-${state.eventSeq}`;
+        if (action === "draw") {
+          sendValue({ action, shape, event_id: eventId });
+          return;
+        }
+        sendValue({ action, event_id: eventId });
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function isFiniteNumber(value) {
+        return typeof value === "number" && Number.isFinite(value);
+      }
+
+      function toDisplayX(x) {
+        return state.naturalWidth > 0 && state.displayWidth > 0 ? (x / state.naturalWidth) * state.displayWidth : x;
+      }
+
+      function toDisplayY(y) {
+        return state.naturalHeight > 0 && state.displayHeight > 0 ? (y / state.naturalHeight) * state.displayHeight : y;
+      }
+
+      function toNaturalX(x) {
+        return state.displayWidth > 0 && state.naturalWidth > 0 ? (x / state.displayWidth) * state.naturalWidth : x;
+      }
+
+      function toNaturalY(y) {
+        return state.displayHeight > 0 && state.naturalHeight > 0 ? (y / state.displayHeight) * state.naturalHeight : y;
+      }
+
+      function normalizeRect(start, end) {
+        const x = Math.min(start.x, end.x);
+        const y = Math.min(start.y, end.y);
+        const w = Math.max(1, Math.abs(end.x - start.x));
+        const h = Math.max(1, Math.abs(end.y - start.y));
+        return {
+          x: clamp(x, 0, state.naturalWidth - 1),
+          y: clamp(y, 0, state.naturalHeight - 1),
+          w: clamp(w, 1, state.naturalWidth),
+          h: clamp(h, 1, state.naturalHeight),
+        };
+      }
+
+      function normalizeLine(start, end) {
+        return {
+          x1: clamp(start.x, 0, state.naturalWidth - 1),
+          y1: clamp(start.y, 0, state.naturalHeight - 1),
+          x2: clamp(end.x, 0, state.naturalWidth - 1),
+          y2: clamp(end.y, 0, state.naturalHeight - 1),
+        };
+      }
+
+      function isRect(shape) {
+        return shape && isFiniteNumber(shape.x) && isFiniteNumber(shape.y) && isFiniteNumber(shape.w) && isFiniteNumber(shape.h);
+      }
+
+      function isLine(shape) {
+        return shape && isFiniteNumber(shape.x1) && isFiniteNumber(shape.y1) && isFiniteNumber(shape.x2) && isFiniteNumber(shape.y2);
+      }
+
+      function drawLabel(text, x, y, color, fillStyle = "rgba(17,24,39,0.82)") {
+        const paddingX = 6;
+        const paddingY = 3;
+        ctx.save();
+        ctx.font = "12px Inter, ui-sans-serif, system-ui, sans-serif";
+        const metrics = ctx.measureText(text);
+        const width = Math.ceil(metrics.width) + paddingX * 2;
+        const height = 18;
+        const top = clamp(y - height - 6, 0, state.displayHeight - height);
+        const left = clamp(x, 0, Math.max(0, state.displayWidth - width));
+        ctx.fillStyle = fillStyle;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        roundRect(ctx, left, top, width, height, 10);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.textBaseline = "top";
+        ctx.fillText(text, left + paddingX, top + paddingY);
+        ctx.restore();
+      }
+
+      function roundRect(context, x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        context.beginPath();
+        context.moveTo(x + r, y);
+        context.arcTo(x + width, y, x + width, y + height, r);
+        context.arcTo(x + width, y + height, x, y + height, r);
+        context.arcTo(x, y + height, x, y, r);
+        context.arcTo(x, y, x + width, y, r);
+        context.closePath();
+      }
+
+      function drawRect(shape, strokeStyle, fillStyle, label, dashed = false) {
+        if (!isRect(shape)) return;
+        const x = toDisplayX(shape.x);
+        const y = toDisplayY(shape.y);
+        const w = Math.max(1, toDisplayX(shape.x + shape.w) - x);
+        const h = Math.max(1, toDisplayY(shape.y + shape.h) - y);
+
+        ctx.save();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = strokeStyle;
+        ctx.fillStyle = fillStyle;
+        if (dashed) ctx.setLineDash([8, 6]);
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeRect(x, y, w, h);
+        ctx.setLineDash([]);
+        ctx.restore();
+
+        drawLabel(label || `ROI ${Math.round(shape.x)},${Math.round(shape.y)} ${Math.round(shape.w)}x${Math.round(shape.h)}`, x + 8, y - 4, strokeStyle);
+      }
+
+      function drawLine(shape, strokeStyle, label, dashed = false) {
+        if (!isLine(shape)) return;
+        const x1 = toDisplayX(shape.x1);
+        const y1 = toDisplayY(shape.y1);
+        const x2 = toDisplayX(shape.x2);
+        const y2 = toDisplayY(shape.y2);
+
+        ctx.save();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = strokeStyle;
+        if (dashed) ctx.setLineDash([10, 7]);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = strokeStyle;
+        ctx.beginPath();
+        ctx.arc(x1, y1, 5, 0, Math.PI * 2);
+        ctx.arc(x2, y2, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        const labelX = (x1 + x2) / 2;
+        const labelY = (y1 + y2) / 2;
+        drawLabel(label || `Linea ${Math.round(shape.x1)},${Math.round(shape.y1)} → ${Math.round(shape.x2)},${Math.round(shape.y2)}`, labelX, labelY, strokeStyle);
+      }
+
+      function clearCanvas() {
+        ctx.clearRect(0, 0, state.displayWidth, state.displayHeight);
+      }
+
+      function draw() {
+        if (!state.imageLoaded || state.displayWidth <= 0 || state.displayHeight <= 0) {
+          clearCanvas();
+          instructionEl.textContent = state.args.instruction || "";
+          labelEl.textContent = state.args.current_label || "";
+          emptyState.hidden = false;
+          return;
+        }
+
+        emptyState.hidden = true;
+        clearCanvas();
+
+        const confirmed = Array.isArray(state.confirmedShapes) ? state.confirmedShapes : [];
+        confirmed.forEach((item, index) => {
+          const color = item?.color || ["#ffd232", "#6baaff", "#b86bff", "#6bffb8", "#ff9f40"][index % 5];
+          const label = item?.label || "";
+          const shape = item?.shape || item;
+          if (state.args.mode === "line") {
+            drawLine(shape, color, label, true);
+          } else {
+            drawRect(shape, color, "rgba(255, 210, 50, 0.12)", label, true);
+          }
+        });
+
+        if (state.currentShape) {
+          const label = state.args.current_label || state.args.instruction || "";
+          if (state.args.mode === "line") {
+            drawLine(state.currentShape, state.args.stroke_color || getComputedStyle(document.documentElement).getPropertyValue("--barrier").trim() || "#ffd232", label, false);
+          } else {
+            drawRect(state.currentShape, state.args.stroke_color || getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#40d67c", state.args.fill_color || "rgba(64, 214, 124, 0.16)", label, false);
+          }
+        }
+
+        instructionEl.textContent = state.args.instruction || "";
+        labelEl.textContent = state.args.current_label || "";
+        sendHeight();
+      }
+
+      function layout() {
+        if (!state.imageLoaded) return;
+        const rect = stageEl.getBoundingClientRect();
+        state.displayWidth = Math.max(1, Math.floor(rect.width));
+        state.displayHeight = Math.max(1, Math.floor(rect.height));
+        const dpr = window.devicePixelRatio || 1;
+        canvasEl.width = Math.max(1, Math.floor(state.displayWidth * dpr));
+        canvasEl.height = Math.max(1, Math.floor(state.displayHeight * dpr));
+        canvasEl.style.width = `${state.displayWidth}px`;
+        canvasEl.style.height = `${state.displayHeight}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        draw();
+      }
+
+      function pointerToNatural(event) {
+        const rect = canvasEl.getBoundingClientRect();
+        const x = clamp(event.clientX - rect.left, 0, rect.width);
+        const y = clamp(event.clientY - rect.top, 0, rect.height);
+        return {
+          x: toNaturalX(x),
+          y: toNaturalY(y),
+        };
+      }
+
+      function beginDraw(event) {
+        if (state.args.disabled) return;
+        if (!state.imageLoaded) return;
+        event.preventDefault();
+        canvasEl.setPointerCapture(event.pointerId);
+        state.pointerId = event.pointerId;
+        state.dragging = true;
+        state.dragStart = pointerToNatural(event);
+        state.currentShape = state.args.mode === "line"
+          ? normalizeLine(state.dragStart, state.dragStart)
+          : normalizeRect(state.dragStart, state.dragStart);
+        draw();
+      }
+
+      function updateDraw(event) {
+        if (!state.dragging || event.pointerId !== state.pointerId) return;
+        event.preventDefault();
+        const current = pointerToNatural(event);
+        state.currentShape = state.args.mode === "line"
+          ? normalizeLine(state.dragStart, current)
+          : normalizeRect(state.dragStart, current);
+        draw();
+      }
+
+      function finishDraw(event) {
+        if (!state.dragging || event.pointerId !== state.pointerId) return;
+        event.preventDefault();
+        const endPoint = pointerToNatural(event);
+        state.dragging = false;
+        state.pointerId = null;
+        state.currentShape = state.args.mode === "line"
+          ? normalizeLine(state.dragStart, endPoint)
+          : normalizeRect(state.dragStart, endPoint);
+        draw();
+        if (canvasEl.hasPointerCapture(event.pointerId)) {
+          canvasEl.releasePointerCapture(event.pointerId);
+        }
+        sendEvent("draw", state.currentShape);
+      }
+
+      function clearCurrent() {
+        state.dragging = false;
+        state.dragStart = null;
+        state.pointerId = null;
+        state.currentShape = null;
+        draw();
+        sendEvent("clear");
+      }
+
+      function applyArgs(args) {
+        state.args = args || {};
+        state.confirmedShapes = Array.isArray(state.args.confirmed_shapes) ? state.args.confirmed_shapes : [];
+
+        if (state.args.reset_token !== state.resetToken) {
+          state.resetToken = state.args.reset_token;
+          state.currentShape = state.args.current_shape ?? null;
+          state.dragging = false;
+          state.dragStart = null;
+          state.pointerId = null;
+        } else if (!state.dragging && Object.prototype.hasOwnProperty.call(state.args, "current_shape")) {
+          state.currentShape = state.args.current_shape ?? null;
+        }
+
+        if (state.args.image_data_url && state.args.image_data_url !== state.lastImageUrl) {
+          state.lastImageUrl = state.args.image_data_url;
+          state.imageLoaded = false;
+          frameEl.src = state.lastImageUrl;
+        }
+
+        stageEl.style.opacity = state.args.image_data_url ? "1" : "0.6";
+        canvasEl.style.pointerEvents = state.args.disabled ? "none" : "auto";
+        instructionEl.textContent = state.args.instruction || "";
+        labelEl.textContent = state.args.current_label || "";
+        clearButton.disabled = Boolean(state.args.disabled);
+
+        if (state.imageLoaded) {
+          layout();
+        }
+      }
+
+      frameEl.addEventListener("load", () => {
+        state.imageLoaded = true;
+        state.naturalWidth = frameEl.naturalWidth || 0;
+        state.naturalHeight = frameEl.naturalHeight || 0;
+        layout();
+      });
+
+      frameEl.addEventListener("error", () => {
+        state.imageLoaded = false;
+        emptyState.hidden = false;
+        emptyState.textContent = "Impossibile caricare il frame di riferimento.";
+        sendHeight();
+      });
+
+      canvasEl.addEventListener("pointerdown", beginDraw);
+      canvasEl.addEventListener("pointermove", updateDraw);
+      canvasEl.addEventListener("pointerup", finishDraw);
+      canvasEl.addEventListener("pointercancel", finishDraw);
+      clearButton.addEventListener("click", clearCurrent);
+
+      window.addEventListener("resize", layout);
+      new ResizeObserver(layout).observe(stageEl);
+
+      window.addEventListener("message", (event) => {
+        const message = event.data;
+        if (!message || message.type !== "streamlit:render") return;
+        applyArgs(message.args || {});
+      });
+
+      sendReady();
+      sendHeight();
+    })();
+  </script>
+</body>
+</html>
