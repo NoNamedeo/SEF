@@ -1,125 +1,55 @@
-"""
-Results viewer component.
-
-Dispatches on IData concrete type and renders the appropriate chart/table.
-New data types only require adding a new elif branch here.
-"""
+"""Presentation component for analysis results."""
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
+from collections.abc import Sequence
 
 import streamlit as st
 
-_ROOT = Path(__file__).resolve().parents[2]
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
-
-from ui.components.visual_artifact_viewer import render_visual_artifacts  # noqa: E402
+from ui.components.visual_artifact_viewer import render_visual_artifacts
+from ui.models.pipeline_outputs import AnalysisResultOutput
 
 
-def render_results(results: list) -> None:
-    """
-    Render analytical IData results.
-
-    Supports
-    --------
-    TwoDimGraphData  → line/scatter chart  (MatplotlibFunctionVisualizer)
-    CategoryData     → bar chart           (MatplotlibHistogramVisualizer)
-    TrajectoryData   → trajectory chart    (MatplotlibTrajectoryVisualizer)  [if available]
-    anything else    → raw string dump
-    """
+def render_results(results: Sequence[AnalysisResultOutput]) -> None:
+    """Render analysis outputs using the explicit UI view model."""
     if not results:
         st.warning("Nessun risultato disponibile.")
         return
 
-    from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
-    from library.core.artifacts.CategoryData import CategoryData
+    for result in results:
+        with st.container(border=True):
+            st.markdown(f"**{result.title}**")
+            st.caption(result.type_name)
 
-    for i, data in enumerate(results):
-        st.divider()
+            if result.summary:
+                _render_summary_metrics(result.summary)
 
-        if isinstance(data, TwoDimGraphData):
-            _render_two_dim(data, idx=i)
+            if result.preview_artifacts:
+                st.markdown("Anteprima UI")
+                render_visual_artifacts(
+                    result.preview_artifacts,
+                    show_metadata=False,
+                    show_title=False,
+                    key_prefix=result.result_id,
+                )
 
-        elif isinstance(data, CategoryData):
-            _render_category(data, idx=i)
+            if result.detail_rows:
+                with st.expander("Dettaglio analitico", expanded=False):
+                    st.dataframe(list(result.detail_rows), width="stretch")
 
-        else:
-            # Try trajectory if available
-            try:
-                from library.core.artifacts.TrajectoryData import TrajectoryData
+            if result.metadata:
+                with st.expander("Metadati analisi", expanded=False):
+                    st.json(dict(result.metadata))
 
-                if isinstance(data, TrajectoryData):
-                    _render_trajectory(data, idx=i)
-                    continue
-            except ImportError:
-                pass
-            # Fallback
-            st.warning(f"Tipo `{type(data).__name__}` non ha un renderer dedicato.")
-            st.code(str(data))
-
-
-# ── Sub-renderers ─────────────────────────────────────────────────────────────
-
-
-def _render_two_dim(data, idx: int = 0) -> None:
-    from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
-
-    st.subheader(data.title or f"Risultato {idx + 1}")
-
-    viz = MatplotlibFunctionVisualizer(config={"show": False, "show_scatter": True})
-    render_visual_artifacts(viz.render(data), show_metadata=False, show_title=False, key_prefix=f"two_dim_{idx}")
-
-    # Summary metrics
-    if data.x and data.y:
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Campioni", len(data.x))
-        c2.metric(f"Min {data.y_label}", f"{min(data.y):.2f}")
-        c3.metric(f"Max {data.y_label}", f"{max(data.y):.2f}")
-        mean_y = sum(data.y) / len(data.y)
-        c4.metric(f"Media {data.y_label}", f"{mean_y:.2f}")
-
-    # Collapsible metadata
-    if data.metadata:
-        with st.expander("Metadati analisi"):
-            st.json(data.metadata)
+            if not result.preview_artifacts and not result.summary and not result.detail_rows:
+                st.code(str(result.data))
 
 
-def _render_category(data, idx: int = 0) -> None:
-    from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
-
-    st.subheader(f"Conteggio attraversamenti barriere")
-
-    viz = MatplotlibHistogramVisualizer(config={"show": False})
-    render_visual_artifacts(viz.render(data), show_metadata=False, show_title=False, key_prefix=f"category_{idx}")
-
-    # Metrics per category
-    if data.categories:
-        cols = st.columns(min(len(data.categories), 4))
-        for i, cat in enumerate(data.categories):
-            cols[i % len(cols)].metric(cat, data.category_counts.get(cat, 0))
-
-    # Metadata
-    if data.metadata:
-        with st.expander("Metadati analisi"):
-            st.json(data.metadata)
-
-    # Track details
-    if data.track_categories:
-        with st.expander(f"Dettaglio per oggetto tracciato ({len(data.track_categories)} oggetti)"):
-            rows = [{"track_id": tid, "barriere_attraversate": ", ".join(cats)} for tid, cats in sorted(data.track_categories.items())]
-            st.dataframe(rows, width="stretch")
-
-
-def _render_trajectory(data, idx: int = 0) -> None:
-    try:
-        from library.visualizers.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
-
-        st.subheader("Traiettoria")
-        viz = MatplotlibTrajectoryVisualizer(config={"show": False})
-        render_visual_artifacts(viz.render(data), show_metadata=False, show_title=False, key_prefix=f"trajectory_{idx}")
-    except Exception as exc:
-        st.warning(f"Visualizzazione traiettoria non disponibile: {exc}")
-        st.code(str(data))
+def _render_summary_metrics(summary: dict[str, object]) -> None:
+    items = list(summary.items())
+    if not items:
+        return
+    column_count = min(max(len(items), 1), 4)
+    columns = st.columns(column_count)
+    for index, (label, value) in enumerate(items):
+        columns[index % column_count].metric(str(label), value)

@@ -230,6 +230,19 @@ def get_registry() -> PluginRegistry:
     except Exception as exc:
         log.warning("DenseOpticalFlowVectorFieldAnalyzer non disponibile: %s", exc)
 
+    try:
+        from library.analyzers.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
+
+        _try_register(
+            registry,
+            PluginCategory.ANALYZER,
+            "tracking_playback",
+            TrackingPlaybackAnalyzer,
+            "Converte i campioni di tracking in un playback video-ready.",
+        )
+    except Exception as exc:
+        log.warning("TrackingPlaybackAnalyzer non disponibile: %s", exc)
+
     # ── Visualizers ───────────────────────────────────────────────────────────
     try:
         from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
@@ -268,6 +281,19 @@ def get_registry() -> PluginRegistry:
         )
     except Exception as exc:
         log.warning("MatplotlibVectorFieldVisualizer non disponibile: %s", exc)
+
+    try:
+        from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "tracking_video",
+            TrackingVideoVisualizer,
+            "Ricostruisce un video annotato a partire dai campioni di tracking.",
+        )
+    except Exception as exc:
+        log.warning("TrackingVideoVisualizer non disponibile: %s", exc)
 
     # ── Branching rules ───────────────────────────────────────────────────────
     try:

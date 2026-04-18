@@ -14,8 +14,7 @@ import numpy as np
 import streamlit as st
 
 from ui.components.frame_overlay_editor import render_frame_overlay_editor
-
-Barrier = tuple[tuple[float, float], tuple[float, float]]
+from ui.models.pipeline_builder import Barrier, BarrierSelectionState
 
 _PALETTE = ["#FFD232", "#FF6B6B", "#6BAAFF", "#B86BFF", "#6BFFB8", "#FF9F40"]
 
@@ -61,6 +60,16 @@ def _names_signature(barrier_names: list[str]) -> str:
     return hasher.hexdigest()[:12]
 
 
+def _frame_signature(frame_bgr: np.ndarray) -> str:
+    """Build a short signature that changes when the reference frame changes."""
+    hasher = hashlib.sha1()
+    hasher.update(str(frame_bgr.shape).encode("utf-8"))
+    height, width = frame_bgr.shape[:2]
+    sample = frame_bgr[: min(height, 16), : min(width, 16)]
+    hasher.update(sample.tobytes())
+    return hasher.hexdigest()[:12]
+
+
 def _confirmed_shapes(
     drawn: dict[str, Barrier],
     barrier_names: list[str],
@@ -97,7 +106,7 @@ def render_barrier_selector(
     barrier_names: list[str],
     resize: tuple[int, int] | None = None,
     state_key: str = "barriers",
-) -> dict[str, Barrier]:
+) -> BarrierSelectionState:
     """Render the barrier selector and return the confirmed barriers.
 
     Parameters
@@ -113,12 +122,12 @@ def render_barrier_selector(
     """
     if not barrier_names:
         st.info("Nessuna barriera richiesta.")
-        return {}
+        return BarrierSelectionState(names=())
 
     target = cv2.resize(frame_bgr, resize) if resize is not None else frame_bgr
     height, width = target.shape[:2]
 
-    selector_sig = f"{width}x{height}_{_names_signature(barrier_names)}"
+    selector_sig = f"{width}x{height}_{_frame_signature(target)}_{_names_signature(barrier_names)}"
     k_data = f"{state_key}_{selector_sig}_data"
     k_idx = f"{state_key}_{selector_sig}_idx"
     k_final_reset = f"{state_key}_{selector_sig}_reset_done"
@@ -160,8 +169,10 @@ def render_barrier_selector(
         if st.button("↺ Ridisegna tutto", key=k_final_reset):
             st.session_state[k_data] = {}
             st.session_state[k_idx] = 0
+            drawn = {}
+            return _build_selection_state(barrier_names, drawn, 0)
 
-        return drawn
+        return _build_selection_state(barrier_names, drawn, len(barrier_names))
 
     cur_name = barrier_names[cur_idx]
     color = _PALETTE[cur_idx % len(_PALETTE)]
@@ -203,4 +214,18 @@ def render_barrier_selector(
                     drawn.clear()
                     st.session_state[k_data] = drawn
 
-    return drawn
+    return _build_selection_state(barrier_names, drawn, int(st.session_state.get(k_idx, cur_idx)))
+
+
+def _build_selection_state(
+    barrier_names: list[str],
+    drawn: dict[str, Barrier],
+    next_index: int,
+) -> BarrierSelectionState:
+    """Convert the selector session data into an explicit immutable snapshot."""
+    confirmed = tuple((name, drawn[name]) for name in barrier_names if name in drawn)
+    return BarrierSelectionState(
+        names=tuple(barrier_names),
+        confirmed=confirmed,
+        next_index=max(0, min(next_index, len(barrier_names))),
+    )

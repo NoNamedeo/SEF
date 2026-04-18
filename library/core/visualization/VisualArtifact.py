@@ -38,6 +38,21 @@ class ImageArtifact(VisualArtifact):
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class VideoArtifact(VisualArtifact):
+    """Binary video artifact ready for UI playback or persistence."""
+
+    mime_type: str
+    data: bytes
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not self.mime_type:
+            raise ValueError("VideoArtifact.mime_type must be a non-empty string.")
+        if not self.data:
+            raise ValueError("VideoArtifact.data cannot be empty.")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class TableArtifact(VisualArtifact):
     """Tabular artifact represented as simple records."""
 

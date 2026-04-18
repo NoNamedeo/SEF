@@ -205,7 +205,7 @@ def _frame_cleaners_node(
             input_types=("FrameBuffer",),
             output_types=("FrameBuffer",),
             emitted_events=emitted_events,
-            configuration={item.get("name", "unnamed"): item.get("params", {}) for item in cleaners},
+            configuration=_named_component_configuration(cleaners),
         ),
         ports=(
             _port("frame_cleaners", "frames_in", "FrameBuffer", PortDirection.INPUT, PortDataType.FRAME),
@@ -284,7 +284,7 @@ def _signal_cleaners_node(
             input_types=("Signal",),
             output_types=("Signal",),
             emitted_events=emitted_events,
-            configuration={item.get("name", "unnamed"): item.get("params", {}) for item in cleaners},
+            configuration=_named_component_configuration(cleaners),
         ),
         ports=(
             _port("signal_cleaners", "signal_in", "Signal", PortDirection.INPUT, PortDataType.SIGNAL),
@@ -321,7 +321,7 @@ def _analyzers_node(
             input_types=("Signal",),
             output_types=("AnalysisResult[]",),
             emitted_events=emitted_events,
-            configuration={item.get("name", "unnamed"): item.get("params", {}) for item in analyzers},
+            configuration=_named_component_configuration(analyzers),
         ),
         ports=(
             _port("analyzers", "signal_in", "Signal", PortDirection.INPUT, PortDataType.SIGNAL),
@@ -359,7 +359,7 @@ def _visualizers_node(
             input_types=("AnalysisResult[]",),
             output_types=("RenderedView",),
             emitted_events=emitted_events,
-            configuration={item.get("name", "unnamed"): item.get("params", {}) for item in visualizers},
+            configuration=_named_component_configuration(visualizers),
         ),
         ports=(
             _port("visualizers", "analysis_in", "Analysis", PortDirection.INPUT, PortDataType.ANALYSIS),
@@ -642,6 +642,20 @@ def _visualizer_targets_preview(visualizers: list[dict[str, Any]]) -> str:
     if not targeted:
         return f"{len(visualizers)} renderer(s) on all results"
     return f"{len(visualizers)} renderer(s) with targeted outputs"
+
+
+def _named_component_configuration(items: list[dict[str, Any]]) -> dict[str, Any]:
+    """Preserve the full list configuration instead of collapsing it to params only."""
+    return {
+        "items": [
+            {
+                "name": item.get("name", "unnamed"),
+                "params": item.get("params", {}),
+                **({"result_indices": item.get("result_indices")} if item.get("result_indices") is not None else {}),
+            }
+            for item in items
+        ]
+    }
 
 
 def _port(

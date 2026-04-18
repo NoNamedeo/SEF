@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from tempfile import gettempdir
+import subprocess
+import sys
 import time
+from typing import Any
 
 import cv2
 import numpy as np
@@ -14,6 +17,7 @@ from library.analyzers.VerticalVelocityAnalyzer import VerticalVelocityAnalyzer
 from library.core.artifacts.BoxSignalSample import BoxSignalSample
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.MultiObjectSignalSample import BoundingBox
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.events.Event import Event
@@ -46,6 +50,7 @@ from library.frame_cleaners.SmoothingFrameCleaner import SmoothingFrameCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
 from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
 from library.visualizers.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
@@ -132,8 +137,14 @@ class PositionAnalyzer(IAnalyzer):
     """Returns the y position series."""
 
     def analyze(self, signal: ISignal) -> IData:
-        x = [float(sample.frame_index) for sample in signal]
-        y = [float(sample.centroid[1]) for sample in signal if sample.centroid]
+        x: list[float] = []
+        y: list[float] = []
+        for sample in signal:
+            centroid = _sample_centroid(sample)
+            if centroid is None:
+                continue
+            x.append(float(sample.frame_index))
+            y.append(float(centroid[1]))
         return TwoDimGraphData(x=x, y=y, label="position", title="Position")
 
 
@@ -141,7 +152,13 @@ class VelocityAnalyzer(IAnalyzer):
     """Returns a simple frame-to-frame delta series."""
 
     def analyze(self, signal: ISignal) -> IData:
-        values = [float(sample.centroid[1]) for sample in signal if sample.centroid]
+        values: list[float] = []
+        for sample in signal:
+            centroid = _sample_centroid(sample)
+            if centroid is None:
+                continue
+            values.append(float(centroid[1]))
+
         deltas = [
             0.0,
             *[current - previous for previous, current in zip(values, values[1:])],
@@ -208,6 +225,31 @@ class SyntheticVideoTracker:
             vertical_amplitude=self._vertical_amplitude,
             vertical_period=self._vertical_period,
         )
+
+
+def _sample_centroid(sample: Any) -> tuple[float, float] | None:
+    """
+    Resolve a centroid from either single-object or multi-object samples.
+
+    The demo should remain valid whether the extractor returns BoxSignalSample
+    or MultiObjectSignalSample. When multiple tracks are present, the primary
+    track is the one with the lowest track_id so the output stays deterministic.
+    """
+    centroid = getattr(sample, "centroid", None)
+    if centroid is not None:
+        return centroid
+
+    tracks = getattr(sample, "tracks", None)
+    if not tracks:
+        return None
+
+    ordered_tracks = sorted(
+        (track for track in tracks if getattr(track, "centroid", None) is not None),
+        key=lambda track: getattr(track, "track_id", 0),
+    )
+    if not ordered_tracks:
+        return None
+    return ordered_tracks[0].centroid
 
 
 # ---------------------------------------------------------------------------
@@ -334,50 +376,73 @@ def create_realistic_demo_video(
     return path
 
 
-def build_realistic_sync_context(video_path: Path) -> PipelineContext:
+def select_seed_roi_from_video(
+    video_path: str | Path,
+    resize: tuple[int, int] | None = None,
+    fallback_box: BoundingBox | None = None,
+) -> BoundingBox:
+    if not _can_show_preview():
+        return fallback_box or moving_object_box(0)
+
+    cap = cv2.VideoCapture(str(video_path))
+    ok, frame = cap.read()
+    cap.release()
+
+    if not ok:
+        raise ValueError("Impossibile leggere il primo frame")
+
+    if resize is not None:
+        frame = cv2.resize(frame, resize)
+
+    box = cv2.selectROI("Seleziona croce seed", frame, showCrosshair=True, fromCenter=False)
+    cv2.destroyWindow("Seleziona croce seed")
+
+    x, y, w, h = map(int, box)
+    if w <= 0 or h <= 0:
+        raise ValueError("ROI non valida")
+
+    return (x, y, w, h)
+
+
+def build_realistic_sync_context(
+    video_path: Path,
+    seed_box: BoundingBox | None = None,
+    show_preview: bool = True,
+) -> PipelineContext:
     """
     Heavier real-world-style composition.
 
-    This example uses concrete OpenCV components but remains deterministic:
-    the video is generated locally and the tracker is injected, so no manual
-    ROI selection, camera, GUI window, or external file is required.
+    The ROI is selected on the same resized frame that the extractor will use,
+    so the tracker receives coordinates in the correct scale.
     """
-    start_box = moving_object_box(0)
+    pipeline_resize = (320, 180)
+    resolved_seed_box = seed_box or select_seed_roi_from_video(
+        video_path,
+        resize=pipeline_resize,
+        fallback_box=moving_object_box(0),
+    )
     return (
         FluentPipelineBuilder()
         .with_frame_extractor(
             OpenCVBufferedFrameExtractor(
                 path=video_path,
-                config={"resize": (320, 180), "stride": 1, "max_frames": 90},
+                config={"resize": pipeline_resize, "stride": 1, "max_frames": 90},
             )
-        )
-        .with_frame_cleaners(
-            [
-                OpenCVResizeFrameCleaner(size=(320, 180)),
-                SmoothingFrameCleaner(alpha=0.82, reset_threshold=65.0),
-                OpenCVBackgroundSubtractionFrameCleaner(method="MOG2"),
-                OpenCVGrayFrameCleaner(),
-            ]
         )
         .with_signal_extractor(
-            OpenCVBufferedSignalExtractor(
-                tracker_type="MIL",
-                start_box=start_box,
-                tracker_factory=SyntheticVideoTracker,
-                config={"show": True},
+            OpenCVMultiObjectSignalExtractor(
+                tracker_type="CSRT",
+                start_box=resolved_seed_box,
+                max_objects=3,
+                template_match_threshold=0.86,
+                min_detection_distance=25,
+                config={
+                    "show": show_preview,
+                    "source_path": video_path,
+                },
             )
         )
-        .add_signal_cleaner(MovingAverageCleaner(window_size=7))
-        .with_analyzers(
-            [
-                VerticalPositionAnalyzer(config={"use_timestamps": True}),
-                VerticalVelocityAnalyzer(config={"use_timestamps": True}),
-                HorizontalVelocityAnalyzer(config={"use_timestamps": True}),
-                VerticalFrequencyAnalyzer(),
-            ]
-        )
-        .add_visualizer_for_results(ConsoleVisualizer(), [0, 3])
-        .add_visualizer_for_results(MatplotlibFunctionVisualizer(config={"show": True}), [0, 1, 2, 3])
+        .with_analyzers([VelocityAnalyzer()])
         .build_context()
     )
 
@@ -406,12 +471,12 @@ def example_sync_run_2() -> None:
     frame cleaners, signal extraction, signal smoothing, multiple analyzers
     and selective visualization, all through the orchestrator facade.
     """
-    video_path = create_realistic_demo_video(Path(gettempdir()) / "sef-realistic-sync-demo.avi")
+    video_path = Path("videos/castello.mp4")
     orchestrator = PipelineOrchestrator()
     try:
         print_example_header("realistic sync run")
         outputs = orchestrator.run(
-            build_realistic_sync_context(video_path),
+            build_realistic_sync_context(video_path, show_preview=_can_show_preview()),
             pipeline_id="realistic-sync-demo",
         )
         print_result_summary(outputs)
@@ -537,6 +602,33 @@ def wait_until_idle(runner: ThreadedPipelineRunner, timeout: float = 3.0) -> Non
     deadline = time.monotonic() + timeout
     while runner.active_ids() and time.monotonic() < deadline:
         time.sleep(0.01)
+
+
+def _can_show_preview() -> bool:
+    """
+    Probe whether OpenCV HighGUI is usable in this session.
+
+    The check is performed in a subprocess so a failing GUI backend cannot
+    crash the current Python process. When the probe fails, the demo falls
+    back to headless execution and still returns tracking results.
+    """
+    probe = (
+        "import cv2, numpy as np; "
+        "img = np.zeros((1, 1, 3), dtype=np.uint8); "
+        "cv2.imshow('sef-preview-probe', img); "
+        "cv2.waitKey(1); "
+        "cv2.destroyAllWindows()"
+    )
+    try:
+        completed = subprocess.run(
+            [sys.executable, "-c", probe],
+            check=False,
+            capture_output=True,
+            timeout=5,
+        )
+    except Exception:
+        return False
+    return completed.returncode == 0
 
 
 def full_simple_example() -> None:

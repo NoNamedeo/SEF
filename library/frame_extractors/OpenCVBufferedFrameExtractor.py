@@ -55,11 +55,19 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
                     image = cv2.resize(image, self.resize)
 
                 timestamp_seconds = (source_frame_index / fps) if fps > 0 else None
+                frame_metadata = {
+                    "source_path": self.path,
+                    "frame_size": (int(image.shape[1]), int(image.shape[0])),
+                }
+                if self.resize is not None:
+                    frame_metadata["resize"] = tuple(int(value) for value in self.resize)
+                if fps > 0:
+                    frame_metadata["source_fps"] = fps
                 frame = Frame(
                     image=image,
                     index=source_frame_index,
                     timestamp_seconds=timestamp_seconds,
-                    metadata={"source_path": self.path},
+                    metadata=frame_metadata,
                 )
                 buffer.put(frame)
                 yielded_frames += 1

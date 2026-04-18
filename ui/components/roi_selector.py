@@ -6,6 +6,7 @@ pipeline configuration.
 """
 from __future__ import annotations
 
+import hashlib
 from typing import Any
 
 import cv2
@@ -44,6 +45,16 @@ def _current_roi(state_key: str) -> tuple[int, int, int, int] | None:
     return int(x), int(y), int(w), int(h)
 
 
+def _frame_signature(frame_bgr: np.ndarray) -> str:
+    """Build a short signature that changes when the reference frame changes."""
+    hasher = hashlib.sha1()
+    hasher.update(str(frame_bgr.shape).encode("utf-8"))
+    height, width = frame_bgr.shape[:2]
+    sample = frame_bgr[: min(height, 16), : min(width, 16)]
+    hasher.update(sample.tobytes())
+    return hasher.hexdigest()[:12]
+
+
 def _is_new_event(event: dict[str, Any], state_key: str) -> bool:
     """Return True only for unprocessed component events."""
     event_id = event.get("event_id")
@@ -65,7 +76,7 @@ def render_roi_selector(
     target = cv2.resize(frame_bgr, resize) if resize is not None else frame_bgr
     height, width = target.shape[:2]
 
-    state_key = f"{key}_roi_box"
+    state_key = f"{key}_{width}x{height}_{_frame_signature(target)}_roi_box"
     current_roi = _current_roi(state_key)
     current_shape = None if current_roi is None else {
         "x": current_roi[0],

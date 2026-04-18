@@ -7,15 +7,22 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from library.analyzers.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
 from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.MultiObjectSignalSample import MultiObjectSignalSample, MultiObjectTrack
+from library.core.artifacts.Signal import Signal
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
+from library.core.visualization.VisualArtifact import VideoArtifact
 from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
+from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
+from library.Main import build_realistic_sync_context, create_realistic_demo_video, moving_object_box
 
 
 class FakeTracker:
@@ -67,14 +74,136 @@ class PipelineCoreTests(unittest.TestCase):
         )
         pipeline = Pipeline(context)
 
-        results = pipeline.run()
+        outputs = pipeline.run()
 
-        self.assertEqual(len(results), 1)
-        result = results[0]
+        self.assertEqual(len(outputs.results), 1)
+        result = outputs.results[0]
         self.assertEqual(result.title, "Vertical Position Over Time")
         self.assertEqual(result.x, [0.0, 1.0, 2.0, 3.0])
         self.assertEqual(len(result.y), 4)
         self.assertTrue(all(isinstance(value, float) for value in result.y))
+
+    def test_multiobject_extractor_accepts_similarity_threshold_alias(self):
+        buffer = FrameBuffer(2)
+        for frame_index in range(2):
+            image = np.zeros((16, 16, 3), dtype=np.uint8)
+            cv2.rectangle(image, (2, 2), (6, 6), (255, 255, 255), -1)
+            buffer.put(Frame(image=image, index=frame_index, timestamp_seconds=frame_index * 0.1))
+        buffer.close()
+
+        extractor = OpenCVMultiObjectSignalExtractor(
+            tracker_type="MIL",
+            start_box=(2, 2, 4, 4),
+            max_objects=1,
+            similarity_threshold=0.7,
+            tracker_factory=FakeTracker,
+            config={"show": False},
+        )
+
+        signal = extractor.extract(buffer)
+        samples = list(signal)
+
+        self.assertEqual(len(samples), 2)
+        self.assertEqual(extractor.template_match_threshold, 0.7)
+        self.assertTrue(samples[0].tracks)
+        self.assertEqual(samples[0].tracks[0].box, (4, 5, 4, 4))
+
+    def test_realistic_multiobject_demo_uses_deterministic_seed_box(self):
+        temp_dir = Path(tempfile.mkdtemp())
+        video_path = create_realistic_demo_video(temp_dir / "demo.avi")
+
+        context = build_realistic_sync_context(video_path)
+
+        self.assertEqual(context.signal_extractor.start_box, moving_object_box(0))
+        self.assertEqual(context.signal_extractor.template_match_threshold, 0.86)
+
+    def test_tracking_playback_analyzer_maps_multiobject_samples(self):
+        signal = Signal(
+            [
+                MultiObjectSignalSample(
+                    frame_index=3,
+                    tracks=[
+                        MultiObjectTrack(track_id=4, box=(10, 12, 20, 14), centroid=(20.0, 19.0)),
+                    ],
+                    metadata={
+                        "source_path": "/tmp/demo.mp4",
+                        "resize": (320, 180),
+                        "source_fps": 25.0,
+                    },
+                )
+            ]
+        )
+
+        result = TrackingPlaybackAnalyzer().analyze(signal)
+
+        self.assertEqual(result.source_path, "/tmp/demo.mp4")
+        self.assertEqual(result.resize, (320, 180))
+        self.assertEqual(result.fps, 25.0)
+        self.assertEqual(len(result.frames), 1)
+        self.assertEqual(result.frames[0].tracks[0].track_id, 4)
+        self.assertEqual(result.frames[0].tracks[0].box, (10, 12, 20, 14))
+
+    def test_tracking_video_visualizer_emits_video_artifact(self):
+        video_path = self._create_test_video()
+        playback_data = TrackingPlaybackAnalyzer().analyze(
+            Signal(
+                [
+                    MultiObjectSignalSample(
+                        frame_index=0,
+                        tracks=[
+                            MultiObjectTrack(track_id=0, box=(4, 5, 10, 10), centroid=(9.0, 10.0)),
+                        ],
+                        metadata={"source_path": video_path, "source_fps": 10.0},
+                    ),
+                    MultiObjectSignalSample(
+                        frame_index=1,
+                        tracks=[
+                            MultiObjectTrack(track_id=0, box=(5, 6, 10, 10), centroid=(10.0, 11.0)),
+                        ],
+                        metadata={"source_path": video_path, "source_fps": 10.0},
+                    ),
+                ]
+            )
+        )
+
+        artifacts = TrackingVideoVisualizer().render(playback_data)
+
+        self.assertEqual(len(artifacts), 1)
+        artifact = artifacts[0]
+        self.assertIsInstance(artifact, VideoArtifact)
+        self.assertEqual(artifact.mime_type, "video/mp4")
+        self.assertTrue(len(artifact.data) > 0)
+
+    def test_pipeline_can_emit_tracking_video_artifact(self):
+        video_path = self._create_test_video()
+        context = (
+            FluentPipelineBuilder()
+            .with_frame_extractor(
+                OpenCVBufferedFrameExtractor(
+                    path=video_path,
+                    buffer=FrameBuffer(8),
+                    config={"stride": 1, "max_frames": 4},
+                )
+            )
+            .with_signal_extractor(
+                OpenCVBufferedSignalExtractor(
+                    tracker_type="MIL",
+                    start_box=(5, 5, 10, 10),
+                    tracker_factory=FakeTracker,
+                    config={"source_path": video_path},
+                )
+            )
+            .add_analyzer(TrackingPlaybackAnalyzer())
+            .add_visualizer_for_results(TrackingVideoVisualizer(), [0])
+            .build_context()
+        )
+
+        outputs = Pipeline(context).run()
+
+        self.assertEqual(len(outputs.results), 1)
+        self.assertEqual(len(outputs.artifacts), 1)
+        self.assertIsInstance(outputs.artifacts[0], VideoArtifact)
+        self.assertTrue(len(outputs.artifacts[0].data) > 0)
 
     def _create_test_video(self) -> str:
         temp_dir = Path(tempfile.mkdtemp())

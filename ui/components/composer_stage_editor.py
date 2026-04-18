@@ -1,0 +1,215 @@
+"""Presentation components for pipeline stage editing."""
+
+from __future__ import annotations
+
+import streamlit as st
+
+from library.core.plugins.PluginRegistry import PluginCategory
+from ui.services.pipeline_builder_service import (
+    STAGE_EDIT_OPTIONS,
+    display_stage_plugin,
+    ensure_stage_options,
+    frame_cleaner_options_for_current_signal,
+    recommended_analyzers_for_current_signal,
+    recommended_frame_cleaners,
+    recommended_frame_extractors,
+    recommended_signal_cleaners,
+    recommended_signal_extractors,
+    recommended_visualizers_for_current_state,
+    selected_signal_extractor,
+    suggested_visualizer_target_indices,
+    stage_labels,
+)
+from ui.state.canvas import selected_stage, set_last_query_stage
+
+
+def render_stage_parameter_editor(registry) -> None:
+    """Render the stage-focused editor panel."""
+    (
+        frame_extractor_options,
+        signal_extractor_options,
+        signal_cleaner_options,
+        analyzer_options,
+        visualizer_options,
+    ) = ensure_stage_options(registry)
+    labels = stage_labels()
+
+    stage = st.segmented_control(
+        "Editor stage",
+        options=STAGE_EDIT_OPTIONS,
+        format_func=lambda key: labels[key],
+        selection_mode="single",
+        default=selected_stage(),
+        key="sef_selected_stage",
+    )
+    if stage is None:
+        stage = STAGE_EDIT_OPTIONS[0]
+    st.query_params["stage"] = stage
+    set_last_query_stage(stage)
+
+    st.markdown(f"### {labels[stage]}")
+
+    if stage == "frame_extractor":
+        _render_frame_extractor_editor(registry, frame_extractor_options)
+        return
+    if stage == "frame_cleaners":
+        _render_frame_cleaners_editor(registry)
+        return
+    if stage == "signal_extractor":
+        _render_signal_extractor_editor(registry, signal_extractor_options)
+        return
+    if stage == "signal_cleaners":
+        _render_signal_cleaners_editor(registry, signal_cleaner_options)
+        return
+    if stage == "analyzers":
+        _render_analyzers_editor(registry, analyzer_options)
+        return
+    if stage == "visualizers":
+        _render_visualizers_editor(registry, visualizer_options)
+
+
+def _render_frame_extractor_editor(registry, frame_extractor_options: list[str]) -> None:
+    st.selectbox(
+        "Frame extractor",
+        frame_extractor_options,
+        key="sef_builder_frame_extractor",
+        format_func=display_stage_plugin(registry, PluginCategory.FRAME_EXTRACTOR, recommended_frame_extractors()),
+    )
+    c1, c2, c3 = st.columns(3)
+    c1.selectbox(
+        "Resize",
+        ["Originale", "320x180", "640x360", "640x480", "960x540"],
+        key="sef_builder_resize",
+    )
+    c2.slider("Stride", 1, 12, key="sef_builder_stride")
+    c3.checkbox("Limita frame", key="sef_builder_max_frames_enabled")
+    if st.session_state["sef_builder_max_frames_enabled"]:
+        st.slider("Max frame", 20, 1200, key="sef_builder_max_frames", step=20)
+
+
+def _render_frame_cleaners_editor(registry) -> None:
+    st.multiselect(
+        "Frame cleaners",
+        frame_cleaner_options_for_current_signal(registry),
+        key="sef_builder_frame_cleaners",
+        format_func=display_stage_plugin(registry, PluginCategory.FRAME_CLEANER, recommended_frame_cleaners()),
+        help="I consigliati compaiono in alto. Le altre opzioni restano selezionabili senza garanzia di compatibilita.",
+    )
+    render_frame_cleaner_params()
+
+
+def _render_signal_extractor_editor(registry, signal_extractor_options: list[str]) -> None:
+    st.selectbox(
+        "Signal extractor",
+        signal_extractor_options,
+        key="sef_builder_signal_extractor",
+        format_func=display_stage_plugin(registry, PluginCategory.SIGNAL_EXTRACTOR, recommended_signal_extractors()),
+    )
+    render_signal_extractor_params()
+
+
+def _render_signal_cleaners_editor(registry, signal_cleaner_options: list[str]) -> None:
+    st.multiselect(
+        "Signal cleaners",
+        signal_cleaner_options,
+        key="sef_builder_signal_cleaners",
+        format_func=display_stage_plugin(registry, PluginCategory.SIGNAL_CLEANER, recommended_signal_cleaners()),
+        help="I consigliati compaiono in alto. Le altre opzioni restano selezionabili senza garanzia di compatibilita.",
+    )
+    render_signal_cleaner_params()
+
+
+def _render_analyzers_editor(registry, analyzer_options: list[str]) -> None:
+    st.multiselect(
+        "Analyzers",
+        analyzer_options,
+        key="sef_builder_analyzers",
+        format_func=display_stage_plugin(registry, PluginCategory.ANALYZER, recommended_analyzers_for_current_signal()),
+        help="I consigliati compaiono in alto. Le altre opzioni restano selezionabili senza garanzia di compatibilita.",
+    )
+
+
+def _render_visualizers_editor(registry, visualizer_options: list[str]) -> None:
+    st.multiselect(
+        "Pipeline visualizers opzionali",
+        visualizer_options,
+        key="sef_builder_visualizers",
+        format_func=display_stage_plugin(registry, PluginCategory.VISUALIZER, recommended_visualizers_for_current_state()),
+        help="La UI rende sempre i dati analitici. Qui abiliti i visualizer del core e i loro artifact.",
+    )
+    if st.session_state["sef_builder_visualizers"]:
+        render_visualizer_target_inputs()
+
+
+def render_frame_cleaner_params() -> None:
+    selected = set(st.session_state["sef_builder_frame_cleaners"])
+    if not selected:
+        return
+    with st.expander("Frame cleaner params", expanded=False):
+        if "opencv_resize" in selected:
+            st.caption("opencv_resize usa lo stesso resize del frame extractor.")
+        if "smoothing" in selected:
+            c1, c2 = st.columns(2)
+            c1.slider("Smoothing alpha", 0.1, 1.0, key="sef_builder_smoothing_alpha", step=0.02)
+            c2.slider("Reset threshold", 5.0, 150.0, key="sef_builder_smoothing_reset", step=5.0)
+        if "background_subtraction" in selected:
+            c1, c2 = st.columns(2)
+            c1.selectbox("Background method", ["MOG2", "KNN"], key="sef_builder_bg_method")
+            c2.checkbox("Detect shadows", key="sef_builder_bg_shadows")
+
+
+def render_signal_extractor_params() -> None:
+    extractor = selected_signal_extractor()
+    with st.expander("Signal extractor params", expanded=True):
+        if extractor in {"opencv_tracker", "opencv_multi_tracker"}:
+            c1, c2 = st.columns(2)
+            c1.selectbox("Tracker", ["MIL", "KCF", "CSRT"], key="sef_builder_tracker")
+            c2.checkbox("OpenCV preview windows", key="sef_builder_show_windows")
+            if extractor == "opencv_multi_tracker":
+                st.text_input("Nomi barriere", key="sef_builder_barrier_names")
+                c3, c4 = st.columns(2)
+                c3.slider("Max objects", 1, 12, key="sef_builder_multi_max_objects")
+                c4.slider("Similarity", 0.20, 0.99, key="sef_builder_multi_similarity", step=0.01)
+        elif extractor == "dense_optical_flow":
+            st.slider("Cell size", 6, 48, key="sef_builder_dense_cell_size")
+
+
+def render_signal_cleaner_params() -> None:
+    selected = set(st.session_state.get("sef_builder_signal_cleaners", []))
+    if not selected:
+        return
+    with st.expander("Signal cleaner params", expanded=False):
+        if "moving_average" in selected:
+            st.slider("Moving average window", 3, 31, key="sef_builder_mavg_window", step=2)
+        if "outlier_rejection" in selected:
+            c1, c2 = st.columns(2)
+            c1.slider("Outlier threshold", 1.0, 8.0, key="sef_builder_outlier_threshold", step=0.1)
+            c2.selectbox("Outlier mode", ["clip", "replace", "remove"], key="sef_builder_outlier_mode")
+        if "signal_widener" in selected:
+            st.slider("Amplification", 0.5, 4.0, key="sef_builder_widener", step=0.1)
+
+
+def render_visualizer_target_inputs() -> None:
+    target_map = dict(st.session_state.get("sef_builder_visualizer_targets", {}))
+    active_visualizers = list(st.session_state.get("sef_builder_visualizers", []))
+    stale_names = [name for name in target_map if name not in active_visualizers]
+    for name in stale_names:
+        target_map.pop(name, None)
+    st.session_state["sef_builder_visualizer_targets"] = target_map
+
+    analyzer_names = tuple(st.session_state.get("sef_builder_analyzers", []))
+    st.caption("Configura i result indices per singolo visualizer. Vuoto = target compatibili automatici.")
+    for name in active_visualizers:
+        field_key = f"sef_builder_visualizer_target__{name}"
+        if field_key not in st.session_state:
+            st.session_state[field_key] = target_map.get(name, "")
+        suggested_indices = suggested_visualizer_target_indices(name, analyzer_names)
+        suggested_text = ",".join(str(index) for index in suggested_indices) if suggested_indices is not None else ""
+        value = st.text_input(
+            f"Result indices per `{name}`",
+            key=field_key,
+            help="Esempio: 0,1. Se vuoto, la UI usa gli output compatibili con quel visualizer.",
+            placeholder=suggested_text or "default automatico",
+        )
+        target_map[name] = value.strip()
+    st.session_state["sef_builder_visualizer_targets"] = target_map
