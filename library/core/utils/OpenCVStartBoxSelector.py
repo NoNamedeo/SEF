@@ -1,14 +1,24 @@
 import cv2
 from typing import Any, Tuple
 
+from library.core.artifacts.Frame import Frame
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
+
+
 class OpenCVStartBoxSelector:
-    """Utility class for finding the start box of a video"""
+    """Utility class for finding the start box of a video with optional preprocessing."""
 
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
 
     @staticmethod
-    def select_start(video_path: str, resize: Tuple[int, int] = None) -> Tuple[int, int, int, int]:
+    def select_start(
+        video_path: str,
+        resize: Tuple[int, int] | None = None,
+        apply_preprocessing: bool = True,
+        frame_cleaners: list[IFrameCleaner] | None = None,
+    ) -> Tuple[int, int, int, int]:
+
         cap = cv2.VideoCapture(video_path)
 
         if not cap.isOpened():
@@ -22,11 +32,24 @@ class OpenCVStartBoxSelector:
             if resize is not None:
                 frame = cv2.resize(frame, resize)
 
+            if apply_preprocessing and frame_cleaners:
+                temp_frame = Frame(
+                    image=frame,
+                    index=0,
+                    timestamp_seconds=0,
+                    metadata={}
+                )
+
+                for cleaner in frame_cleaners:
+                    temp_frame = cleaner.clean(temp_frame)
+
+                frame = temp_frame.frame
+
             roi = cv2.selectROI(
                 "Select Start Box",
                 frame,
                 fromCenter=False,
-                showCrosshair=True
+                showCrosshair=True,
             )
 
             cv2.destroyWindow("Select Start Box")
@@ -37,5 +60,6 @@ class OpenCVStartBoxSelector:
                 raise ValueError("No ROI selected")
 
             return x, y, w, h
+
         finally:
             cap.release()
