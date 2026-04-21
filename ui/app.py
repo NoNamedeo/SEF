@@ -148,13 +148,6 @@ def render_header(registry) -> None:
         "Composer applicativo per pipeline video: scegli i componenti dal registry, "
         "configura ROI e barriere, esegui in sync o async e osserva eventi e stati."
     )
-    metrics = st.columns(5)
-    metrics[0].metric("Plugin registrati", len(registry.list()))
-    metrics[1].metric("Orchestrator", "attivo")
-    metrics[2].metric("EventBus", "opzionale")
-    metrics[3].metric("Monitor", "snapshot")
-    metrics[4].metric("Builder", "config")
-    st.divider()
 
 
 def render_composer(registry) -> None:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import logging
+from datetime import datetime, timezone
 from typing import Any, Callable, Mapping
 
 from library.core.interfaces.IData import IData
@@ -164,7 +164,7 @@ class Pipeline:
                 data = results[result_index]
                 rendered = self._run_step(
                     f"visualisation[{binding_index}][{result_index}]",
-                    lambda v=binding.visualizer, d=data, ctx=self._visualization_context(binding, result_index, data): v.render(d, ctx),
+                    lambda v=binding.visualizer, d=data, ctx=self._visualization_context(binding, result_index, data): v.render(d, ctx),  # noqa: B008
                 )
                 artifacts.extend(rendered)
         return artifacts
@@ -199,10 +199,7 @@ class Pipeline:
             return tuple(range(result_count))
         invalid = [index for index in binding.result_indices if index >= result_count]
         if invalid:
-            raise ValueError(
-                f"Visualizer target index out of range: {invalid}; "
-                f"available result indexes: 0..{result_count - 1}."
-            )
+            raise ValueError(f"Visualizer target index out of range: {invalid}; available result indexes: 0..{result_count - 1}.")
         return tuple(binding.result_indices)
 
     @staticmethod
