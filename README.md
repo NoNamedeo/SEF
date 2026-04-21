@@ -9,8 +9,6 @@ Nel repository convivono due facce complementari del sistema:
 
 ## Obiettivi del progetto
 
-Dal codice emergono obiettivi molto chiari:
-
 - separare la definizione della pipeline dalla sua esecuzione;
 - rendere sostituibili gli algoritmi tramite interfacce e registry;
 - supportare sia uso programmatico sia uso dichiarativo via configurazione;
@@ -507,17 +505,6 @@ Dal punto di vista ingegneristico, il valore del progetto non sta solo nei singo
 - il sistema di eventi rende possibile il branching senza accoppiare i componenti;
 - la UI riusa il core invece di duplicarne la logica;
 - i test coprono i punti architetturalmente più critici: pipeline, branching, registry, builder, event bus.
-
-## Limiti attuali osservabili dal codice
-
-Il progetto è già strutturato bene, ma dal codice emergono alcuni limiti naturali dell'attuale stadio:
-
-- esistono due cataloghi plugin: uno minimo nel core e uno più ricco nella UI;
-- l'output store nel runner è opzionale e di default non persistente;
-- il monitor di default è in-memory;
-- la validazione della configurazione è robusta ma ancora basata su dizionari non tipizzati;
-- l'esecuzione asincrona è thread-based, non distribuita;
-- alcune funzionalità sono pensate soprattutto per uso locale e interattivo.
 
 ## Possibilità di sviluppo future
 
