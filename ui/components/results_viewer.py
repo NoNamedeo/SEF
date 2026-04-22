@@ -6,6 +6,7 @@ from collections.abc import Sequence
 
 import streamlit as st
 
+from ui.components.rendering_utils import render_safe_metadata
 from ui.components.visual_artifact_viewer import render_visual_artifacts
 from ui.models.pipeline_outputs import AnalysisResultOutput
 
@@ -16,7 +17,29 @@ def render_results(results: Sequence[AnalysisResultOutput]) -> None:
         st.warning("Nessun risultato disponibile.")
         return
 
-    for result in results:
+    selected_result = _select_result(results)
+    if selected_result is None:
+        return
+
+    _render_result(selected_result)
+
+
+def _select_result(results: Sequence[AnalysisResultOutput]) -> AnalysisResultOutput | None:
+    if len(results) == 1:
+        return results[0]
+
+    labels = [f"{index + 1}. {result.title} ({result.type_name})" for index, result in enumerate(results)]
+    selected_label = st.selectbox(
+        "Risultato analitico",
+        labels,
+        index=0,
+        key="sef_analysis_result_selector",
+    )
+    selected_index = labels.index(selected_label)
+    return results[selected_index]
+
+
+def _render_result(result: AnalysisResultOutput) -> None:
         with st.container(border=True):
             st.markdown(f"**{result.title}**")
             st.caption(result.type_name)
@@ -35,11 +58,12 @@ def render_results(results: Sequence[AnalysisResultOutput]) -> None:
 
             if result.detail_rows:
                 with st.expander("Dettaglio analitico", expanded=False):
-                    st.dataframe(list(result.detail_rows), width="stretch")
+                    st.dataframe(list(result.detail_rows[:250]), width="stretch")
+                    if len(result.detail_rows) > 250:
+                        st.caption(f"Mostrate 250 righe su {len(result.detail_rows)} per stabilita UI.")
 
             if result.metadata:
-                with st.expander("Metadati analisi", expanded=False):
-                    st.json(dict(result.metadata))
+                render_safe_metadata("Metadati analisi", result.metadata, expanded=False)
 
             if not result.preview_artifacts and not result.summary and not result.detail_rows:
                 st.code(str(result.data))

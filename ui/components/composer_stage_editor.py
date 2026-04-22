@@ -172,6 +172,8 @@ def render_signal_extractor_params() -> None:
                 c4.slider("Similarity", 0.20, 0.99, key="sef_builder_multi_similarity", step=0.01)
         elif extractor == "dense_optical_flow":
             st.slider("Cell size", 6, 48, key="sef_builder_dense_cell_size")
+        elif extractor == "aruco_marker":
+            st.caption("Per ArUco e consigliato usare Resize=Originale e Stride=1 nel frame extractor.")
 
 
 def render_signal_cleaner_params() -> None:

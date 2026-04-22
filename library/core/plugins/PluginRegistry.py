@@ -147,12 +147,17 @@ def create_builtin_registry() -> PluginRegistry:
     >>> registry.register(PluginCategory.ANALYZER, "my_analyzer", MyAnalyzer)
     >>> builder = ConfigPipelineBuilder(registry)
     """
+    from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
+    from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
     from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
     from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
     from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
     from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
+    from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
     from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
     from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
+    from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+    from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
     from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
     registry = PluginRegistry()
@@ -179,6 +184,13 @@ def create_builtin_registry() -> PluginRegistry:
     )
 
     registry.register(
+        PluginCategory.SIGNAL_EXTRACTOR,
+        "aruco_marker",
+        ArucoMarkerSignalExtractor,
+        "Detect DICT_6X6_250 ArUco markers frame by frame.",
+    )
+
+    registry.register(
         PluginCategory.SIGNAL_CLEANER,
         "moving_average",
         MovingAverageCleaner,
@@ -193,10 +205,38 @@ def create_builtin_registry() -> PluginRegistry:
     )
 
     registry.register(
+        PluginCategory.ANALYZER,
+        "aruco_displacement",
+        ArucoMarkerDisplacementAnalyzer,
+        "Compute per-marker 2D displacement over time.",
+    )
+
+    registry.register(
+        PluginCategory.ANALYZER,
+        "aruco_relative_motion",
+        ArucoMarkerRelativeMotionAnalyzer,
+        "Measure relative distance changes between ArUco marker pairs.",
+    )
+
+    registry.register(
         PluginCategory.VISUALIZER,
         "matplotlib",
         MatplotlibFunctionVisualizer,
         "Plot analytical data with Matplotlib.",
+    )
+
+    registry.register(
+        PluginCategory.VISUALIZER,
+        "aruco_motion_plot",
+        MatplotlibArucoMotionVisualizer,
+        "Render ArUco displacement and relative-motion plots.",
+    )
+
+    registry.register(
+        PluginCategory.VISUALIZER,
+        "aruco_annotated_video",
+        ArucoAnnotatedVideoVisualizer,
+        "Render annotated MP4 output for ArUco detections.",
     )
 
     registry.register(

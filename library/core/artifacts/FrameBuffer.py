@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import Iterable, Iterator
 
 from library.core.artifacts.Frame import Frame
@@ -16,7 +17,7 @@ class FrameBuffer:
 
     def __init__(self, buffer_size: int | None = None, frames: Iterable[Frame] | None = None):
         self.capacity = buffer_size
-        self._frames = list(frames or [])
+        self._frames = deque(frames or [])
         self.closed = False
 
     def put(self, frame: Frame) -> None:
@@ -25,7 +26,7 @@ class FrameBuffer:
     def get(self) -> Frame:
         if self.is_empty():
             raise IndexError("FrameBuffer is empty")
-        return self._frames.pop(0)
+        return self._frames.popleft()
 
     def close(self) -> None:
         self.closed = True

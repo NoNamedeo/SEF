@@ -28,8 +28,7 @@ def build_execution_results_view(outputs: PipelineOutputs) -> ExecutionResultsVi
                 ReconstructedVideoOutput(
                     artifact_id=artifact.artifact_id,
                     title=artifact.title or "Reconstructed video",
-                    mime_type=artifact.mime_type,
-                    data=artifact.data,
+                    artifact=artifact,
                     source="pipeline artifact",
                     metadata=dict(artifact.metadata),
                 )
@@ -201,8 +200,7 @@ def _build_tracking_video_outputs(
                 ReconstructedVideoOutput(
                     artifact_id=artifact.artifact_id,
                     title=artifact.title or f"Tracking playback {idx + 1}",
-                    mime_type=artifact.mime_type,
-                    data=artifact.data,
+                    artifact=artifact,
                     source="tracking_playback preview",
                     metadata=dict(artifact.metadata),
                 )

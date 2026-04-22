@@ -1,0 +1,32 @@
+pipeline:
+  frame_extractor:
+    name: opencv_buffered
+    params:
+      path: videos/wall_markers.mp4
+      config:
+        stride: 1
+        max_frames: 300
+
+  frame_cleaners:
+    - name: smoothing
+      params:
+        alpha: 0.9
+        reset_threshold: 40.0
+
+  signal_extractor:
+    name: aruco_marker
+    params:
+      marker_ids: [10, 11]
+
+  analyzers:
+    - name: aruco_displacement
+    - name: aruco_relative_motion
+      params:
+        marker_pairs:
+          - [10, 11]
+
+  visualizers:
+    - name: aruco_motion_plot
+      result_indices: [0, 1]
+    - name: aruco_annotated_video
+      result_indices: [0]

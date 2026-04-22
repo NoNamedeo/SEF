@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from concurrent.futures import Future
 from typing import Any, Mapping
 from uuid import uuid4
 
@@ -74,13 +75,12 @@ class PipelineOrchestrator:
         context: PipelineContext,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
-    ) -> str:
+    ) -> Future[PipelineOutputs]:
         """Submit a pipeline for background execution and return its id."""
         resolved_pipeline_id = pipeline_id or self._new_pipeline_id()
         pipeline = self._build_pipeline(context, resolved_pipeline_id, execution_metadata=execution_metadata)
 
-        self._runner.submit(resolved_pipeline_id, pipeline)
-        return resolved_pipeline_id
+        return self._runner.submit(resolved_pipeline_id, pipeline)
 
     def terminate(self, pipeline_id: str) -> bool:
         """
