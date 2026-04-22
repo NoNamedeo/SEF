@@ -19,6 +19,7 @@ ROI_BOX          = "sef_roi_box"            # tuple[int,int,int,int]  (x,y,w,h)
 BARRIERS         = "sef_barriers"           # dict[str, ((x1,y1),(x2,y2))]
 BARRIER_SELECTION_STATE = "sef_barrier_selection_state"  # BarrierSelectionState
 PIPELINE_OUTPUTS = "sef_pipeline_outputs"   # PipelineOutputs
+PIPELINE_OUTPUT_PIPELINE_ID = "sef_pipeline_output_pipeline_id"  # str
 PIPELINE_CONFIG  = "sef_pipeline_config"    # dict  — last config used in Config Builder
 PIPELINE_CONFIG_EDITOR_RAW = "sef_pipeline_config_editor_raw"  # str
 PIPELINE_CONFIG_EDITOR_BASELINE = "sef_pipeline_config_editor_baseline"  # str
@@ -44,5 +45,5 @@ def clear(key: str) -> None:
 
 def clear_run_state() -> None:
     """Reset all pipeline-run-specific keys (call before a new run)."""
-    for k in (PIPELINE_OUTPUTS, ROI_BOX, BARRIERS, TRACKING_VIDEO_CACHE):
+    for k in (PIPELINE_OUTPUTS, PIPELINE_OUTPUT_PIPELINE_ID, ROI_BOX, BARRIERS, TRACKING_VIDEO_CACHE):
         clear(k)

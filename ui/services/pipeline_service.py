@@ -81,7 +81,7 @@ def _get_monitor() -> InMemoryPipelineMonitor:
 def _get_output_store() -> InMemoryPipelineOutputStore:
     global _output_store
     if _output_store is None:
-        _output_store = InMemoryPipelineOutputStore(max_entries=48)
+        _output_store = InMemoryPipelineOutputStore(max_entries=4)
     return _output_store
 
 
@@ -93,7 +93,7 @@ def _get_runner() -> ThreadedPipelineRunner:
             output_store=_get_output_store(),
             retry_policy=NoRetryPolicy(),
             lifecycle_bus=_get_lifecycle_bus(),
-            max_workers=4,
+            max_workers=1,
         )
     return _runner
 

@@ -27,6 +27,11 @@ TRACKING_ANALYZERS = (
     "horizontal_frequency",
 )
 
+ARUCO_ANALYZERS = (
+    "aruco_displacement",
+    "aruco_relative_motion",
+)
+
 STAGE_EDIT_OPTIONS = tuple(stage.value for stage in AnalysisStageKey)
 
 
@@ -176,6 +181,8 @@ def recommended_signal_extractors() -> set[str]:
         return {"opencv_multi_tracker"}
     if mode == "Dense optical flow":
         return {"dense_optical_flow"}
+    if mode == "ArUco wall micromovements":
+        return {"aruco_marker"}
     return {"opencv_tracker"}
 
 
@@ -191,6 +198,8 @@ def recommended_analyzers_for_current_signal() -> set[str]:
         return {"barrier_counting", "tracking_playback"}
     if extractor == "dense_optical_flow":
         return {"dense_vector_field"}
+    if extractor == "aruco_marker":
+        return set(ARUCO_ANALYZERS)
     return set(TRACKING_ANALYZERS)
 
 
@@ -205,6 +214,10 @@ def recommended_visualizers_for_current_state() -> set[str]:
         recommended.add("matplotlib_vector_field")
     if "tracking_playback" in selected_analyzers:
         recommended.add("tracking_video")
+    if selected_analyzers & set(ARUCO_ANALYZERS):
+        recommended.add("aruco_motion_plot")
+    if "aruco_displacement" in selected_analyzers:
+        recommended.add("aruco_annotated_video")
     return recommended
 
 
@@ -220,6 +233,8 @@ def suggested_visualizer_target_indices(
         "matplotlib_vector_field": {"dense_vector_field"},
         "matplotlib_heatmap": {"dense_vector_field"},
         "tracking_video": {"tracking_playback"},
+        "aruco_motion_plot": set(ARUCO_ANALYZERS),
+        "aruco_annotated_video": {"aruco_displacement"},
     }
     compatible_analyzers = compatibility_map.get(visualizer_name)
     if compatible_analyzers is None:
@@ -355,6 +370,18 @@ def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
         if not roi or roi[2] <= 0 or roi[3] <= 0:
             issues.append("Disegna una ROI valida per il tracker.")
 
+    if extractor_name == "aruco_marker":
+        resize = dict(frame_extractor.get("params", {})).get("config", {}).get("resize")
+        if (
+            isinstance(resize, (tuple, list))
+            and len(resize) == 2
+            and (int(resize[0]) < 640 or int(resize[1]) < 480)
+        ):
+            issues.append("Per ArUco evita downscale troppo aggressivi: sotto 640x480 la detection puo degradare.")
+        stride = dict(frame_extractor.get("params", {})).get("config", {}).get("stride")
+        if isinstance(stride, int) and stride > 1:
+            issues.append("Per ArUco usa Stride=1: saltare frame riduce stabilita e osservabilita del moto.")
+
     if extractor_name == "opencv_multi_tracker" and "barrier_counting" in selected_analyzers:
         configured_barriers = {}
         for analyzer in pipeline.get("analyzers", []):
@@ -387,6 +414,8 @@ def sync_mode_with_components(mode: str) -> None:
         apply_multi_object_components()
     elif mode == "Dense optical flow" and current != "dense_optical_flow":
         apply_dense_flow_components()
+    elif mode == "ArUco wall micromovements" and current != "aruco_marker":
+        apply_aruco_components()
 
 
 def apply_tracking_preset() -> None:
@@ -423,6 +452,24 @@ def apply_dense_flow_components() -> None:
     st.session_state["sef_builder_signal_cleaners"] = []
     st.session_state["sef_builder_analyzers"] = ["dense_vector_field"]
     st.session_state["sef_builder_frame_cleaners"] = []
+
+
+def apply_aruco_preset() -> None:
+    st.session_state["sef_builder_mode"] = "ArUco wall micromovements"
+    apply_aruco_components()
+
+
+def apply_aruco_components() -> None:
+    st.session_state["sef_builder_signal_extractor"] = "aruco_marker"
+    st.session_state["sef_builder_signal_cleaners"] = []
+    st.session_state["sef_builder_analyzers"] = ["aruco_displacement"]
+    st.session_state["sef_builder_frame_cleaners"] = []
+    st.session_state["sef_builder_visualizers"] = ["aruco_motion_plot", "aruco_annotated_video"]
+    # ArUco runs can otherwise explode RAM by buffering full-resolution videos.
+    st.session_state["sef_builder_resize"] = "640x480"
+    st.session_state["sef_builder_stride"] = 1
+    st.session_state["sef_builder_max_frames_enabled"] = True
+    st.session_state["sef_builder_max_frames"] = 180
 
 
 def _build_frame_cleaner_configs(state: BuilderStateSnapshot) -> tuple[PluginConfig, ...]:
@@ -464,6 +511,15 @@ def _build_signal_extractor_config(
         return PluginConfig(
             name=state.signal_extractor,
             params={"cell_size": state.dense_cell_size},
+        )
+    if state.signal_extractor == "aruco_marker":
+        return PluginConfig(
+            name=state.signal_extractor,
+            params={
+                "config": {
+                    "white_border_padding_px": 32,
+                }
+            },
         )
 
     params: dict[str, Any] = {

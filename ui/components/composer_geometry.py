@@ -110,6 +110,7 @@ def _clear_geometry_outputs(*, clear_video: bool) -> None:
 def _clear_run_outputs() -> None:
     for key in (
         session.PIPELINE_OUTPUTS,
+        session.PIPELINE_OUTPUT_PIPELINE_ID,
         session.TRACKING_VIDEO_CACHE,
     ):
         session.clear(key)

@@ -84,8 +84,6 @@ def render_video_selector() -> tuple[str | None, np.ndarray | None, dict | None]
     source = st.radio("Sorgente", ["Demo", "Upload"], horizontal=True, key="vs_source")
 
     video_path: str | None = None
-    video_bytes: bytes | None = None
-
     if source == "Demo":
         demos = _demo_paths()
         if not demos:
@@ -98,7 +96,6 @@ def render_video_selector() -> tuple[str | None, np.ndarray | None, dict | None]
             key="vs_demo_sel",
         )
         video_path = chosen
-        video_bytes = Path(chosen).read_bytes()
 
     else:  # Upload
         uploaded = st.file_uploader("Carica video", type=["mp4", "mov", "avi", "mkv"], key="vs_upload")
@@ -106,12 +103,11 @@ def render_video_selector() -> tuple[str | None, np.ndarray | None, dict | None]
             st.info("Carica un file video per continuare.")
             return None, None, None
         video_path = str(_save_upload(uploaded))
-        video_bytes = uploaded.getvalue()
 
     # ── Player ────────────────────────────────────────────────────────────────
-    if video_bytes:
+    if video_path:
         with st.expander("Player video", expanded=False):
-            st.video(video_bytes)
+            st.video(video_path)
 
     # ── Load first frame + metadata ───────────────────────────────────────────
     try:

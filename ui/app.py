@@ -32,6 +32,7 @@ from ui.components.pipeline_status_dashboard import (  # noqa: E402
     render_pipeline_status_dashboard,
 )
 from ui.services.pipeline_builder_service import (  # noqa: E402
+    apply_aruco_preset,
     apply_dense_flow_preset,
     apply_multi_object_preset,
     apply_tracking_preset,
@@ -126,6 +127,9 @@ def render_sidebar(registry) -> None:
         if st.button("Dense optical flow", width="stretch"):
             apply_dense_flow_preset()
             st.rerun()
+        if st.button("ArUco wall motion", width="stretch"):
+            apply_aruco_preset()
+            st.rerun()
 
         st.divider()
         counts = {category: len(registry.list(category)) for category in PluginCategory}
@@ -154,7 +158,7 @@ def render_composer(registry) -> None:
     st.subheader("Composizione visuale")
     mode = st.radio(
         "Scenario",
-        ["Single object tracking", "Multi-object barriers", "Dense optical flow"],
+        ["Single object tracking", "Multi-object barriers", "Dense optical flow", "ArUco wall micromovements"],
         key="sef_builder_mode",
         horizontal=True,
     )
@@ -333,9 +337,8 @@ def render_execution(registry) -> None:
         if async_clicked:
             execute_async(registry, config, pipeline_id)
 
-        outputs = session.get(session.PIPELINE_OUTPUTS)
-        if outputs:
-            render_pipeline_outputs(outputs, title="Current run outputs")
+        current_pipeline_id = session.get(session.PIPELINE_OUTPUT_PIPELINE_ID)
+        render_stored_outputs_browser(default_pipeline_id=current_pipeline_id)
 
     with col_monitor:
         controls_col1, controls_col2 = st.columns(2)
@@ -347,7 +350,6 @@ def render_execution(registry) -> None:
 
         render_pipeline_status_dashboard(snapshots(), event_records(), title="Pipeline status")
         render_event_timeline(event_records())
-        render_stored_outputs_browser()
         with st.expander("Controls", expanded=False):
             active = active_ids()
             if active:
@@ -359,17 +361,23 @@ def render_execution(registry) -> None:
                         st.rerun()
 
 
-def render_stored_outputs_browser() -> None:
+def render_stored_outputs_browser(*, default_pipeline_id: str | None = None) -> None:
     available_ids = [snapshot.pipeline_id for snapshot in snapshots() if pipeline_outputs(snapshot.pipeline_id) is not None]
     if not available_ids:
         return
 
     st.markdown("### Stored outputs")
+    selection_key = "sef_stored_output_pipeline_id"
+    candidate = session.get(selection_key)
+    if candidate not in available_ids:
+        candidate = default_pipeline_id if default_pipeline_id in available_ids else available_ids[-1]
+        st.session_state[selection_key] = candidate
+
     selected_pipeline_id = st.selectbox(
         "Inspect pipeline outputs",
         available_ids,
-        index=len(available_ids) - 1,
-        key="sef_stored_output_pipeline_id",
+        index=available_ids.index(st.session_state[selection_key]),
+        key=selection_key,
     )
     outputs = pipeline_outputs(selected_pipeline_id)
     if outputs is not None:
@@ -447,8 +455,9 @@ def render_config_lab(registry) -> None:
         try:
             config = json.loads(raw_config)
             context = context_from_config(config, registry)
-            outputs = run_sync(context, pipeline_id=f"config-{uuid.uuid4().hex[:8]}")
-            session.put(session.PIPELINE_OUTPUTS, outputs)
+            pipeline_id = f"config-{uuid.uuid4().hex[:8]}"
+            outputs = run_sync(context, pipeline_id=pipeline_id)
+            session.put(session.PIPELINE_OUTPUT_PIPELINE_ID, pipeline_id)
             st.success(f"Pipeline completata: {len(outputs.results)} risultati, {len(outputs.artifacts)} artifact.")
             render_pipeline_outputs(outputs, title="Config outputs")
         except Exception as exc:
@@ -458,10 +467,11 @@ def render_config_lab(registry) -> None:
 def execute_sync(registry, config: dict[str, Any], pipeline_id: str) -> None:
     try:
         session.clear(session.TRACKING_VIDEO_CACHE)
+        session.clear(session.PIPELINE_OUTPUTS)
         context = context_from_config(config, registry)
         with st.spinner("Pipeline in esecuzione..."):
             outputs = run_sync(context, pipeline_id=pipeline_id)
-        session.put(session.PIPELINE_OUTPUTS, outputs)
+        session.put(session.PIPELINE_OUTPUT_PIPELINE_ID, pipeline_id)
         st.success(f"Pipeline completata: {len(outputs.results)} risultati, {len(outputs.artifacts)} artifact.")
     except Exception as exc:
         st.error(f"Pipeline fallita: {exc}")
@@ -470,8 +480,10 @@ def execute_sync(registry, config: dict[str, Any], pipeline_id: str) -> None:
 def execute_async(registry, config: dict[str, Any], pipeline_id: str) -> None:
     try:
         session.clear(session.TRACKING_VIDEO_CACHE)
+        session.clear(session.PIPELINE_OUTPUTS)
         context = context_from_config(config, registry)
         submitted_id = submit_async(pipeline_id, context)
+        session.put(session.PIPELINE_OUTPUT_PIPELINE_ID, submitted_id)
         st.success(f"Pipeline {submitted_id} sottomessa in background.")
         time.sleep(0.2)
         st.rerun()

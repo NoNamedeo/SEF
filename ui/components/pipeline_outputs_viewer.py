@@ -4,6 +4,11 @@ from __future__ import annotations
 
 import streamlit as st
 
+from ui.components.rendering_utils import (
+    materialize_video_artifact,
+    render_safe_metadata,
+    render_video_download,
+)
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 from ui.components.results_viewer import render_results
 from ui.components.visual_artifact_viewer import render_visual_artifacts
@@ -22,49 +27,67 @@ def render_pipeline_outputs(outputs: PipelineOutputs, *, title: str | None = Non
         for warning in view.warnings:
             st.warning(warning)
 
-    st.markdown(f"**Analysis results ({len(view.analysis_results)})**")
-    if view.analysis_results:
-        render_results(view.analysis_results)
-    else:
-        st.info("Nessun risultato analitico disponibile.")
+    tab_analysis, tab_artifacts, tab_videos, tab_metadata = st.tabs(
+        [
+            f"Analysis ({len(view.analysis_results)})",
+            f"Artifacts ({len(view.visualizer_outputs)})",
+            f"Videos ({len(view.reconstructed_videos)})",
+            "Run metadata",
+        ]
+    )
 
-    st.divider()
-    st.markdown(f"**Configured visualizer outputs ({len(view.visualizer_outputs)})**")
-    if view.visualizer_outputs:
-        for index, item in enumerate(view.visualizer_outputs):
+    with tab_analysis:
+        if view.analysis_results:
+            render_results(view.analysis_results)
+        else:
+            st.info("Nessun risultato analitico disponibile.")
+
+    with tab_artifacts:
+        if view.visualizer_outputs:
+            selected_index = _select_artifact_index(
+                [item.artifact.title or f"Artifact {index + 1}" for index, item in enumerate(view.visualizer_outputs)],
+                key="sef_visualizer_artifact_selector",
+            )
+            item = view.visualizer_outputs[selected_index]
             st.caption(item.source)
             render_visual_artifacts(
                 (item.artifact,),
-                key_prefix=f"visualizer_output_{index}",
+                key_prefix=f"visualizer_output_{selected_index}",
             )
-    else:
-        st.info("Nessun artifact visuale disponibile.")
+        else:
+            st.info("Nessun artifact visuale disponibile.")
 
-    st.divider()
-    st.markdown(f"**Reconstructed videos ({len(view.reconstructed_videos)})**")
-    if view.reconstructed_videos:
-        for index, video in enumerate(view.reconstructed_videos):
-            _render_reconstructed_video(video, index)
-    else:
-        st.info("Nessun video ricostruito disponibile.")
+    with tab_videos:
+        if view.reconstructed_videos:
+            selected_index = _select_artifact_index(
+                [video.title for video in view.reconstructed_videos],
+                key="sef_reconstructed_video_selector",
+            )
+            _render_reconstructed_video(view.reconstructed_videos[selected_index], selected_index)
+        else:
+            st.info("Nessun video ricostruito disponibile.")
 
-    with st.expander("Run metadata", expanded=False):
-        st.json(dict(view.metadata))
+    with tab_metadata:
+        render_safe_metadata("Run metadata", view.metadata, expanded=True)
+
+
+def _select_artifact_index(labels: list[str], *, key: str) -> int:
+    if len(labels) == 1:
+        return 0
+    selected_label = st.selectbox("Elemento", labels, index=0, key=key)
+    return labels.index(selected_label)
 
 
 def _render_reconstructed_video(video: ReconstructedVideoOutput, index: int) -> None:
     with st.container(border=True):
         st.markdown(f"**{video.title}**")
         st.caption(video.source)
-        st.video(video.data, format=video.mime_type)
-        st.download_button(
-            "Download video",
-            data=video.data,
-            file_name=f"reconstructed_video_{index + 1}.mp4",
-            mime=video.mime_type,
+        video_path = materialize_video_artifact(video.artifact)
+        st.video(str(video_path), format=video.artifact.mime_type)
+        render_video_download(
+            video.artifact,
             key=f"reconstructed_video_{video.artifact_id}_{index}",
-            width="stretch",
+            label="Download video",
         )
         if video.metadata:
-            with st.expander("Video metadata", expanded=False):
-                st.json(dict(video.metadata))
+            render_safe_metadata("Video metadata", video.metadata, expanded=False)

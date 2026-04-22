@@ -106,6 +106,19 @@ def get_registry() -> PluginRegistry:
         log.warning("OpenCVBufferedSignalExtractor non disponibile: %s", exc)
 
     try:
+        from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
+
+        _try_register(
+            registry,
+            PluginCategory.SIGNAL_EXTRACTOR,
+            "aruco_marker",
+            ArucoMarkerSignalExtractor,
+            "Rileva marker ArUco DICT_6X6_250 frame-by-frame.",
+        )
+    except Exception as exc:
+        log.warning("ArucoMarkerSignalExtractor non disponibile: %s", exc)
+
+    try:
         from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
 
         _try_register(
@@ -243,6 +256,32 @@ def get_registry() -> PluginRegistry:
     except Exception as exc:
         log.warning("TrackingPlaybackAnalyzer non disponibile: %s", exc)
 
+    try:
+        from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
+
+        _try_register(
+            registry,
+            PluginCategory.ANALYZER,
+            "aruco_displacement",
+            ArucoMarkerDisplacementAnalyzer,
+            "Calcola displacement 2D dei marker ArUco rispetto alla posizione iniziale.",
+        )
+    except Exception as exc:
+        log.warning("ArucoMarkerDisplacementAnalyzer non disponibile: %s", exc)
+
+    try:
+        from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
+
+        _try_register(
+            registry,
+            PluginCategory.ANALYZER,
+            "aruco_relative_motion",
+            ArucoMarkerRelativeMotionAnalyzer,
+            "Calcola la variazione di distanza tra coppie di marker ArUco.",
+        )
+    except Exception as exc:
+        log.warning("ArucoMarkerRelativeMotionAnalyzer non disponibile: %s", exc)
+
     # ── Visualizers ───────────────────────────────────────────────────────────
     try:
         from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
@@ -294,6 +333,32 @@ def get_registry() -> PluginRegistry:
         )
     except Exception as exc:
         log.warning("TrackingVideoVisualizer non disponibile: %s", exc)
+
+    try:
+        from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "aruco_annotated_video",
+            ArucoAnnotatedVideoVisualizer,
+            "Video annotato con corners, centri e id dei marker ArUco.",
+        )
+    except Exception as exc:
+        log.warning("ArucoAnnotatedVideoVisualizer non disponibile: %s", exc)
+
+    try:
+        from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "aruco_motion_plot",
+            MatplotlibArucoMotionVisualizer,
+            "Plot del displacement e del moto relativo dei marker ArUco.",
+        )
+    except Exception as exc:
+        log.warning("MatplotlibArucoMotionVisualizer non disponibile: %s", exc)
 
     # ── Branching rules ───────────────────────────────────────────────────────
     try:

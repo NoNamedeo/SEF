@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-from library.core.visualization.VisualArtifact import VisualArtifact
+from library.core.visualization.VisualArtifact import VideoArtifact, VisualArtifact
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,8 +22,7 @@ class ReconstructedVideoOutput:
 
     artifact_id: str
     title: str
-    mime_type: str
-    data: bytes
+    artifact: VideoArtifact
     source: str
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
