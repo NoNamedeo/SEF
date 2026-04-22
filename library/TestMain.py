@@ -46,10 +46,10 @@ from library.frame_cleaners.OpenCVZoomFrameCleaner import OpenCVZoomFrameCleaner
 from library.frame_cleaners.SmoothingFrameCleaner import SmoothingFrameCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
-from library.signal_extractors.OpenCVArUcoMultiSignalExtractor import OpenCVArUcoMultiSignalExtractor
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.signal_extractors.OpenCVMultiManualSignalExtractor import OpenCVMultiManualSignalExtractor
+from library.signal_extractors.SAM2SingleFigureSignalExtractor import SAM2SingleFigureSignalExtractor
 from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
 from library.visualizers.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
@@ -66,14 +66,15 @@ def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize) -
             }
         ))
         .add_frame_cleaner(OpenCVResizeFrameCleaner(resize))
-        .add_frame_cleaner(OpenCVZoomFrameCleaner(zoom_box))
-        .add_frame_cleaner(OpenCVHistogramEqualizationFrameCleaner())
-        .with_signal_extractor(OpenCVArUcoMultiSignalExtractor(
+        #.add_frame_cleaner(OpenCVZoomFrameCleaner(zoom_box))
+        #.add_frame_cleaner(OpenCVHistogramEqualizationFrameCleaner())
+        .with_signal_extractor(SAM2SingleFigureSignalExtractor(
+            start_box=start_box,
             config={
                 "show": True
             }
         ))
-        .with_analyzers([MultipleDistanceAnalyzer()])
+        .with_analyzers([VerticalPositionAnalyzer()])
         .add_visualizer_for_results(MatplotlibFunctionVisualizer(), [0])
         .build_context()
     )
@@ -82,15 +83,15 @@ def main():
     #TODO in caso disinstalla ultralytics
 
     BASE_DIR = Path(__file__).resolve().parent
-    video_path = BASE_DIR.parent / "videos" / "ArUco.mp4"
+    video_path = BASE_DIR.parent / "videos" / "Baloons.mp4"
 
     resize = (800, 600)
 
-    #zoom_box = None
-    zoom_box = OpenCVStartBoxSelector().select_start(str(video_path), resize)
+    zoom_box = None
+    #zoom_box = OpenCVStartBoxSelector().select_start(str(video_path), resize)
 
     start_box = None
-    start_box = OpenCVStartBoxSelector().select_start(str(video_path), frame_cleaners=[OpenCVResizeFrameCleaner(resize), OpenCVZoomFrameCleaner(zoom_box)])
+    start_box = OpenCVStartBoxSelector().select_start(str(video_path), frame_cleaners=[OpenCVResizeFrameCleaner(resize)])
     #number_of_boxes = int(input("How many boxes would you like?: "))
     start_boxes = None
     #start_boxes = OpenCVMultiStartBoxSelector().select_start(str(video_path), number_of_boxes, frame_cleaners=[OpenCVResizeFrameCleaner(resize), OpenCVZoomFrameCleaner(zoom_box)])
