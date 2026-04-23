@@ -5,6 +5,7 @@ from typing import Any
 
 import cv2
 
+from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.FrameBuffer import FrameBuffer
@@ -20,12 +21,14 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
         tracker_type: str = "CSRT",
         start_box: BoundingBox = (0, 0, 0, 0),
         tracker_factory: Callable[[], Any] | None = None,
+        live_analyzer: ILiveAnalyzer = None,
         config: dict[str, Any] | None = None,
     ):
         super().__init__(config)
         self.tracker_type = tracker_type.upper()
         self.start_box = start_box
         self._tracker_factory = tracker_factory
+        self._live_analyzer = live_analyzer
 
     def extract(self, buffer: FrameBuffer) -> ISignal:
         if self.start_box[2] <= 0 or self.start_box[3] <= 0:
@@ -57,6 +60,9 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
                     key = cv2.waitKey(1)
                     if key == 27:  # ESC
                         break
+
+            if self._live_analyzer is not None and self.config.get("show_graph"):
+                self.update(frame_index, current_box, centroid, frame)
 
             samples.append(
                 BoxSignalSample(
@@ -106,3 +112,12 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
                 return factory()
 
         raise ValueError(f"Tracker factory not available for {tracker_type}")
+
+    def update(self, frame_index, current_box, centroid, frame):
+        self._live_analyzer.update(BoxSignalSample(
+            frame_index=frame_index,
+            box=current_box,
+            centroid=centroid,
+            timestamp_seconds=frame.timestamp_seconds,
+            metadata=dict(frame.metadata),
+        ))

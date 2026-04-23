@@ -6,6 +6,7 @@ from typing import Any, List
 import cv2
 
 from library.core.artifacts.MultiManualSignalSample import MultiManualSignalSample
+from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.FrameBuffer import FrameBuffer
@@ -21,12 +22,14 @@ class OpenCVMultiManualSignalExtractor(ISignalExtractor):
         tracker_type: str = "CSRT",
         start_boxes: List[BoundingBox] | None = None,
         tracker_factory: Callable[[], Any] | None = None,
+        live_analyzer: ILiveAnalyzer = None,
         config: dict[str, Any] | None = None,
     ):
         super().__init__(config or {})
         self.tracker_type = tracker_type.upper()
         self.start_boxes = start_boxes or []
         self._tracker_factory = tracker_factory
+        self._live_analyzer = live_analyzer
 
         self.object_ids = list(range(len(self.start_boxes)))
 

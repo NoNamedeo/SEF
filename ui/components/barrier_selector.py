@@ -145,7 +145,7 @@ def render_barrier_selector(
     confirmed_shapes = _confirmed_shapes(drawn, barrier_names)
 
     if cur_idx >= len(barrier_names):
-        st.success(f"✅ Tutte le {len(barrier_names)} barriere sono state definite.")
+        st.success(f" Tutte le {len(barrier_names)} barriere sono state definite.")
         render_frame_overlay_editor(
             target,
             mode="line",
