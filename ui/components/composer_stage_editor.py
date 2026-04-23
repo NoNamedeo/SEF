@@ -189,6 +189,14 @@ def render_signal_cleaner_params() -> None:
             c2.selectbox("Outlier mode", ["clip", "replace", "remove"], key="sef_builder_outlier_mode")
         if "signal_widener" in selected:
             st.slider("Amplification", 0.5, 4.0, key="sef_builder_widener", step=0.1)
+        if "aruco_temporal_stabilizer" in selected:
+            c1, c2 = st.columns(2)
+            c1.slider("Aruco quality threshold", 0.0, 1.0, key="sef_builder_aruco_quality_threshold", step=0.01)
+            c2.slider("Aruco max jump (px)", 0.0, 10.0, key="sef_builder_aruco_max_jump_px", step=0.1)
+            c3, c4 = st.columns(2)
+            c3.slider("Aruco alpha high quality", 0.0, 1.0, key="sef_builder_aruco_alpha_high_quality", step=0.01)
+            c4.slider("Aruco alpha low quality", 0.0, 1.0, key="sef_builder_aruco_alpha_low_quality", step=0.01)
+            st.checkbox("Smooth ArUco corners", key="sef_builder_aruco_smooth_corners")
 
 
 def render_visualizer_target_inputs() -> None:

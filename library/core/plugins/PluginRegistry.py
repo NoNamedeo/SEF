@@ -152,6 +152,7 @@ def create_builtin_registry() -> PluginRegistry:
     from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
     from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
     from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+    from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
     from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
     from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
     from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
@@ -195,6 +196,13 @@ def create_builtin_registry() -> PluginRegistry:
         "moving_average",
         MovingAverageCleaner,
         "Smooth centroid coordinates with a moving average.",
+    )
+
+    registry.register(
+        PluginCategory.SIGNAL_CLEANER,
+        "aruco_temporal_stabilizer",
+        ArucoTemporalStabilizerCleaner,
+        "Stabilize ArUco marker centers and corners over time using quality-aware temporal smoothing.",
     )
 
     registry.register(

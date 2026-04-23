@@ -146,6 +146,19 @@ def get_registry() -> PluginRegistry:
 
     # ── Signal cleaners ───────────────────────────────────────────────────────
     try:
+        from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
+
+        _try_register(
+            registry,
+            PluginCategory.SIGNAL_CLEANER,
+            "aruco_temporal_stabilizer",
+            ArucoTemporalStabilizerCleaner,
+            "Stabilizza nel tempo center e corner dei marker ArUco con smoothing quality-aware.",
+        )
+    except Exception as exc:
+        log.warning("ArucoTemporalStabilizerCleaner non disponibile: %s", exc)
+
+    try:
         from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 
         _try_register(registry, PluginCategory.SIGNAL_CLEANER, "moving_average", MovingAverageCleaner, "Smoothing centroidi con media mobile.")

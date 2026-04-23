@@ -57,6 +57,11 @@ def initialise_builder_state(registry) -> None:
         "sef_builder_outlier_threshold": 3.5,
         "sef_builder_outlier_mode": "clip",
         "sef_builder_widener": 1.4,
+        "sef_builder_aruco_quality_threshold": 0.45,
+        "sef_builder_aruco_alpha_high_quality": 0.65,
+        "sef_builder_aruco_alpha_low_quality": 0.20,
+        "sef_builder_aruco_max_jump_px": 2.0,
+        "sef_builder_aruco_smooth_corners": True,
         "sef_builder_smoothing_alpha": 0.86,
         "sef_builder_smoothing_reset": 65.0,
         "sef_builder_bg_method": "MOG2",
@@ -93,6 +98,11 @@ def builder_state() -> BuilderStateSnapshot:
         outlier_threshold=float(st.session_state.get("sef_builder_outlier_threshold", 3.5)),
         outlier_mode=str(st.session_state.get("sef_builder_outlier_mode", "clip")),
         widener=float(st.session_state.get("sef_builder_widener", 1.4)),
+        aruco_quality_threshold=float(st.session_state.get("sef_builder_aruco_quality_threshold", 0.45)),
+        aruco_alpha_high_quality=float(st.session_state.get("sef_builder_aruco_alpha_high_quality", 0.65)),
+        aruco_alpha_low_quality=float(st.session_state.get("sef_builder_aruco_alpha_low_quality", 0.20)),
+        aruco_max_jump_px=float(st.session_state.get("sef_builder_aruco_max_jump_px", 2.0)),
+        aruco_smooth_corners=bool(st.session_state.get("sef_builder_aruco_smooth_corners", True)),
         smoothing_alpha=float(st.session_state.get("sef_builder_smoothing_alpha", 0.86)),
         smoothing_reset=float(st.session_state.get("sef_builder_smoothing_reset", 65.0)),
         background_method=str(st.session_state.get("sef_builder_bg_method", "MOG2")),
@@ -189,6 +199,8 @@ def recommended_signal_extractors() -> set[str]:
 def recommended_signal_cleaners() -> set[str]:
     if selected_signal_extractor() == "opencv_tracker":
         return {"moving_average"}
+    if selected_signal_extractor() == "aruco_marker":
+        return {"aruco_temporal_stabilizer"}
     return set()
 
 
@@ -461,7 +473,7 @@ def apply_aruco_preset() -> None:
 
 def apply_aruco_components() -> None:
     st.session_state["sef_builder_signal_extractor"] = "aruco_marker"
-    st.session_state["sef_builder_signal_cleaners"] = []
+    st.session_state["sef_builder_signal_cleaners"] = ["aruco_temporal_stabilizer"]
     st.session_state["sef_builder_analyzers"] = ["aruco_displacement"]
     st.session_state["sef_builder_frame_cleaners"] = []
     st.session_state["sef_builder_visualizers"] = ["aruco_motion_plot", "aruco_annotated_video"]
@@ -557,6 +569,19 @@ def _build_signal_cleaner_configs(state: BuilderStateSnapshot) -> tuple[PluginCo
             )
         elif name == "signal_widener":
             configs.append(PluginConfig(name=name, params={"amplification": state.widener}))
+        elif name == "aruco_temporal_stabilizer":
+            configs.append(
+                PluginConfig(
+                    name=name,
+                    params={
+                        "quality_threshold": state.aruco_quality_threshold,
+                        "alpha_high_quality": state.aruco_alpha_high_quality,
+                        "alpha_low_quality": state.aruco_alpha_low_quality,
+                        "max_jump_px": state.aruco_max_jump_px,
+                        "smooth_corners": state.aruco_smooth_corners,
+                    },
+                )
+            )
         else:
             configs.append(PluginConfig(name=name))
     return tuple(configs)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import tempfile
 import os
+import tempfile
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -27,10 +27,7 @@ class TrackingVideoVisualizer(IVisualizer):
         context: VisualizationContext | None = None,
     ) -> tuple[VideoArtifact, ...]:
         if not isinstance(data, TrackingPlaybackData):
-            raise TypeError(
-                "TrackingVideoVisualizer requires TrackingPlaybackData, "
-                f"got {type(data).__name__}."
-            )
+            raise TypeError(f"TrackingVideoVisualizer requires TrackingPlaybackData, got {type(data).__name__}.")
 
         artifact_bytes, resolved_codec = self._render_video_bytes(data)
         return (

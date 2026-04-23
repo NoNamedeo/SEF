@@ -11,12 +11,15 @@ import numpy as np
 from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
 from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
 from library.core.artifacts.ArucoDisplacementData import ArucoMarkerDisplacementData
+from library.core.artifacts.ArucoMarkerSignalSample import ArucoMarkerObservation, ArucoMarkerSignalSample
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.Signal import Signal
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.plugins.PluginRegistry import create_builtin_registry
 from library.core.visualization.VisualArtifact import VideoArtifact
+from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
 from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
 from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
 from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
@@ -61,6 +64,69 @@ class ArucoPipelineTests(unittest.TestCase):
         self.assertIsNotNone(observation)
         self.assertTrue(observation.detected)
         self.assertIsNotNone(observation.center)
+
+    def test_extractor_supports_manual_subpixel_refinement_and_quality_metadata(self) -> None:
+        signal = ArucoMarkerSignalExtractor(
+            marker_ids=[7],
+            config={
+                "corner_refinement_enabled": True,
+                "corner_refinement_method": "manual_subpix",
+                "corner_refinement_win_size": 5,
+                "corner_refinement_max_iterations": 30,
+                "corner_refinement_min_accuracy": 0.01,
+            },
+        ).extract(
+            self._build_frame_buffer(
+                [
+                    {7: (40, 60)},
+                ]
+            )
+        )
+
+        observation = list(signal)[0].marker_by_id(7)
+
+        self.assertIsNotNone(observation)
+        self.assertTrue(observation.detected)
+        self.assertEqual(observation.metadata["quality_model"], "aruco_area_border_shape_v1")
+        self.assertEqual(observation.metadata["refinement_method"], "manual_subpix")
+        self.assertTrue(observation.metadata["refinement_applied"])
+        self.assertIn("quality_components", observation.metadata)
+        self.assertIn("shape_score", observation.metadata["quality_components"])
+
+    def test_extractor_rejects_pose_estimation_until_dedicated_upgrade_is_implemented(self) -> None:
+        with self.assertRaises(NotImplementedError):
+            ArucoMarkerSignalExtractor(
+                marker_ids=[7],
+                config={
+                    "estimate_pose": True,
+                    "marker_length": 0.05,
+                    "camera_matrix": [[1000.0, 0.0, 320.0], [0.0, 1000.0, 240.0], [0.0, 0.0, 1.0]],
+                    "dist_coeffs": [0.0, 0.0, 0.0, 0.0, 0.0],
+                },
+            )
+
+    def test_temporal_stabilizer_reduces_center_jitter_for_quality_observations(self) -> None:
+        raw_signal = Signal(
+            [
+                self._aruco_sample(0, 100.0, 100.0, quality=0.9),
+                self._aruco_sample(1, 101.0, 99.0, quality=0.9),
+                self._aruco_sample(2, 99.0, 101.0, quality=0.9),
+                self._aruco_sample(3, 100.5, 99.5, quality=0.9),
+            ]
+        )
+
+        cleaned_signal = ArucoTemporalStabilizerCleaner().clean(raw_signal)
+
+        raw_centers = [sample.marker_by_id(7).center for sample in raw_signal]
+        cleaned_centers = [sample.marker_by_id(7).center for sample in cleaned_signal]
+
+        self.assertGreater(self._center_span(raw_centers), self._center_span(cleaned_centers))
+        self.assertTrue(cleaned_signal.signal[1].marker_by_id(7).metadata["temporal_stabilizer"]["applied"])
+
+    def test_temporal_stabilizer_is_registered_in_builtin_registry(self) -> None:
+        registry = create_builtin_registry()
+        cleaner = registry.create("signal_cleaner", "aruco_temporal_stabilizer")
+        self.assertIsInstance(cleaner, ArucoTemporalStabilizerCleaner)
 
     def test_displacement_analyzer_computes_expected_motion(self) -> None:
         signal = ArucoMarkerSignalExtractor(marker_ids=[7]).extract(
@@ -208,6 +274,41 @@ class ArucoPipelineTests(unittest.TestCase):
         marker = np.zeros((side, side), dtype=np.uint8)
         cv2.aruco.drawMarker(dictionary, marker_id, side, marker, 1)
         return marker
+
+    @staticmethod
+    def _aruco_sample(frame_index: int, center_x: float, center_y: float, *, quality: float) -> ArucoMarkerSignalSample:
+        half_side = 10.0
+        corners = (
+            (center_x - half_side, center_y - half_side),
+            (center_x + half_side, center_y - half_side),
+            (center_x + half_side, center_y + half_side),
+            (center_x - half_side, center_y + half_side),
+        )
+        return ArucoMarkerSignalSample(
+            frame_index=frame_index,
+            markers=[
+                ArucoMarkerObservation(
+                    marker_id=7,
+                    corners=corners,
+                    center_x=center_x,
+                    center_y=center_y,
+                    detected=True,
+                    quality_score=quality,
+                    metadata={},
+                )
+            ],
+            timestamp_seconds=frame_index * 0.1,
+            metadata={},
+        )
+
+    @staticmethod
+    def _center_span(points: list[tuple[float, float] | None]) -> float:
+        valid_points = [point for point in points if point is not None]
+        min_x = min(point[0] for point in valid_points)
+        max_x = max(point[0] for point in valid_points)
+        min_y = min(point[1] for point in valid_points)
+        max_y = max(point[1] for point in valid_points)
+        return max(max_x - min_x, max_y - min_y)
 
 
 if __name__ == "__main__":

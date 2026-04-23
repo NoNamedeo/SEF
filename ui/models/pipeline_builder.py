@@ -107,6 +107,11 @@ class BuilderStateSnapshot:
     outlier_threshold: float
     outlier_mode: str
     widener: float
+    aruco_quality_threshold: float
+    aruco_alpha_high_quality: float
+    aruco_alpha_low_quality: float
+    aruco_max_jump_px: float
+    aruco_smooth_corners: bool
     smoothing_alpha: float
     smoothing_reset: float
     background_method: str
