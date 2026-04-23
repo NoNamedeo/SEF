@@ -1,125 +1,64 @@
 from __future__ import annotations
 
 import math
-import os
-import tempfile
-from pathlib import Path
+from typing import Any
 
 import cv2
+import numpy as np
 
 from library.core.artifacts.ArucoDisplacementData import ArucoMarkerDisplacementData
 from library.core.artifacts.ArucoMarkerSignalSample import ArucoMarkerObservation
-from library.core.visualization.VisualArtifact import VideoArtifact
+from library.core.interfaces.IData import IData
+from library.core.visualization.VisualArtifact import VideoLikeArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
 from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
 
 
 class ArucoAnnotatedVideoVisualizer(TrackingVideoVisualizer):
-    """Render ArUco detections as an annotated MP4 artifact."""
+    """Return lazy annotated MP4 artifacts for ArUco marker displacement data."""
 
     def render(
         self,
-        data: ArucoMarkerDisplacementData,
+        data: IData,
         context: VisualizationContext | None = None,
-    ) -> tuple[VideoArtifact, ...]:
+    ) -> tuple[VideoLikeArtifact, ...]:
         if not isinstance(data, ArucoMarkerDisplacementData):
             raise TypeError(
                 "ArucoAnnotatedVideoVisualizer requires ArucoMarkerDisplacementData, "
                 f"got {type(data).__name__}."
             )
 
-        artifact_bytes, resolved_codec = self._render_video_bytes(data)
-        return (
-            VideoArtifact(
-                kind="video",
-                title=data.title,
-                description="Annotated video with ArUco corners, centers, and marker ids.",
-                metadata=self._artifact_metadata(
-                    context,
-                    extra={
-                        "source_path": data.source_path,
-                        "resize": data.resize,
-                        "frame_count": len(data.frames),
-                        "video_codec": resolved_codec,
-                    },
-                ),
-                mime_type="video/mp4",
-                data=artifact_bytes,
-            ),
-        )
+        return self._build_video_artifact(data, context)
 
-    def _render_video_bytes(self, data: ArucoMarkerDisplacementData) -> tuple[bytes, str]:
-        if not data.frames:
-            raise ValueError("ArucoMarkerDisplacementData.frames cannot be empty.")
-        if not data.source_path:
-            raise ValueError("ArucoMarkerDisplacementData.source_path is required to render an annotated video.")
+    def _artifact_description(self) -> str:
+        return "Annotated video with ArUco corners, centers, and marker ids."
 
-        source_path = Path(data.source_path)
-        if not source_path.exists():
-            raise FileNotFoundError(f"ArUco source video not found: {source_path}")
-
-        capture = cv2.VideoCapture(str(source_path))
-        if not capture.isOpened():
-            raise ValueError(f"Cannot open video for ArUco playback: {source_path}")
-
-        ordered_frames = sorted(data.frames, key=lambda item: item.frame_index)
-        output_size = self._resolve_output_size(capture, data)
-        output_fps = data.fps or float(capture.get(cv2.CAP_PROP_FPS) or 0.0) or self.DEFAULT_FPS
-
-        file_descriptor, temp_path = tempfile.mkstemp(suffix=".mp4")
-        os.close(file_descriptor)
-        output_path = Path(temp_path)
-        writer, resolved_codec = self._open_video_writer(
-            output_path=output_path,
-            fps=output_fps,
-            size=output_size,
-        )
-        if not writer.isOpened():
-            capture.release()
-            output_path.unlink(missing_ok=True)
-            raise RuntimeError("Failed to initialize the MP4 writer for ArUco playback.")
-
-        displacement_lookup = self._displacement_lookup(data)
-        try:
-            for frame_sample in ordered_frames:
-                image = self._read_frame(capture, frame_sample.frame_index)
-                if data.resize is not None:
-                    image = cv2.resize(image, data.resize)
-                annotated = self._draw_markers(
-                    image=image,
-                    observations=frame_sample.markers,
-                    displacement_by_marker=displacement_lookup.get(frame_sample.frame_index, {}),
-                )
-                writer.write(annotated)
-        finally:
-            writer.release()
-            capture.release()
-
-        try:
-            return output_path.read_bytes(), resolved_codec
-        finally:
-            output_path.unlink(missing_ok=True)
-
-    @staticmethod
-    def _resolve_output_size(
-        capture: cv2.VideoCapture,
+    def _annotation_context(
+        self,
         data: ArucoMarkerDisplacementData,
-    ) -> tuple[int, int]:
-        if data.resize is not None:
-            return data.resize
-        width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH) or 0)
-        height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
-        if width <= 0 or height <= 0:
-            raise ValueError("Cannot infer source frame size for ArUco playback.")
-        return width, height
+    ) -> dict[int, dict[int, tuple[float, float, float]]]:
+        return self._displacement_lookup(data)
+
+    def _draw_annotation_frame(
+        self,
+        image: np.ndarray,
+        annotation_frame: Any,
+        data: Any,
+        annotation_context: Any,
+    ) -> np.ndarray:
+        return self._draw_markers(
+            image=image,
+            observations=annotation_frame.markers,
+            displacement_by_marker=annotation_context.get(annotation_frame.frame_index, {}),
+        )
 
     def _draw_markers(
         self,
         *,
-        image,
+        image: np.ndarray,
         observations: list[ArucoMarkerObservation],
         displacement_by_marker: dict[int, tuple[float, float, float]],
-    ):
+    ) -> np.ndarray:
         annotated = image.copy()
         for observation in observations:
             if not observation.detected or observation.corners is None or observation.center is None:

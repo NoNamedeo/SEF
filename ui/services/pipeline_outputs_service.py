@@ -6,7 +6,7 @@ import hashlib
 from typing import Any
 
 from library.core.visualization.PipelineOutputs import PipelineOutputs
-from library.core.visualization.VisualArtifact import VideoArtifact
+from library.core.visualization.VisualArtifact import VIDEO_ARTIFACT_TYPES
 from ui.models.pipeline_outputs import (
     AnalysisResultOutput,
     ArtifactOutput,
@@ -23,7 +23,7 @@ def build_execution_results_view(outputs: PipelineOutputs) -> ExecutionResultsVi
     reconstructed_videos: list[ReconstructedVideoOutput] = []
 
     for artifact in outputs.artifacts:
-        if isinstance(artifact, VideoArtifact):
+        if isinstance(artifact, VIDEO_ARTIFACT_TYPES):
             reconstructed_videos.append(
                 ReconstructedVideoOutput(
                     artifact_id=artifact.artifact_id,
@@ -195,7 +195,7 @@ def _build_tracking_video_outputs(
     warnings: list[str] = []
 
     for artifact in rendered_artifacts:
-        if isinstance(artifact, VideoArtifact):
+        if isinstance(artifact, VIDEO_ARTIFACT_TYPES):
             videos.append(
                 ReconstructedVideoOutput(
                     artifact_id=artifact.artifact_id,

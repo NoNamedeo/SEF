@@ -31,19 +31,19 @@ from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoM
 from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
 
-def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize) -> PipelineContext:
+def build_fluent_context(video_path, zoom_box, start_box, start_boxes) -> PipelineContext:
     return (
         FluentPipelineBuilder()
         .with_frame_extractor(
             OpenCVBufferedFrameExtractor(
                 video_path,
                 config={
-                    "max_frames": 120 # (180 Frame)/(24 FPS) = 5 secondi
+                    "max_frames": 120  # (180 Frame)/(24 FPS) = 5 secondi
                 },
             )
         )
         .add_frame_cleaner(OpenCVRotateFrameCleaner(rotation=FrameRotation.ROTATE_90))
-        .add_frame_cleaner(OpenCVResizeFrameCleaner(resize))
+        .add_frame_cleaner(OpenCVResizeFrameCleaner())
         .add_frame_cleaner(OpenCVZoomFrameCleaner(zoom_box))
         .add_frame_cleaner(OpenCVHistogramEqualizationFrameCleaner())
         .with_signal_extractor(
@@ -53,7 +53,7 @@ def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize) -
                 config={
                     "show": True,
                     "show_graph": True,
-                }
+                },
             )
         )
         .with_analyzers([VerticalPositionAnalyzer()])
@@ -72,10 +72,14 @@ def main():
     rotation = FrameRotation.ROTATE_90
 
     zoom_box = None
-    zoom_box = OpenCVStartBoxSelector().select_start(str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize)])
+    zoom_box = OpenCVStartBoxSelector().select_start(
+        str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize)]
+    )
 
     start_box = None
-    start_box = OpenCVStartBoxSelector().select_start(str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize), OpenCVZoomFrameCleaner(zoom_box)])
+    start_box = OpenCVStartBoxSelector().select_start(
+        str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize), OpenCVZoomFrameCleaner(zoom_box)]
+    )
     # number_of_boxes = int(input("How many boxes would you like?: "))
     start_boxes = None
     # start_boxes = OpenCVMultiStartBoxSelector().select_start(str(video_path), number_of_boxes, frame_cleaners=[OpenCVResizeFrameCleaner(resize), OpenCVZoomFrameCleaner(zoom_box)])  # noqa: E501
@@ -83,7 +87,7 @@ def main():
     orchestrator = PipelineOrchestrator()
     try:
         outputs = orchestrator.run(
-            build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize),
+            build_fluent_context(video_path, start_box, start_boxes, resize),
             pipeline_id="2",
         )
     finally:

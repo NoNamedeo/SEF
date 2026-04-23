@@ -12,11 +12,11 @@ from ui.components.rendering_utils import (
     render_video_download,
 )
 from library.core.visualization.VisualArtifact import (
+    VIDEO_ARTIFACT_TYPES,
     ImageArtifact,
     JsonArtifact,
     TableArtifact,
     TextArtifact,
-    VideoArtifact,
     VisualArtifact,
 )
 
@@ -49,7 +49,7 @@ def _render_artifact_body(artifact: VisualArtifact, *, key: str) -> None:
     if isinstance(artifact, ImageArtifact):
         st.image(artifact.data)
         return
-    if isinstance(artifact, VideoArtifact):
+    if isinstance(artifact, VIDEO_ARTIFACT_TYPES):
         video_path = materialize_video_artifact(artifact)
         st.video(str(video_path), format=artifact.mime_type)
         render_video_download(artifact, key=f"{key}_download", label="Download artifact")

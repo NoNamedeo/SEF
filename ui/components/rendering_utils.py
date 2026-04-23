@@ -9,7 +9,12 @@ from typing import Any
 
 import streamlit as st
 
-from library.core.visualization.VisualArtifact import VideoArtifact
+from library.core.visualization.VisualArtifact import (
+    DeferredVideoArtifact,
+    VideoArtifact,
+    VideoFileArtifact,
+    VideoLikeArtifact,
+)
 
 MAX_METADATA_ITEMS = 24
 MAX_SEQUENCE_ITEMS = 16
@@ -85,30 +90,48 @@ def sanitize_for_json(
     return str(value)
 
 
-def materialize_video_artifact(artifact: VideoArtifact) -> Path:
-    """Persist a video artifact to a temp file and return its path."""
-    extension = ".mp4" if artifact.mime_type == "video/mp4" else ".bin"
+def materialize_video_artifact(artifact: VideoLikeArtifact) -> Path:
+    """Return a local file path for any supported video artifact."""
+    if isinstance(artifact, VideoFileArtifact):
+        return artifact.path
+    if isinstance(artifact, DeferredVideoArtifact):
+        return artifact.materialize(_video_artifact_dir())
+    if not isinstance(artifact, VideoArtifact):
+        raise TypeError(f"Unsupported video artifact type: {type(artifact).__name__}")
+
     artifact_dir = Path(tempfile.gettempdir()) / "sef_streamlit_artifacts"
     artifact_dir.mkdir(parents=True, exist_ok=True)
+    extension = _video_extension(artifact.mime_type)
     artifact_path = artifact_dir / f"{artifact.artifact_id}{extension}"
     if not artifact_path.exists() or artifact_path.stat().st_size != len(artifact.data):
         artifact_path.write_bytes(artifact.data)
     return artifact_path
 
 
-def render_video_download(artifact: VideoArtifact, *, key: str, label: str) -> None:
+def render_video_download(artifact: VideoLikeArtifact, *, key: str, label: str) -> None:
     """Render a download button only for manageable artifact sizes."""
-    if len(artifact.data) > MAX_VIDEO_DOWNLOAD_BYTES:
-        size_mb = len(artifact.data) / (1024 * 1024)
+    artifact_path = materialize_video_artifact(artifact)
+    artifact_size = artifact_path.stat().st_size
+    if artifact_size > MAX_VIDEO_DOWNLOAD_BYTES:
+        size_mb = artifact_size / (1024 * 1024)
         st.caption(f"Download nascosto per stabilita UI ({size_mb:.1f} MB).")
         return
 
-    extension = ".mp4" if artifact.mime_type == "video/mp4" else ".bin"
     st.download_button(
         label,
-        data=artifact.data,
-        file_name=f"{artifact.artifact_id}{extension}",
+        data=artifact_path.read_bytes(),
+        file_name=f"{artifact.artifact_id}{_video_extension(artifact.mime_type)}",
         mime=artifact.mime_type,
         key=key,
         width="stretch",
     )
+
+
+def _video_artifact_dir() -> Path:
+    artifact_dir = Path(tempfile.gettempdir()) / "sef_streamlit_artifacts"
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    return artifact_dir
+
+
+def _video_extension(mime_type: str) -> str:
+    return ".mp4" if mime_type == "video/mp4" else ".bin"

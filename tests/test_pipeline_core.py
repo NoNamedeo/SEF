@@ -15,7 +15,12 @@ from library.core.artifacts.MultiObjectSignalSample import MultiObjectSignalSamp
 from library.core.artifacts.Signal import Signal
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
-from library.core.visualization.VisualArtifact import VideoArtifact
+from library.core.visualization.VisualArtifact import (
+    DeferredVideoArtifact,
+    VIDEO_ARTIFACT_TYPES,
+    VideoArtifact,
+    VideoFileArtifact,
+)
 from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
@@ -170,9 +175,57 @@ class PipelineCoreTests(unittest.TestCase):
 
         self.assertEqual(len(artifacts), 1)
         artifact = artifacts[0]
-        self.assertIsInstance(artifact, VideoArtifact)
+        self.assertIsInstance(artifact, DeferredVideoArtifact)
         self.assertEqual(artifact.mime_type, "video/mp4")
-        self.assertTrue(len(artifact.data) > 0)
+        self.assertTrue(self._materialized_video_size(artifact) > 0)
+
+    def test_tracking_video_visualizer_can_render_eager_downscaled_file(self):
+        video_path = self._create_test_video()
+        playback_data = TrackingPlaybackAnalyzer().analyze(
+            Signal(
+                [
+                    MultiObjectSignalSample(
+                        frame_index=0,
+                        tracks=[
+                            MultiObjectTrack(track_id=0, box=(4, 5, 10, 10), centroid=(9.0, 10.0)),
+                        ],
+                        metadata={"source_path": video_path, "source_fps": 10.0},
+                    ),
+                    MultiObjectSignalSample(
+                        frame_index=1,
+                        tracks=[
+                            MultiObjectTrack(track_id=0, box=(5, 6, 10, 10), centroid=(10.0, 11.0)),
+                        ],
+                        metadata={"source_path": video_path, "source_fps": 10.0},
+                    ),
+                    MultiObjectSignalSample(
+                        frame_index=2,
+                        tracks=[
+                            MultiObjectTrack(track_id=0, box=(6, 7, 10, 10), centroid=(11.0, 12.0)),
+                        ],
+                        metadata={"source_path": video_path, "source_fps": 10.0},
+                    ),
+                ]
+            )
+        )
+
+        artifact = TrackingVideoVisualizer(
+            config={
+                "lazy": False,
+                "frame_sample_interval": 2,
+                "output_size": (16, 16),
+                "codec": "mp4v",
+            }
+        ).render(playback_data)[0]
+
+        self.assertIsInstance(artifact, VideoFileArtifact)
+        self.assertEqual(artifact.metadata["rendered_frame_count"], 2)
+        capture = cv2.VideoCapture(str(artifact.path))
+        try:
+            self.assertEqual(int(capture.get(cv2.CAP_PROP_FRAME_WIDTH)), 16)
+            self.assertEqual(int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)), 16)
+        finally:
+            capture.release()
 
     def test_pipeline_can_emit_tracking_video_artifact(self):
         video_path = self._create_test_video()
@@ -202,8 +255,8 @@ class PipelineCoreTests(unittest.TestCase):
 
         self.assertEqual(len(outputs.results), 1)
         self.assertEqual(len(outputs.artifacts), 1)
-        self.assertIsInstance(outputs.artifacts[0], VideoArtifact)
-        self.assertTrue(len(outputs.artifacts[0].data) > 0)
+        self.assertIsInstance(outputs.artifacts[0], VIDEO_ARTIFACT_TYPES)
+        self.assertTrue(self._materialized_video_size(outputs.artifacts[0]) > 0)
 
     def _create_test_video(self) -> str:
         temp_dir = Path(tempfile.mkdtemp())
@@ -228,6 +281,16 @@ class PipelineCoreTests(unittest.TestCase):
 
         writer.release()
         return str(video_path)
+
+    @staticmethod
+    def _materialized_video_size(artifact) -> int:
+        if isinstance(artifact, VideoArtifact):
+            return len(artifact.data)
+        if isinstance(artifact, VideoFileArtifact):
+            return artifact.path.stat().st_size
+        if isinstance(artifact, DeferredVideoArtifact):
+            return artifact.materialize().stat().st_size
+        raise AssertionError(f"Unsupported video artifact: {type(artifact).__name__}")
 
 
 if __name__ == "__main__":

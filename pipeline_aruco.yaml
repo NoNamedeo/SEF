@@ -30,3 +30,9 @@ pipeline:
       result_indices: [0, 1]
     - name: aruco_annotated_video
       result_indices: [0]
+      params:
+        config:
+          lazy: true
+          frame_sample_interval: 2
+          downscale_factor: 0.5
+          codec: mp4v

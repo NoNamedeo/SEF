@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from abc import ABC
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from pathlib import Path
+import tempfile
+import threading
 from typing import Any, Mapping
 from uuid import uuid4
 
@@ -50,6 +54,85 @@ class VideoArtifact(VisualArtifact):
             raise ValueError("VideoArtifact.mime_type must be a non-empty string.")
         if not self.data:
             raise ValueError("VideoArtifact.data cannot be empty.")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class VideoFileArtifact(VisualArtifact):
+    """File-backed video artifact that avoids keeping encoded bytes in memory."""
+
+    mime_type: str
+    path: Path | str
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not self.mime_type:
+            raise ValueError("VideoFileArtifact.mime_type must be a non-empty string.")
+        path = Path(self.path)
+        if not path.exists() or not path.is_file():
+            raise ValueError(f"VideoFileArtifact.path must point to an existing file: {path}")
+        if path.stat().st_size <= 0:
+            raise ValueError(f"VideoFileArtifact.path cannot be empty: {path}")
+        object.__setattr__(self, "path", path)
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class DeferredVideoArtifact(VisualArtifact):
+    """
+    Lazy video artifact that renders to disk only when a consumer materializes it.
+
+    The render callback receives the target output path and must write a complete
+    video file there. This keeps expensive annotated-video generation outside the
+    main pipeline execution path and avoids in-memory MP4 buffering.
+    """
+
+    mime_type: str
+    render_to: Callable[[Path], Path | VideoFileArtifact]
+    filename_suffix: str = ".mp4"
+    _materialized_path: Path | None = field(default=None, init=False, repr=False, compare=False)
+    _lock: threading.Lock = field(default_factory=threading.Lock, init=False, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not self.mime_type:
+            raise ValueError("DeferredVideoArtifact.mime_type must be a non-empty string.")
+        if not self.filename_suffix.startswith("."):
+            raise ValueError("DeferredVideoArtifact.filename_suffix must start with '.'.")
+
+    def materialize(self, output_dir: Path | str | None = None) -> Path:
+        """
+        Render the video if needed and return the resulting file path.
+
+        Repeated calls reuse the same file when it is still present. The lock
+        prevents two UI refreshes from rendering the same expensive video at
+        the same time.
+        """
+        with self._lock:
+            if self._materialized_path is not None and self._is_valid_video_file(self._materialized_path):
+                return self._materialized_path
+
+            artifact_dir = (
+                Path(output_dir)
+                if output_dir is not None
+                else Path(tempfile.gettempdir()) / "sef_video_artifacts"
+            )
+            artifact_dir.mkdir(parents=True, exist_ok=True)
+            target_path = artifact_dir / f"{self.artifact_id}{self.filename_suffix}"
+
+            rendered = self.render_to(target_path)
+            rendered_path = rendered.path if isinstance(rendered, VideoFileArtifact) else Path(rendered)
+            if not self._is_valid_video_file(rendered_path):
+                raise ValueError(f"Deferred video renderer did not create a valid file: {rendered_path}")
+
+            object.__setattr__(self, "_materialized_path", rendered_path)
+            return rendered_path
+
+    @staticmethod
+    def _is_valid_video_file(path: Path) -> bool:
+        return path.exists() and path.is_file() and path.stat().st_size > 0
+
+
+VideoLikeArtifact = VideoArtifact | VideoFileArtifact | DeferredVideoArtifact
+VIDEO_ARTIFACT_TYPES = (VideoArtifact, VideoFileArtifact, DeferredVideoArtifact)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
