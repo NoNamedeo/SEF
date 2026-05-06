@@ -53,6 +53,33 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
                 x, y, w, h = current_box
                 centroid = (x + w / 2.0, y + h / 2.0)
 
+
+
+            if self._live_analyzer is not None and self.config.get("show_graph"):
+                self.update(frame_index, current_box, centroid, frame)
+
+
+            if self.config.get("show_contours") and current_box is not None:
+                x, y, w, h = current_box
+                roi = frame.frame[y:y + h, x:x + w]
+
+                if roi.size != 0:
+                    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+                    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+
+                    _, thresh = cv2.threshold(
+                        gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+                    )
+                    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+                    thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+                    contours, _ = cv2.findContours(
+                        thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+                    )
+                    for cnt in contours:
+                        cnt[:, 0, 0] += x
+                        cnt[:, 0, 1] += y
+                        cv2.drawContours(frame.frame, [cnt], -1, (0, 0, 255), 2)
+
             if self.config.get("show"):
                 if current_box is not None:
                     cv2.rectangle(frame.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
@@ -60,9 +87,6 @@ class OpenCVBufferedSignalExtractor(ISignalExtractor):
                     key = cv2.waitKey(1)
                     if key == 27:  # ESC
                         break
-
-            if self._live_analyzer is not None and self.config.get("show_graph"):
-                self.update(frame_index, current_box, centroid, frame)
 
             samples.append(
                 BoxSignalSample(

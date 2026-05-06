@@ -23,7 +23,7 @@ class VerticalPositionAnalyzer(IAnalyzer):
 
             x_axis_value = sample.timestamp_seconds if self.use_timestamps and sample.timestamp_seconds is not None else float(sample.frame_index)
             x_values.append(float(x_axis_value))
-            y_values.append(float(sample.centroid[1]))
+            y_values.append(float(-sample.centroid[1]))
 
         if not x_values:
             raise ValueError("Signal does not contain valid centroid data")

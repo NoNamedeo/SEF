@@ -29,7 +29,7 @@ class LiveVerticalPositionAnalyzer(ILiveAnalyzer):
             return
 
         x_axis_value = float(sample.timestamp_seconds if sample.timestamp_seconds is not None else float(sample.frame_index))
-        y_axis_value = float(sample.centroid[1])
+        y_axis_value = float(-sample.centroid[1]) #aggiungo meno perchè openCV prende le y partendo dall'alto
 
         self.x_data.append(x_axis_value)
         self.y_data.append(y_axis_value)
