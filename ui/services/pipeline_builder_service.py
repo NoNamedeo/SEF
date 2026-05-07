@@ -8,12 +8,13 @@ import streamlit as st
 
 from library.core.plugins.PluginRegistry import PluginCategory
 from ui.models.pipeline_builder import (
+    STAGE_LABELS,
     AnalysisStageKey,
     BarrierSelectionState,
     BuilderStateSnapshot,
+    IntermediateFrameConfiguration,
     PipelineConfiguration,
     PluginConfig,
-    STAGE_LABELS,
     VisualizerConfig,
 )
 from ui.state import session
@@ -32,6 +33,15 @@ ARUCO_ANALYZERS = (
     "aruco_relative_motion",
 )
 
+INTERMEDIATE_FRAME_VISUALIZERS = frozenset(
+    {
+        "intermediate_frames",
+        "intermediate_frames_grid",
+    }
+)
+
+BUILDER_LAST_SYNCED_MODE_KEY = "sef_builder_last_synced_mode"
+
 STAGE_EDIT_OPTIONS = tuple(stage.value for stage in AnalysisStageKey)
 
 
@@ -45,6 +55,7 @@ def initialise_builder_state(registry) -> None:
         "sef_builder_signal_cleaners": ["moving_average"],
         "sef_builder_analyzers": ["vertical_position"],
         "sef_builder_visualizers": [],
+        "sef_builder_intermediate_visualizers": [],
         "sef_builder_visualizer_targets": {},
         "sef_builder_mode": "Single object tracking",
         "sef_builder_resize": "640x480",
@@ -71,10 +82,31 @@ def initialise_builder_state(registry) -> None:
         "sef_builder_dense_cell_size": 16,
         "sef_builder_barrier_names": "A, B",
         "sef_builder_branching_rules": [],
+        "sef_builder_color_stab_color_space": "LAB",
+        "sef_builder_color_stab_techniques": ["luminance_normalization", "temporal_smoothing"],
+        "sef_builder_color_stab_strength": 0.85,
+        "sef_builder_color_stab_temporal_alpha": 0.92,
+        "sef_builder_color_stab_chroma": True,
+        "sef_builder_color_stab_chroma_strength": 0.20,
+        "sef_builder_color_stab_hist_min_std": 4.0,
+        "sef_builder_color_stab_hist_max_gain": 1.35,
+        "sef_builder_color_stab_lum_max_shift": 48.0,
+        "sef_builder_color_stab_gamma": 0.0,
+        "sef_builder_color_stab_clahe_clip": 2.0,
+        "sef_builder_color_stab_clahe_strength": 0.35,
+        "sef_builder_color_stab_emit_metrics": True,
+        "sef_builder_color_stab_emit_overlay": False,
+        "sef_builder_color_stab_emit_intermediate": False,
+        "sef_builder_intermediate_capture_enabled": False,
+        "sef_builder_intermediate_capture_max_frames": 30,
         "sef_selected_stage": selected_stage if selected_stage in STAGE_EDIT_OPTIONS else AnalysisStageKey.FRAME_EXTRACTOR.value,
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
+    st.session_state.setdefault(
+        BUILDER_LAST_SYNCED_MODE_KEY,
+        st.session_state.get("sef_builder_mode", "Single object tracking"),
+    )
 
 
 def builder_state() -> BuilderStateSnapshot:
@@ -87,6 +119,7 @@ def builder_state() -> BuilderStateSnapshot:
         signal_cleaners=tuple(st.session_state.get("sef_builder_signal_cleaners", [])),
         analyzers=tuple(st.session_state.get("sef_builder_analyzers", [])),
         visualizers=tuple(st.session_state.get("sef_builder_visualizers", [])),
+        intermediate_visualizers=tuple(st.session_state.get("sef_builder_intermediate_visualizers", [])),
         visualizer_targets=dict(st.session_state.get("sef_builder_visualizer_targets", {})),
         resize_label=str(st.session_state.get("sef_builder_resize", "640x480")),
         stride=int(st.session_state.get("sef_builder_stride", 2)),
@@ -110,10 +143,25 @@ def builder_state() -> BuilderStateSnapshot:
         multi_max_objects=int(st.session_state.get("sef_builder_multi_max_objects", 4)),
         multi_similarity=float(st.session_state.get("sef_builder_multi_similarity", 0.62)),
         dense_cell_size=int(st.session_state.get("sef_builder_dense_cell_size", 16)),
-        barrier_names=tuple(
-            item.strip() for item in str(st.session_state.get("sef_builder_barrier_names", "")).split(",") if item.strip()
-        ),
+        barrier_names=tuple(item.strip() for item in str(st.session_state.get("sef_builder_barrier_names", "")).split(",") if item.strip()),
         branching_rules=tuple(st.session_state.get("sef_builder_branching_rules", [])),
+        color_stab_color_space=str(st.session_state.get("sef_builder_color_stab_color_space", "LAB")),
+        color_stab_techniques=tuple(st.session_state.get("sef_builder_color_stab_techniques", ["luminance_normalization", "temporal_smoothing"])),
+        color_stab_strength=float(st.session_state.get("sef_builder_color_stab_strength", 0.85)),
+        color_stab_temporal_alpha=float(st.session_state.get("sef_builder_color_stab_temporal_alpha", 0.92)),
+        color_stab_chroma=bool(st.session_state.get("sef_builder_color_stab_chroma", True)),
+        color_stab_chroma_strength=float(st.session_state.get("sef_builder_color_stab_chroma_strength", 0.20)),
+        color_stab_hist_min_std=float(st.session_state.get("sef_builder_color_stab_hist_min_std", 4.0)),
+        color_stab_hist_max_gain=float(st.session_state.get("sef_builder_color_stab_hist_max_gain", 1.35)),
+        color_stab_lum_max_shift=float(st.session_state.get("sef_builder_color_stab_lum_max_shift", 48.0)),
+        color_stab_gamma=float(st.session_state.get("sef_builder_color_stab_gamma", 0.0)),
+        color_stab_clahe_clip=float(st.session_state.get("sef_builder_color_stab_clahe_clip", 2.0)),
+        color_stab_clahe_strength=float(st.session_state.get("sef_builder_color_stab_clahe_strength", 0.35)),
+        color_stab_emit_metrics=bool(st.session_state.get("sef_builder_color_stab_emit_metrics", True)),
+        color_stab_emit_overlay=bool(st.session_state.get("sef_builder_color_stab_emit_overlay", False)),
+        color_stab_emit_intermediate=bool(st.session_state.get("sef_builder_color_stab_emit_intermediate", False)),
+        intermediate_capture_enabled=bool(st.session_state.get("sef_builder_intermediate_capture_enabled", False)),
+        intermediate_capture_max_frames=int(st.session_state.get("sef_builder_intermediate_capture_max_frames", 30)),
     )
 
 
@@ -233,6 +281,14 @@ def recommended_visualizers_for_current_state() -> set[str]:
     return recommended
 
 
+def recommended_intermediate_visualizers_for_current_state() -> set[str]:
+    """Return intermediate-frame visualizers that fit the current debug settings."""
+    state = builder_state()
+    if state.intermediate_capture_enabled or state.color_stab_emit_intermediate:
+        return {"intermediate_frames_grid"}
+    return set()
+
+
 def suggested_visualizer_target_indices(
     visualizer_name: str,
     analyzer_names: tuple[str, ...] | list[str],
@@ -251,8 +307,7 @@ def suggested_visualizer_target_indices(
     compatible_analyzers = compatibility_map.get(visualizer_name)
     if compatible_analyzers is None:
         return None
-    indices = tuple(index for index, analyzer_name in enumerate(analyzers) if analyzer_name in compatible_analyzers)
-    return indices or None
+    return tuple(index for index, analyzer_name in enumerate(analyzers) if analyzer_name in compatible_analyzers)
 
 
 def analyzer_options_for_current_signal(registry) -> list[str]:
@@ -267,6 +322,26 @@ def single_frame_processor_options_for_current_signal(registry) -> list[str]:
         plugin_names(registry, PluginCategory.SINGLE_FRAME_PROCESSOR),
         recommended_frame_processors(),
     )
+
+
+def analysis_visualizer_options_for_current_state(registry) -> list[str]:
+    """Return non-intermediate visualizers ordered by recommendation relevance."""
+    names = [
+        name
+        for name in plugin_names(registry, PluginCategory.VISUALIZER)
+        if name not in INTERMEDIATE_FRAME_VISUALIZERS
+    ]
+    return ordered_stage_options(names, recommended_visualizers_for_current_state())
+
+
+def intermediate_visualizer_options_for_current_state(registry) -> list[str]:
+    """Return visualizers that consume IntermediateFrameArtifactCollection."""
+    names = [
+        name
+        for name in plugin_names(registry, PluginCategory.VISUALIZER)
+        if name in INTERMEDIATE_FRAME_VISUALIZERS
+    ]
+    return ordered_stage_options(names, recommended_intermediate_visualizers_for_current_state())
 
 
 def ensure_stage_options(registry):
@@ -294,16 +369,25 @@ def ensure_stage_options(registry):
     ]
 
     analyzer_options = analyzer_options_for_current_signal(registry)
-    st.session_state["sef_builder_analyzers"] = [
-        name for name in st.session_state.get("sef_builder_analyzers", []) if name in analyzer_options
-    ]
+    st.session_state["sef_builder_analyzers"] = [name for name in st.session_state.get("sef_builder_analyzers", []) if name in analyzer_options]
 
-    visualizer_options = ordered_stage_options(
-        plugin_names(registry, PluginCategory.VISUALIZER),
-        recommended_visualizers_for_current_state(),
-    )
+    visualizer_options = analysis_visualizer_options_for_current_state(registry)
+    intermediate_visualizer_options = intermediate_visualizer_options_for_current_state(registry)
+
+    selected_visualizers = list(st.session_state.get("sef_builder_visualizers", []))
+    selected_intermediate_visualizers = list(st.session_state.get("sef_builder_intermediate_visualizers", []))
+    migrated_intermediate_visualizers = [
+        name
+        for name in selected_visualizers
+        if name in INTERMEDIATE_FRAME_VISUALIZERS and name not in selected_intermediate_visualizers
+    ]
     st.session_state["sef_builder_visualizers"] = [
-        name for name in st.session_state.get("sef_builder_visualizers", []) if name in visualizer_options
+        name for name in selected_visualizers if name in visualizer_options
+    ]
+    st.session_state["sef_builder_intermediate_visualizers"] = [
+        name
+        for name in [*selected_intermediate_visualizers, *migrated_intermediate_visualizers]
+        if name in intermediate_visualizer_options
     ]
 
     return (
@@ -312,6 +396,7 @@ def ensure_stage_options(registry):
         signal_cleaner_options,
         analyzer_options,
         visualizer_options,
+        intermediate_visualizer_options,
     )
 
 
@@ -346,6 +431,7 @@ def build_pipeline_configuration_from_state() -> PipelineConfiguration:
         signal_cleaners=_build_signal_cleaner_configs(state),
         analyzers=_build_analyzer_configs(state, barriers),
         visualizers=_build_visualizer_configs(state),
+        intermediate_frames=_build_intermediate_frame_configuration(state),
     )
 
 
@@ -384,11 +470,7 @@ def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
 
     if extractor_name == "aruco_marker":
         resize = dict(frame_extractor.get("params", {})).get("config", {}).get("resize")
-        if (
-            isinstance(resize, (tuple, list))
-            and len(resize) == 2
-            and (int(resize[0]) < 640 or int(resize[1]) < 480)
-        ):
+        if isinstance(resize, (tuple, list)) and len(resize) == 2 and (int(resize[0]) < 640 or int(resize[1]) < 480):
             issues.append("Per ArUco evita downscale troppo aggressivi: sotto 640x480 la detection puo degradare.")
         stride = dict(frame_extractor.get("params", {})).get("config", {}).get("stride")
         if isinstance(stride, int) and stride > 1:
@@ -418,20 +500,24 @@ def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
 
 
 def sync_mode_with_components(mode: str) -> None:
-    """Apply scenario defaults when the extractor no longer matches the chosen mode."""
-    current = selected_signal_extractor()
-    if mode == "Single object tracking" and current != "opencv_tracker":
+    """Apply scenario defaults only when the scenario selector changes."""
+    if st.session_state.get(BUILDER_LAST_SYNCED_MODE_KEY) == mode:
+        return
+
+    st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = mode
+    if mode == "Single object tracking":
         apply_tracking_components()
-    elif mode == "Multi-object barriers" and current != "opencv_multi_tracker":
+    elif mode == "Multi-object barriers":
         apply_multi_object_components()
-    elif mode == "Dense optical flow" and current != "dense_optical_flow":
+    elif mode == "Dense optical flow":
         apply_dense_flow_components()
-    elif mode == "ArUco wall micromovements" and current != "aruco_marker":
+    elif mode == "ArUco wall micromovements":
         apply_aruco_components()
 
 
 def apply_tracking_preset() -> None:
     st.session_state["sef_builder_mode"] = "Single object tracking"
+    st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = "Single object tracking"
     apply_tracking_components()
 
 
@@ -444,6 +530,7 @@ def apply_tracking_components() -> None:
 
 def apply_multi_object_preset() -> None:
     st.session_state["sef_builder_mode"] = "Multi-object barriers"
+    st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = "Multi-object barriers"
     apply_multi_object_components()
 
 
@@ -456,6 +543,7 @@ def apply_multi_object_components() -> None:
 
 def apply_dense_flow_preset() -> None:
     st.session_state["sef_builder_mode"] = "Dense optical flow"
+    st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = "Dense optical flow"
     apply_dense_flow_components()
 
 
@@ -468,6 +556,7 @@ def apply_dense_flow_components() -> None:
 
 def apply_aruco_preset() -> None:
     st.session_state["sef_builder_mode"] = "ArUco wall micromovements"
+    st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = "ArUco wall micromovements"
     apply_aruco_components()
 
 
@@ -506,6 +595,29 @@ def _build_single_frame_processor_configs(state: BuilderStateSnapshot) -> tuple[
                     params={
                         "method": state.background_method,
                         "detect_shadows": state.background_shadows,
+                    },
+                )
+            )
+        elif name == "color_stabilization":
+            configs.append(
+                PluginConfig(
+                    name=name,
+                    params={
+                        "color_space": state.color_stab_color_space,
+                        "techniques": list(state.color_stab_techniques),
+                        "stabilization_strength": state.color_stab_strength,
+                        "temporal_alpha": state.color_stab_temporal_alpha,
+                        "stabilize_chroma": state.color_stab_chroma,
+                        "chroma_strength": state.color_stab_chroma_strength,
+                        "histogram_min_std": state.color_stab_hist_min_std,
+                        "histogram_max_gain": state.color_stab_hist_max_gain,
+                        "luminance_max_shift": state.color_stab_lum_max_shift,
+                        "gamma": state.color_stab_gamma if state.color_stab_gamma > 0 else None,
+                        "clahe_clip_limit": state.color_stab_clahe_clip,
+                        "clahe_strength": state.color_stab_clahe_strength,
+                        "emit_metrics": state.color_stab_emit_metrics,
+                        "emit_comparison_overlay": state.color_stab_emit_overlay,
+                        "emit_intermediate_artifacts": state.color_stab_emit_intermediate,
                     },
                 )
             )
@@ -605,6 +717,8 @@ def _build_analyzer_configs(
 def _build_visualizer_configs(state: BuilderStateSnapshot) -> tuple[VisualizerConfig, ...]:
     visualizers: list[VisualizerConfig] = []
     for name in state.visualizers:
+        if name in INTERMEDIATE_FRAME_VISUALIZERS:
+            continue
         raw_indices = str(state.visualizer_targets.get(name, "")).strip()
         indices = parse_indices(raw_indices) if raw_indices else suggested_visualizer_target_indices(name, state.analyzers)
         visualizers.append(
@@ -615,3 +729,20 @@ def _build_visualizer_configs(state: BuilderStateSnapshot) -> tuple[VisualizerCo
             )
         )
     return tuple(visualizers)
+
+
+def _build_intermediate_frame_configuration(
+    state: BuilderStateSnapshot,
+) -> IntermediateFrameConfiguration | None:
+    """Build the dedicated intermediate-frame config section, if needed."""
+    processor_debug_capture_enabled = state.color_stab_emit_intermediate or state.color_stab_emit_overlay
+    if not state.intermediate_capture_enabled and not state.intermediate_visualizers and not processor_debug_capture_enabled:
+        return None
+    return IntermediateFrameConfiguration(
+        enabled=True,
+        max_stored_frames=state.intermediate_capture_max_frames,
+        visualizers=tuple(
+            PluginConfig(name=name, params={"config": {"show": False}})
+            for name in state.intermediate_visualizers
+        ),
+    )

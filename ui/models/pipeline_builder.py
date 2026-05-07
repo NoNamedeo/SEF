@@ -62,6 +62,24 @@ class VisualizerConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class IntermediateFrameConfiguration:
+    """Configuration for frame-processing debug capture and its visualizers."""
+
+    enabled: bool = False
+    max_stored_frames: int = 30
+    visualizers: tuple[PluginConfig, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "enabled": self.enabled,
+            "max_stored_frames": self.max_stored_frames,
+        }
+        if self.visualizers:
+            payload["visualizers"] = [item.to_dict() for item in self.visualizers]
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
 class PipelineConfiguration:
     """Typed UI representation of the pipeline config passed to the builder."""
 
@@ -71,18 +89,20 @@ class PipelineConfiguration:
     signal_cleaners: tuple[PluginConfig, ...] = ()
     analyzers: tuple[PluginConfig, ...] = ()
     visualizers: tuple[VisualizerConfig, ...] = ()
+    intermediate_frames: IntermediateFrameConfiguration | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "pipeline": {
-                "frame_extractor": self.frame_extractor.to_dict(),
-                "frame_processors": [item.to_dict() for item in self.frame_processors],
-                "signal_extractor": self.signal_extractor.to_dict(),
-                "signal_cleaners": [item.to_dict() for item in self.signal_cleaners],
-                "analyzers": [item.to_dict() for item in self.analyzers],
-                "visualizers": [item.to_dict() for item in self.visualizers],
-            }
+        pipeline = {
+            "frame_extractor": self.frame_extractor.to_dict(),
+            "frame_processors": [item.to_dict() for item in self.frame_processors],
+            "signal_extractor": self.signal_extractor.to_dict(),
+            "signal_cleaners": [item.to_dict() for item in self.signal_cleaners],
+            "analyzers": [item.to_dict() for item in self.analyzers],
+            "visualizers": [item.to_dict() for item in self.visualizers],
         }
+        if self.intermediate_frames is not None:
+            pipeline["intermediate_frames"] = self.intermediate_frames.to_dict()
+        return {"pipeline": pipeline}
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,6 +116,7 @@ class BuilderStateSnapshot:
     signal_cleaners: tuple[str, ...]
     analyzers: tuple[str, ...]
     visualizers: tuple[str, ...]
+    intermediate_visualizers: tuple[str, ...]
     visualizer_targets: dict[str, str]
     resize_label: str
     stride: int
@@ -121,6 +142,23 @@ class BuilderStateSnapshot:
     dense_cell_size: int
     barrier_names: tuple[str, ...]
     branching_rules: tuple[str, ...]
+    color_stab_color_space: str = "LAB"
+    color_stab_techniques: tuple[str, ...] = ("luminance_normalization", "temporal_smoothing")
+    color_stab_strength: float = 0.85
+    color_stab_temporal_alpha: float = 0.92
+    color_stab_chroma: bool = True
+    color_stab_chroma_strength: float = 0.20
+    color_stab_hist_min_std: float = 4.0
+    color_stab_hist_max_gain: float = 1.35
+    color_stab_lum_max_shift: float = 48.0
+    color_stab_gamma: float = 0.0
+    color_stab_clahe_clip: float = 2.0
+    color_stab_clahe_strength: float = 0.35
+    color_stab_emit_metrics: bool = True
+    color_stab_emit_overlay: bool = False
+    color_stab_emit_intermediate: bool = False
+    intermediate_capture_enabled: bool = False
+    intermediate_capture_max_frames: int = 30
 
     @property
     def resize(self) -> tuple[int, int] | None:

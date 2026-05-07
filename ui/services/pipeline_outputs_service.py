@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+from io import BytesIO
 from typing import Any
+
+import cv2
+import numpy as np
 
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.core.visualization.VisualArtifact import VIDEO_ARTIFACT_TYPES
@@ -11,6 +15,7 @@ from ui.models.pipeline_outputs import (
     AnalysisResultOutput,
     ArtifactOutput,
     ExecutionResultsView,
+    IntermediateFrameSnapshot,
     ReconstructedVideoOutput,
 )
 from ui.state import session
@@ -36,10 +41,7 @@ def build_execution_results_view(outputs: PipelineOutputs) -> ExecutionResultsVi
         else:
             visualizer_outputs.append(ArtifactOutput(artifact=artifact, source="pipeline artifact"))
 
-    analysis_results = [
-        _build_analysis_result_output(result, idx, warnings)
-        for idx, result in enumerate(outputs.results)
-    ]
+    analysis_results = [_build_analysis_result_output(result, idx, warnings) for idx, result in enumerate(outputs.results)]
 
     if not reconstructed_videos:
         for idx, result in enumerate(outputs.results):
@@ -47,6 +49,24 @@ def build_execution_results_view(outputs: PipelineOutputs) -> ExecutionResultsVi
             reconstructed_videos.extend(videos)
             visualizer_outputs.extend(extra_artifacts)
             warnings.extend(extra_warnings)
+
+    # ── Intermediate frame extraction ─────────────────────────────────────────
+    intermediate_snapshots: list[IntermediateFrameSnapshot] = []
+    intermediate_count = 0
+    intermediate_stages: tuple[str, ...] = ()
+    intermediate_indices: tuple[int, ...] = ()
+
+    try:
+        if_outputs = getattr(outputs, "intermediate_frames", None)
+        if if_outputs is not None and hasattr(if_outputs, "artifacts"):
+            artifacts = tuple(if_outputs.artifacts)
+            intermediate_count = len(artifacts)
+            intermediate_stages = if_outputs.stage_names if hasattr(if_outputs, "stage_names") else ()
+            intermediate_indices = if_outputs.frame_indices if hasattr(if_outputs, "frame_indices") else ()
+            intermediate_snapshots = [_build_intermediate_frame_snapshot(artifact, warnings) for artifact in artifacts]
+            intermediate_snapshots = [item for item in intermediate_snapshots if item is not None]
+    except Exception as exc:
+        warnings.append(f"Impossibile estrarre frame intermedi: {exc}")
 
     return ExecutionResultsView(
         analysis_results=tuple(analysis_results),
@@ -58,6 +78,10 @@ def build_execution_results_view(outputs: PipelineOutputs) -> ExecutionResultsVi
             "execution_metadata": dict(outputs.metadata.execution_metadata),
         },
         warnings=tuple(warnings),
+        intermediate_frame_count=intermediate_count,
+        intermediate_frame_stages=intermediate_stages,
+        intermediate_frame_indices=intermediate_indices,
+        intermediate_frame_snapshots=tuple(intermediate_snapshots),
     )
 
 
@@ -265,3 +289,58 @@ def _tracking_video_cache_key(result: Any, idx: int) -> str:
         ).encode("utf-8")
     ).hexdigest()
     return digest
+
+
+def _build_intermediate_frame_snapshot(artifact: Any, warnings: list[str]) -> IntermediateFrameSnapshot | None:
+    """Convert a single IntermediateFrameArtifact into a UI-ready snapshot."""
+    try:
+        image = getattr(artifact, "image", None)
+        if image is None:
+            return None
+
+        if isinstance(image, np.ndarray):
+            if image.dtype == np.uint8 and image.ndim in (2, 3):
+                if image.ndim == 2:
+                    success, encoded = cv2.imencode(".png", image)
+                elif image.shape[2] == 3:
+                    color_bgr = image
+                    success, encoded = cv2.imencode(".png", color_bgr)
+                elif image.shape[2] == 1:
+                    success, encoded = cv2.imencode(".png", image)
+                else:
+                    return None
+                if not success:
+                    return None
+                image_bytes = encoded.tobytes()
+                mime_type = "image/png"
+            elif np.issubdtype(image.dtype, np.floating):
+                normalized = np.clip(image * 255.0, 0, 255).astype(np.uint8)
+                if normalized.ndim == 2:
+                    success, encoded = cv2.imencode(".png", normalized)
+                elif normalized.shape[2] == 3:
+                    success, encoded = cv2.imencode(".png", normalized)
+                else:
+                    return None
+                if not success:
+                    return None
+                image_bytes = encoded.tobytes()
+                mime_type = "image/png"
+            else:
+                return None
+        elif isinstance(image, bytes):
+            image_bytes = image
+            mime_type = "image/png"
+        else:
+            return None
+
+        return IntermediateFrameSnapshot(
+            image_bytes=image_bytes,
+            stage_name=str(getattr(artifact, "stage_name", "unknown")),
+            frame_index=getattr(artifact, "frame_index", None),
+            timestamp_seconds=getattr(artifact, "timestamp_seconds", None),
+            color_space=str(getattr(artifact, "color_space", "BGR")),
+            mime_type=mime_type,
+        )
+    except Exception as exc:
+        warnings.append(f"Frame intermedio non decodificabile: {exc}")
+        return None

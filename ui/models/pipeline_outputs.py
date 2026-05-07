@@ -42,6 +42,18 @@ class AnalysisResultOutput:
 
 
 @dataclass(frozen=True, slots=True)
+class IntermediateFrameSnapshot:
+    """Single intermediate frame artifact ready for UI rendering."""
+
+    image_bytes: bytes
+    stage_name: str
+    frame_index: int | None
+    timestamp_seconds: float | None
+    color_space: str
+    mime_type: str
+
+
+@dataclass(frozen=True, slots=True)
 class ExecutionResultsView:
     """Whole execution payload rendered by the UI."""
 
@@ -50,3 +62,7 @@ class ExecutionResultsView:
     reconstructed_videos: tuple[ReconstructedVideoOutput, ...]
     metadata: Mapping[str, Any]
     warnings: tuple[str, ...] = ()
+    intermediate_frame_count: int = 0
+    intermediate_frame_stages: tuple[str, ...] = ()
+    intermediate_frame_indices: tuple[int, ...] = ()
+    intermediate_frame_snapshots: tuple[IntermediateFrameSnapshot, ...] = ()

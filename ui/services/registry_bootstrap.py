@@ -51,14 +51,18 @@ def get_registry() -> PluginRegistry:
     try:
         from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 
-        _try_register(registry, PluginCategory.SINGLE_FRAME_PROCESSOR, "opencv_gray", OpenCVGrayFrameProcessor, "Converte i frame in scala di grigi.")
+        _try_register(
+            registry, PluginCategory.SINGLE_FRAME_PROCESSOR, "opencv_gray", OpenCVGrayFrameProcessor, "Converte i frame in scala di grigi."
+        )
     except Exception as exc:
         log.warning("OpenCVGrayFrameProcessor non disponibile: %s", exc)
 
     try:
         from library.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
 
-        _try_register(registry, PluginCategory.SINGLE_FRAME_PROCESSOR, "smoothing", SmoothingFrameProcessor, "Smoothing temporale tra frame consecutivi.")
+        _try_register(
+            registry, PluginCategory.SINGLE_FRAME_PROCESSOR, "smoothing", SmoothingFrameProcessor, "Smoothing temporale tra frame consecutivi."
+        )
     except Exception as exc:
         log.warning("SmoothingFrameProcessor non disponibile: %s", exc)
 
@@ -66,7 +70,11 @@ def get_registry() -> PluginRegistry:
         from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
 
         _try_register(
-            registry, PluginCategory.SINGLE_FRAME_PROCESSOR, "opencv_resize", OpenCVResizeFrameProcessor, "Ridimensiona i frame a una risoluzione fissa."
+            registry,
+            PluginCategory.SINGLE_FRAME_PROCESSOR,
+            "opencv_resize",
+            OpenCVResizeFrameProcessor,
+            "Ridimensiona i frame a una risoluzione fissa.",
         )
     except Exception as exc:
         log.warning("OpenCVResizeFrameProcessor non disponibile: %s", exc)
@@ -109,6 +117,45 @@ def get_registry() -> PluginRegistry:
         )
     except Exception as exc:
         log.warning("ColorStabilizationFrameProcessor non disponibile: %s", exc)
+
+    try:
+        from library.frame_processors.OpenCVInpaintFrameProcessor import OpenCVInpaintFrameProcessor
+
+        _try_register(
+            registry,
+            PluginCategory.SINGLE_FRAME_PROCESSOR,
+            "opencv_inpaint",
+            OpenCVInpaintFrameProcessor,
+            "Inpainting delle regioni mascherate con algoritmo Navier-Stokes o Telea.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVInpaintFrameProcessor non disponibile: %s", exc)
+
+    try:
+        from library.frame_processors.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
+
+        _try_register(
+            registry,
+            PluginCategory.SINGLE_FRAME_PROCESSOR,
+            "opencv_rotate",
+            OpenCVRotateFrameProcessor,
+            "Ruota i frame di 0°, 90°, 180° o 270°.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVRotateFrameProcessor non disponibile: %s", exc)
+
+    try:
+        from library.frame_processors.OpenCVZoomFrameProcessor import OpenCVZoomFrameProcessor
+
+        _try_register(
+            registry,
+            PluginCategory.SINGLE_FRAME_PROCESSOR,
+            "opencv_zoom",
+            OpenCVZoomFrameProcessor,
+            "Zoom digitale centrato sui frame.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVZoomFrameProcessor non disponibile: %s", exc)
 
     # ── Signal extractors ─────────────────────────────────────────────────────
     try:
@@ -393,6 +440,33 @@ def get_registry() -> PluginRegistry:
         )
     except Exception as exc:
         log.warning("MatplotlibArucoMotionVisualizer non disponibile: %s", exc)
+
+    # ── Intermediate Frame visualizers ────────────────────────────────────────
+    try:
+        from library.visualizers.IntermediateFramesVisualizer import IntermediateFramesVisualizer
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "intermediate_frames",
+            IntermediateFramesVisualizer,
+            "Render each captured preprocessing snapshot as a comparison PNG.",
+        )
+    except Exception as exc:
+        log.warning("IntermediateFramesVisualizer non disponibile: %s", exc)
+
+    try:
+        from library.visualizers.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "intermediate_frames_grid",
+            IntermediateFramesGridVisualizer,
+            "Render captured preprocessing snapshots as a bounded comparison grid.",
+        )
+    except Exception as exc:
+        log.warning("IntermediateFramesGridVisualizer non disponibile: %s", exc)
 
     # ── Branching rules ───────────────────────────────────────────────────────
     try:

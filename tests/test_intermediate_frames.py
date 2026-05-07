@@ -16,13 +16,13 @@ from library.core.artifacts.MaskArtifacts import (
 from library.core.artifacts.Signal import Signal
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureContext
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
@@ -90,6 +90,20 @@ class AddValueProcessor(ISingleFrameProcessor):
             timestamp_seconds=frame.timestamp_seconds,
             metadata={**frame.metadata, "added_value": self._value},
         )
+
+
+class DebugFlagProcessor(AddValueProcessor):
+    """Processor with UI-style debug flags used to verify config inference."""
+
+    def __init__(
+        self,
+        value: int,
+        emit_intermediate_artifacts: bool = False,
+        emit_comparison_overlay: bool = False,
+    ) -> None:
+        super().__init__(value)
+        self.emit_intermediate_artifacts = emit_intermediate_artifacts
+        self.emit_comparison_overlay = emit_comparison_overlay
 
 
 class MaskEmittingProcessor(AddValueProcessor):
@@ -257,6 +271,38 @@ def test_config_builder_parses_intermediate_frame_capture_and_visualizers(tmp_pa
     assert len(context.intermediate_frame_visualizers) == 1
     assert outputs.intermediate_frames.count == 1
     assert len(outputs.artifacts) == 1
+
+
+def test_config_builder_enables_capture_when_processor_requests_debug_artifacts() -> None:
+    registry = PluginRegistry()
+    registry.register(PluginCategory.FRAME_EXTRACTOR, "static", lambda: StaticFrameExtractor(frame_count=1))
+    registry.register(PluginCategory.SINGLE_FRAME_PROCESSOR, "debug", DebugFlagProcessor)
+    registry.register(PluginCategory.SIGNAL_EXTRACTOR, "passthrough", PassthroughSignalExtractor)
+    registry.register(PluginCategory.ANALYZER, "constant", ConstantAnalyzer)
+
+    context = ConfigPipelineBuilder(registry).build_context(
+        {
+            "pipeline": {
+                "frame_extractor": {"name": "static"},
+                "frame_processors": [
+                    {
+                        "name": "debug",
+                        "params": {
+                            "value": 5,
+                            "emit_intermediate_artifacts": True,
+                        },
+                    }
+                ],
+                "signal_extractor": {"name": "passthrough"},
+                "analyzers": [{"name": "constant"}],
+            }
+        }
+    )
+
+    outputs = Pipeline(context).run()
+
+    assert context.intermediate_frame_capture.enabled is True
+    assert outputs.intermediate_frames.count == 1
 
 
 def test_side_by_side_composer_returns_displayable_bgr_image() -> None:

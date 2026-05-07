@@ -44,7 +44,12 @@ from ui.services.pipeline_builder_service import (  # noqa: E402
     validate_runtime_requirements,
 )
 from ui.services.pipeline_canvas_service import build_pipeline_canvas_model  # noqa: E402
-from ui.services.pipeline_config_editor import config_to_text, parse_config_text, sync_editor_text  # noqa: E402
+from ui.services.pipeline_config_editor import (  # noqa: E402
+    config_to_text,
+    parse_config_text,
+    should_refresh_editor_widget,
+    sync_editor_text,
+)
 from ui.services.pipeline_service import (  # noqa: E402
     active_ids,
     cancel_async,
@@ -137,6 +142,7 @@ def render_sidebar(registry) -> None:
         for category in (
             PluginCategory.FRAME_EXTRACTOR,
             PluginCategory.SINGLE_FRAME_PROCESSOR,
+            PluginCategory.FRAME_BUFFER_PROCESSOR,
             PluginCategory.SIGNAL_EXTRACTOR,
             PluginCategory.SIGNAL_CLEANER,
             PluginCategory.ANALYZER,
@@ -201,17 +207,18 @@ def render_composer_config_editor() -> None:
     raw_key = session.PIPELINE_CONFIG_EDITOR_RAW
     baseline_key = session.PIPELINE_CONFIG_EDITOR_BASELINE
     widget_key = session.PIPELINE_CONFIG_EDITOR_WIDGET
+    previous_baseline = st.session_state.get(baseline_key)
 
     current_text, current_baseline = sync_editor_text(
         st.session_state.get(raw_key),
-        st.session_state.get(baseline_key),
+        previous_baseline,
         generated_text,
     )
     session.put(raw_key, current_text)
     session.put(baseline_key, current_baseline)
 
     widget_value = st.session_state.get(widget_key)
-    if widget_value is None or widget_value == st.session_state.get(baseline_key):
+    if should_refresh_editor_widget(widget_value, previous_baseline):
         st.session_state[widget_key] = current_text
 
     if st.button("Ripristina config generata", width="stretch"):
@@ -369,7 +376,10 @@ def render_stored_outputs_browser(*, default_pipeline_id: str | None = None) -> 
     st.markdown("### Stored outputs")
     selection_key = "sef_stored_output_pipeline_id"
     candidate = session.get(selection_key)
-    if candidate not in available_ids:
+    if default_pipeline_id in available_ids and candidate != default_pipeline_id:
+        candidate = default_pipeline_id
+        st.session_state[selection_key] = candidate
+    elif candidate not in available_ids:
         candidate = default_pipeline_id if default_pipeline_id in available_ids else available_ids[-1]
         st.session_state[selection_key] = candidate
 
@@ -391,6 +401,7 @@ def render_registry(registry) -> None:
     categories = [
         PluginCategory.FRAME_EXTRACTOR,
         PluginCategory.SINGLE_FRAME_PROCESSOR,
+        PluginCategory.FRAME_BUFFER_PROCESSOR,
         PluginCategory.SIGNAL_EXTRACTOR,
         PluginCategory.SIGNAL_CLEANER,
         PluginCategory.ANALYZER,

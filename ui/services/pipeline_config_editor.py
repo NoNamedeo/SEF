@@ -36,3 +36,17 @@ def sync_editor_text(
         return generated_text, generated_text
 
     return current_text, generated_text
+
+
+def should_refresh_editor_widget(
+    widget_text: str | None,
+    previous_baseline_text: str | None,
+) -> bool:
+    """
+    Return True when the visible editor still mirrors the previous generated config.
+
+    Streamlit widgets keep their own state across reruns. The decision must be
+    based on the previous baseline, otherwise the text area can keep showing an
+    old generated config after composer controls changed.
+    """
+    return widget_text is None or widget_text == previous_baseline_text

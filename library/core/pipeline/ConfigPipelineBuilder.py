@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from copy import deepcopy
 from typing import Any
 
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
-from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineErrors import PipelineConfigurationError
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 
@@ -195,6 +196,8 @@ class ConfigPipelineBuilder:
     def _intermediate_frame_capture(self, cfg: dict[str, Any]) -> IntermediateFrameCaptureConfig:
         section = cfg.get("intermediate_frames")
         if section is None:
+            if self._frame_processor_debug_capture_requested(cfg):
+                return IntermediateFrameCaptureConfig.from_mapping({"enabled": True})
             return IntermediateFrameCaptureConfig.disabled()
         if not isinstance(section, dict):
             raise PipelineConfigurationError("'pipeline.intermediate_frames' must be a mapping.")
@@ -202,6 +205,36 @@ class ConfigPipelineBuilder:
         if not capture_config and section.get("visualizers"):
             capture_config["enabled"] = True
         return IntermediateFrameCaptureConfig.from_mapping(capture_config)
+
+    @staticmethod
+    def _frame_processor_debug_capture_requested(cfg: dict[str, Any]) -> bool:
+        """
+        Enable capture when a processor explicitly asks to emit debug frames.
+
+        Processor-level emit flags are otherwise impossible to observe because
+        SingleFrameProcessorAdapter only calls emitters when the intermediate
+        capture store is enabled.
+        """
+        frame_processors = cfg.get("frame_processors", [])
+        if not isinstance(frame_processors, list):
+            return False
+
+        for item in frame_processors:
+            if not isinstance(item, Mapping):
+                continue
+            params = item.get("params", {})
+            if not isinstance(params, Mapping):
+                continue
+            if ConfigPipelineBuilder._debug_emit_flags_enabled(params):
+                return True
+            nested_config = params.get("config", {})
+            if isinstance(nested_config, Mapping) and ConfigPipelineBuilder._debug_emit_flags_enabled(nested_config):
+                return True
+        return False
+
+    @staticmethod
+    def _debug_emit_flags_enabled(params: Mapping[str, Any]) -> bool:
+        return bool(params.get("emit_intermediate_artifacts")) or bool(params.get("emit_comparison_overlay"))
 
     def _intermediate_frame_visualizers(self, cfg: dict[str, Any]) -> list[dict[str, Any]]:
         section = cfg.get("intermediate_frames")
