@@ -5,11 +5,11 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
 
 
-class OpenCVDynamicInpaintFrameCleaner(IFrameCleaner):
+class OpenCVDynamicInpaintFrameProcessor(ISingleFrameProcessor):
     """
     Inpaints a dynamically tracked object.
 
@@ -87,7 +87,7 @@ class OpenCVDynamicInpaintFrameCleaner(IFrameCleaner):
         mask[y:y+h, x:x+w] = 255
         return mask
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         image = frame.frame
 
         if image.shape[:2] != self.initial_mask.shape[:2]:

@@ -11,18 +11,18 @@ from library.core.artifacts.Frame import Frame
 
 class OpenCVBackgroundSubtractionFrameProcessor(ISingleFrameProcessor):
     """
-    Applies background subtraction with strong noise filtering
-    to isolate meaningful moving objects.
-    """
+       Applies background subtraction with strong noise filtering
+       to isolate meaningful moving objects.
+       """
 
     def __init__(
-        self,
-        method: str = "MOG2",
-        detect_shadows: bool = False,
-        kernel_size: int = 5,
-        min_area: int = 500,
-        apply_close: bool = True,
-        config: dict[str, Any] | None = None,
+            self,
+            method: str = "MOG2",
+            detect_shadows: bool = False,
+            kernel_size: int = 5,
+            min_area: int = 500,
+            apply_close: bool = True,
+            config: dict[str, Any] | None = None,
     ):
         super().__init__(config)
 
@@ -54,10 +54,34 @@ class OpenCVBackgroundSubtractionFrameProcessor(ISingleFrameProcessor):
         # remove shadows (MOG2 outputs 127 for shadows)
         fg_mask[fg_mask == 127] = 0
 
-        processed = cv2.bitwise_and(image, image, mask=fg_mask)
+        # morphology filtering
+        kernel = np.ones(
+            (self.kernel_size, self.kernel_size),
+            np.uint8,
+        )
+
+        fg_mask = cv2.morphologyEx(
+            fg_mask,
+            cv2.MORPH_OPEN,
+            kernel,
+        )
+
+        if self.apply_close:
+            fg_mask = cv2.morphologyEx(
+                fg_mask,
+                cv2.MORPH_CLOSE,
+                kernel,
+            )
+
+        # apply mask
+        cleaned = cv2.bitwise_and(
+            image,
+            image,
+            mask=fg_mask,
+        )
 
         return Frame(
-            image=processed,
+            image=cleaned,
             index=frame.index,
             timestamp_seconds=frame.timestamp_seconds,
             metadata={

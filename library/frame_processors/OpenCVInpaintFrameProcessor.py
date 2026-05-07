@@ -9,7 +9,7 @@ from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
 
 
-class OpenCVInpaintingFrameProcessor(ISingleFrameProcessor):
+class OpenCVInpaintFrameProcessor(ISingleFrameProcessor):
     """
     Removes/inpaints regions of the frame specified by a mask.
 
