@@ -12,6 +12,7 @@ from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplac
 from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
 from library.analyzers.HoriziontalPositionAnalyzer import HorizontalPositionAnalyzer
 from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+from library.core.enum.FrameRotation import FrameRotation
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
@@ -19,6 +20,7 @@ from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.core.visualization.VisualArtifact import ImageArtifact, VideoArtifact
 from library.frame_cleaners.OpenCVHistogramEqualizationFrameCleaner import OpenCVHistogramEqualizationFrameCleaner
 from library.frame_cleaners.OpenCVResizeFrameCleaner import OpenCVResizeFrameCleaner
+from library.frame_cleaners.OpenCVRotateFrameCleaner import OpenCVRotateFrameCleaner
 from library.frame_cleaners.OpenCVZoomFrameCleaner import OpenCVZoomFrameCleaner
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.live_analyzers.LiveVerticalPositionAnalyzer import LiveVerticalPositionAnalyzer
@@ -36,10 +38,11 @@ def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize) -
             OpenCVBufferedFrameExtractor(
                 video_path,
                 config={
-                    "max_frames": 240 # (480 Frame)/(24 FPS) = 20 secondi
+                    "max_frames": 120 # (180 Frame)/(24 FPS) = 5 secondi
                 },
             )
         )
+        .add_frame_cleaner(OpenCVRotateFrameCleaner(rotation=FrameRotation.ROTATE_90))
         .add_frame_cleaner(OpenCVResizeFrameCleaner(resize))
         .add_frame_cleaner(OpenCVZoomFrameCleaner(zoom_box))
         .add_frame_cleaner(OpenCVHistogramEqualizationFrameCleaner())
@@ -63,15 +66,16 @@ def main():
     # TODO SAM da problemi di import dopo che ho messo il live analyzer
 
     BASE_DIR = Path(__file__).resolve().parent
-    video_path = BASE_DIR.parent / "videos" / "Castle.mp4"
+    video_path = BASE_DIR.parent / "videos" / "Tower.mp4"
 
     resize = (800, 600)
+    rotation = FrameRotation.ROTATE_90
 
     zoom_box = None
-    zoom_box = OpenCVStartBoxSelector().select_start(str(video_path), frame_cleaners=[OpenCVResizeFrameCleaner(resize)])
+    zoom_box = OpenCVStartBoxSelector().select_start(str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize)])
 
     start_box = None
-    start_box = OpenCVStartBoxSelector().select_start(str(video_path), frame_cleaners=[OpenCVResizeFrameCleaner(resize), OpenCVZoomFrameCleaner(zoom_box)])
+    start_box = OpenCVStartBoxSelector().select_start(str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize), OpenCVZoomFrameCleaner(zoom_box)])
     # number_of_boxes = int(input("How many boxes would you like?: "))
     start_boxes = None
     # start_boxes = OpenCVMultiStartBoxSelector().select_start(str(video_path), number_of_boxes, frame_cleaners=[OpenCVResizeFrameCleaner(resize), OpenCVZoomFrameCleaner(zoom_box)])  # noqa: E501
