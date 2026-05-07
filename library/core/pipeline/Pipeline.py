@@ -4,10 +4,12 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping
 
+from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IEventEmitter import IEventEmitter
 from library.core.interfaces.pipeline.IEventBus import IEventBus
 from library.core.pipeline.FrameCleaningStage import FrameCleaningStage
+from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 from library.core.visualization.PipelineOutputs import PipelineOutputs
@@ -78,10 +80,16 @@ class Pipeline:
         ctx = self._context
 
         buffer = self._run_step("frame_extraction", lambda: ctx.frame_extractor.extract())
+        intermediate_store = IntermediateFrameArtifactStore(ctx.intermediate_frame_capture)
         buffer = self._run_step(
             "frame_cleaning",
-            lambda: self._frame_cleaning_stage.apply(buffer, ctx.frame_cleaners),
+            lambda: self._frame_cleaning_stage.apply(
+                buffer,
+                ctx.frame_cleaners,
+                intermediate_store=intermediate_store,
+            ),
         )
+        intermediate_frames = intermediate_store.to_collection()
 
         signal = self._run_step("signal_extraction", lambda: ctx.signal_extractor.extract(buffer))
 
@@ -97,6 +105,7 @@ class Pipeline:
             results.append(data)
 
         artifacts = self._run_visualizers(results)
+        artifacts.extend(self._run_intermediate_frame_visualizers(intermediate_frames))
         outputs = PipelineOutputs(
             results=tuple(results),
             artifacts=tuple(artifacts),
@@ -105,8 +114,9 @@ class Pipeline:
                 generated_at=datetime.now(timezone.utc),
                 execution_metadata=dict(self._execution_metadata),
             ),
+            intermediate_frames=intermediate_frames,
         )
-        return outputs
+        return self._with_reproducibility_exports(outputs)
 
     # ── Internals ───────────────────────────────────────────────────────────
 
@@ -126,6 +136,7 @@ class Pipeline:
             *self._context.analyzers,
             *self._context.visualizers,
             *(binding.visualizer for binding in self._context.visualizer_bindings),
+            *self._context.intermediate_frame_visualizers,
         ]
         for component in components:
             if isinstance(component, IEventEmitter):
@@ -148,6 +159,37 @@ class Pipeline:
     def _resolved_pipeline_id(self) -> str:
         return self._pipeline_id or "pipeline-unknown"
 
+    def _with_reproducibility_exports(self, outputs: PipelineOutputs) -> PipelineOutputs:
+        """
+        Attach shareable config/code exports after artifacts and metadata exist.
+
+        Exporters live in the core pipeline layer and do not depend on UI
+        packages, so executed pipelines are reproducible in CLI, tests, and
+        Streamlit alike.
+        """
+        from library.core.pipeline.PipelineCodeExporter import PipelineCodeExporter
+        from library.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
+
+        config_exporter = PipelineConfigExporter()
+        export_config = config_exporter.export(self._context, outputs)
+        reproducibility = {
+            "config": export_config,
+            "json": config_exporter.to_json(export_config),
+            "yaml": config_exporter.to_yaml(export_config),
+            "python_builder_code": PipelineCodeExporter().export_config(export_config),
+        }
+        return PipelineOutputs(
+            results=outputs.results,
+            artifacts=outputs.artifacts,
+            metadata=PipelineRunMetadata(
+                pipeline_id=outputs.metadata.pipeline_id,
+                generated_at=outputs.metadata.generated_at,
+                execution_metadata=outputs.metadata.execution_metadata,
+                reproducibility=reproducibility,
+            ),
+            intermediate_frames=outputs.intermediate_frames,
+        )
+
     def _run_visualizers(self, results: list[IData]) -> list[VisualArtifact]:
         bindings = [
             *(VisualizerBinding(visualizer) for visualizer in self._context.visualizers),
@@ -168,6 +210,38 @@ class Pipeline:
                 )
                 artifacts.extend(rendered)
         return artifacts
+
+    def _run_intermediate_frame_visualizers(
+        self,
+        intermediate_frames: IntermediateFrameArtifactCollection,
+    ) -> list[VisualArtifact]:
+        if intermediate_frames.is_empty:
+            return []
+
+        artifacts: list[VisualArtifact] = []
+        for visualizer_index, visualizer in enumerate(self._context.intermediate_frame_visualizers):
+            rendered = self._run_step(
+                f"visualisation.intermediate_frames[{visualizer_index}]",
+                lambda v=visualizer: v.render(
+                    intermediate_frames,
+                    self._intermediate_frame_visualization_context(v, intermediate_frames),
+                ),
+            )
+            artifacts.extend(rendered)
+        return artifacts
+
+    def _intermediate_frame_visualization_context(
+        self,
+        visualizer: Any,
+        intermediate_frames: IntermediateFrameArtifactCollection,
+    ) -> VisualizationContext:
+        return VisualizationContext(
+            pipeline_id=self._pipeline_id,
+            visualizer_name=type(visualizer).__name__,
+            source_metadata=dict(intermediate_frames.metadata),
+            execution_metadata=dict(self._execution_metadata),
+            render_hints={"source": "intermediate_frames"},
+        )
 
     def _visualization_context(
         self,

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from copy import deepcopy
 from dataclasses import dataclass, field
+from typing import Any, Mapping
 
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IFrameCleaner import IFrameCleaner
@@ -9,6 +11,7 @@ from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
+from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 
 
@@ -41,6 +44,14 @@ class PipelineContext:
     visualizers      : zero or more rendering steps executed after analysis.
     visualizer_bindings
                      : optional selective visualizer-to-result mappings.
+    intermediate_frame_capture
+                     : optional bounded capture settings for frame-cleaning
+                       debug snapshots.
+    intermediate_frame_visualizers
+                     : optional visualizers that render the captured debug
+                       collection, never normal analysis results.
+    source_config    : optional construction metadata used by exporters to
+                       recreate the original registry-driven configuration.
     """
 
     # ── Required (no default) ───────────────────────────────────────────────
@@ -53,6 +64,11 @@ class PipelineContext:
     signal_cleaners: Sequence[ISignalCleaner] = field(default_factory=tuple)
     visualizers: Sequence[IVisualizer] = field(default_factory=tuple)
     visualizer_bindings: Sequence[VisualizerBinding] = field(default_factory=tuple)
+    intermediate_frame_capture: IntermediateFrameCaptureConfig = field(
+        default_factory=IntermediateFrameCaptureConfig.disabled
+    )
+    intermediate_frame_visualizers: Sequence[IVisualizer] = field(default_factory=tuple)
+    source_config: Mapping[str, Any] = field(default_factory=dict, compare=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.frame_extractor is None:
@@ -85,6 +101,14 @@ class PipelineContext:
             "visualizer_bindings",
             self._visualizer_bindings_tuple(self.visualizer_bindings),
         )
+        if not isinstance(self.intermediate_frame_capture, IntermediateFrameCaptureConfig):
+            raise ValueError("PipelineContext field 'intermediate_frame_capture' must be an IntermediateFrameCaptureConfig.")
+        object.__setattr__(
+            self,
+            "intermediate_frame_visualizers",
+            self._optional_tuple("intermediate_frame_visualizers", self.intermediate_frame_visualizers),
+        )
+        object.__setattr__(self, "source_config", self._source_config_mapping(self.source_config))
 
     @staticmethod
     def _required_tuple(name: str, values: Sequence) -> tuple:
@@ -108,3 +132,11 @@ class PipelineContext:
         if any(not isinstance(item, VisualizerBinding) for item in items):
             raise ValueError("PipelineContext field 'visualizer_bindings' must contain VisualizerBinding instances.")
         return items
+
+    @staticmethod
+    def _source_config_mapping(value: Mapping[str, Any] | None) -> dict[str, Any]:
+        if value is None:
+            return {}
+        if not isinstance(value, Mapping):
+            raise ValueError("PipelineContext field 'source_config' must be a mapping.")
+        return deepcopy(dict(value))

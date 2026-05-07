@@ -111,9 +111,7 @@ class PluginRegistry:
             return self._definitions[category][name]
         except KeyError as exc:
             available = list(self._definitions.get(category, {}).keys())
-            raise KeyError(
-                f"Plugin '{name}' not found in category '{category}'. Available: {available}"
-            ) from exc
+            raise KeyError(f"Plugin '{name}' not found in category '{category}'. Available: {available}") from exc
 
     def create(self, category: str | PluginCategory, name: str, *args, **kwargs) -> Any:
         """Instantiate the plugin identified by (category, name)."""
@@ -122,11 +120,7 @@ class PluginRegistry:
     def list(self, category: str | PluginCategory | None = None) -> list[PluginDefinition]:
         """Return all registered plugins, optionally filtered by category."""
         if category is None:
-            return [
-                definition
-                for cat_map in self._definitions.values()
-                for definition in cat_map.values()
-            ]
+            return [definition for cat_map in self._definitions.values() for definition in cat_map.values()]
         return list(self._definitions.get(str(category), {}).values())
 
 
@@ -150,14 +144,17 @@ def create_builtin_registry() -> PluginRegistry:
     from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
     from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
     from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+    from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
+    from library.frame_cleaners.ColorStabilizationFrameCleaner import ColorStabilizationFrameCleaner
     from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
     from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
     from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
     from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
     from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
     from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-    from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
     from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+    from library.visualizers.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
+    from library.visualizers.IntermediateFramesVisualizer import IntermediateFramesVisualizer
     from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
     from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
@@ -175,6 +172,13 @@ def create_builtin_registry() -> PluginRegistry:
         "opencv_gray",
         OpenCVGrayFrameCleaner,
         "Convert frames to grayscale.",
+    )
+
+    registry.register(
+        PluginCategory.FRAME_CLEANER,
+        "color_stabilization",
+        ColorStabilizationFrameCleaner,
+        "Stabilize illumination, brightness, and chromatic drift between frames.",
     )
 
     registry.register(
@@ -245,6 +249,20 @@ def create_builtin_registry() -> PluginRegistry:
         "aruco_annotated_video",
         ArucoAnnotatedVideoVisualizer,
         "Render annotated MP4 output for ArUco detections.",
+    )
+
+    registry.register(
+        PluginCategory.VISUALIZER,
+        "intermediate_frames",
+        IntermediateFramesVisualizer,
+        "Render each captured preprocessing snapshot as a comparison PNG.",
+    )
+
+    registry.register(
+        PluginCategory.VISUALIZER,
+        "intermediate_frames_grid",
+        IntermediateFramesGridVisualizer,
+        "Render captured preprocessing snapshots as a bounded comparison grid.",
     )
 
     registry.register(

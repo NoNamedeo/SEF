@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 
+from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineErrors import PipelineConfigurationError
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
@@ -49,6 +51,15 @@ class ConfigPipelineBuilder:
       visualizers:                      # optional list
         - name: matplotlib
           result_indices: [0]            # optional; omit to visualize all results
+
+      intermediate_frames:              # optional frame-cleaning debug stream
+        enabled: true
+        sampling_interval: 10
+        max_stored_frames: 20
+        export_directory: artifacts/debug
+        lazy_saving: true
+        visualizers:
+          - name: intermediate_frames_grid
 
     Raises
     ------
@@ -99,6 +110,13 @@ class ConfigPipelineBuilder:
                     "pipeline.visualizers",
                 ),
                 visualizer_bindings=self._visualizer_bindings(cfg),
+                intermediate_frame_capture=self._intermediate_frame_capture(cfg),
+                intermediate_frame_visualizers=self._build_list(
+                    PluginCategory.VISUALIZER,
+                    self._intermediate_frame_visualizers(cfg),
+                    "pipeline.intermediate_frames.visualizers",
+                ),
+                source_config={"pipeline": deepcopy(cfg)},
             )
         except PipelineConfigurationError:
             raise
@@ -155,6 +173,28 @@ class ConfigPipelineBuilder:
                 )
             )
         return bindings
+
+    def _intermediate_frame_capture(self, cfg: dict[str, Any]) -> IntermediateFrameCaptureConfig:
+        section = cfg.get("intermediate_frames")
+        if section is None:
+            return IntermediateFrameCaptureConfig.disabled()
+        if not isinstance(section, dict):
+            raise PipelineConfigurationError("'pipeline.intermediate_frames' must be a mapping.")
+        capture_config = {key: value for key, value in section.items() if key != "visualizers"}
+        if not capture_config and section.get("visualizers"):
+            capture_config["enabled"] = True
+        return IntermediateFrameCaptureConfig.from_mapping(capture_config)
+
+    def _intermediate_frame_visualizers(self, cfg: dict[str, Any]) -> list[dict[str, Any]]:
+        section = cfg.get("intermediate_frames")
+        if section is None:
+            return []
+        if not isinstance(section, dict):
+            raise PipelineConfigurationError("'pipeline.intermediate_frames' must be a mapping.")
+        value = section.get("visualizers", [])
+        if not isinstance(value, list):
+            raise PipelineConfigurationError("'pipeline.intermediate_frames.visualizers' must be a list.")
+        return value
 
     @staticmethod
     def _result_indices(config: dict[str, Any], path: str) -> tuple[int, ...]:

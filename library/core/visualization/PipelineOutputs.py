@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
+from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
 from library.core.interfaces.IData import IData
 from library.core.visualization.PipelineRunMetadata import PipelineRunMetadata
 from library.core.visualization.VisualArtifact import VisualArtifact
@@ -14,7 +15,12 @@ class PipelineOutputs:
     results: tuple[IData, ...]
     artifacts: tuple[VisualArtifact, ...]
     metadata: PipelineRunMetadata
+    intermediate_frames: IntermediateFrameArtifactCollection = field(
+        default_factory=IntermediateFrameArtifactCollection.empty
+    )
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "results", tuple(self.results))
         object.__setattr__(self, "artifacts", tuple(self.artifacts))
+        if not isinstance(self.intermediate_frames, IntermediateFrameArtifactCollection):
+            raise TypeError("PipelineOutputs.intermediate_frames must be an IntermediateFrameArtifactCollection.")

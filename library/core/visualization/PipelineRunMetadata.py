@@ -12,8 +12,10 @@ class PipelineRunMetadata:
     pipeline_id: str
     generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     execution_metadata: Mapping[str, Any] = field(default_factory=dict)
+    reproducibility: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not self.pipeline_id:
             raise ValueError("PipelineRunMetadata.pipeline_id must be a non-empty string.")
         object.__setattr__(self, "execution_metadata", dict(self.execution_metadata))
+        object.__setattr__(self, "reproducibility", dict(self.reproducibility))

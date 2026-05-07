@@ -19,7 +19,7 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from library.core.plugins.PluginRegistry import PluginRegistry, PluginCategory  # noqa: E402
+from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -65,7 +65,9 @@ def get_registry() -> PluginRegistry:
     try:
         from library.frame_cleaners.OpenCVResizeFrameCleaner import OpenCVResizeFrameCleaner
 
-        _try_register(registry, PluginCategory.FRAME_CLEANER, "opencv_resize", OpenCVResizeFrameCleaner, "Ridimensiona i frame a una risoluzione fissa.")
+        _try_register(
+            registry, PluginCategory.FRAME_CLEANER, "opencv_resize", OpenCVResizeFrameCleaner, "Ridimensiona i frame a una risoluzione fissa."
+        )
     except Exception as exc:
         log.warning("OpenCVResizeFrameCleaner non disponibile: %s", exc)
 
@@ -94,6 +96,19 @@ def get_registry() -> PluginRegistry:
         )
     except Exception as exc:
         log.warning("OpenCVHistogramEqualizationFrameCleaner non disponibile: %s", exc)
+
+    try:
+        from library.frame_cleaners.ColorStabilizationFrameCleaner import ColorStabilizationFrameCleaner
+
+        _try_register(
+            registry,
+            PluginCategory.FRAME_CLEANER,
+            "color_stabilization",
+            ColorStabilizationFrameCleaner,
+            "Stabilizza luminosita, illuminazione e cromia tra frame consecutivi.",
+        )
+    except Exception as exc:
+        log.warning("ColorStabilizationFrameCleaner non disponibile: %s", exc)
 
     # ── Signal extractors ─────────────────────────────────────────────────────
     try:
@@ -175,7 +190,13 @@ def get_registry() -> PluginRegistry:
     try:
         from library.signal_cleaners.SignalWidenerCleaner import SignalWidenerCleaner
 
-        _try_register(registry, PluginCategory.SIGNAL_CLEANER, "signal_widener", SignalWidenerCleaner, "Amplifica gli spostamenti del segnale rispetto alla media.")
+        _try_register(
+            registry,
+            PluginCategory.SIGNAL_CLEANER,
+            "signal_widener",
+            SignalWidenerCleaner,
+            "Amplifica gli spostamenti del segnale rispetto alla media.",
+        )
     except Exception as exc:
         log.warning("SignalWidenerCleaner non disponibile: %s", exc)
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, ClassVar, Mapping
@@ -24,6 +25,18 @@ def _json_default(value: Any) -> Any:
     if isinstance(value, MappingProxyType):
         return dict(value)
     raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable.")
+
+
+def _readonly_image_copy(image: npt.NDArray[Any], *, name: str) -> npt.NDArray[Any]:
+    if not isinstance(image, np.ndarray):
+        raise TypeError(f"{name} must be a numpy.ndarray.")
+    if image.ndim not in (2, 3):
+        raise ValueError(f"{name} must be 2D or 3D; got shape {image.shape}.")
+    spatial_shape_of(image, name=name)
+
+    image_copy = np.array(image, copy=True)
+    image_copy.setflags(write=False)
+    return image_copy
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, eq=False)
@@ -200,6 +213,49 @@ class ProtectedRegionArtifact(MaskArtifact):
 
 
 @dataclass(frozen=True, slots=True, kw_only=True, eq=False)
+class IntermediateFrameOverlay:
+    """
+    Immutable rendered overlay associated with an intermediate frame snapshot.
+
+    Overlays are intentionally image-based rather than UI objects. This keeps
+    frame cleaners free to emit masks, contours, heatmaps, or other debug
+    images without coupling them to a specific visualization backend.
+    """
+
+    image: npt.NDArray[Any] = field(repr=False)
+    label: str | None = None
+    color_space: str | None = None
+    alpha: float = 1.0
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.label is not None and not self.label.strip():
+            raise ValueError("IntermediateFrameOverlay.label cannot be empty when provided.")
+        if self.alpha < 0.0 or self.alpha > 1.0:
+            raise ValueError("IntermediateFrameOverlay.alpha must be between 0.0 and 1.0.")
+        object.__setattr__(
+            self,
+            "image",
+            _readonly_image_copy(self.image, name="IntermediateFrameOverlay.image"),
+        )
+        object.__setattr__(self, "metadata", _immutable_mapping(self.metadata))
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        """Return the full overlay image shape."""
+        return tuple(int(dimension) for dimension in self.image.shape)
+
+    @property
+    def spatial_shape(self) -> tuple[int, int]:
+        """Return the overlay shape as `(height, width)`."""
+        return spatial_shape_of(self.image, name="IntermediateFrameOverlay.image")
+
+    def as_array(self, *, copy: bool = True) -> npt.NDArray[Any]:
+        """Return the overlay image, copying by default for caller safety."""
+        return self.image.copy() if copy else self.image
+
+
+@dataclass(frozen=True, slots=True, kw_only=True, eq=False)
 class IntermediateFrameArtifact(IData):
     """
     Immutable snapshot of an intermediate frame for pipeline debugging.
@@ -213,6 +269,11 @@ class IntermediateFrameArtifact(IData):
     frame_index: int | None = None
     timestamp_seconds: float | None = None
     color_space: str | None = None
+    original_image: npt.NDArray[Any] | None = field(default=None, repr=False)
+    cleaned_image: npt.NDArray[Any] | None = field(default=None, repr=False)
+    masks: Sequence[MaskArtifact] = field(default_factory=tuple)
+    overlays: Sequence[IntermediateFrameOverlay] = field(default_factory=tuple)
+    stage_metadata: Mapping[str, Any] = field(default_factory=dict)
     metadata: Mapping[str, Any] = field(default_factory=dict)
     config: Mapping[str, Any] = field(default_factory=dict)
 
@@ -221,15 +282,47 @@ class IntermediateFrameArtifact(IData):
     def __post_init__(self) -> None:
         if not self.stage_name.strip():
             raise ValueError("IntermediateFrameArtifact.stage_name must be a non-empty string.")
-        if not isinstance(self.image, np.ndarray):
-            raise TypeError("IntermediateFrameArtifact.image must be a numpy.ndarray.")
-        if self.image.ndim not in (2, 3):
-            raise ValueError(f"IntermediateFrameArtifact.image must be 2D or 3D; got shape {self.image.shape}.")
-        spatial_shape_of(self.image, name="IntermediateFrameArtifact.image")
 
-        image_copy = np.array(self.image, copy=True)
-        image_copy.setflags(write=False)
+        image_copy = _readonly_image_copy(self.image, name="IntermediateFrameArtifact.image")
         object.__setattr__(self, "image", image_copy)
+        if self.original_image is not None:
+            object.__setattr__(
+                self,
+                "original_image",
+                _readonly_image_copy(
+                    self.original_image,
+                    name="IntermediateFrameArtifact.original_image",
+                ),
+            )
+        if self.cleaned_image is not None:
+            object.__setattr__(
+                self,
+                "cleaned_image",
+                _readonly_image_copy(
+                    self.cleaned_image,
+                    name="IntermediateFrameArtifact.cleaned_image",
+                ),
+            )
+
+        masks = tuple(self.masks)
+        if any(not isinstance(mask, MaskArtifact) for mask in masks):
+            raise TypeError("IntermediateFrameArtifact.masks must contain MaskArtifact instances.")
+        for mask in masks:
+            self.ensure_mask_compatible(mask)
+        object.__setattr__(self, "masks", masks)
+
+        overlays = tuple(self.overlays)
+        if any(not isinstance(overlay, IntermediateFrameOverlay) for overlay in overlays):
+            raise TypeError("IntermediateFrameArtifact.overlays must contain IntermediateFrameOverlay instances.")
+        for overlay in overlays:
+            ensure_shape_compatible(
+                image_copy,
+                overlay.image,
+                reference_name="IntermediateFrameArtifact.image",
+                candidate_name="overlay",
+            )
+        object.__setattr__(self, "overlays", overlays)
+        object.__setattr__(self, "stage_metadata", _immutable_mapping(self.stage_metadata))
         object.__setattr__(self, "metadata", _immutable_mapping(self.metadata))
         object.__setattr__(self, "config", _immutable_mapping(self.config))
 
@@ -237,6 +330,16 @@ class IntermediateFrameArtifact(IData):
     def frame(self) -> npt.NDArray[Any]:
         """Alias matching the existing `Frame.frame` convention."""
         return self.image
+
+    @property
+    def original_frame(self) -> npt.NDArray[Any] | None:
+        """Return the optional pre-cleaning frame snapshot."""
+        return self.original_image
+
+    @property
+    def cleaned_frame(self) -> npt.NDArray[Any]:
+        """Return the cleaned frame snapshot, falling back to the primary image."""
+        return self.cleaned_image if self.cleaned_image is not None else self.image
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -300,6 +403,11 @@ class IntermediateFrameArtifact(IData):
             "frame_index": self.frame_index,
             "timestamp_seconds": self.timestamp_seconds,
             "color_space": self.color_space,
+            "has_original_frame": self.original_image is not None,
+            "has_cleaned_frame": self.cleaned_image is not None,
+            "mask_count": len(self.masks),
+            "overlay_count": len(self.overlays),
+            "stage_metadata": dict(self.stage_metadata),
             "metadata": dict(self.metadata),
             "config": dict(self.config),
         }

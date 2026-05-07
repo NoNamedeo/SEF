@@ -8,6 +8,7 @@ from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
+from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 
@@ -28,6 +29,8 @@ class FluentPipelineBuilder:
         self._analyzers: list[IAnalyzer] = []
         self._visualizers: list[IVisualizer] = []
         self._visualizer_bindings: list[VisualizerBinding] = []
+        self._intermediate_frame_capture = IntermediateFrameCaptureConfig.disabled()
+        self._intermediate_frame_visualizers: list[IVisualizer] = []
 
     # ── Pipeline components ─────────────────────────────────────────────────
 
@@ -88,6 +91,31 @@ class FluentPipelineBuilder:
         )
         return self
 
+    def with_intermediate_frame_capture(
+        self,
+        config: IntermediateFrameCaptureConfig | dict | None,
+    ) -> FluentPipelineBuilder:
+        """Enable or disable bounded intermediate frame capture."""
+        self._intermediate_frame_capture = (
+            config
+            if isinstance(config, IntermediateFrameCaptureConfig)
+            else IntermediateFrameCaptureConfig.from_mapping(config)
+        )
+        return self
+
+    def with_intermediate_frame_visualizers(
+        self,
+        visualizers: Iterable[IVisualizer],
+    ) -> FluentPipelineBuilder:
+        """Replace visualizers dedicated to intermediate frame collections."""
+        self._intermediate_frame_visualizers = list(visualizers)
+        return self
+
+    def add_intermediate_frame_visualizer(self, visualizer: IVisualizer) -> FluentPipelineBuilder:
+        """Add a visualizer dedicated to intermediate frame collections."""
+        self._intermediate_frame_visualizers.append(visualizer)
+        return self
+
     # ── Context helper ──────────────────────────────────────────────────────
 
     def build_context(self) -> PipelineContext:
@@ -100,4 +128,6 @@ class FluentPipelineBuilder:
             analyzers=list(self._analyzers),
             visualizers=list(self._visualizers),
             visualizer_bindings=list(self._visualizer_bindings),
+            intermediate_frame_capture=self._intermediate_frame_capture,
+            intermediate_frame_visualizers=list(self._intermediate_frame_visualizers),
         )
