@@ -22,7 +22,7 @@ class OpenCVInpaintingFrameCleaner(IFrameCleaner):
         self,
         mask: np.ndarray,
         radius: float = 3.0, # radius of the context of the video around the mask that uses for inpainting
-        method: int = cv2.INPAINT_NS, #INPAINT_TELEA or INPAINT_NS (Navier-Stroke based)
+        method: int = 0, #INPAINT_TELEA (0) or INPAINT_NS (1) (Navier-Stroke based)
         config: dict[str, Any] | None = None,
     ):
         super().__init__(config)
@@ -37,7 +37,10 @@ class OpenCVInpaintingFrameCleaner(IFrameCleaner):
 
         self.mask = mask.astype(np.uint8)
         self.radius = radius
-        self.method = method
+        match method:
+            case 0: self.method = cv2.INPAINT_TELEA
+            case 1: self.method = cv2.INPAINT_NS
+            case _: self.method = cv2.INPAINT_TELEA
 
     def clean(self, frame: Frame) -> Frame:
         image = frame.frame

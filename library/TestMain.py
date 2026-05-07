@@ -16,9 +16,18 @@ from library.core.enum.FrameRotation import FrameRotation
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+from library.core.utils.OpenCVMaskSelector import OpenCVMaskSelector
 from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.core.visualization.VisualArtifact import ImageArtifact, VideoArtifact
+from library.frame_cleaners.ColorStabilizationFrameCleaner import ColorStabilizationFrameCleaner
+from library.frame_cleaners.OpenCVBackgroundReplacementFrameCleaner import OpenCVBackgroundReplacementFrameCleaner
+from library.frame_cleaners.OpenCVBackgroundSubtractionFrameCleaner import OpenCVBackgroundSubtractionFrameCleaner
+from library.frame_cleaners.OpenCVDynamicBackgroundReplacementFrameCleaner import \
+    OpenCVDynamicBackgroundReplacementFrameCleaner
+from library.frame_cleaners.OpenCVDynamicInpaintFrameCleaner import OpenCVDynamicInpaintFrameCleaner
+from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
 from library.frame_cleaners.OpenCVHistogramEqualizationFrameCleaner import OpenCVHistogramEqualizationFrameCleaner
+from library.frame_cleaners.OpenCVInpaintFrameCleaner import OpenCVInpaintingFrameCleaner
 from library.frame_cleaners.OpenCVResizeFrameCleaner import OpenCVResizeFrameCleaner
 from library.frame_cleaners.OpenCVRotateFrameCleaner import OpenCVRotateFrameCleaner
 from library.frame_cleaners.OpenCVZoomFrameCleaner import OpenCVZoomFrameCleaner
@@ -31,31 +40,42 @@ from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoM
 from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
 
-def build_fluent_context(video_path, zoom_box, start_box, start_boxes) -> PipelineContext:
+def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize, mask, BGimage) -> PipelineContext:
     return (
         FluentPipelineBuilder()
         .with_frame_extractor(
             OpenCVBufferedFrameExtractor(
                 video_path,
                 config={
-                    "max_frames": 120  # (180 Frame)/(24 FPS) = 5 secondi
+                    "max_frames": 360  # (180 Frame)/(24 FPS) = 5 secondi
                 },
             )
         )
         .add_frame_cleaner(OpenCVRotateFrameCleaner(rotation=FrameRotation.ROTATE_90))
-        .add_frame_cleaner(OpenCVResizeFrameCleaner())
-        .add_frame_cleaner(OpenCVZoomFrameCleaner(zoom_box))
-        .add_frame_cleaner(OpenCVHistogramEqualizationFrameCleaner())
+        .add_frame_cleaner(OpenCVResizeFrameCleaner(resize))
+        #.add_frame_cleaner(ColorStabilizationFrameCleaner())
+        #.add_frame_cleaner(OpenCVZoomFrameCleaner(zoom_box))
+        #.add_frame_cleaner(OpenCVDynamicBackgroundReplacementFrameCleaner(BGimage, mask, resize))
+        .add_frame_cleaner(OpenCVDynamicInpaintFrameCleaner(mask))
+        #.add_frame_cleaner(OpenCVHistogramEqualizationFrameCleaner())
+        #.add_frame_cleaner(OpenCVBackgroundSubtractionFrameCleaner())
+
         .with_signal_extractor(
-            OpenCVBufferedSignalExtractor(
+            # SAMSingleFigureSignalExtractor(
+            #     start_box=start_box,
+            # )
+                OpenCVBufferedSignalExtractor(
                 start_box=start_box,
                 live_analyzer=LiveVerticalPositionAnalyzer(),
                 config={
-                    "show": True,
-                    "show_graph": True,
+                "show": True,
+                "show_graph": True
                 },
             )
         )
+
+
+
         .with_analyzers([VerticalPositionAnalyzer()])
         .add_visualizer_for_results(MatplotlibFunctionVisualizer(), [0])
         .build_context()
@@ -68,6 +88,8 @@ def main():
     BASE_DIR = Path(__file__).resolve().parent
     video_path = BASE_DIR.parent / "videos" / "Tower.mp4"
 
+    background_image_path =  BASE_DIR.parent / "images" / "Tower_without_people.png"
+
     resize = (800, 600)
     rotation = FrameRotation.ROTATE_90
 
@@ -76,9 +98,12 @@ def main():
         str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize)]
     )
 
+    mask = None
+    mask = OpenCVMaskSelector().select_mask(str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize)])# OpenCVZoomFrameCleaner(zoom_box)])
+
     start_box = None
     start_box = OpenCVStartBoxSelector().select_start(
-        str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize), OpenCVZoomFrameCleaner(zoom_box)]
+        str(video_path), frame_cleaners=[OpenCVRotateFrameCleaner(rotation), OpenCVResizeFrameCleaner(resize)] # OpenCVZoomFrameCleaner(zoom_box)]
     )
     # number_of_boxes = int(input("How many boxes would you like?: "))
     start_boxes = None
@@ -87,7 +112,7 @@ def main():
     orchestrator = PipelineOrchestrator()
     try:
         outputs = orchestrator.run(
-            build_fluent_context(video_path, start_box, start_boxes, resize),
+            build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize, mask, background_image_path),
             pipeline_id="2",
         )
     finally:
