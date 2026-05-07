@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Any
+from typing import Any, Union
 
 import cv2
 import numpy as np
@@ -26,7 +26,7 @@ class ColorSpace(StrEnum):
     YCRCB = "YCrCb"
 
     @classmethod
-    def from_value(cls, value: str | "ColorSpace") -> "ColorSpace":
+    def from_value(cls, value: Union[str, "ColorSpace"]) -> "ColorSpace":
         normalized = str(value).strip().replace("_", "").replace("-", "").upper()
         aliases = {
             "RGB": cls.RGB,
@@ -51,7 +51,7 @@ class StabilizationTechnique(StrEnum):
     GAMMA_CORRECTION = "gamma_correction"
 
     @classmethod
-    def from_value(cls, value: str | "StabilizationTechnique") -> "StabilizationTechnique":
+    def from_value(cls, value: Union[str, "StabilizationTechnique"]) -> "StabilizationTechnique":
         normalized = str(value).strip().replace("-", "_").lower()
         aliases = {
             "histogram": cls.HISTOGRAM_NORMALIZATION,

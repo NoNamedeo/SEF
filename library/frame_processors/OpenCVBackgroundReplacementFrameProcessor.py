@@ -9,7 +9,7 @@ from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
 
 
-class OpenCVBackgroundReplacementFrameCleaner(ISingleFrameProcessor):
+class OpenCVBackgroundReplacementFrameProcessor(ISingleFrameProcessor):
     """
     Replaces masked regions of the frame using a clean background image.
 

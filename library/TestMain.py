@@ -16,10 +16,12 @@ from library.core.enum.FrameRotation import FrameRotation
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.utils.OpenCVMaskSelector import OpenCVMaskSelector
 from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.core.visualization.VisualArtifact import ImageArtifact, VideoArtifact
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from library.frame_processors.OpenCVBackgroundReplacementFrameProcessor import OpenCVBackgroundReplacementFrameProcessor
 from library.frame_processors.OpenCVInpaintFrameProcessor import OpenCVInpaintFrameProcessor
 from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
 from library.frame_processors.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
@@ -42,14 +44,14 @@ def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize, m
                 },
             )
         )
-        .add_frame_cleaner(OpenCVRotateFrameProcessor(rotation=FrameRotation.ROTATE_90))
-        .add_frame_cleaner(OpenCVResizeFrameProcessor(resize))
-        #.add_frame_cleaner(ColorStabilizationFrameCleaner())
-        #.add_frame_cleaner(OpenCVZoomFrameCleaner(zoom_box))
-        #.add_frame_cleaner(OpenCVDynamicBackgroundReplacementFrameCleaner(BGimage, mask, resize))
-        .add_frame_cleaner(OpenCVInpaintFrameProcessor(mask))
-        #.add_frame_cleaner(OpenCVHistogramEqualizationFrameCleaner())
-        #.add_frame_cleaner(OpenCVBackgroundSubtractionFrameCleaner())
+        .add_frame_processor(SingleFrameProcessorAdapter(OpenCVRotateFrameProcessor(rotation=FrameRotation.ROTATE_90)))
+        .add_frame_processor(SingleFrameProcessorAdapter(OpenCVResizeFrameProcessor(resize)))
+        #.add_frame_processor(SingleFrameProcessorAdapter(ColorStabilizationFrameCleaner()))
+        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVZoomFrameCleaner(zoom_box)))
+        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVDynamicBackgroundReplacementFrameCleaner(BGimage, mask, resize)))
+        .add_frame_processor(SingleFrameProcessorAdapter(OpenCVBackgroundReplacementFrameProcessor(BGimage, mask, resize)))
+        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVHistogramEqualizationFrameCleaner()))
+        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVBackgroundSubtractionFrameCleaner()))
 
         .with_signal_extractor(
                 OpenCVBufferedSignalExtractor(
