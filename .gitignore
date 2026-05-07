@@ -27,7 +27,9 @@ videos/
 external/
 
 # Models
-models/.DS_Store
+models/
+
+.DS_Store
 __pycache__/
 *.pyc
 .venv/

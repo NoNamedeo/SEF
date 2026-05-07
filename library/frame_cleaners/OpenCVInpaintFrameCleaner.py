@@ -1,0 +1,72 @@
+from __future__ import annotations
+
+from typing import Any
+
+import cv2
+import numpy as np
+
+from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.artifacts.Frame import Frame
+
+
+class OpenCVInpaintingFrameCleaner(IFrameCleaner):
+    """
+    Removes/inpaints regions of the frame specified by a mask.
+
+    Mask convention:
+        0   -> keep pixel
+        255 -> inpaint pixel
+    """
+
+    def __init__(
+        self,
+        mask: np.ndarray,
+        radius: float = 3.0, # radius of the context of the video around the mask that uses for inpainting
+        method: int = cv2.INPAINT_NS, #INPAINT_TELEA or INPAINT_NS (Navier-Stroke based)
+        config: dict[str, Any] | None = None,
+    ):
+        super().__init__(config)
+
+        if mask is None:
+            raise ValueError("Mask cannot be None.")
+
+        if len(mask.shape) != 2:
+            raise ValueError(
+                "Mask must be a single-channel grayscale image."
+            )
+
+        self.mask = mask.astype(np.uint8)
+        self.radius = radius
+        self.method = method
+
+    def clean(self, frame: Frame) -> Frame:
+        image = frame.frame
+
+        if image.shape[:2] != self.mask.shape[:2]:
+            raise ValueError(
+                "Image and mask dimensions do not match."
+            )
+
+        #inpainting
+        cleaned = cv2.inpaint(
+            src=image,
+            inpaintMask=self.mask,
+            inpaintRadius=self.radius,
+            flags=self.method,
+        )
+
+        return Frame(
+            image=cleaned,
+            index=frame.index,
+            timestamp_seconds=frame.timestamp_seconds,
+            metadata={
+                **dict(frame.metadata),
+                "inpaint_radius": self.radius,
+                "inpaint_method": (
+                    "TELEA"
+                    if self.method == cv2.INPAINT_TELEA
+                    else "NS"
+                ),
+                "inpaint_mask_mean": float(np.mean(self.mask)),
+            },
+        )
