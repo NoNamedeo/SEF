@@ -40,7 +40,7 @@ def initialise_builder_state(registry) -> None:
     selected_stage = st.query_params.get("stage", AnalysisStageKey.FRAME_EXTRACTOR.value)
     defaults = {
         "sef_builder_frame_extractor": first_plugin_name(registry, PluginCategory.FRAME_EXTRACTOR),
-        "sef_builder_frame_cleaners": ["smoothing"],
+        "sef_builder_frame_processors": ["smoothing"],
         "sef_builder_signal_extractor": "opencv_tracker",
         "sef_builder_signal_cleaners": ["moving_average"],
         "sef_builder_analyzers": ["vertical_position"],
@@ -82,7 +82,7 @@ def builder_state() -> BuilderStateSnapshot:
     return BuilderStateSnapshot(
         mode=str(st.session_state.get("sef_builder_mode", "Single object tracking")),
         frame_extractor=str(st.session_state.get("sef_builder_frame_extractor", "")),
-        frame_cleaners=tuple(st.session_state.get("sef_builder_frame_cleaners", [])),
+        frame_processors=tuple(st.session_state.get("sef_builder_frame_processors", [])),
         signal_extractor=str(st.session_state.get("sef_builder_signal_extractor", "opencv_tracker")),
         signal_cleaners=tuple(st.session_state.get("sef_builder_signal_cleaners", [])),
         analyzers=tuple(st.session_state.get("sef_builder_analyzers", [])),
@@ -178,7 +178,7 @@ def recommended_frame_extractors() -> set[str]:
     return {"opencv_buffered"}
 
 
-def recommended_frame_cleaners() -> set[str]:
+def recommended_frame_processors() -> set[str]:
     extractor = selected_signal_extractor()
     if extractor in {"opencv_tracker", "opencv_multi_tracker"}:
         return {"smoothing"}
@@ -261,11 +261,11 @@ def analyzer_options_for_current_signal(registry) -> list[str]:
     return ordered_stage_options(names, recommended_analyzers_for_current_signal())
 
 
-def frame_cleaner_options_for_current_signal(registry) -> list[str]:
-    """Return frame cleaner options ordered by recommendation relevance."""
+def single_frame_processor_options_for_current_signal(registry) -> list[str]:
+    """Return frame processor options ordered by recommendation relevance."""
     return ordered_stage_options(
-        plugin_names(registry, PluginCategory.FRAME_CLEANER),
-        recommended_frame_cleaners(),
+        plugin_names(registry, PluginCategory.SINGLE_FRAME_PROCESSOR),
+        recommended_frame_processors(),
     )
 
 
@@ -342,7 +342,7 @@ def build_pipeline_configuration_from_state() -> PipelineConfiguration:
             },
         ),
         signal_extractor=_build_signal_extractor_config(state, roi, video_path),
-        frame_cleaners=_build_frame_cleaner_configs(state),
+        frame_processors=_build_single_frame_processor_configs(state),
         signal_cleaners=_build_signal_cleaner_configs(state),
         analyzers=_build_analyzer_configs(state, barriers),
         visualizers=_build_visualizer_configs(state),
@@ -375,7 +375,7 @@ def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
 
     extractor_name = str(signal_extractor.get("name", ""))
     selected_analyzers = {str(item.get("name", "")) for item in pipeline.get("analyzers", [])}
-    selected_frame_cleaners = {str(item.get("name", "")) for item in pipeline.get("frame_cleaners", [])}
+    selected_frame_processors = {str(item.get("name", "")) for item in pipeline.get("frame_processors", [])}
 
     if extractor_name in {"opencv_tracker", "opencv_multi_tracker"}:
         roi = signal_extractor_params.get("start_box") or session.get(session.ROI_BOX)
@@ -408,7 +408,7 @@ def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
         elif not isinstance(barrier_state, BarrierSelectionState) or not barrier_state.complete:
             issues.append("Disegna tutte le barriere richieste per il conteggio multi-oggetto.")
 
-    if extractor_name in {"opencv_multi_tracker", "dense_optical_flow"} and "opencv_gray" in selected_frame_cleaners:
+    if extractor_name in {"opencv_multi_tracker", "dense_optical_flow"} and "opencv_gray" in selected_frame_processors:
         issues.append("Rimuovi opencv_gray: questo extractor richiede frame BGR.")
 
     if not pipeline.get("analyzers"):
@@ -439,7 +439,7 @@ def apply_tracking_components() -> None:
     st.session_state["sef_builder_signal_extractor"] = "opencv_tracker"
     st.session_state["sef_builder_signal_cleaners"] = ["moving_average"]
     st.session_state["sef_builder_analyzers"] = ["vertical_position", "vertical_velocity"]
-    st.session_state["sef_builder_frame_cleaners"] = ["smoothing"]
+    st.session_state["sef_builder_frame_processors"] = ["smoothing"]
 
 
 def apply_multi_object_preset() -> None:
@@ -451,7 +451,7 @@ def apply_multi_object_components() -> None:
     st.session_state["sef_builder_signal_extractor"] = "opencv_multi_tracker"
     st.session_state["sef_builder_signal_cleaners"] = []
     st.session_state["sef_builder_analyzers"] = ["barrier_counting"]
-    st.session_state["sef_builder_frame_cleaners"] = ["smoothing"]
+    st.session_state["sef_builder_frame_processors"] = ["smoothing"]
 
 
 def apply_dense_flow_preset() -> None:
@@ -463,7 +463,7 @@ def apply_dense_flow_components() -> None:
     st.session_state["sef_builder_signal_extractor"] = "dense_optical_flow"
     st.session_state["sef_builder_signal_cleaners"] = []
     st.session_state["sef_builder_analyzers"] = ["dense_vector_field"]
-    st.session_state["sef_builder_frame_cleaners"] = []
+    st.session_state["sef_builder_frame_processors"] = []
 
 
 def apply_aruco_preset() -> None:
@@ -475,7 +475,7 @@ def apply_aruco_components() -> None:
     st.session_state["sef_builder_signal_extractor"] = "aruco_marker"
     st.session_state["sef_builder_signal_cleaners"] = ["aruco_temporal_stabilizer"]
     st.session_state["sef_builder_analyzers"] = ["aruco_displacement"]
-    st.session_state["sef_builder_frame_cleaners"] = []
+    st.session_state["sef_builder_frame_processors"] = []
     st.session_state["sef_builder_visualizers"] = ["aruco_motion_plot", "aruco_annotated_video"]
     # ArUco runs can otherwise explode RAM by buffering full-resolution videos.
     st.session_state["sef_builder_resize"] = "640x480"
@@ -484,9 +484,9 @@ def apply_aruco_components() -> None:
     st.session_state["sef_builder_max_frames"] = 180
 
 
-def _build_frame_cleaner_configs(state: BuilderStateSnapshot) -> tuple[PluginConfig, ...]:
+def _build_single_frame_processor_configs(state: BuilderStateSnapshot) -> tuple[PluginConfig, ...]:
     configs: list[PluginConfig] = []
-    for name in state.frame_cleaners:
+    for name in state.frame_processors:
         if name == "opencv_resize" and state.resize is not None:
             configs.append(PluginConfig(name=name, params={"size": state.resize}))
         elif name == "smoothing":

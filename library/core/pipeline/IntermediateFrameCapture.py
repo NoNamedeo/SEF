@@ -21,7 +21,7 @@ class IntermediateFrameCaptureConfig:
 
     Capture is opt-in. When enabled, the stage samples processed source frames
     and stores at most ``max_stored_frames`` source frame indexes. Each sampled
-    frame may contain one artifact per cleaner stage.
+    frame may contain one artifact per single-frame processing stage.
     """
 
     enabled: bool = False
@@ -108,33 +108,33 @@ class IntermediateFrameCaptureConfig:
 
 @dataclass(frozen=True, slots=True)
 class IntermediateFrameCaptureContext:
-    """Context passed to optional cleaner-specific intermediate artifact emitters."""
+    """Context passed to optional single-frame processor artifact emitters."""
 
     source_sequence_index: int
     frame_index: int | None
-    cleaner_index: int
-    cleaner_name: str
+    single_frame_processor_index: int
+    single_frame_processor_name: str
     stage_name: str
     timestamp_seconds: float | None
-    cleaner_config: Mapping[str, Any]
+    single_frame_processor_config: Mapping[str, Any]
 
 
 class IntermediateFrameEmitter(Protocol):
     """
-    Optional protocol for frame cleaners that emit custom debug artifacts.
+    Optional protocol for single-frame processors that emit custom debug artifacts.
 
-    A cleaner may implement this method to attach masks, overlays, or custom
-    metadata. Cleaners that do not implement it still get default before/after
-    snapshots from ``FrameCleaningStage`` when capture is enabled.
+    A processor may implement this method to attach masks, overlays, or custom
+    metadata. Processors that do not implement it still get default before/after
+    snapshots from ``FrameProcessingStage`` when capture is enabled.
     """
 
     def emit_intermediate_artifacts(
         self,
         original_frame: Frame,
-        cleaned_frame: Frame,
+        processed_frame: Frame,
         context: IntermediateFrameCaptureContext,
     ) -> Iterable[IntermediateFrameArtifact]:
-        """Return zero or more artifacts for a single cleaner application."""
+        """Return zero or more artifacts for a single processor application."""
 
 
 class IntermediateFrameArtifactStore:
@@ -174,6 +174,14 @@ class IntermediateFrameArtifactStore:
             return
 
         if source_sequence_index not in self._artifacts_by_sequence:
+            # Multi-pass frame processors can revisit earlier source indexes;
+            # keep the bounded window focused on the newest sampled frames.
+            if (
+                len(self._artifacts_by_sequence) >= self._config.max_stored_frames
+                and self._artifacts_by_sequence
+                and source_sequence_index < next(iter(self._artifacts_by_sequence))
+            ):
+                return
             self._artifacts_by_sequence[source_sequence_index] = []
             self._artifacts_by_sequence.move_to_end(source_sequence_index)
             while len(self._artifacts_by_sequence) > self._config.max_stored_frames:

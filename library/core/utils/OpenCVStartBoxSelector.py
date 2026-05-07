@@ -2,7 +2,7 @@ import cv2
 from typing import Any, Tuple
 
 from library.core.artifacts.Frame import Frame
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 
 
 class OpenCVStartBoxSelector:
@@ -16,7 +16,7 @@ class OpenCVStartBoxSelector:
         video_path: str,
         resize: Tuple[int, int] | None = None,
         apply_preprocessing: bool = True,
-        frame_cleaners: list[IFrameCleaner] | None = None,
+        single_frame_processors: list[ISingleFrameProcessor] | None = None,
     ) -> Tuple[int, int, int, int]:
 
         cap = cv2.VideoCapture(video_path)
@@ -32,7 +32,7 @@ class OpenCVStartBoxSelector:
             if resize is not None:
                 frame = cv2.resize(frame, resize)
 
-            if apply_preprocessing and frame_cleaners:
+            if apply_preprocessing and single_frame_processors:
                 temp_frame = Frame(
                     image=frame,
                     index=0,
@@ -40,8 +40,8 @@ class OpenCVStartBoxSelector:
                     metadata={}
                 )
 
-                for cleaner in frame_cleaners:
-                    temp_frame = cleaner.clean(temp_frame)
+                for processor in single_frame_processors:
+                    temp_frame = processor.process(temp_frame)
 
                 frame = temp_frame.frame
 

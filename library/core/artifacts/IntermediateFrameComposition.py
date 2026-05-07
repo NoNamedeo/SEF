@@ -50,7 +50,7 @@ def compose_intermediate_frame_comparison(
 
     panels.append(
         FrameComparisonPanel(
-            image=artifact.cleaned_frame,
+            image=artifact.processed_frame,
             label=artifact.stage_name,
             color_space=artifact.color_space,
         )
@@ -60,7 +60,7 @@ def compose_intermediate_frame_comparison(
         for mask in artifact.masks:
             panels.append(
                 FrameComparisonPanel(
-                    image=apply_mask_overlay(artifact.cleaned_frame, mask),
+                    image=apply_mask_overlay(artifact.processed_frame, mask),
                     label=mask.label or "Mask overlay",
                 )
             )
@@ -70,7 +70,7 @@ def compose_intermediate_frame_comparison(
             panels.append(
                 FrameComparisonPanel(
                     image=blend_overlay(
-                        artifact.cleaned_frame,
+                        artifact.processed_frame,
                         overlay.image,
                         overlay_alpha=overlay.alpha,
                         base_color_space=artifact.color_space,

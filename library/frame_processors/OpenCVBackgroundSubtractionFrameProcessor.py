@@ -5,11 +5,11 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
 
 
-class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
+class OpenCVBackgroundSubtractionFrameProcessor(ISingleFrameProcessor):
     """
     Applies background subtraction to isolate moving objects.
     """
@@ -34,7 +34,7 @@ class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
         else:
             raise ValueError(f"Unsupported method: {self.method}")
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         image = frame.frame
 
         # restituisce una maschera che distingue i movimenti (foreground, valore 255) dallo
@@ -48,10 +48,10 @@ class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
         # espansione del foreground
         fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_DILATE, kernel)
 
-        cleaned = cv2.bitwise_and(image, image, mask=fg_mask)
+        processed = cv2.bitwise_and(image, image, mask=fg_mask)
 
         return Frame(
-            image=cleaned,
+            image=processed,
             index=frame.index,
             timestamp_seconds=frame.timestamp_seconds,
             metadata={

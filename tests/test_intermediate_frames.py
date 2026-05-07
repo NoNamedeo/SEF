@@ -16,7 +16,7 @@ from library.core.artifacts.MaskArtifacts import (
 from library.core.artifacts.Signal import Signal
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
@@ -24,6 +24,7 @@ from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureContext
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from library.core.visualization.VisualArtifact import ImageArtifact
 from library.visualizers.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
@@ -56,7 +57,7 @@ class StaticFrameExtractor(IFrameExtractor):
 
 
 class PassthroughSignalExtractor(ISignalExtractor):
-    """Signal extractor that consumes the cleaned buffer and records frame means."""
+    """Signal extractor that consumes the processed buffer and records frame means."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -75,14 +76,14 @@ class ConstantAnalyzer(IAnalyzer):
         return DebugResult()
 
 
-class AddValueCleaner(IFrameCleaner):
-    """Cleaner that adds a constant value to every pixel."""
+class AddValueProcessor(ISingleFrameProcessor):
+    """Processor that adds a constant value to every pixel."""
 
     def __init__(self, value: int, config: dict[str, Any] | None = None) -> None:
         super().__init__(config)
         self._value = value
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         return Frame(
             image=np.clip(frame.image + self._value, 0, 255).astype(np.uint8),
             index=frame.index,
@@ -91,22 +92,22 @@ class AddValueCleaner(IFrameCleaner):
         )
 
 
-class MaskEmittingCleaner(AddValueCleaner):
-    """Cleaner that emits custom masks and overlays through the optional protocol."""
+class MaskEmittingProcessor(AddValueProcessor):
+    """Processor that emits custom masks and overlays through the optional protocol."""
 
     def emit_intermediate_artifacts(
         self,
         original_frame: Frame,
-        cleaned_frame: Frame,
+        processed_frame: Frame,
         context: IntermediateFrameCaptureContext,
     ):
-        mask = np.zeros(cleaned_frame.image.shape[:2], dtype=np.bool_)
+        mask = np.zeros(processed_frame.image.shape[:2], dtype=np.bool_)
         mask[:2, :2] = True
-        overlay = np.zeros_like(cleaned_frame.image)
+        overlay = np.zeros_like(processed_frame.image)
         overlay[:, :, 1] = 255
         return (
             IntermediateFrameArtifact(
-                image=cleaned_frame.image,
+                image=processed_frame.image,
                 stage_name=context.stage_name,
                 frame_index=context.frame_index,
                 timestamp_seconds=context.timestamp_seconds,
@@ -114,8 +115,8 @@ class MaskEmittingCleaner(AddValueCleaner):
                 masks=(FrameMaskArtifact(mask=mask, label="top-left"),),
                 overlays=(IntermediateFrameOverlay(image=overlay, label="green-overlay", alpha=0.25),),
                 stage_metadata={"custom_emitter": True},
-                metadata={"cleaner_name": context.cleaner_name},
-                config=context.cleaner_config,
+                metadata={"single_frame_processor_name": context.single_frame_processor_name},
+                config=context.single_frame_processor_config,
             ),
         )
 
@@ -125,7 +126,7 @@ def test_pipeline_emits_intermediate_frame_artifacts_with_original_and_custom_de
     context = (
         FluentPipelineBuilder()
         .with_frame_extractor(StaticFrameExtractor(frame_count=3))
-        .with_frame_cleaners([MaskEmittingCleaner(10, config={"debug": True})])
+        .with_frame_processors([SingleFrameProcessorAdapter(MaskEmittingProcessor(10, config={"debug": True}))])
         .with_signal_extractor(signal_extractor)
         .add_analyzer(ConstantAnalyzer())
         .with_intermediate_frame_capture(
@@ -144,21 +145,21 @@ def test_pipeline_emits_intermediate_frame_artifacts_with_original_and_custom_de
     assert len(outputs.results) == 1
     assert outputs.intermediate_frames.count == 3
     first = outputs.intermediate_frames.artifacts[0]
-    assert first.stage_name.endswith("MaskEmittingCleaner")
+    assert first.stage_name.endswith("MaskEmittingProcessor")
     assert first.original_frame is not None
     assert first.original_frame.flags.writeable is False
-    assert first.cleaned_frame[0, 0, 0] == 10
+    assert first.processed_frame[0, 0, 0] == 10
     assert len(first.masks) == 1
     assert len(first.overlays) == 1
     assert first.stage_metadata["custom_emitter"] is True
     assert signal_extractor.frame_means == [10.0, 11.0, 12.0]
 
 
-def test_intermediate_frame_visualizers_render_multiple_cleaner_stages() -> None:
+def test_intermediate_frame_visualizers_render_multiple_processor_stages() -> None:
     context = (
         FluentPipelineBuilder()
         .with_frame_extractor(StaticFrameExtractor(frame_count=2))
-        .with_frame_cleaners([AddValueCleaner(2), AddValueCleaner(3)])
+        .with_frame_processors([SingleFrameProcessorAdapter(AddValueProcessor(2)), SingleFrameProcessorAdapter(AddValueProcessor(3))])
         .with_signal_extractor(PassthroughSignalExtractor())
         .add_analyzer(ConstantAnalyzer())
         .with_intermediate_frame_capture({"enabled": True, "sampling_interval": 1, "max_stored_frames": 10})
@@ -192,7 +193,7 @@ def test_intermediate_frame_capture_respects_sampling_and_max_stored_frames(tmp_
     context = (
         FluentPipelineBuilder()
         .with_frame_extractor(StaticFrameExtractor(frame_count=6))
-        .with_frame_cleaners([AddValueCleaner(1), AddValueCleaner(2)])
+        .with_frame_processors([SingleFrameProcessorAdapter(AddValueProcessor(1)), SingleFrameProcessorAdapter(AddValueProcessor(2))])
         .with_signal_extractor(PassthroughSignalExtractor())
         .add_analyzer(ConstantAnalyzer())
         .with_intermediate_frame_capture(
@@ -225,7 +226,7 @@ def test_intermediate_frame_capture_respects_sampling_and_max_stored_frames(tmp_
 def test_config_builder_parses_intermediate_frame_capture_and_visualizers(tmp_path: Path) -> None:
     registry = PluginRegistry()
     registry.register(PluginCategory.FRAME_EXTRACTOR, "static", lambda: StaticFrameExtractor(frame_count=1))
-    registry.register(PluginCategory.FRAME_CLEANER, "add", lambda value: AddValueCleaner(value))
+    registry.register(PluginCategory.SINGLE_FRAME_PROCESSOR, "add", lambda value: AddValueProcessor(value))
     registry.register(PluginCategory.SIGNAL_EXTRACTOR, "passthrough", PassthroughSignalExtractor)
     registry.register(PluginCategory.ANALYZER, "constant", ConstantAnalyzer)
     registry.register(PluginCategory.VISUALIZER, "debug_grid", IntermediateFramesGridVisualizer)
@@ -234,7 +235,7 @@ def test_config_builder_parses_intermediate_frame_capture_and_visualizers(tmp_pa
         {
             "pipeline": {
                 "frame_extractor": {"name": "static"},
-                "frame_cleaners": [{"name": "add", "params": {"value": 5}}],
+                "frame_processors": [{"name": "add", "params": {"value": 5}}],
                 "signal_extractor": {"name": "passthrough"},
                 "analyzers": [{"name": "constant"}],
                 "intermediate_frames": {
@@ -243,7 +244,7 @@ def test_config_builder_parses_intermediate_frame_capture_and_visualizers(tmp_pa
                     "max_stored_frames": 3,
                     "export_directory": str(tmp_path),
                     "lazy_saving": True,
-                    "visualizers": [{"name": "debug_grid", "params": {"columns": 1}}],
+                    "visualizers": [{"name": "debug_grid", "params": {"config": {"columns": 1}}}],
                 },
             }
         }

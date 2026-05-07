@@ -5,11 +5,11 @@ from typing import Any
 import cv2
 
 from library.core.enum.FrameRotation import FrameRotation
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
 
 
-class OpenCVRotateFrameCleaner(IFrameCleaner):
+class OpenCVRotateFrameProcessor(ISingleFrameProcessor):
     """
     Rotates a frame by 90, 180, or 270 degrees.
 
@@ -27,7 +27,7 @@ class OpenCVRotateFrameCleaner(IFrameCleaner):
         super().__init__(config)
         self.rotation = rotation
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         image = frame.frame
 
         match self.rotation:

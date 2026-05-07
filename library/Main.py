@@ -27,7 +27,7 @@ from library.core.events.PipelineLifecycleEvent import PipelineLifecycleEvent
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IEventEmitter import IEventEmitter
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
@@ -36,6 +36,7 @@ from library.core.interfaces.IVisualizer import IVisualizer
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
@@ -43,10 +44,10 @@ from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.core.visualization.VisualArtifact import TextArtifact, VisualArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
-from library.frame_cleaners.OpenCVBackgroundSubtractionFrameCleaner import OpenCVBackgroundSubtractionFrameCleaner
-from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
-from library.frame_cleaners.OpenCVResizeFrameCleaner import OpenCVResizeFrameCleaner
-from library.frame_cleaners.SmoothingFrameCleaner import SmoothingFrameCleaner
+from library.frame_processors.OpenCVBackgroundSubtractionFrameProcessor import OpenCVBackgroundSubtractionFrameProcessor
+from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
+from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
+from library.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
@@ -77,11 +78,11 @@ class SyntheticFrameExtractor(IFrameExtractor):
         return buffer
 
 
-class MetadataFrameCleaner(IFrameCleaner):
-    """Example frame-cleaning stage: returns frames with extra metadata."""
+class MetadataFrameProcessor(ISingleFrameProcessor):
+    """Example single-frame processor: returns frames with extra metadata."""
 
-    def clean(self, frame: Frame) -> Frame:
-        metadata = {**frame.metadata, "cleaned": True}
+    def process(self, frame: Frame) -> Frame:
+        metadata = {**frame.metadata, "processed": True}
         return Frame(
             image=frame.image,
             index=frame.index,
@@ -195,7 +196,7 @@ class SyntheticVideoTracker:
     Deterministic tracker used by the realistic example.
 
     It keeps the example stable across machines while still exercising the
-    real OpenCV frame extraction, frame-cleaning, signal-cleaning and analyzer
+    real OpenCV frame extraction, frame processing, signal cleaning and analyzer
     pipeline.
     """
 
@@ -261,7 +262,7 @@ def build_direct_context() -> PipelineContext:
     """Direct construction: fastest way when dependencies are already objects."""
     return PipelineContext(
         frame_extractor=SyntheticFrameExtractor(count=4),
-        frame_cleaners=[MetadataFrameCleaner()],
+        frame_processors=[SingleFrameProcessorAdapter(MetadataFrameProcessor())],
         signal_extractor=SyntheticSignalExtractor(),
         signal_cleaners=[ScaleSignalCleaner(factor=1.5)],
         analyzers=[PositionAnalyzer()],
@@ -273,7 +274,7 @@ def build_fluent_context() -> PipelineContext:
     return (
         FluentPipelineBuilder()
         .with_frame_extractor(SyntheticFrameExtractor(count=4))
-        .add_frame_cleaner(MetadataFrameCleaner())
+        .add_frame_processor(SingleFrameProcessorAdapter(MetadataFrameProcessor()))
         .with_signal_extractor(SyntheticSignalExtractor())
         .add_signal_cleaner(ScaleSignalCleaner(factor=2.0))
         .with_analyzers([PositionAnalyzer(), VelocityAnalyzer()])
@@ -286,7 +287,7 @@ def build_example_registry() -> PluginRegistry:
     """Registry used by ConfigPipelineBuilder examples."""
     registry = PluginRegistry()
     registry.register(PluginCategory.FRAME_EXTRACTOR, "synthetic_frames", SyntheticFrameExtractor)
-    registry.register(PluginCategory.FRAME_CLEANER, "metadata_cleaner", MetadataFrameCleaner)
+    registry.register(PluginCategory.SINGLE_FRAME_PROCESSOR, "metadata_processor", MetadataFrameProcessor)
     registry.register(PluginCategory.SIGNAL_EXTRACTOR, "synthetic_signal", SyntheticSignalExtractor)
     registry.register(PluginCategory.SIGNAL_CLEANER, "scale_signal", ScaleSignalCleaner)
     registry.register(PluginCategory.ANALYZER, "position", PositionAnalyzer)
@@ -300,7 +301,7 @@ def build_config_context() -> PipelineContext:
     config = {
         "pipeline": {
             "frame_extractor": {"name": "synthetic_frames", "params": {"count": 4}},
-            "frame_cleaners": [{"name": "metadata_cleaner"}],
+            "frame_processors": [{"name": "metadata_processor"}],
             "signal_extractor": {"name": "synthetic_signal"},
             "signal_cleaners": [{"name": "scale_signal", "params": {"factor": 2.0}}],
             "analyzers": [{"name": "position"}, {"name": "velocity"}],
@@ -353,7 +354,7 @@ def create_realistic_demo_video(
         for frame_index in range(frame_count):
             frame = np.zeros((height, width, 3), dtype=np.uint8)
 
-            # Background lanes and static visual noise make cleaners meaningful.
+            # Background lanes and static visual noise make frame processors meaningful.
             cv2.line(frame, (0, 115), (width, 115), (45, 45, 45), 2)
             cv2.line(frame, (0, 145), (width, 145), (35, 35, 35), 2)
             cv2.rectangle(frame, (210, 35), (248, 58), (35, 65, 110), -1)
@@ -468,7 +469,7 @@ def example_sync_run_2() -> None:
     Realistic synchronous run with concrete OpenCV components.
 
     It simulates a heavier application use case: video extraction, multiple
-    frame cleaners, signal extraction, signal smoothing, multiple analyzers
+    frame processors, signal extraction, signal smoothing, multiple analyzers
     and selective visualization, all through the orchestrator facade.
     """
     video_path = Path("videos/castello.mp4")

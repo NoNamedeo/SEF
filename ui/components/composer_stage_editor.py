@@ -9,9 +9,9 @@ from ui.services.pipeline_builder_service import (
     STAGE_EDIT_OPTIONS,
     display_stage_plugin,
     ensure_stage_options,
-    frame_cleaner_options_for_current_signal,
+    single_frame_processor_options_for_current_signal,
     recommended_analyzers_for_current_signal,
-    recommended_frame_cleaners,
+    recommended_frame_processors,
     recommended_frame_extractors,
     recommended_signal_cleaners,
     recommended_signal_extractors,
@@ -52,8 +52,8 @@ def render_stage_parameter_editor(registry) -> None:
     if stage == "frame_extractor":
         _render_frame_extractor_editor(registry, frame_extractor_options)
         return
-    if stage == "frame_cleaners":
-        _render_frame_cleaners_editor(registry)
+    if stage == "frame_processors":
+        _render_frame_processors_editor(registry)
         return
     if stage == "signal_extractor":
         _render_signal_extractor_editor(registry, signal_extractor_options)
@@ -87,15 +87,15 @@ def _render_frame_extractor_editor(registry, frame_extractor_options: list[str])
         st.slider("Max frame", 20, 1200, key="sef_builder_max_frames", step=20)
 
 
-def _render_frame_cleaners_editor(registry) -> None:
+def _render_frame_processors_editor(registry) -> None:
     st.multiselect(
-        "Frame cleaners",
-        frame_cleaner_options_for_current_signal(registry),
-        key="sef_builder_frame_cleaners",
-        format_func=display_stage_plugin(registry, PluginCategory.FRAME_CLEANER, recommended_frame_cleaners()),
+        "Frame processors",
+        single_frame_processor_options_for_current_signal(registry),
+        key="sef_builder_frame_processors",
+        format_func=display_stage_plugin(registry, PluginCategory.SINGLE_FRAME_PROCESSOR, recommended_frame_processors()),
         help="I consigliati compaiono in alto. Le altre opzioni restano selezionabili senza garanzia di compatibilita.",
     )
-    render_frame_cleaner_params()
+    render_single_frame_processor_params()
 
 
 def _render_signal_extractor_editor(registry, signal_extractor_options: list[str]) -> None:
@@ -141,11 +141,11 @@ def _render_visualizers_editor(registry, visualizer_options: list[str]) -> None:
         render_visualizer_target_inputs()
 
 
-def render_frame_cleaner_params() -> None:
-    selected = set(st.session_state["sef_builder_frame_cleaners"])
+def render_single_frame_processor_params() -> None:
+    selected = set(st.session_state["sef_builder_frame_processors"])
     if not selected:
         return
-    with st.expander("Frame cleaner params", expanded=False):
+    with st.expander("Frame processor params", expanded=False):
         if "opencv_resize" in selected:
             st.caption("opencv_resize usa lo stesso resize del frame extractor.")
         if "smoothing" in selected:

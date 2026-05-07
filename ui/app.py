@@ -136,7 +136,7 @@ def render_sidebar(registry) -> None:
         st.markdown("**Componenti disponibili**")
         for category in (
             PluginCategory.FRAME_EXTRACTOR,
-            PluginCategory.FRAME_CLEANER,
+            PluginCategory.SINGLE_FRAME_PROCESSOR,
             PluginCategory.SIGNAL_EXTRACTOR,
             PluginCategory.SIGNAL_CLEANER,
             PluginCategory.ANALYZER,
@@ -390,7 +390,7 @@ def render_registry(registry) -> None:
 
     categories = [
         PluginCategory.FRAME_EXTRACTOR,
-        PluginCategory.FRAME_CLEANER,
+        PluginCategory.SINGLE_FRAME_PROCESSOR,
         PluginCategory.SIGNAL_EXTRACTOR,
         PluginCategory.SIGNAL_CLEANER,
         PluginCategory.ANALYZER,
@@ -444,7 +444,7 @@ def render_config_lab(registry) -> None:
             context = context_from_config(json.loads(raw_config), registry)
             st.success(
                 "Config valida: "
-                f"{len(context.frame_cleaners)} frame cleaner, "
+                f"{len(context.frame_processors)} frame processor, "
                 f"{len(context.signal_cleaners)} signal cleaner, "
                 f"{len(context.analyzers)} analyzer."
             )

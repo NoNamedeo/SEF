@@ -7,8 +7,9 @@ from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 from library.core.events.Event import Event
 from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
 from library.core.pipeline.PipelineContext import PipelineContext
-from library.frame_cleaners.SmoothingFrameCleaner import SmoothingFrameCleaner
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from library.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 
@@ -50,7 +51,7 @@ class NewTrackBranchingRule(IBranchingRule):
         return PipelineContext(
             frame_extractor=frame_extractor,
             signal_extractor=signal_extractor,
-            frame_cleaners=(SmoothingFrameCleaner(),),
+            frame_processors=(SingleFrameProcessorAdapter(SmoothingFrameProcessor()),),
             signal_cleaners=(MovingAverageCleaner(window_size=5),),
             analyzers=(VerticalPositionAnalyzer(),),
         )

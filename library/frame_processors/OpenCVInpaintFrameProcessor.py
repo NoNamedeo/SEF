@@ -5,11 +5,11 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
 
 
-class OpenCVInpaintingFrameCleaner(IFrameCleaner):
+class OpenCVInpaintingFrameProcessor(ISingleFrameProcessor):
     """
     Removes/inpaints regions of the frame specified by a mask.
 
@@ -39,7 +39,7 @@ class OpenCVInpaintingFrameCleaner(IFrameCleaner):
         self.radius = radius
         self.method = method
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         image = frame.frame
 
         if image.shape[:2] != self.mask.shape[:2]:
@@ -47,8 +47,8 @@ class OpenCVInpaintingFrameCleaner(IFrameCleaner):
                 "Image and mask dimensions do not match."
             )
 
-        #inpainting
-        cleaned = cv2.inpaint(
+        # Inpainting keeps the original frame geometry while replacing masked pixels.
+        processed = cv2.inpaint(
             src=image,
             inpaintMask=self.mask,
             inpaintRadius=self.radius,
@@ -56,7 +56,7 @@ class OpenCVInpaintingFrameCleaner(IFrameCleaner):
         )
 
         return Frame(
-            image=cleaned,
+            image=processed,
             index=frame.index,
             timestamp_seconds=frame.timestamp_seconds,
             metadata={

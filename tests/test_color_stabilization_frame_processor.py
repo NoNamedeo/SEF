@@ -6,13 +6,13 @@ import cv2
 import numpy as np
 
 from library.core.artifacts.Frame import Frame
-from library.frame_cleaners.ColorStabilizationFrameCleaner import ColorStabilizationFrameCleaner
+from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
 
 
-class ColorStabilizationFrameCleanerTests(unittest.TestCase):
-    def test_cleaner_reduces_temporal_brightness_variance(self) -> None:
+class ColorStabilizationFrameProcessorTests(unittest.TestCase):
+    def test_processor_reduces_temporal_brightness_variance(self) -> None:
         frames = [Frame(image=image, index=index, timestamp_seconds=index / 30.0) for index, image in enumerate(self._flickering_sequence())]
-        cleaner = ColorStabilizationFrameCleaner(
+        processor = ColorStabilizationFrameProcessor(
             color_space="LAB",
             techniques=(
                 "luminance_normalization",
@@ -29,43 +29,43 @@ class ColorStabilizationFrameCleanerTests(unittest.TestCase):
         )
 
         original_variance = float(np.var([self._mean_luminance(frame.frame) for frame in frames]))
-        cleaned_frames = [cleaner.clean(frame) for frame in frames]
-        cleaned_variance = float(np.var([self._mean_luminance(frame.frame) for frame in cleaned_frames]))
+        processed_frames = [processor.process(frame) for frame in frames]
+        processed_variance = float(np.var([self._mean_luminance(frame.frame) for frame in processed_frames]))
 
-        self.assertLess(cleaned_variance, original_variance * 0.10)
-        self.assertTrue(all(frame.frame.dtype == np.uint8 for frame in cleaned_frames))
-        self.assertTrue(all(frame.frame.shape == frames[0].frame.shape for frame in cleaned_frames))
+        self.assertLess(processed_variance, original_variance * 0.10)
+        self.assertTrue(all(frame.frame.dtype == np.uint8 for frame in processed_frames))
+        self.assertTrue(all(frame.frame.shape == frames[0].frame.shape for frame in processed_frames))
 
-    def test_cleaner_supports_configured_color_spaces(self) -> None:
+    def test_processor_supports_configured_color_spaces(self) -> None:
         image = self._base_image()
 
         for color_space in ("RGB", "HSV", "LAB", "YCrCb"):
             with self.subTest(color_space=color_space):
-                cleaner = ColorStabilizationFrameCleaner(
+                processor = ColorStabilizationFrameProcessor(
                     color_space=color_space,
                     techniques=("clahe", "luminance_normalization", "gamma_correction", "temporal_smoothing"),
                     stabilization_strength=0.65,
                 )
 
-                cleaned = cleaner.clean(Frame(image=image, index=3, timestamp_seconds=0.1))
+                processed = processor.process(Frame(image=image, index=3, timestamp_seconds=0.1))
 
-                self.assertEqual(cleaned.frame.shape, image.shape)
-                self.assertEqual(cleaned.frame.dtype, np.uint8)
-                self.assertIn("color_stabilization", cleaned.metadata)
+                self.assertEqual(processed.frame.shape, image.shape)
+                self.assertEqual(processed.frame.dtype, np.uint8)
+                self.assertIn("color_stabilization", processed.metadata)
 
-    def test_cleaner_emits_optional_comparison_and_intermediate_artifacts(self) -> None:
+    def test_processor_emits_optional_comparison_and_intermediate_artifacts(self) -> None:
         image = self._base_image(width=32, height=24)
-        cleaner = ColorStabilizationFrameCleaner(
+        processor = ColorStabilizationFrameProcessor(
             color_space="LAB",
             techniques=("luminance_normalization", "temporal_smoothing"),
             emit_comparison_overlay=True,
             emit_intermediate_artifacts=True,
         )
 
-        cleaned = cleaner.clean(Frame(image=image, index=1, timestamp_seconds=0.03, metadata={"source": "unit-test"}))
-        artifact_payload = cleaned.metadata["color_stabilization"]
+        processed = processor.process(Frame(image=image, index=1, timestamp_seconds=0.03, metadata={"source": "unit-test"}))
+        artifact_payload = processed.metadata["color_stabilization"]
 
-        self.assertEqual(cleaned.metadata["source"], "unit-test")
+        self.assertEqual(processed.metadata["source"], "unit-test")
         self.assertIn("metrics", artifact_payload)
         self.assertIn("comparison_overlay", artifact_payload)
         self.assertIn("intermediate_artifacts", artifact_payload)
@@ -81,7 +81,7 @@ class ColorStabilizationFrameCleanerTests(unittest.TestCase):
 
     @staticmethod
     def _flickering_sequence() -> list[np.ndarray]:
-        base = ColorStabilizationFrameCleanerTests._base_image()
+        base = ColorStabilizationFrameProcessorTests._base_image()
         factors = (0.58, 1.38, 0.72, 1.26, 0.64, 1.45, 0.80, 1.18)
         color_offsets = (
             (8.0, -4.0, 3.0),

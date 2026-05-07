@@ -17,7 +17,7 @@ from library.core.interfaces.IData import IData
 @dataclass(frozen=True, slots=True)
 class IntermediateFrameArtifactCollection(IData):
     """
-    Immutable debug stream produced by frame cleaning stages.
+    Immutable debug stream produced by frame processing stages.
 
     The collection is deliberately separate from analysis results so existing
     visualizers keep receiving only the result types they already support.
@@ -96,7 +96,7 @@ class IntermediateFrameArtifactExporter:
         return tuple(paths)
 
     def export(self, artifact: IntermediateFrameArtifact) -> tuple[Path, ...]:
-        """Export one artifact, including original, cleaned, masks, and overlays."""
+        """Export one artifact, including original, processed, masks, and overlays."""
         self._output_directory.mkdir(parents=True, exist_ok=True)
         stem = self._artifact_stem(artifact)
         written: list[Path] = []
@@ -104,8 +104,8 @@ class IntermediateFrameArtifactExporter:
         written.append(self._write_image(f"{stem}_snapshot.png", artifact.image, artifact.color_space))
         if artifact.original_frame is not None:
             written.append(self._write_image(f"{stem}_original.png", artifact.original_frame, artifact.color_space))
-        if artifact.cleaned_frame is not artifact.image:
-            written.append(self._write_image(f"{stem}_cleaned.png", artifact.cleaned_frame, artifact.color_space))
+        if artifact.processed_frame is not artifact.image:
+            written.append(self._write_image(f"{stem}_processed.png", artifact.processed_frame, artifact.color_space))
 
         for index, mask in enumerate(artifact.masks):
             label = self._safe_name(mask.label or f"mask_{index}")

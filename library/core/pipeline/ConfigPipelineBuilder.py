@@ -3,7 +3,9 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineErrors import PipelineConfigurationError
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
@@ -32,8 +34,11 @@ class ConfigPipelineBuilder:
         params:
           source: "/path/to/video.mp4"
 
-      frame_cleaners:                   # optional list
-        - name: opencv_gray
+      frame_processors:
+        - name: opencv_gray             # default processor_type: single_frame
+          processor_type: single_frame
+        - name: motion_magnification
+          processor_type: frame_buffer
 
       signal_extractor:                 # required
         name: opencv_tracker
@@ -52,7 +57,7 @@ class ConfigPipelineBuilder:
         - name: matplotlib
           result_indices: [0]            # optional; omit to visualize all results
 
-      intermediate_frames:              # optional frame-cleaning debug stream
+      intermediate_frames:              # optional frame-processing debug stream
         enabled: true
         sampling_interval: 10
         max_stored_frames: 20
@@ -89,11 +94,7 @@ class ConfigPipelineBuilder:
                     self._required_mapping(cfg, "signal_extractor", "pipeline.signal_extractor"),
                     "pipeline.signal_extractor",
                 ),
-                frame_cleaners=self._build_list(
-                    PluginCategory.FRAME_CLEANER,
-                    self._optional_list(cfg, "frame_cleaners", "pipeline.frame_cleaners"),
-                    "pipeline.frame_cleaners",
-                ),
+                frame_processors=self._frame_processors(cfg),
                 signal_cleaners=self._build_list(
                     PluginCategory.SIGNAL_CLEANER,
                     self._optional_list(cfg, "signal_cleaners", "pipeline.signal_cleaners"),
@@ -138,6 +139,23 @@ class ConfigPipelineBuilder:
             raise PipelineConfigurationError(f"Invalid params for plugin '{name}' at '{path}': {exc}") from exc
         except Exception as exc:
             raise PipelineConfigurationError(f"Failed to create plugin '{name}' at '{path}': {exc}") from exc
+
+    def _frame_processors(self, cfg: dict[str, Any]) -> list[IFrameBufferProcessor]:
+        entries = self._optional_list(cfg, "frame_processors", "pipeline.frame_processors")
+        processors: list[IFrameBufferProcessor] = []
+        for index, item in enumerate(entries):
+            path = f"pipeline.frame_processors[{index}]"
+            entry = self._ensure_mapping(item, path)
+            processor_type = str(entry.get("processor_type", "single_frame"))
+            if processor_type == "single_frame":
+                processors.append(SingleFrameProcessorAdapter(self._create(PluginCategory.SINGLE_FRAME_PROCESSOR, entry, path)))
+            elif processor_type == "frame_buffer":
+                processors.append(self._create(PluginCategory.FRAME_BUFFER_PROCESSOR, entry, path))
+            else:
+                raise PipelineConfigurationError(
+                    f"'{path}.processor_type' must be 'single_frame' or 'frame_buffer'."
+                )
+        return processors
 
     def _build_list(
         self,

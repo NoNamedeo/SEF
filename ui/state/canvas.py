@@ -27,7 +27,7 @@ DEFAULT_ZOOM = 0.92
 
 DEFAULT_STAGE_LAYOUT: dict[str, tuple[int, int]] = {
     "frame_extractor": (120, 180),
-    "frame_cleaners": (430, 180),
+    "frame_processors": (430, 180),
     "signal_extractor": (770, 180),
     "signal_cleaners": (1090, 180),
     "analyzers": (1420, 180),

@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 from library.core.artifacts.Frame import Frame
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 
 _MAX_CHANNEL_VALUE = 255.0
 _EPSILON = 1e-6
@@ -18,7 +18,7 @@ _DEFAULT_TECHNIQUES = ("luminance_normalization", "temporal_smoothing")
 
 
 class ColorSpace(StrEnum):
-    """Color spaces supported by the stabilization cleaner."""
+    """Color spaces supported by the stabilization processor."""
 
     RGB = "RGB"
     HSV = "HSV"
@@ -398,7 +398,7 @@ class _ChromaNormalizer:
 
 
 class _ArtifactBuilder:
-    """Build optional metadata artifacts without coupling the cleaner to UI classes."""
+    """Build optional metadata artifacts without coupling the processor to UI classes."""
 
     def __init__(self, emit_comparison_overlay: bool, emit_intermediate_artifacts: bool, emit_metrics: bool) -> None:
         self._emit_comparison_overlay = emit_comparison_overlay
@@ -408,11 +408,11 @@ class _ArtifactBuilder:
     def build(
         self,
         original_image: np.ndarray,
-        cleaned_image: np.ndarray,
+        output_image: np.ndarray,
         original_working: np.ndarray,
         processed_working: np.ndarray,
         original_stats: FrameColorStatistics,
-        cleaned_stats: FrameColorStatistics,
+        output_stats: FrameColorStatistics,
         target_stats: FrameColorStatistics,
         color_space: ColorSpace,
         techniques: Sequence[StabilizationTechnique],
@@ -424,11 +424,11 @@ class _ArtifactBuilder:
                 "color_space": color_space.value,
                 "techniques": [technique.value for technique in techniques],
                 "original": original_stats.as_dict(),
-                "cleaned": cleaned_stats.as_dict(),
+                "processed": output_stats.as_dict(),
                 "target": target_stats.as_dict(),
             }
         if self._emit_comparison_overlay:
-            payload["comparison_overlay"] = self._comparison_overlay(original_image, cleaned_image)
+            payload["comparison_overlay"] = self._comparison_overlay(original_image, output_image)
         if self._emit_intermediate_artifacts:
             payload["intermediate_artifacts"] = {
                 "working_before": original_working.copy(),
@@ -439,9 +439,9 @@ class _ArtifactBuilder:
         return payload
 
     @staticmethod
-    def _comparison_overlay(original_image: np.ndarray, cleaned_image: np.ndarray) -> np.ndarray:
+    def _comparison_overlay(original_image: np.ndarray, output_image: np.ndarray) -> np.ndarray:
         left = _to_bgr_preview(original_image)
-        right = _to_bgr_preview(cleaned_image)
+        right = _to_bgr_preview(output_image)
         if left.shape[:2] != right.shape[:2]:
             right = cv2.resize(right, (left.shape[1], left.shape[0]), interpolation=cv2.INTER_AREA)
 
@@ -449,18 +449,18 @@ class _ArtifactBuilder:
         divider_x = left.shape[1]
         cv2.line(overlay, (divider_x, 0), (divider_x, overlay.shape[0] - 1), (255, 255, 255), 1)
         _put_label(overlay, "original", (8, 22))
-        _put_label(overlay, "cleaned", (divider_x + 8, 22))
+        _put_label(overlay, "processed", (divider_x + 8, 22))
         return overlay
 
 
-class ColorStabilizationFrameCleaner(IFrameCleaner):
+class ColorStabilizationFrameProcessor(ISingleFrameProcessor):
     """
     Stabilize frame illumination and chromatic drift while preserving image detail.
 
-    The cleaner estimates a temporal reference from frame luminance and chroma
+    The processor estimates a temporal reference from frame luminance and chroma
     statistics, then applies only the selected bounded operations. OpenCV frames
     are returned in their original BGR/grayscale layout so downstream extractors
-    can consume the cleaned sequence without format-specific coupling.
+    can consume the processed sequence without format-specific coupling.
     """
 
     def __init__(
@@ -537,7 +537,7 @@ class ColorStabilizationFrameCleaner(IFrameCleaner):
             emit_metrics=self._emit_metrics,
         )
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         image = self._validated_image(frame.frame)
         working = self._adapter.to_working(image)
         original_working = working.copy()
@@ -560,17 +560,17 @@ class ColorStabilizationFrameCleaner(IFrameCleaner):
             )
 
         processed_image = self._adapter.from_working(working)
-        cleaned_image = self._blend_with_original(image, processed_image)
-        cleaned_working = self._adapter.to_working(cleaned_image)
-        cleaned_stats = self._statistics_extractor.measure(cleaned_working, self._adapter)
+        output_image = self._blend_with_original(image, processed_image)
+        output_working = self._adapter.to_working(output_image)
+        output_stats = self._statistics_extractor.measure(output_working, self._adapter)
         metadata = dict(frame.metadata)
         metadata[_METADATA_KEY] = self._artifact_builder.build(
             original_image=image,
-            cleaned_image=cleaned_image,
+            output_image=output_image,
             original_working=original_working,
             processed_working=working,
             original_stats=original_stats,
-            cleaned_stats=cleaned_stats,
+            output_stats=output_stats,
             target_stats=target_stats,
             color_space=self.color_space,
             techniques=self.techniques,
@@ -578,7 +578,7 @@ class ColorStabilizationFrameCleaner(IFrameCleaner):
         )
 
         return Frame(
-            image=cleaned_image,
+            image=output_image,
             index=frame.index,
             timestamp_seconds=frame.timestamp_seconds,
             metadata=metadata,
@@ -587,14 +587,14 @@ class ColorStabilizationFrameCleaner(IFrameCleaner):
     def emit_intermediate_artifacts(
         self,
         original_frame: Frame,
-        cleaned_frame: Frame,
+        processed_frame: Frame,
         context: Any,
     ) -> tuple[Any, ...]:
         """
         Emit optional pipeline-level intermediate artifacts when the host stage supports them.
 
         The import is intentionally dynamic: older pipeline versions only know the
-        IFrameCleaner.clean contract and can still use this cleaner without the
+        ISingleFrameProcessor.process contract and can still use this processor without the
         intermediate-artifact classes being present.
         """
         if not self._emit_intermediate_artifacts and not self._emit_comparison_overlay:
@@ -605,14 +605,14 @@ class ColorStabilizationFrameCleaner(IFrameCleaner):
         except Exception:
             return ()
 
-        stabilization_payload = dict(cleaned_frame.metadata.get(_METADATA_KEY, {}))
+        stabilization_payload = dict(processed_frame.metadata.get(_METADATA_KEY, {}))
         metrics = dict(stabilization_payload.get("metrics", {}))
         artifact_image = stabilization_payload.get("comparison_overlay") if self._emit_comparison_overlay else None
         if artifact_image is None:
-            artifact_image = cleaned_frame.image
+            artifact_image = processed_frame.image
 
         metadata = {
-            "cleaner_name": type(self).__name__,
+            "single_frame_processor_name": type(self).__name__,
             "color_space": self.color_space.value,
             "techniques": [technique.value for technique in self.techniques],
             "metrics": metrics,
@@ -621,11 +621,11 @@ class ColorStabilizationFrameCleaner(IFrameCleaner):
             IntermediateFrameArtifact(
                 image=artifact_image,
                 stage_name=getattr(context, "stage_name", type(self).__name__),
-                frame_index=cleaned_frame.index,
-                timestamp_seconds=cleaned_frame.timestamp_seconds,
+                frame_index=processed_frame.index,
+                timestamp_seconds=processed_frame.timestamp_seconds,
                 color_space=self.color_space.value,
                 original_image=original_frame.image,
-                cleaned_image=cleaned_frame.image,
+                processed_image=processed_frame.image,
                 stage_metadata=metadata,
                 metadata=metadata,
                 config=self._resolved_config(),
@@ -737,16 +737,16 @@ class ColorStabilizationFrameCleaner(IFrameCleaner):
     @staticmethod
     def _validated_image(image: np.ndarray) -> np.ndarray:
         if not isinstance(image, np.ndarray):
-            raise TypeError("ColorStabilizationFrameCleaner expects frame.image to be a numpy.ndarray.")
+            raise TypeError("ColorStabilizationFrameProcessor expects frame.image to be a numpy.ndarray.")
         if image.size == 0:
-            raise ValueError("ColorStabilizationFrameCleaner cannot process an empty frame.")
+            raise ValueError("ColorStabilizationFrameProcessor cannot process an empty frame.")
         if image.dtype != np.uint8:
-            raise ValueError("ColorStabilizationFrameCleaner expects uint8 frames.")
+            raise ValueError("ColorStabilizationFrameProcessor expects uint8 frames.")
         if image.ndim == 2:
             return image
         if image.ndim == 3 and image.shape[2] == 3:
             return image
-        raise ValueError("ColorStabilizationFrameCleaner expects grayscale or 3-channel BGR frames.")
+        raise ValueError("ColorStabilizationFrameProcessor expects grayscale or 3-channel BGR frames.")
 
 
 def _is_grayscale(image: np.ndarray) -> bool:

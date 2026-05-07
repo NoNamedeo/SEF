@@ -4,12 +4,12 @@ from typing import Any, Tuple
 
 import cv2
 
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.BoxSignalSample import BoundingBox
 
 
-class OpenCVZoomFrameCleaner(IFrameCleaner):
+class OpenCVZoomFrameProcessor(ISingleFrameProcessor):
     """Zoom into a fixed ROI (crop + upscale back to original frame size)."""
 
     def __init__(
@@ -26,7 +26,7 @@ class OpenCVZoomFrameCleaner(IFrameCleaner):
         if w <= 0 or h <= 0:
             raise ValueError("ROI must have positive width and height")
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         x, y, w, h = self.roi
 
         img = frame.frame
