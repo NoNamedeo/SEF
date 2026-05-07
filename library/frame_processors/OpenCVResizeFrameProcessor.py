@@ -4,11 +4,11 @@ from typing import Any, Tuple
 
 import cv2
 
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
 
 
-class OpenCVResizeFrameCleaner(IFrameCleaner):
+class OpenCVResizeFrameProcessor(ISingleFrameProcessor):
     """Resize frames to a fixed resolution while preserving metadata."""
 
     def __init__(
@@ -24,7 +24,7 @@ class OpenCVResizeFrameCleaner(IFrameCleaner):
         if self.size[0] <= 0 or self.size[1] <= 0:
             raise ValueError("size must contain positive width and height")
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         resized_image = cv2.resize(
             frame.frame,
             self.size,

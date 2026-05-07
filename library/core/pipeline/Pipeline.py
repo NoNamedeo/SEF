@@ -8,7 +8,7 @@ from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameA
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IEventEmitter import IEventEmitter
 from library.core.interfaces.pipeline.IEventBus import IEventBus
-from library.core.pipeline.FrameCleaningStage import FrameCleaningStage
+from library.core.pipeline.FrameProcessingStage import FrameProcessingStage
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
@@ -39,7 +39,7 @@ class Pipeline:
     Execution order
     ---------------
     1. Frame extraction   (frame_extractor  → raw buffer)
-    2. Frame cleaning     (frame_cleaners   → cleaned buffer)   [optional]
+    2. Frame processing   (frame_processors → processed buffer) [optional]
     3. Signal extraction  (signal_extractor → raw signal)
     4. Signal cleaning    (signal_cleaners  → smoothed signal)  [optional]
     5. Analysis           (analyzers        → list[IData])
@@ -70,7 +70,7 @@ class Pipeline:
         self._event_bus = event_bus
         self._pipeline_id = pipeline_id
         self._execution_metadata = dict(execution_metadata or {})
-        self._frame_cleaning_stage = FrameCleaningStage()
+        self._frame_processing_stage = FrameProcessingStage()
 
     # ── Public API ──────────────────────────────────────────────────────────
 
@@ -82,10 +82,10 @@ class Pipeline:
         buffer = self._run_step("frame_extraction", lambda: ctx.frame_extractor.extract())
         intermediate_store = IntermediateFrameArtifactStore(ctx.intermediate_frame_capture)
         buffer = self._run_step(
-            "frame_cleaning",
-            lambda: self._frame_cleaning_stage.apply(
+            "frame_processing",
+            lambda: self._frame_processing_stage.apply(
                 buffer,
-                ctx.frame_cleaners,
+                ctx.frame_processors,
                 intermediate_store=intermediate_store,
             ),
         )
@@ -131,7 +131,7 @@ class Pipeline:
         components: list[Any] = [
             self._context.frame_extractor,
             self._context.signal_extractor,
-            *self._context.frame_cleaners,
+            *self._context.frame_processors,
             *self._context.signal_cleaners,
             *self._context.analyzers,
             *self._context.visualizers,

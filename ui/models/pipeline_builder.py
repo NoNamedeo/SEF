@@ -13,7 +13,7 @@ class AnalysisStageKey(StrEnum):
     """Stages exposed by the UI composer."""
 
     FRAME_EXTRACTOR = "frame_extractor"
-    FRAME_CLEANERS = "frame_cleaners"
+    FRAME_PROCESSORS = "frame_processors"
     SIGNAL_EXTRACTOR = "signal_extractor"
     SIGNAL_CLEANERS = "signal_cleaners"
     ANALYZERS = "analyzers"
@@ -22,7 +22,7 @@ class AnalysisStageKey(StrEnum):
 
 STAGE_LABELS: dict[AnalysisStageKey, str] = {
     AnalysisStageKey.FRAME_EXTRACTOR: "Frame extractor",
-    AnalysisStageKey.FRAME_CLEANERS: "Frame cleaners",
+    AnalysisStageKey.FRAME_PROCESSORS: "Frame processors",
     AnalysisStageKey.SIGNAL_EXTRACTOR: "Signal extractor",
     AnalysisStageKey.SIGNAL_CLEANERS: "Signal cleaners",
     AnalysisStageKey.ANALYZERS: "Analyzers",
@@ -67,7 +67,7 @@ class PipelineConfiguration:
 
     frame_extractor: PluginConfig
     signal_extractor: PluginConfig
-    frame_cleaners: tuple[PluginConfig, ...] = ()
+    frame_processors: tuple[PluginConfig, ...] = ()
     signal_cleaners: tuple[PluginConfig, ...] = ()
     analyzers: tuple[PluginConfig, ...] = ()
     visualizers: tuple[VisualizerConfig, ...] = ()
@@ -76,7 +76,7 @@ class PipelineConfiguration:
         return {
             "pipeline": {
                 "frame_extractor": self.frame_extractor.to_dict(),
-                "frame_cleaners": [item.to_dict() for item in self.frame_cleaners],
+                "frame_processors": [item.to_dict() for item in self.frame_processors],
                 "signal_extractor": self.signal_extractor.to_dict(),
                 "signal_cleaners": [item.to_dict() for item in self.signal_cleaners],
                 "analyzers": [item.to_dict() for item in self.analyzers],
@@ -91,7 +91,7 @@ class BuilderStateSnapshot:
 
     mode: str
     frame_extractor: str
-    frame_cleaners: tuple[str, ...]
+    frame_processors: tuple[str, ...]
     signal_extractor: str
     signal_cleaners: tuple[str, ...]
     analyzers: tuple[str, ...]

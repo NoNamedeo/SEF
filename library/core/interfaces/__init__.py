@@ -8,8 +8,9 @@ _EXPORTS = {
     "IData": ("library.core.interfaces.IData", "IData"),
     "IEventEmitter": ("library.core.interfaces.IEventEmitter", "IEventEmitter"),
     "IEventBus": ("library.core.interfaces.pipeline.IEventBus", "IEventBus"),
-    "IFrameCleaner": ("library.core.interfaces.IFrameCleaner", "IFrameCleaner"),
+    "ISingleFrameProcessor": ("library.core.interfaces.ISingleFrameProcessor", "ISingleFrameProcessor"),
     "IFrameExtractor": ("library.core.interfaces.IFrameExtractor", "IFrameExtractor"),
+    "IFrameBufferProcessor": ("library.core.interfaces.IFrameBufferProcessor", "IFrameBufferProcessor"),
     "IPipelineMonitor": (
         "library.core.interfaces.pipeline.IPipelineMonitor",
         "IPipelineMonitor",

@@ -21,7 +21,7 @@ from library.core.visualization.VisualArtifact import (
     VideoArtifact,
     VideoFileArtifact,
 )
-from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
+from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
@@ -44,16 +44,16 @@ class FakeTracker:
 
 
 class PipelineCoreTests(unittest.TestCase):
-    def test_gray_cleaner_preserves_frame_contract(self):
+    def test_gray_processor_preserves_frame_contract(self):
         color_image = np.zeros((8, 8, 3), dtype=np.uint8)
         frame = Frame(image=color_image, index=4, timestamp_seconds=0.2)
 
-        cleaned = OpenCVGrayFrameCleaner().clean(frame)
+        processed = OpenCVGrayFrameProcessor().process(frame)
 
-        self.assertIsInstance(cleaned, Frame)
-        self.assertEqual(cleaned.index, 4)
-        self.assertEqual(cleaned.timestamp_seconds, 0.2)
-        self.assertEqual(cleaned.frame.shape, (8, 8))
+        self.assertIsInstance(processed, Frame)
+        self.assertEqual(processed.index, 4)
+        self.assertEqual(processed.timestamp_seconds, 0.2)
+        self.assertEqual(processed.frame.shape, (8, 8))
 
     def test_pipeline_runs_end_to_end_via_core_components(self):
         video_path = self._create_test_video()

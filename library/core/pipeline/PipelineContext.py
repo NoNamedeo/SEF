@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
+from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
@@ -34,18 +34,18 @@ class PipelineContext:
     Required fields
     ---------------
     frame_extractor  : entry-point of the pipeline; must always be present.
-    signal_extractor : converts cleaned frames into a trackable signal.
+    signal_extractor : converts processed frames into a trackable signal.
     analyzers        : at least one analyzer must be provided.
 
     Optional fields (default to empty collections)
     -----------------------------------------------
-    frame_cleaners   : zero or more pre-processing steps on raw frames.
+    frame_processors : zero or more buffer-level frame preprocessing steps.
     signal_cleaners  : zero or more smoothing / filtering steps on signals.
     visualizers      : zero or more rendering steps executed after analysis.
     visualizer_bindings
                      : optional selective visualizer-to-result mappings.
     intermediate_frame_capture
-                     : optional bounded capture settings for frame-cleaning
+                     : optional bounded capture settings for frame processing
                        debug snapshots.
     intermediate_frame_visualizers
                      : optional visualizers that render the captured debug
@@ -60,7 +60,7 @@ class PipelineContext:
     analyzers: Sequence[IAnalyzer]
 
     # ── Optional (with default) ─────────────────────────────────────────────
-    frame_cleaners: Sequence[IFrameCleaner] = field(default_factory=tuple)
+    frame_processors: Sequence[IFrameBufferProcessor] = field(default_factory=tuple)
     signal_cleaners: Sequence[ISignalCleaner] = field(default_factory=tuple)
     visualizers: Sequence[IVisualizer] = field(default_factory=tuple)
     visualizer_bindings: Sequence[VisualizerBinding] = field(default_factory=tuple)
@@ -83,8 +83,8 @@ class PipelineContext:
         )
         object.__setattr__(
             self,
-            "frame_cleaners",
-            self._optional_tuple("frame_cleaners", self.frame_cleaners),
+            "frame_processors",
+            self._frame_processors_tuple(self.frame_processors),
         )
         object.__setattr__(
             self,
@@ -131,6 +131,15 @@ class PipelineContext:
         items = PipelineContext._optional_tuple("visualizer_bindings", values)
         if any(not isinstance(item, VisualizerBinding) for item in items):
             raise ValueError("PipelineContext field 'visualizer_bindings' must contain VisualizerBinding instances.")
+        return items
+
+    @staticmethod
+    def _frame_processors_tuple(
+        values: Sequence[IFrameBufferProcessor] | None,
+    ) -> tuple[IFrameBufferProcessor, ...]:
+        items = PipelineContext._optional_tuple("frame_processors", values)
+        if any(not isinstance(item, IFrameBufferProcessor) for item in items):
+            raise ValueError("PipelineContext field 'frame_processors' must contain IFrameBufferProcessor instances.")
         return items
 
     @staticmethod

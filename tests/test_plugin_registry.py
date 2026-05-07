@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 
 from library.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
-from library.frame_cleaners.ColorStabilizationFrameCleaner import ColorStabilizationFrameCleaner
+from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 
 
@@ -17,8 +17,8 @@ class PluginRegistryTests(unittest.TestCase):
         cleaner = registry.create("signal_cleaner", "moving_average", window_size=5)
         self.assertIsInstance(cleaner, MovingAverageCleaner)
 
-        frame_cleaner = registry.create("frame_cleaner", "color_stabilization")
-        self.assertIsInstance(frame_cleaner, ColorStabilizationFrameCleaner)
+        single_frame_processor = registry.create("single_frame_processor", "color_stabilization")
+        self.assertIsInstance(single_frame_processor, ColorStabilizationFrameProcessor)
 
     def test_register_rejects_duplicates(self):
         registry = PluginRegistry()

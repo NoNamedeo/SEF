@@ -47,68 +47,68 @@ def get_registry() -> PluginRegistry:
     except Exception as exc:
         log.warning("OpenCVBufferedFrameExtractor non disponibile: %s", exc)
 
-    # ── Frame cleaners ────────────────────────────────────────────────────────
+    # ── Frame processors ────────────────────────────────────────────────────────
     try:
-        from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
+        from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 
-        _try_register(registry, PluginCategory.FRAME_CLEANER, "opencv_gray", OpenCVGrayFrameCleaner, "Converte i frame in scala di grigi.")
+        _try_register(registry, PluginCategory.SINGLE_FRAME_PROCESSOR, "opencv_gray", OpenCVGrayFrameProcessor, "Converte i frame in scala di grigi.")
     except Exception as exc:
-        log.warning("OpenCVGrayFrameCleaner non disponibile: %s", exc)
+        log.warning("OpenCVGrayFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_cleaners.SmoothingFrameCleaner import SmoothingFrameCleaner
+        from library.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
 
-        _try_register(registry, PluginCategory.FRAME_CLEANER, "smoothing", SmoothingFrameCleaner, "Smoothing temporale tra frame consecutivi.")
+        _try_register(registry, PluginCategory.SINGLE_FRAME_PROCESSOR, "smoothing", SmoothingFrameProcessor, "Smoothing temporale tra frame consecutivi.")
     except Exception as exc:
-        log.warning("SmoothingFrameCleaner non disponibile: %s", exc)
+        log.warning("SmoothingFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_cleaners.OpenCVResizeFrameCleaner import OpenCVResizeFrameCleaner
+        from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
 
         _try_register(
-            registry, PluginCategory.FRAME_CLEANER, "opencv_resize", OpenCVResizeFrameCleaner, "Ridimensiona i frame a una risoluzione fissa."
+            registry, PluginCategory.SINGLE_FRAME_PROCESSOR, "opencv_resize", OpenCVResizeFrameProcessor, "Ridimensiona i frame a una risoluzione fissa."
         )
     except Exception as exc:
-        log.warning("OpenCVResizeFrameCleaner non disponibile: %s", exc)
+        log.warning("OpenCVResizeFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_cleaners.OpenCVBackgroundSubtractionFrameCleaner import OpenCVBackgroundSubtractionFrameCleaner
+        from library.frame_processors.OpenCVBackgroundSubtractionFrameProcessor import OpenCVBackgroundSubtractionFrameProcessor
 
         _try_register(
             registry,
-            PluginCategory.FRAME_CLEANER,
+            PluginCategory.SINGLE_FRAME_PROCESSOR,
             "background_subtraction",
-            OpenCVBackgroundSubtractionFrameCleaner,
+            OpenCVBackgroundSubtractionFrameProcessor,
             "Isola oggetti in movimento tramite background subtraction.",
         )
     except Exception as exc:
-        log.warning("OpenCVBackgroundSubtractionFrameCleaner non disponibile: %s", exc)
+        log.warning("OpenCVBackgroundSubtractionFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_cleaners.OpenCVHistogramEqualizationFrameCleaner import OpenCVHistogramEqualizationFrameCleaner
+        from library.frame_processors.OpenCVHistogramEqualizationFrameProcessor import OpenCVHistogramEqualizationFrameProcessor
 
         _try_register(
             registry,
-            PluginCategory.FRAME_CLEANER,
+            PluginCategory.SINGLE_FRAME_PROCESSOR,
             "histogram_equalization",
-            OpenCVHistogramEqualizationFrameCleaner,
+            OpenCVHistogramEqualizationFrameProcessor,
             "Migliora il contrasto dei frame tramite equalizzazione istogramma.",
         )
     except Exception as exc:
-        log.warning("OpenCVHistogramEqualizationFrameCleaner non disponibile: %s", exc)
+        log.warning("OpenCVHistogramEqualizationFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_cleaners.ColorStabilizationFrameCleaner import ColorStabilizationFrameCleaner
+        from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
 
         _try_register(
             registry,
-            PluginCategory.FRAME_CLEANER,
+            PluginCategory.SINGLE_FRAME_PROCESSOR,
             "color_stabilization",
-            ColorStabilizationFrameCleaner,
+            ColorStabilizationFrameProcessor,
             "Stabilizza luminosita, illuminazione e cromia tra frame consecutivi.",
         )
     except Exception as exc:
-        log.warning("ColorStabilizationFrameCleaner non disponibile: %s", exc)
+        log.warning("ColorStabilizationFrameProcessor non disponibile: %s", exc)
 
     # ── Signal extractors ─────────────────────────────────────────────────────
     try:

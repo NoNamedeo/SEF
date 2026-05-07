@@ -5,11 +5,11 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
 
 
-class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
+class OpenCVBackgroundSubtractionFrameProcessor(ISingleFrameProcessor):
     """
     Applies background subtraction with strong noise filtering
     to isolate meaningful moving objects.
@@ -45,7 +45,7 @@ class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
         else:
             raise ValueError(f"Unsupported method: {self.method}")
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         image = frame.frame
 
         # background subtraction
@@ -54,34 +54,10 @@ class OpenCVBackgroundSubtractionFrameCleaner(IFrameCleaner):
         # remove shadows (MOG2 outputs 127 for shadows)
         fg_mask[fg_mask == 127] = 0
 
-        # morphology filtering
-        kernel = np.ones(
-            (self.kernel_size, self.kernel_size),
-            np.uint8,
-        )
-
-        fg_mask = cv2.morphologyEx(
-            fg_mask,
-            cv2.MORPH_OPEN,
-            kernel,
-        )
-
-        if self.apply_close:
-            fg_mask = cv2.morphologyEx(
-                fg_mask,
-                cv2.MORPH_CLOSE,
-                kernel,
-            )
-
-        # apply mask
-        cleaned = cv2.bitwise_and(
-            image,
-            image,
-            mask=fg_mask,
-        )
+        processed = cv2.bitwise_and(image, image, mask=fg_mask)
 
         return Frame(
-            image=cleaned,
+            image=processed,
             index=frame.index,
             timestamp_seconds=frame.timestamp_seconds,
             metadata={

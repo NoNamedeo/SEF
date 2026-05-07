@@ -218,7 +218,7 @@ class IntermediateFrameOverlay:
     Immutable rendered overlay associated with an intermediate frame snapshot.
 
     Overlays are intentionally image-based rather than UI objects. This keeps
-    frame cleaners free to emit masks, contours, heatmaps, or other debug
+    frame processors free to emit masks, contours, heatmaps, or other debug
     images without coupling them to a specific visualization backend.
     """
 
@@ -270,7 +270,7 @@ class IntermediateFrameArtifact(IData):
     timestamp_seconds: float | None = None
     color_space: str | None = None
     original_image: npt.NDArray[Any] | None = field(default=None, repr=False)
-    cleaned_image: npt.NDArray[Any] | None = field(default=None, repr=False)
+    processed_image: npt.NDArray[Any] | None = field(default=None, repr=False)
     masks: Sequence[MaskArtifact] = field(default_factory=tuple)
     overlays: Sequence[IntermediateFrameOverlay] = field(default_factory=tuple)
     stage_metadata: Mapping[str, Any] = field(default_factory=dict)
@@ -294,13 +294,13 @@ class IntermediateFrameArtifact(IData):
                     name="IntermediateFrameArtifact.original_image",
                 ),
             )
-        if self.cleaned_image is not None:
+        if self.processed_image is not None:
             object.__setattr__(
                 self,
-                "cleaned_image",
+                "processed_image",
                 _readonly_image_copy(
-                    self.cleaned_image,
-                    name="IntermediateFrameArtifact.cleaned_image",
+                    self.processed_image,
+                    name="IntermediateFrameArtifact.processed_image",
                 ),
             )
 
@@ -333,13 +333,13 @@ class IntermediateFrameArtifact(IData):
 
     @property
     def original_frame(self) -> npt.NDArray[Any] | None:
-        """Return the optional pre-cleaning frame snapshot."""
+        """Return the optional pre-processing frame snapshot."""
         return self.original_image
 
     @property
-    def cleaned_frame(self) -> npt.NDArray[Any]:
-        """Return the cleaned frame snapshot, falling back to the primary image."""
-        return self.cleaned_image if self.cleaned_image is not None else self.image
+    def processed_frame(self) -> npt.NDArray[Any]:
+        """Return the processed frame snapshot, falling back to the primary image."""
+        return self.processed_image if self.processed_image is not None else self.image
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -404,7 +404,7 @@ class IntermediateFrameArtifact(IData):
             "timestamp_seconds": self.timestamp_seconds,
             "color_space": self.color_space,
             "has_original_frame": self.original_image is not None,
-            "has_cleaned_frame": self.cleaned_image is not None,
+            "has_processed_frame": self.processed_image is not None,
             "mask_count": len(self.masks),
             "overlay_count": len(self.overlays),
             "stage_metadata": dict(self.stage_metadata),

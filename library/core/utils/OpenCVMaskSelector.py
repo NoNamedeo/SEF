@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 from library.core.artifacts.Frame import Frame
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 
 
 class OpenCVMaskSelector:
@@ -28,7 +28,7 @@ class OpenCVMaskSelector:
         video_path: str,
         resize: Tuple[int, int] | None = None,
         apply_preprocessing: bool = True,
-        frame_cleaners: list[IFrameCleaner] | None = None,
+        single_frame_processors: list[ISingleFrameProcessor] | None = None,
         brush_radius: int = 10,
     ) -> np.ndarray:
 
@@ -46,7 +46,7 @@ class OpenCVMaskSelector:
             if resize is not None:
                 frame = cv2.resize(frame, resize)
 
-            if apply_preprocessing and frame_cleaners:
+            if apply_preprocessing and single_frame_processors:
 
                 temp_frame = Frame(
                     image=frame,
@@ -55,8 +55,8 @@ class OpenCVMaskSelector:
                     metadata={},
                 )
 
-                for cleaner in frame_cleaners:
-                    temp_frame = cleaner.clean(temp_frame)
+                for processor in single_frame_processors:
+                    temp_frame = processor.process(temp_frame)
 
                 frame = temp_frame.frame
 

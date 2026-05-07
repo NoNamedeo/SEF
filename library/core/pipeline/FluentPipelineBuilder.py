@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
+from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
@@ -24,7 +24,7 @@ class FluentPipelineBuilder:
     def __init__(self) -> None:
         self._frame_extractor: IFrameExtractor | None = None
         self._signal_extractor: ISignalExtractor | None = None
-        self._frame_cleaners: list[IFrameCleaner] = []
+        self._frame_processors: list[IFrameBufferProcessor] = []
         self._signal_cleaners: list[ISignalCleaner] = []
         self._analyzers: list[IAnalyzer] = []
         self._visualizers: list[IVisualizer] = []
@@ -42,12 +42,12 @@ class FluentPipelineBuilder:
         self._signal_extractor = extractor
         return self
 
-    def with_frame_cleaners(self, cleaners: Iterable[IFrameCleaner]) -> FluentPipelineBuilder:
-        self._frame_cleaners = list(cleaners)
+    def with_frame_processors(self, processors: Iterable[IFrameBufferProcessor]) -> FluentPipelineBuilder:
+        self._frame_processors = list(processors)
         return self
 
-    def add_frame_cleaner(self, cleaner: IFrameCleaner) -> FluentPipelineBuilder:
-        self._frame_cleaners.append(cleaner)
+    def add_frame_processor(self, processor: IFrameBufferProcessor) -> FluentPipelineBuilder:
+        self._frame_processors.append(processor)
         return self
 
     def with_signal_cleaners(self, cleaners: Iterable[ISignalCleaner]) -> FluentPipelineBuilder:
@@ -123,7 +123,7 @@ class FluentPipelineBuilder:
         return PipelineContext(
             frame_extractor=self._frame_extractor,
             signal_extractor=self._signal_extractor,
-            frame_cleaners=list(self._frame_cleaners),
+            frame_processors=list(self._frame_processors),
             signal_cleaners=list(self._signal_cleaners),
             analyzers=list(self._analyzers),
             visualizers=list(self._visualizers),

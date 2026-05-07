@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineExportUtils import (
     dotted_path,
@@ -30,7 +31,7 @@ class PipelineConfigExporter:
     SCHEMA_VERSION = "1.0"
     _PIPELINE_STAGE_KEYS = {
         "frame_extractor",
-        "frame_cleaners",
+        "frame_processors",
         "signal_extractor",
         "signal_cleaners",
         "analyzers",
@@ -105,10 +106,9 @@ class PipelineConfigExporter:
                 context.frame_extractor,
                 source_pipeline.get("frame_extractor"),
             ),
-            "frame_cleaners": self._component_list_entries(
-                PluginCategory.FRAME_CLEANER,
-                context.frame_cleaners,
-                source_pipeline.get("frame_cleaners"),
+            "frame_processors": self._frame_processor_entries(
+                context,
+                source_pipeline.get("frame_processors"),
             ),
             "signal_extractor": self._config_entry(
                 PluginCategory.SIGNAL_EXTRACTOR,
@@ -137,6 +137,28 @@ class PipelineConfigExporter:
                 config[key] = to_exportable_data(value)
 
         return config
+
+    def _frame_processor_entries(self, context: PipelineContext, source_entries: Any) -> list[dict[str, Any]]:
+        sources = source_entries if isinstance(source_entries, list) else []
+        entries: list[dict[str, Any]] = []
+        for index, processor in enumerate(context.frame_processors):
+            component = self._frame_processor_export_component(processor)
+            source = sources[index] if index < len(sources) else None
+            if isinstance(processor, SingleFrameProcessorAdapter):
+                entry = self._config_entry(PluginCategory.SINGLE_FRAME_PROCESSOR, component, source)
+                entry["processor_type"] = "single_frame"
+                entry["adapter"] = "SingleFrameProcessorAdapter"
+            else:
+                entry = self._config_entry(PluginCategory.FRAME_BUFFER_PROCESSOR, component, source)
+                entry["processor_type"] = "frame_buffer"
+            entries.append(entry)
+        return entries
+
+    @staticmethod
+    def _frame_processor_export_component(processor: Any) -> Any:
+        if isinstance(processor, SingleFrameProcessorAdapter):
+            return processor.single_frame_processor
+        return processor
 
     @staticmethod
     def _source_pipeline(context: PipelineContext) -> dict[str, Any]:
@@ -292,14 +314,23 @@ class PipelineConfigExporter:
             component=context.frame_extractor,
             config_entry=pipeline_config["frame_extractor"],
         )
-        order = self._append_descriptors(
-            descriptors,
-            order,
-            stage="frame_cleaner",
-            category=PluginCategory.FRAME_CLEANER,
-            components=context.frame_cleaners,
-            config_entries=pipeline_config["frame_cleaners"],
-        )
+        frame_processor_entries = list(pipeline_config["frame_processors"])
+        for stage_index, processor in enumerate(context.frame_processors):
+            config_entry = frame_processor_entries[stage_index]
+            category = (
+                PluginCategory.FRAME_BUFFER_PROCESSOR
+                if config_entry.get("processor_type") == "frame_buffer"
+                else PluginCategory.SINGLE_FRAME_PROCESSOR
+            )
+            order = self._append_descriptor(
+                descriptors,
+                order,
+                stage="frame_processor",
+                stage_index=stage_index,
+                category=category,
+                component=self._frame_processor_export_component(processor),
+                config_entry=config_entry,
+            )
         order = self._append_descriptor(
             descriptors,
             order,

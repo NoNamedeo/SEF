@@ -51,7 +51,7 @@ class IntermediateFramesVisualizer(IVisualizer):
                 ImageArtifact(
                     kind="image",
                     title=self._title(artifact),
-                    description="Intermediate frame comparison generated during frame cleaning.",
+                    description="Intermediate frame comparison generated during frame processing.",
                     metadata=self._artifact_metadata(
                         context,
                         {

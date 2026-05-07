@@ -23,7 +23,8 @@ class PluginCategory(StrEnum):
     """
 
     FRAME_EXTRACTOR = "frame_extractor"
-    FRAME_CLEANER = "frame_cleaner"
+    SINGLE_FRAME_PROCESSOR = "single_frame_processor"
+    FRAME_BUFFER_PROCESSOR = "frame_buffer_processor"
     SIGNAL_EXTRACTOR = "signal_extractor"
     SIGNAL_CLEANER = "signal_cleaner"
     ANALYZER = "analyzer"
@@ -145,8 +146,8 @@ def create_builtin_registry() -> PluginRegistry:
     from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
     from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
     from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
-    from library.frame_cleaners.ColorStabilizationFrameCleaner import ColorStabilizationFrameCleaner
-    from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
+    from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
+    from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
     from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
     from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
     from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
@@ -168,16 +169,16 @@ def create_builtin_registry() -> PluginRegistry:
     )
 
     registry.register(
-        PluginCategory.FRAME_CLEANER,
+        PluginCategory.SINGLE_FRAME_PROCESSOR,
         "opencv_gray",
-        OpenCVGrayFrameCleaner,
+        OpenCVGrayFrameProcessor,
         "Convert frames to grayscale.",
     )
 
     registry.register(
-        PluginCategory.FRAME_CLEANER,
+        PluginCategory.SINGLE_FRAME_PROCESSOR,
         "color_stabilization",
-        ColorStabilizationFrameCleaner,
+        ColorStabilizationFrameProcessor,
         "Stabilize illumination, brightness, and chromatic drift between frames.",
     )
 

@@ -5,10 +5,10 @@ from typing import Any
 import numpy as np
 
 from library.core.artifacts.Frame import Frame
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 
 
-class SmoothingFrameCleaner(IFrameCleaner):
+class SmoothingFrameProcessor(ISingleFrameProcessor):
     """
     Temporal smoothing between consecutive frames.
     Reduces flicker and improves tracker stability by blending frames over time.
@@ -32,7 +32,7 @@ class SmoothingFrameCleaner(IFrameCleaner):
         self.reset_threshold = reset_threshold
         self._previous_frame: np.ndarray | None = None
 
-    def clean(self, frame: Frame) -> Frame:
+    def process(self, frame: Frame) -> Frame:
         image = frame.frame.astype(np.float32)
 
         # differenza tra frame attuale e passato (se eccessiva (tipo cambio video), resetta)

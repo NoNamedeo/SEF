@@ -33,7 +33,7 @@ from ui.state.canvas import viewport as canvas_viewport
 
 _MAIN_STAGE_KEYS = (
     "frame_extractor",
-    "frame_cleaners",
+    "frame_processors",
     "signal_extractor",
     "signal_cleaners",
     "analyzers",
@@ -74,13 +74,13 @@ def build_pipeline_canvas_model(
             latest_snapshot,
             stage_events.get("frame_extractor", ()),
         ),
-        _frame_cleaners_node(
+        _frame_processors_node(
             pipeline,
             selected_stage,
             stage_positions,
             issue_map,
             latest_snapshot,
-            stage_events.get("frame_cleaners", ()),
+            stage_events.get("frame_processors", ()),
         ),
         _signal_extractor_node(
             pipeline,
@@ -181,7 +181,7 @@ def _frame_extractor_node(
     )
 
 
-def _frame_cleaners_node(
+def _frame_processors_node(
     pipeline: dict[str, Any],
     selected_stage: str,
     positions: dict[str, dict[str, int]],
@@ -189,14 +189,14 @@ def _frame_cleaners_node(
     snapshot: PipelineRunSnapshot | None,
     emitted_events: tuple[str, ...],
 ) -> CanvasNode:
-    cleaners = [dict(item) for item in pipeline.get("frame_cleaners", [])]
-    component_names = tuple(item.get("name", "unnamed") for item in cleaners) or ("none",)
-    active = bool(cleaners)
+    processors = [dict(item) for item in pipeline.get("frame_processors", [])]
+    component_names = tuple(item.get("name", "unnamed") for item in processors) or ("none",)
+    active = bool(processors)
     return CanvasNode(
-        node_id="frame_cleaners",
-        stage_key="frame_cleaners",
-        stage_type="FrameCleanerStage",
-        title="Frame cleaners",
+        node_id="frame_processors",
+        stage_key="frame_processors",
+        stage_type="FrameProcessingStage",
+        title="Frame processors",
         category=NodeCategory.TRANSFORM,
         state=_node_state(active, snapshot),
         components=component_names,
@@ -205,16 +205,16 @@ def _frame_cleaners_node(
             input_types=("FrameBuffer",),
             output_types=("FrameBuffer",),
             emitted_events=emitted_events,
-            configuration=_named_component_configuration(cleaners),
+            configuration=_named_component_configuration(processors),
         ),
         ports=(
-            _port("frame_cleaners", "frames_in", "FrameBuffer", PortDirection.INPUT, PortDataType.FRAME),
-            _port("frame_cleaners", "frames_out", "CleanFrameBuffer", PortDirection.OUTPUT, PortDataType.FRAME),
+            _port("frame_processors", "frames_in", "FrameBuffer", PortDirection.INPUT, PortDataType.FRAME),
+            _port("frame_processors", "frames_out", "ProcessedFrameBuffer", PortDirection.OUTPUT, PortDataType.FRAME),
         ),
-        preview=f"{len(cleaners)} cleaner active" if cleaners else "pass-through stage",
-        position=_position_for("frame_cleaners", positions),
-        warnings=tuple(issue_map["frame_cleaners"]),
-        selected=selected_stage == "frame_cleaners",
+        preview=f"{len(processors)} processor active" if processors else "pass-through stage",
+        position=_position_for("frame_processors", positions),
+        warnings=tuple(issue_map["frame_processors"]),
+        selected=selected_stage == "frame_processors",
     )
 
 
@@ -481,21 +481,21 @@ def _branch_nodes_and_edges(
 
 def _main_pipeline_edges() -> Iterable[CanvasEdge]:
     yield CanvasEdge(
-        edge_id="frame_extractor->frame_cleaners",
+        edge_id="frame_extractor->frame_processors",
         source_node_id="frame_extractor",
         source_port_id="frame_extractor:frames_out",
-        target_node_id="frame_cleaners",
-        target_port_id="frame_cleaners:frames_in",
+        target_node_id="frame_processors",
+        target_port_id="frame_processors:frames_in",
         label="FrameBuffer",
         kind=EdgeKind.MAIN,
     )
     yield CanvasEdge(
-        edge_id="frame_cleaners->signal_extractor",
-        source_node_id="frame_cleaners",
-        source_port_id="frame_cleaners:frames_out",
+        edge_id="frame_processors->signal_extractor",
+        source_node_id="frame_processors",
+        source_port_id="frame_processors:frames_out",
         target_node_id="signal_extractor",
         target_port_id="signal_extractor:frames_in",
-        label="CleanFrameBuffer",
+        label="ProcessedFrameBuffer",
         kind=EdgeKind.MAIN,
     )
     yield CanvasEdge(
@@ -535,7 +535,7 @@ def _collect_stage_events(
     component_sources: dict[str, set[str]] = defaultdict(set)
     stage_plugins = {
         "frame_extractor": [(PluginCategory.FRAME_EXTRACTOR, pipeline.get("frame_extractor", {}).get("name"))],
-        "frame_cleaners": [(PluginCategory.FRAME_CLEANER, item.get("name")) for item in pipeline.get("frame_cleaners", [])],
+        "frame_processors": [(PluginCategory.SINGLE_FRAME_PROCESSOR, item.get("name")) for item in pipeline.get("frame_processors", [])],
         "signal_extractor": [(PluginCategory.SIGNAL_EXTRACTOR, pipeline.get("signal_extractor", {}).get("name"))],
         "signal_cleaners": [(PluginCategory.SIGNAL_CLEANER, item.get("name")) for item in pipeline.get("signal_cleaners", [])],
         "analyzers": [(PluginCategory.ANALYZER, item.get("name")) for item in pipeline.get("analyzers", [])],
@@ -575,7 +575,7 @@ def _group_runtime_issues(issues: list[str]) -> dict[str, list[str]]:
         elif "analyzer" in lowered:
             issue_map["analyzers"].append(issue)
         elif "opencv_gray" in lowered:
-            issue_map["frame_cleaners"].append(issue)
+            issue_map["frame_processors"].append(issue)
     return issue_map
 
 

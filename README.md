@@ -32,7 +32,7 @@ SEF/
 │   │   ├── utils/             # utility OpenCV per selezioni geometriche
 │   │   └── visualization/     # PipelineOutputs, metadata, VisualArtifact
 │   ├── frame_extractors/      # acquisizione frame da video
-│   ├── frame_cleaners/        # preprocessing dei frame
+│   ├── frame_processors/        # preprocessing dei frame
 │   ├── signal_extractors/     # estrazione/tracking dei segnali
 │   ├── signal_cleaners/       # smoothing, widening, outlier rejection
 │   ├── analyzers/             # trasformazione del segnale in dati analitici
@@ -70,7 +70,7 @@ Il cuore del sistema è la classe `Pipeline`, che esegue i passi nell'ordine seg
 
 ```mermaid
 flowchart LR
-    A[Frame Extractor] --> B[Frame Cleaners]
+    A[Frame Extractor] --> B[Frame Processors]
     B --> C[Signal Extractor]
     C --> D[Signal Cleaners]
     D --> E[Analyzers]
@@ -81,7 +81,8 @@ flowchart LR
 In termini di responsabilità:
 
 - il `FrameExtractor` produce un `FrameBuffer`;
-- i `FrameCleaner` trasformano i frame grezzi;
+- gli `ISingleFrameProcessor` trasformano un singolo `Frame`;
+- gli `IFrameBufferProcessor` trasformano l'intero `FrameBuffer`;
 - il `SignalExtractor` converte i frame in un `Signal`;
 - i `SignalCleaner` raffinano il segnale;
 - gli `Analyzer` producono dati strutturati (`IData`);
@@ -94,7 +95,7 @@ In termini di responsabilità:
 - `frame_extractor` obbligatorio;
 - `signal_extractor` obbligatorio;
 - almeno un `analyzer` obbligatorio;
-- cleaner, visualizer e binding visuali opzionali;
+- processor, cleaner di segnale, visualizer e binding visuali opzionali;
 - nessun campo può contenere `None`.
 
 Questa scelta è importante perché la pipeline non decide nulla: riceve un contesto valido e lo esegue.
@@ -192,7 +193,7 @@ Un esempio concreto già presente è `NewTrackBranchingRule`, che reagisce all'e
 Le categorie canoniche sono:
 
 - `frame_extractor`
-- `frame_cleaner`
+- `single_frame_processor`
 - `signal_extractor`
 - `signal_cleaner`
 - `analyzer`
@@ -206,7 +207,7 @@ Nel repository esistono due punti di ingresso principali:
 - `create_builtin_registry()` in `library/core/plugins/PluginRegistry.py`
   registra un set minimo e stabile di componenti built-in;
 - `ui/services/registry_bootstrap.py`
-  costruisce il registry esteso usato da `SEF Studio`, includendo più cleaner, analyzer, visualizer e signal extractor.
+  costruisce il registry esteso usato da `SEF Studio`, includendo più processor, cleaner di segnale, analyzer, visualizer e signal extractor.
 
 ### Perché è importante
 
@@ -243,13 +244,13 @@ Di seguito i gruppi principali già implementati nel repository.
 - `OpenCVBufferedFrameExtractor`
   legge un video con OpenCV e produce un `FrameBuffer`, con supporto a `resize`, `stride` e `max_frames`.
 
-### Frame cleaners
+### Frame processors
 
-- `OpenCVGrayFrameCleaner`
-- `SmoothingFrameCleaner`
-- `OpenCVResizeFrameCleaner`
-- `OpenCVBackgroundSubtractionFrameCleaner`
-- `OpenCVHistogramEqualizationFrameCleaner`
+- `OpenCVGrayFrameProcessor`
+- `SmoothingFrameProcessor`
+- `OpenCVResizeFrameProcessor`
+- `OpenCVBackgroundSubtractionFrameProcessor`
+- `OpenCVHistogramEqualizationFrameProcessor`
 
 Questi moduli servono a normalizzare o evidenziare il segnale utile prima dell'estrazione.
 
@@ -363,7 +364,8 @@ python -m unittest discover -s tests -v
 from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-from library.frame_cleaners.OpenCVGrayFrameCleaner import OpenCVGrayFrameCleaner
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
+from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
@@ -376,7 +378,7 @@ context = (
             config={"stride": 1, "max_frames": 120},
         )
     )
-    .add_frame_cleaner(OpenCVGrayFrameCleaner())
+    .add_frame_processor(SingleFrameProcessorAdapter(OpenCVGrayFrameProcessor()))
     .with_signal_extractor(
         OpenCVBufferedSignalExtractor(
             tracker_type="CSRT",
@@ -419,7 +421,7 @@ config = {
             "name": "opencv_buffered",
             "params": {"path": "videos/Baloons.mp4"},
         },
-        "frame_cleaners": [
+        "frame_processors": [
             {"name": "opencv_gray"},
         ],
         "signal_extractor": {
@@ -538,4 +540,3 @@ SEF è adatto quando serve un'infrastruttura componibile per computer vision spe
 - builder fluente: [library/core/pipeline/FluentPipelineBuilder.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/library/core/pipeline/FluentPipelineBuilder.py)
 - registry: [library/core/plugins/PluginRegistry.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/library/core/plugins/PluginRegistry.py)
 - bootstrap UI del registry: [ui/services/registry_bootstrap.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/ui/services/registry_bootstrap.py)
-

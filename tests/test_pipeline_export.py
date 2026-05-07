@@ -15,7 +15,7 @@ from library.core.artifacts.Signal import Signal
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
-from library.core.interfaces.IFrameCleaner import IFrameCleaner
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
@@ -25,6 +25,7 @@ from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from library.core.visualization.VisualArtifact import TextArtifact, VisualArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
@@ -52,15 +53,15 @@ class ExportFrameExtractor(IFrameExtractor):
         return buffer
 
 
-class ExportFrameCleaner(IFrameCleaner):
-    """No-op cleaner with constructor state that must survive export."""
+class ExportFrameProcessor(ISingleFrameProcessor):
+    """No-op single-frame processor with constructor state that must survive export."""
 
     def __init__(self, label: str = "clean", config: dict[str, Any] | None = None):
         super().__init__(config)
         self.label = label
 
-    def clean(self, frame: Frame) -> Frame:
-        frame.metadata["cleaner"] = self.label
+    def process(self, frame: Frame) -> Frame:
+        frame.metadata["processor"] = self.label
         return frame
 
 
@@ -152,7 +153,7 @@ class ExportVisualizer(IVisualizer):
 def build_export_registry() -> PluginRegistry:
     registry = PluginRegistry()
     registry.register(PluginCategory.FRAME_EXTRACTOR, "export_frame_extractor", ExportFrameExtractor)
-    registry.register(PluginCategory.FRAME_CLEANER, "export_frame_cleaner", ExportFrameCleaner)
+    registry.register(PluginCategory.SINGLE_FRAME_PROCESSOR, "export_single_frame_processor", ExportFrameProcessor)
     registry.register(PluginCategory.SIGNAL_EXTRACTOR, "export_signal_extractor", ExportSignalExtractor)
     registry.register(PluginCategory.SIGNAL_CLEANER, "export_signal_cleaner", ExportSignalCleaner)
     registry.register(PluginCategory.ANALYZER, "export_analyzer", ExportAnalyzer)
@@ -167,8 +168,8 @@ def build_config() -> dict[str, Any]:
                 "name": "export_frame_extractor",
                 "params": {"frame_count": 4, "config": {"source_id": "unit-test"}},
             },
-            "frame_cleaners": [
-                {"name": "export_frame_cleaner", "params": {"label": "stable-cleaner"}},
+            "frame_processors": [
+                {"name": "export_single_frame_processor", "params": {"label": "stable-processor"}},
             ],
             "signal_extractor": {
                 "name": "export_signal_extractor",
@@ -194,7 +195,19 @@ def context_signature(context) -> dict[str, Any]:
             "frame_count": context.frame_extractor.frame_count,
             "config": dict(context.frame_extractor.config),
         },
-        "frame_cleaners": [(cleaner.label, dict(cleaner.config)) for cleaner in context.frame_cleaners],
+        "frame_processors": [
+            (
+                processor.single_frame_processor.label
+                if isinstance(processor, SingleFrameProcessorAdapter)
+                else processor.label,
+                dict(
+                    processor.single_frame_processor.config
+                    if isinstance(processor, SingleFrameProcessorAdapter)
+                    else processor.config
+                ),
+            )
+            for processor in context.frame_processors
+        ],
         "signal_extractor": {
             "offset": context.signal_extractor.offset,
             "config": dict(context.signal_extractor.config),
@@ -253,7 +266,7 @@ class PipelineExportTests(unittest.TestCase):
         context = (
             FluentPipelineBuilder()
             .with_frame_extractor(ExportFrameExtractor(frame_count=2, config={"source_id": "fluent"}))
-            .add_frame_cleaner(ExportFrameCleaner(label="fluent-cleaner"))
+            .add_frame_processor(SingleFrameProcessorAdapter(ExportFrameProcessor(label="fluent-processor")))
             .with_signal_extractor(ExportSignalExtractor(offset=1.25))
             .add_signal_cleaner(ExportSignalCleaner(delta=0.75))
             .add_analyzer(ExportAnalyzer(label="fluent", config={"unit": "px"}))
@@ -269,7 +282,7 @@ class PipelineExportTests(unittest.TestCase):
         self.assertEqual(exported_config["exported_at"], "2025-01-01T00:00:00+00:00")
         self.assertEqual(exported_config["pipeline"]["frame_extractor"]["name"], "export_frame_extractor")
         self.assertEqual(exported_config["pipeline"]["frame_extractor"]["params"]["frame_count"], 2)
-        self.assertEqual(exported_config["pipeline"]["frame_cleaners"][0]["params"]["label"], "fluent-cleaner")
+        self.assertEqual(exported_config["pipeline"]["frame_processors"][0]["params"]["label"], "fluent-processor")
         self.assertEqual(exported_config["pipeline"]["signal_extractor"]["params"]["offset"], 1.25)
         self.assertEqual(exported_config["pipeline"]["signal_cleaners"][0]["params"]["delta"], 0.75)
         self.assertEqual(exported_config["pipeline"]["analyzers"][0]["params"]["config"]["unit"], "px")
