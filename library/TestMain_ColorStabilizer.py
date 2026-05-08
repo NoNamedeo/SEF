@@ -21,6 +21,7 @@ from library.core.utils.OpenCVMaskSelector import OpenCVMaskSelector
 from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.core.visualization.VisualArtifact import ImageArtifact, VideoArtifact
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
 from library.frame_processors.OpenCVBackgroundReplacementFrameProcessor import OpenCVBackgroundReplacementFrameProcessor
 from library.frame_processors.OpenCVInpaintFrameProcessor import OpenCVInpaintFrameProcessor
 from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
@@ -29,6 +30,7 @@ from library.live_analyzers.LiveVerticalPositionAnalyzer import LiveVerticalPosi
 from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+from library.visualizers.IntermediateFramesVisualizer import IntermediateFramesVisualizer
 from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
 from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
@@ -46,26 +48,20 @@ def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize, m
         )
         .add_frame_processor(SingleFrameProcessorAdapter(OpenCVRotateFrameProcessor(rotation=FrameRotation.ROTATE_90)))
         .add_frame_processor(SingleFrameProcessorAdapter(OpenCVResizeFrameProcessor(resize)))
-        .add_frame_processor(SingleFrameProcessorAdapter(OpenCVInpaintFrameProcessor(mask, radius=3, method=1)))
-        #.add_frame_processor(SingleFrameProcessorAdapter(ColorStabilizationFrameCleaner()))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVZoomFrameCleaner(zoom_box)))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVDynamicBackgroundReplacementFrameCleaner(BGimage, mask, resize)))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVBackgroundReplacementFrameProcessor(BGimage, mask, resize)))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVHistogramEqualizationFrameCleaner()))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVBackgroundSubtractionFrameCleaner()))
+        .add_frame_processor(SingleFrameProcessorAdapter(ColorStabilizationFrameProcessor()))
 
         .with_signal_extractor(
                 OpenCVBufferedSignalExtractor(
                 start_box=start_box,
                 live_analyzer=None,
                 config={
-                "show": True,
-                "show_graph": False
+                "show": True
                 },
             )
         )
         .with_analyzers([VerticalPositionAnalyzer()])
         .add_visualizer_for_results(MatplotlibFunctionVisualizer(), [0])
+        .add_intermediate_frame_visualizer(IntermediateFramesVisualizer())
         .build_context()
     )
 
@@ -80,12 +76,12 @@ def main():
     rotation = FrameRotation.ROTATE_90
 
     zoom_box = None
-    zoom_box = OpenCVStartBoxSelector().select_start(
-        str(video_path), single_frame_processors=[OpenCVRotateFrameProcessor(rotation), OpenCVResizeFrameProcessor(resize)]
-    )
+    # zoom_box = OpenCVStartBoxSelector().select_start(
+    #     str(video_path), single_frame_processors=[OpenCVRotateFrameProcessor(rotation), OpenCVResizeFrameProcessor(resize)]
+    # )
 
     mask = None
-    mask = OpenCVMaskSelector().select_mask(str(video_path), single_frame_processors=[OpenCVRotateFrameProcessor(rotation), OpenCVResizeFrameProcessor(resize)])# OpenCVZoomFrameCleaner(zoom_box)])
+    #mask = OpenCVMaskSelector().select_mask(str(video_path), single_frame_processors=[OpenCVRotateFrameProcessor(rotation), OpenCVResizeFrameProcessor(resize)])# OpenCVZoomFrameCleaner(zoom_box)])
 
     start_box = None
     start_box = OpenCVStartBoxSelector().select_start(

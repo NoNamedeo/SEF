@@ -11,6 +11,7 @@ from PIL import Image
 from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
 from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
 from library.analyzers.HoriziontalPositionAnalyzer import HorizontalPositionAnalyzer
+from library.analyzers.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
 from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 from library.core.enum.FrameRotation import FrameRotation
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
@@ -22,6 +23,8 @@ from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.core.visualization.VisualArtifact import ImageArtifact, VideoArtifact
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.frame_processors.OpenCVBackgroundReplacementFrameProcessor import OpenCVBackgroundReplacementFrameProcessor
+from library.frame_processors.OpenCVDynamicBackgroundReplacementFrameProcessor import \
+    OpenCVDynamicBackgroundReplacementFrameProcessor
 from library.frame_processors.OpenCVInpaintFrameProcessor import OpenCVInpaintFrameProcessor
 from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
 from library.frame_processors.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
@@ -31,6 +34,7 @@ from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBuffer
 from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
 from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
 from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
 
 
 def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize, mask, BGimage) -> PipelineContext:
@@ -40,27 +44,20 @@ def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize, m
             OpenCVBufferedFrameExtractor(
                 video_path,
                 config={
-                    "max_frames": 360  # (180 Frame)/(24 FPS) = 5 secondi
+                    "max_frames": 190  # (180 Frame)/(24 FPS) = 5 secondi
                 },
             )
         )
         .add_frame_processor(SingleFrameProcessorAdapter(OpenCVRotateFrameProcessor(rotation=FrameRotation.ROTATE_90)))
         .add_frame_processor(SingleFrameProcessorAdapter(OpenCVResizeFrameProcessor(resize)))
-        .add_frame_processor(SingleFrameProcessorAdapter(OpenCVInpaintFrameProcessor(mask, radius=3, method=1)))
-        #.add_frame_processor(SingleFrameProcessorAdapter(ColorStabilizationFrameCleaner()))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVZoomFrameCleaner(zoom_box)))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVDynamicBackgroundReplacementFrameCleaner(BGimage, mask, resize)))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVBackgroundReplacementFrameProcessor(BGimage, mask, resize)))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVHistogramEqualizationFrameCleaner()))
-        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVBackgroundSubtractionFrameCleaner()))
+        .add_frame_processor(SingleFrameProcessorAdapter(OpenCVDynamicBackgroundReplacementFrameProcessor(BGimage, mask, resize)))
 
         .with_signal_extractor(
                 OpenCVBufferedSignalExtractor(
                 start_box=start_box,
                 live_analyzer=None,
                 config={
-                "show": True,
-                "show_graph": False
+                    "show": True
                 },
             )
         )
@@ -80,9 +77,9 @@ def main():
     rotation = FrameRotation.ROTATE_90
 
     zoom_box = None
-    zoom_box = OpenCVStartBoxSelector().select_start(
-        str(video_path), single_frame_processors=[OpenCVRotateFrameProcessor(rotation), OpenCVResizeFrameProcessor(resize)]
-    )
+    # zoom_box = OpenCVStartBoxSelector().select_start(
+    #     str(video_path), single_frame_processors=[OpenCVRotateFrameProcessor(rotation), OpenCVResizeFrameProcessor(resize)]
+    # )
 
     mask = None
     mask = OpenCVMaskSelector().select_mask(str(video_path), single_frame_processors=[OpenCVRotateFrameProcessor(rotation), OpenCVResizeFrameProcessor(resize)])# OpenCVZoomFrameCleaner(zoom_box)])
