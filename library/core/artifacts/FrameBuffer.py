@@ -1,46 +1,62 @@
 from __future__ import annotations
 
-from collections import deque
 from collections.abc import Iterable, Iterator
+from queue import Queue
 
 from library.core.artifacts.Frame import Frame
 
 
+_SENTINEL = object()
+
+
 class FrameBuffer:
     """
-    In-memory frame handoff between extractors and signal extractors.
-
-    the pipeline is synchronous. This buffer is
-    intentionally simple and deterministic so the core can be executed
-    end-to-end without extra threading infrastructure.
+    Thread-safe streaming buffer based on Queue.
     """
 
-    def __init__(self, buffer_size: int | None = None, frames: Iterable[Frame] | None = None):
-        self.capacity = buffer_size
-        self._frames = deque(frames or [])
+    def __init__(
+        self,
+        buffer_size: int | None = None,
+        frames: Iterable[Frame] | None = None,
+    ):
+        self.capacity = buffer_size or 0
+        self._queue: Queue = Queue(maxsize=self.capacity)
         self.closed = False
 
+        if frames:
+            for f in frames:
+                self.put(f)
+
     def put(self, frame: Frame) -> None:
-        self._frames.append(frame)
+        self._queue.put(frame)
 
     def get(self) -> Frame:
-        if self.is_empty():
-            raise IndexError("FrameBuffer is empty")
-        return self._frames.popleft()
+        item = self._queue.get()
+
+        if item is _SENTINEL:
+            # ripubblica sentinel per altri consumer
+            self._queue.put(_SENTINEL)
+            self.closed = True
+            raise StopIteration
+
+        return item
 
     def close(self) -> None:
         self.closed = True
+        self._queue.put(_SENTINEL)
 
     def is_empty(self) -> bool:
-        return not self._frames
+        return self._queue.empty()
 
     def size(self) -> int:
-        return len(self._frames)
+        return self._queue.qsize()
 
     def clone_empty(self) -> "FrameBuffer":
         return FrameBuffer(buffer_size=self.capacity)
 
     def __iter__(self) -> Iterator[Frame]:
-        while not self.closed or self._frames:
-            if self._frames:
+        while True:
+            try:
                 yield self.get()
+            except StopIteration:
+                break

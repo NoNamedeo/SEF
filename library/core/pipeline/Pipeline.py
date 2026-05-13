@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping
 
@@ -76,7 +77,101 @@ class Pipeline:
     # ── Public API ──────────────────────────────────────────────────────────
 
     def run(self) -> PipelineOutputs:
+        def run(self) -> PipelineOutputs:
+            self._inject_event_bus(self._event_bus)
+            ctx = self._context
+
+            frame_buffer = ctx.frame_extractor.buffer
+
+            extractor_thread = threading.Thread(
+                target=lambda: self._run_step(
+                    "frame_extraction",
+                    lambda: ctx.frame_extractor.extract(),
+                ),
+                daemon=True,
+            )
+
+            extractor_thread.start()
+
+            signal_buffer = ctx.signal_extractor.buffer
+
+            signal_thread = threading.Thread(
+                target=lambda: self._run_step(
+                    "signal_extraction",
+                    lambda: ctx.signal_extractor.extract(frame_buffer),
+                ),
+                daemon=True,
+            )
+
+            signal_thread.start()
+
+            current_signal = signal_buffer
+
+            cleaner_threads = []
+
+            for i, cleaner in enumerate(ctx.signal_cleaners):
+                input_signal = current_signal
+                output_signal = cleaner.buffer
+
+                thread = threading.Thread(
+                    target=lambda c=cleaner, s=input_signal, idx=i: self._run_step(
+                        f"signal_cleaning[{idx}]",
+                        lambda: c.clean(s),
+                    ),
+                    daemon=True,
+                )
+
+                thread.start()
+
+                cleaner_threads.append(thread)
+
+                current_signal = output_signal
+
+            results = []
+
+            analyzer_threads = []
+
+            for i, analyzer in enumerate(ctx.analyzers):
+                output_data = analyzer.buffer
+
+                thread = threading.Thread(
+                    target=lambda a=analyzer, s=current_signal, idx=i: results.append(
+                        self._run_step(
+                            f"analysis[{idx}]",
+                            lambda: a.analyze(s),
+                        )
+                    ),
+                    daemon=True,
+                )
+
+                thread.start()
+
+                analyzer_threads.append(thread)
+
+            extractor_thread.join()
+            signal_thread.join()
+
+            for t in cleaner_threads:
+                t.join()
+
+            for t in analyzer_threads:
+                t.join()
+
+            final_artifacts = self._run_visualizers(results)
+
+            return PipelineOutputs(
+                results=tuple(results),
+                final_artifacts=tuple(final_artifacts),
+                debug_artifacts=(),
+                metadata=PipelineRunMetadata(
+                    pipeline_id=self._resolved_pipeline_id(),
+                    generated_at=datetime.now(timezone.utc),
+                    execution_metadata=dict(self._execution_metadata),
+                ),
+                intermediate_frames=IntermediateFrameArtifactCollection(),
+            )
         """Execute the full pipeline and return results plus visual artifacts."""
+        """
         self._inject_event_bus(self._event_bus)
         ctx = self._context
 
@@ -120,6 +215,7 @@ class Pipeline:
             intermediate_frames=intermediate_frames,
         )
         return self._with_reproducibility_exports(outputs)
+        """
 
     # ── Internals ───────────────────────────────────────────────────────────
 

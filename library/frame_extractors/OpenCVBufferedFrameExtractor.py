@@ -37,7 +37,7 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
             raise ValueError(f"max_frames cannot exceed hard limit {self.HARD_MAX_FRAMES}")
 
     def extract(self) -> FrameBuffer:
-        buffer = self.buffer.clone_empty()
+        buffer = self.buffer
         cap = cv2.VideoCapture(self.path)
 
         if not cap.isOpened():

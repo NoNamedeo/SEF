@@ -16,7 +16,7 @@ class VerticalPositionStreamAnalyzer(IAnalyzer):
         self.use_timestamps = bool(self.config.get("use_timestamps", True))
 
     def analyze(self, signal: SignalBuffer) -> DataBuffer:
-        data_buffer = self.buffer.clone_empty()
+        data_buffer = self.buffer
         x_label = "Time [s]" if self.use_timestamps else "Frame Index"
 
         for sample in signal:

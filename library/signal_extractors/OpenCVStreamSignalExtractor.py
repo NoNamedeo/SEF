@@ -36,7 +36,7 @@ class OpenCVStreamSignalExtractor(ISignalExtractor):
             raise ValueError("example_box must have positive width and height")
 
         tracker = self._build_tracker()
-        samples = self.buffer.clone_empty()
+        samples = self.buffer
         current_box: BoundingBox | None = None
 
         for position, frame in enumerate(buffer):

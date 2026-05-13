@@ -1,46 +1,61 @@
 from __future__ import annotations
 
-from collections import deque
 from collections.abc import Iterable, Iterator
+from queue import Queue
 
 from library.core.interfaces.IData import IData
 
 
+_SENTINEL = object()
+
+
 class DataBuffer(IData):
     """
-    In-memory handoff for analytical data between stream analyzers and visualizers.
-
-    The buffer mirrors FrameBuffer semantics to keep stream pipeline stages
-    consistent from frames to signals to chart-ready data.
+    Thread-safe streaming buffer for analysis outputs.
     """
 
-    def __init__(self, buffer_size: int | None = None, data: Iterable[IData] | None = None):
-        self.capacity = buffer_size
-        self._data = deque(data or [])
+    def __init__(
+        self,
+        buffer_size: int | None = None,
+        data: Iterable[IData] | None = None,
+    ):
+        self.capacity = buffer_size or 0
+        self._queue: Queue = Queue(maxsize=self.capacity)
         self.closed = False
 
+        if data:
+            for d in data:
+                self.put(d)
+
     def put(self, item: IData) -> None:
-        self._data.append(item)
+        self._queue.put(item)
 
     def get(self) -> IData:
-        if self.is_empty():
-            raise IndexError("DataBuffer is empty")
-        return self._data.popleft()
+        item = self._queue.get()
+
+        if item is _SENTINEL:
+            self._queue.put(_SENTINEL)
+            self.closed = True
+            raise StopIteration
+
+        return item
 
     def close(self) -> None:
         self.closed = True
+        self._queue.put(_SENTINEL)
 
     def is_empty(self) -> bool:
-        return not self._data
+        return self._queue.empty()
 
     def size(self) -> int:
-        return len(self._data)
+        return self._queue.qsize()
 
     def clone_empty(self) -> "DataBuffer":
         return DataBuffer(buffer_size=self.capacity)
 
     def __iter__(self) -> Iterator[IData]:
-        while not self.closed or self._data:
-            if self._data:
+        while True:
+            try:
                 yield self.get()
-
+            except StopIteration:
+                break
