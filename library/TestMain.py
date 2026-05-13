@@ -60,9 +60,11 @@ class BackgroundReplacementPipelineConfig:
         """Return the demo defaults used by the original script."""
         return cls(
             video_path=PROJECT_ROOT / "videos" / "Tower.mp4",
-            background_image_path=PROJECT_ROOT / "images" / "Tower_without_people.jpeg",
+            background_image_path=PROJECT_ROOT / "images" / "Tower_without_people.png",
             cleaned_video_path=PROJECT_ROOT / "output" / "cleaned_videos" / "Tower_without_people.mp4",
             artifact_output_dir=PROJECT_ROOT / "output" / "visualizations" / "background_replacement",
+
+            max_frames=9999
         )
 
     def validate(self) -> None:
