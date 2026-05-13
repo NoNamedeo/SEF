@@ -15,11 +15,11 @@ from library.core.artifacts.Signal import Signal
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.interfaces.IVisualizer import IVisualizer
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
@@ -263,6 +263,7 @@ class PipelineExportTests(unittest.TestCase):
 
     def test_config_exporter_infers_fluent_component_params_with_registry(self):
         registry = build_export_registry()
+        streamlit_loaded_before_export = "streamlit" in sys.modules
         context = (
             FluentPipelineBuilder()
             .with_frame_extractor(ExportFrameExtractor(frame_count=2, config={"source_id": "fluent"}))
@@ -290,7 +291,8 @@ class PipelineExportTests(unittest.TestCase):
 
         rebuilt_context = ConfigPipelineBuilder(registry).build_context(exported_config)
         self.assertEqual(context_signature(rebuilt_context), context_signature(context))
-        self.assertNotIn("streamlit", sys.modules)
+        if not streamlit_loaded_before_export:
+            self.assertNotIn("streamlit", sys.modules)
 
 
 if __name__ == "__main__":

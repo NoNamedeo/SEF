@@ -194,9 +194,9 @@ def test_intermediate_frame_visualizers_render_multiple_processor_stages() -> No
 
     assert outputs.intermediate_frames.count == 4
     assert len(outputs.intermediate_frames.stage_names) == 2
-    assert len(outputs.artifacts) == 1
-    assert isinstance(outputs.artifacts[0], ImageArtifact)
-    assert len(outputs.artifacts[0].data) > 0
+    assert len(outputs.debug_artifacts) == 1
+    assert isinstance(outputs.debug_artifacts[0], ImageArtifact)
+    assert len(outputs.debug_artifacts[0].data) > 0
 
     per_snapshot_artifacts = IntermediateFramesVisualizer(config={"max_artifacts": 2}).render(outputs.intermediate_frames)
     assert len(per_snapshot_artifacts) == 2
@@ -270,7 +270,7 @@ def test_config_builder_parses_intermediate_frame_capture_and_visualizers(tmp_pa
     assert context.intermediate_frame_capture.max_stored_frames == 3
     assert len(context.intermediate_frame_visualizers) == 1
     assert outputs.intermediate_frames.count == 1
-    assert len(outputs.artifacts) == 1
+    assert len(outputs.debug_artifacts) == 1
 
 
 def test_config_builder_enables_capture_when_processor_requests_debug_artifacts() -> None:

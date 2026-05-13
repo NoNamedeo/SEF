@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +13,9 @@ from library.core.interfaces.IFrameExtractor import IFrameExtractor
 class OpenCVBufferedFrameExtractor(IFrameExtractor):
     """Read a video with OpenCV and expose raw frames through a FrameBuffer."""
 
+    DEFAULT_MAX_FRAMES = 300
+    HARD_MAX_FRAMES = 10_000
+
     def __init__(
         self,
         path: str | Path,
@@ -25,10 +27,14 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
         self.buffer = buffer or FrameBuffer()
         self.resize = self.config.get("resize")
         self.stride = int(self.config.get("stride", 1))
-        self.max_frames = self.config.get("max_frames")
+        self.max_frames = int(self.config.get("max_frames", self.DEFAULT_MAX_FRAMES))
 
         if self.stride <= 0:
             raise ValueError("stride must be greater than 0")
+        if self.max_frames <= 0:
+            raise ValueError("max_frames must be greater than 0")
+        if self.max_frames > self.HARD_MAX_FRAMES:
+            raise ValueError(f"max_frames cannot exceed hard limit {self.HARD_MAX_FRAMES}")
 
     def extract(self) -> FrameBuffer:
         buffer = self.buffer.clone_empty()

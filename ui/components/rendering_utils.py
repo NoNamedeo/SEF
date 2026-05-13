@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import tempfile
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-import tempfile
 from typing import Any
 
 import streamlit as st
@@ -20,6 +20,7 @@ MAX_METADATA_ITEMS = 24
 MAX_SEQUENCE_ITEMS = 16
 MAX_STRING_LENGTH = 240
 MAX_JSON_DEPTH = 3
+MAX_IMAGE_RENDER_BYTES = 8 * 1024 * 1024
 MAX_VIDEO_DOWNLOAD_BYTES = 25 * 1024 * 1024
 
 

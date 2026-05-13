@@ -6,11 +6,6 @@ from collections.abc import Sequence
 
 import streamlit as st
 
-from ui.components.rendering_utils import (
-    materialize_video_artifact,
-    render_safe_metadata,
-    render_video_download,
-)
 from library.core.visualization.VisualArtifact import (
     VIDEO_ARTIFACT_TYPES,
     ImageArtifact,
@@ -18,6 +13,12 @@ from library.core.visualization.VisualArtifact import (
     TableArtifact,
     TextArtifact,
     VisualArtifact,
+)
+from ui.components.rendering_utils import (
+    MAX_IMAGE_RENDER_BYTES,
+    materialize_video_artifact,
+    render_safe_metadata,
+    render_video_download,
 )
 
 
@@ -47,6 +48,17 @@ def render_visual_artifacts(
 
 def _render_artifact_body(artifact: VisualArtifact, *, key: str) -> None:
     if isinstance(artifact, ImageArtifact):
+        if len(artifact.data) > MAX_IMAGE_RENDER_BYTES:
+            st.warning(f"Preview non renderizzata: immagine oltre {MAX_IMAGE_RENDER_BYTES} bytes.")
+            st.download_button(
+                "Download image",
+                data=artifact.data,
+                file_name=f"{artifact.artifact_id}.png",
+                mime=artifact.mime_type,
+                key=f"{key}_download",
+                width="stretch",
+            )
+            return
         st.image(artifact.data)
         return
     if isinstance(artifact, VIDEO_ARTIFACT_TYPES):

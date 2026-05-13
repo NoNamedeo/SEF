@@ -36,13 +36,16 @@ from library.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
 from library.core.pipeline.BranchingCoordinator import BranchingCoordinator
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
-from library.core.pipeline.Pipeline import Pipeline
+from library.core.pipeline.Pipeline import Pipeline, PipelineExecutionError
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineErrors import PipelineRunAlreadyActiveError
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
 from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
+from library.core.visualization.PipelineOutputs import PipelineOutputs
+from library.core.visualization.VisualArtifact import VisualArtifact
+from library.core.visualization.VisualizationContext import VisualizationContext
 from library.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 # ── Stub components ──────────────────────────────────────────────────────────
@@ -89,7 +92,7 @@ class EmittingSignalExtractor(ISignalExtractor, IEventEmitter):
 
     def extract(self, buffer: FrameBuffer) -> ISignal:
         samples: list[BoxSignalSample] = []
-        for i, frame in enumerate(buffer):
+        for i, _frame in enumerate(buffer):
             samples.append(BoxSignalSample(frame_index=i, box=(0, 0, 10, 10), centroid=(5.0, float(i))))
             if i == 0:
                 self.emit("test_event", self._event_payload)
@@ -120,8 +123,13 @@ class RecordingVisualizer(IVisualizer):
         super().__init__()
         self.calls: list[str] = []
 
-    def visualize(self, data: IData) -> None:
+    def render(
+        self,
+        data: IData,
+        context: VisualizationContext | None = None,
+    ) -> tuple[VisualArtifact, ...]:
         self.calls.append(data.label)
+        return ()
 
 
 # ── Branching rule stubs ─────────────────────────────────────────────────────
@@ -178,7 +186,7 @@ class FakePipelineRunner(IPipelineRunner):
         self.cancelled: list[str] = []
         self.shutdown_calls: list[bool] = []
 
-    def run(self, pipeline_id: str, pipeline: Pipeline) -> list[IData]:
+    def run(self, pipeline_id: str, pipeline: Pipeline) -> PipelineOutputs:
         self.ran.append((pipeline_id, pipeline))
         if self._monitor is not None:
             self._monitor.register(pipeline_id)
@@ -188,7 +196,7 @@ class FakePipelineRunner(IPipelineRunner):
             if self._monitor is not None:
                 self._monitor.complete(pipeline_id)
 
-    def submit(self, pipeline_id: str, pipeline: Pipeline) -> Future[list[IData]]:
+    def submit(self, pipeline_id: str, pipeline: Pipeline) -> Future[PipelineOutputs]:
         if self._fail_submit_with is not None:
             raise self._fail_submit_with
         self.submitted.append((pipeline_id, pipeline))
@@ -276,9 +284,15 @@ class RecordingPipelineFactory(IPipelineFactory):
         context: PipelineContext,
         event_bus: IEventBus | None = None,
         pipeline_id: str | None = None,
+        execution_metadata: dict[str, Any] | None = None,
     ) -> Pipeline:
         self.created.append(context)
-        return Pipeline(context, event_bus=event_bus, pipeline_id=pipeline_id)
+        return Pipeline(
+            context,
+            event_bus=event_bus,
+            pipeline_id=pipeline_id,
+            execution_metadata=execution_metadata,
+        )
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -312,8 +326,8 @@ def _event_pipeline_id(event: Event) -> str:
     return event.require("pipeline_id")
 
 
-def _event_results(event: Event) -> list:
-    return event.require("results")
+def _event_result_count(event: Event) -> int:
+    return event.require("result_count")
 
 
 def _make_orchestrator_with_branching(
@@ -480,9 +494,9 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
     def test_run_executes_synchronously_without_event_bus(self):
         _, runner, _, orch = self._make()
 
-        results = orch.run(_make_context())
+        outputs = orch.run(_make_context())
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(outputs.results), 1)
         self.assertEqual(len(runner.ran), 1)
         self.assertEqual(runner.submitted, [])
 
@@ -491,9 +505,9 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
         runner = FakePipelineRunner(monitor)
         orch = PipelineOrchestrator(runner=runner)
 
-        pipeline_id = orch.submit(_make_context(), pipeline_id="direct")
+        future = orch.submit(_make_context(), pipeline_id="direct")
 
-        self.assertEqual(pipeline_id, "direct")
+        self.assertIsInstance(future, Future)
         self.assertEqual(len(runner.submitted), 1)
         self.assertIn("direct", monitor._active)
 
@@ -532,7 +546,7 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
     def test_invalid_pipeline_event_is_ignored(self):
         bus = EventBus()
         runner = FakePipelineRunner()
-        orch = PipelineOrchestrator(runner=runner, bus=bus)
+        PipelineOrchestrator(runner=runner, bus=bus)
 
         bus.dispatch(
             Event(
@@ -549,7 +563,7 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
         runner = FakePipelineRunner(
             fail_submit_with=PipelineRunAlreadyActiveError("already active")
         )
-        orch = PipelineOrchestrator(runner=runner, bus=bus)
+        PipelineOrchestrator(runner=runner, bus=bus)
 
         bus.dispatch(_make_pipeline_event("duplicate", _make_context()))
 
@@ -593,7 +607,7 @@ class PipelineOrchestratorIntegrationTests(unittest.TestCase):
 
         self.assertEqual(len(payloads), 1)
         self.assertEqual(_event_pipeline_id(payloads[0]), "run-1")
-        self.assertEqual(len(_event_results(payloads[0])), 1)
+        self.assertEqual(_event_result_count(payloads[0]), 1)
 
     def test_before_run_fires_before_after_run(self):
         bus = EventBus()
@@ -626,10 +640,10 @@ class PipelineOrchestratorIntegrationTests(unittest.TestCase):
         runner = ThreadedPipelineRunner(monitor=monitor)
 
         future = runner.submit("async", Pipeline(_make_context()))
-        results = future.result(timeout=5)
+        outputs = future.result(timeout=5)
         snapshot = runner.snapshot("async")
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(outputs.results), 1)
         self.assertEqual(monitor.active_ids(), [])
         self.assertIsNotNone(snapshot)
         self.assertEqual(snapshot.state, PipelineRunState.SUCCEEDED)
@@ -764,7 +778,7 @@ class PipelineOrchestratorIntegrationTests(unittest.TestCase):
 
         future = runner.submit("failing", Pipeline(_make_failing_context()))
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(PipelineExecutionError):
             future.result(timeout=5)
 
         snapshot = runner.snapshot("failing")
@@ -782,9 +796,9 @@ class PipelineOrchestratorIntegrationTests(unittest.TestCase):
             runner.submit("retryable", Pipeline(_make_context()))
 
         future = runner.submit("retryable", Pipeline(_make_context()))
-        results = future.result(timeout=5)
+        outputs = future.result(timeout=5)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(outputs.results), 1)
         self.assertEqual(monitor.active_ids(), [])
 
 
@@ -931,9 +945,9 @@ class FluentBuilderContextTests(unittest.TestCase):
         context = _make_context()
         orchestrator = PipelineOrchestrator()
 
-        results = orchestrator.run(context)
+        outputs = orchestrator.run(context)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(outputs.results), 1)
 
     def test_fluent_context_can_submit_with_event_bus(self):
         bus = EventBus()

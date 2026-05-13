@@ -11,7 +11,7 @@ from library.core.artifacts.IntermediateFrameComposition import (
 from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.visualization.VisualArtifact import ImageArtifact, VisualArtifact
+from library.core.visualization.VisualArtifact import ArtifactRole, ImageArtifact, VisualArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
 
 
@@ -50,6 +50,7 @@ class IntermediateFramesVisualizer(IVisualizer):
             rendered.append(
                 ImageArtifact(
                     kind="image",
+                    role=ArtifactRole.DEBUG,
                     title=self._title(artifact),
                     description="Intermediate frame comparison generated during frame processing.",
                     metadata=self._artifact_metadata(

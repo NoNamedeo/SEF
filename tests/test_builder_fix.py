@@ -6,24 +6,25 @@ import unittest
 
 import numpy as np
 
+from library.core.artifacts.BoxSignalSample import BoxSignalSample
+from library.core.artifacts.Frame import Frame
+from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.Signal import Signal
+from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.BoxSignalSample import BoxSignalSample
-from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineErrors import PipelineConfigurationError
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
-
+from library.core.visualization.VisualArtifact import VisualArtifact
+from library.core.visualization.VisualizationContext import VisualizationContext
 
 # ── Stub components ──────────────────────────────────────────────────────────
 
@@ -54,8 +55,12 @@ class StubAnalyzer(IAnalyzer):
 
 
 class StubVisualizer(IVisualizer):
-    def visualize(self, data: IData) -> None:
-        return None
+    def render(
+        self,
+        data: IData,
+        context: VisualizationContext | None = None,
+    ) -> tuple[VisualArtifact, ...]:
+        return ()
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -141,9 +146,9 @@ class FluentBuilderContextTests(unittest.TestCase):
     def test_context_runs_through_orchestrator(self):
         context = _base_builder().build_context()
 
-        results = PipelineOrchestrator().run(context)
+        outputs = PipelineOrchestrator().run(context)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(outputs.results), 1)
 
 
 # ── Tests: ConfigPipelineBuilder ─────────────────────────────────────────────
@@ -187,9 +192,9 @@ class ConfigBuilderContextTests(unittest.TestCase):
         builder = ConfigPipelineBuilder(self._build_registry())
         context = builder.build_context(self._config())
 
-        results = PipelineOrchestrator().run(context)
+        outputs = PipelineOrchestrator().run(context)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(outputs.results), 1)
 
     def test_missing_analyzers_fails_through_context_invariant(self):
         config = {

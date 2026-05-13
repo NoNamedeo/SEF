@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import streamlit as st
 
+from library.core.visualization.PipelineOutputs import PipelineOutputs
 from ui.components.rendering_utils import (
     materialize_video_artifact,
     render_safe_metadata,
     render_video_download,
 )
-from library.core.visualization.PipelineOutputs import PipelineOutputs
 from ui.components.results_viewer import render_results
 from ui.components.visual_artifact_viewer import render_visual_artifacts
 from ui.models.pipeline_outputs import (
@@ -33,17 +33,16 @@ def render_pipeline_outputs(outputs: PipelineOutputs, *, title: str | None = Non
 
     tab_labels = [
         f"Analysis ({len(view.analysis_results)})",
-        f"Artifacts ({len(view.visualizer_outputs)})",
+        f"Final outputs ({len(view.final_artifacts)})",
         f"Videos ({len(view.reconstructed_videos)})",
+        f"Debug ({len(view.debug_artifacts) + view.intermediate_frame_count})",
     ]
-    if view.intermediate_frame_count > 0:
-        tab_labels.append(f"Intermediate frames ({view.intermediate_frame_count})")
     tab_labels.append("Run metadata")
 
     tabs = st.tabs(tab_labels)
 
-    tab_analysis, tab_artifacts, tab_videos = tabs[0], tabs[1], tabs[2]
-    remaining = list(tabs[3:])
+    tab_analysis, tab_final, tab_videos, tab_debug = tabs[0], tabs[1], tabs[2], tabs[3]
+    tab_metadata = tabs[4]
 
     with tab_analysis:
         if view.analysis_results:
@@ -51,20 +50,20 @@ def render_pipeline_outputs(outputs: PipelineOutputs, *, title: str | None = Non
         else:
             st.info("Nessun risultato analitico disponibile.")
 
-    with tab_artifacts:
-        if view.visualizer_outputs:
+    with tab_final:
+        if view.final_artifacts:
             selected_index = _select_artifact_index(
-                [item.artifact.title or f"Artifact {index + 1}" for index, item in enumerate(view.visualizer_outputs)],
-                key="sef_visualizer_artifact_selector",
+                [item.artifact.title or f"Final artifact {index + 1}" for index, item in enumerate(view.final_artifacts)],
+                key="sef_final_artifact_selector",
             )
-            item = view.visualizer_outputs[selected_index]
+            item = view.final_artifacts[selected_index]
             st.caption(item.source)
             render_visual_artifacts(
                 (item.artifact,),
-                key_prefix=f"visualizer_output_{selected_index}",
+                key_prefix=f"final_output_{selected_index}",
             )
         else:
-            st.info("Nessun artifact visuale disponibile.")
+            st.info("Nessun output finale non-video disponibile.")
 
     with tab_videos:
         if view.reconstructed_videos:
@@ -76,13 +75,23 @@ def render_pipeline_outputs(outputs: PipelineOutputs, *, title: str | None = Non
         else:
             st.info("Nessun video ricostruito disponibile.")
 
-    if view.intermediate_frame_count > 0:
-        tab_intermediate = remaining[0]
-        remaining = remaining[1:]
-        with tab_intermediate:
+    with tab_debug:
+        if view.debug_artifacts:
+            selected_index = _select_artifact_index(
+                [item.artifact.title or f"Debug artifact {index + 1}" for index, item in enumerate(view.debug_artifacts)],
+                key="sef_debug_artifact_selector",
+            )
+            item = view.debug_artifacts[selected_index]
+            st.caption(item.source)
+            render_visual_artifacts(
+                (item.artifact,),
+                key_prefix=f"debug_output_{selected_index}",
+            )
+        if view.intermediate_frame_count > 0:
             render_intermediate_frame_comparison(view)
+        if not view.debug_artifacts and view.intermediate_frame_count <= 0:
+            st.info("Nessun debug artifact disponibile.")
 
-    tab_metadata = remaining[0] if remaining else tabs[-1]
     with tab_metadata:
         render_safe_metadata("Run metadata", view.metadata, expanded=True)
 
@@ -207,7 +216,7 @@ def _render_snapshot_card(
 
         # Download button for each frame
         st.download_button(
-            label=f"Download PNG",
+            label="Download PNG",
             data=snapshot.image_bytes,
             file_name=f"intermediate_{snapshot.stage_name}_f{frame_label}.png",
             mime=snapshot.mime_type,

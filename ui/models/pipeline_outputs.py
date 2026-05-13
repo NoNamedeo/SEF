@@ -58,7 +58,8 @@ class ExecutionResultsView:
     """Whole execution payload rendered by the UI."""
 
     analysis_results: tuple[AnalysisResultOutput, ...]
-    visualizer_outputs: tuple[ArtifactOutput, ...]
+    final_artifacts: tuple[ArtifactOutput, ...]
+    debug_artifacts: tuple[ArtifactOutput, ...]
     reconstructed_videos: tuple[ReconstructedVideoOutput, ...]
     metadata: Mapping[str, Any]
     warnings: tuple[str, ...] = ()

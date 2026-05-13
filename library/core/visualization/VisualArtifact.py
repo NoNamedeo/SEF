@@ -1,13 +1,27 @@
 from __future__ import annotations
 
+import tempfile
+import threading
 from abc import ABC
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from enum import StrEnum
 from pathlib import Path
-import tempfile
-import threading
 from typing import Any, Mapping
 from uuid import uuid4
+
+MAX_IMAGE_ARTIFACT_BYTES = 32 * 1024 * 1024
+MAX_VIDEO_ARTIFACT_BYTES = 25 * 1024 * 1024
+
+
+class ArtifactRole(StrEnum):
+    """Semantic role used by UIs and exporters to place artifacts correctly."""
+
+    FINAL_OUTPUT = "final_output"
+    ANALYSIS = "analysis"
+    DEBUG = "debug"
+    PREVIEW = "preview"
+    DIAGNOSTIC = "diagnostic"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -16,6 +30,7 @@ class VisualArtifact(ABC):
 
     artifact_id: str = field(default_factory=lambda: uuid4().hex)
     kind: str
+    role: ArtifactRole | str = ArtifactRole.FINAL_OUTPUT
     title: str | None = None
     description: str | None = None
     metadata: Mapping[str, Any] = field(default_factory=dict)
@@ -23,6 +38,7 @@ class VisualArtifact(ABC):
     def __post_init__(self) -> None:
         if not self.kind:
             raise ValueError("VisualArtifact.kind must be a non-empty string.")
+        object.__setattr__(self, "role", ArtifactRole(str(self.role)))
         object.__setattr__(self, "metadata", dict(self.metadata))
 
 
@@ -39,6 +55,10 @@ class ImageArtifact(VisualArtifact):
             raise ValueError("ImageArtifact.mime_type must be a non-empty string.")
         if not self.data:
             raise ValueError("ImageArtifact.data cannot be empty.")
+        if len(self.data) > MAX_IMAGE_ARTIFACT_BYTES:
+            raise ValueError(
+                f"ImageArtifact.data exceeds the hard in-memory limit of {MAX_IMAGE_ARTIFACT_BYTES} bytes."
+            )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -54,6 +74,11 @@ class VideoArtifact(VisualArtifact):
             raise ValueError("VideoArtifact.mime_type must be a non-empty string.")
         if not self.data:
             raise ValueError("VideoArtifact.data cannot be empty.")
+        if len(self.data) > MAX_VIDEO_ARTIFACT_BYTES:
+            raise ValueError(
+                f"VideoArtifact.data exceeds the hard in-memory limit of {MAX_VIDEO_ARTIFACT_BYTES} bytes. "
+                "Use VideoFileArtifact or DeferredVideoArtifact for large videos."
+            )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

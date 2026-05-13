@@ -17,8 +17,8 @@ from library.core.interfaces.pipeline.IRetryPolicy import IRetryPolicy
 from library.core.pipeline.Pipeline import Pipeline, PipelineExecutionError
 from library.core.pipeline.PipelineErrors import PipelineRunAlreadyActiveError
 from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
-from library.retry_policies.NoRetryPolicy import NoRetryPolicy
 from library.core.visualization.PipelineOutputs import PipelineOutputs
+from library.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 log = logging.getLogger(__name__)
 
@@ -154,7 +154,7 @@ class ThreadedPipelineRunner(IPipelineRunner):
                         PipelineLifecycleEvent.AFTER_RUN,
                         pipeline_id,
                         result_count=len(outputs.results),
-                        artifact_count=len(outputs.artifacts),
+                        artifact_count=outputs.artifact_count,
                     )
                     self._monitor.complete(pipeline_id)
                     return outputs

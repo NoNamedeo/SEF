@@ -5,7 +5,6 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
-from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineExportUtils import (
     dotted_path,
@@ -14,6 +13,7 @@ from library.core.pipeline.PipelineExportUtils import (
     to_exportable_data,
     yaml_dumps,
 )
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from library.core.visualization.PipelineOutputs import PipelineOutputs
@@ -472,11 +472,17 @@ class PipelineConfigExporter:
             return []
 
         artifacts: list[dict[str, Any]] = []
-        for order, artifact in enumerate(outputs.artifacts):
+        ordered_artifacts = [
+            *[("final", artifact) for artifact in outputs.final_artifacts],
+            *[("debug", artifact) for artifact in outputs.debug_artifacts],
+        ]
+        for order, (channel, artifact) in enumerate(ordered_artifacts):
             entry: dict[str, Any] = {
                 "order": order,
+                "channel": channel,
                 "artifact_id": artifact.artifact_id,
                 "kind": artifact.kind,
+                "role": str(artifact.role),
                 "title": artifact.title,
                 "description": artifact.description,
                 "class_path": dotted_path(artifact),

@@ -13,21 +13,21 @@ from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.MultiObjectSignalSample import MultiObjectSignalSample, MultiObjectTrack
 from library.core.artifacts.Signal import Signal
-from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
+from library.core.pipeline.Pipeline import Pipeline
 from library.core.visualization.VisualArtifact import (
-    DeferredVideoArtifact,
     VIDEO_ARTIFACT_TYPES,
+    DeferredVideoArtifact,
     VideoArtifact,
     VideoFileArtifact,
 )
-from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
-from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
-from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
+from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 from library.Main import build_realistic_sync_context, create_realistic_demo_video, moving_object_box
+from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
+from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
+from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
 
 
 class FakeTracker:
@@ -254,9 +254,9 @@ class PipelineCoreTests(unittest.TestCase):
         outputs = Pipeline(context).run()
 
         self.assertEqual(len(outputs.results), 1)
-        self.assertEqual(len(outputs.artifacts), 1)
-        self.assertIsInstance(outputs.artifacts[0], VIDEO_ARTIFACT_TYPES)
-        self.assertTrue(self._materialized_video_size(outputs.artifacts[0]) > 0)
+        self.assertEqual(len(outputs.final_artifacts), 1)
+        self.assertIsInstance(outputs.final_artifacts[0], VIDEO_ARTIFACT_TYPES)
+        self.assertTrue(self._materialized_video_size(outputs.final_artifacts[0]) > 0)
 
     def _create_test_video(self) -> str:
         temp_dir = Path(tempfile.mkdtemp())

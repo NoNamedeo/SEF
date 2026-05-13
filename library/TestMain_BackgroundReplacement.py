@@ -99,7 +99,7 @@ def main():
     finally:
         orchestrator.shutdown()
 
-    for artifact in outputs.artifacts:
+    for artifact in [*outputs.final_artifacts, *outputs.debug_artifacts]:
         if isinstance(artifact, ImageArtifact):
             image = Image.open(io.BytesIO(artifact.data))
 

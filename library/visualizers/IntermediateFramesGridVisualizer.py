@@ -8,7 +8,7 @@ from library.core.artifacts.IntermediateFrameComposition import (
     encode_png,
 )
 from library.core.interfaces.IData import IData
-from library.core.visualization.VisualArtifact import ImageArtifact, VisualArtifact
+from library.core.visualization.VisualArtifact import ArtifactRole, ImageArtifact, VisualArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
 from library.visualizers.IntermediateFramesVisualizer import (
     IntermediateFramesVisualizer,
@@ -61,6 +61,7 @@ class IntermediateFramesGridVisualizer(IntermediateFramesVisualizer):
         return (
             ImageArtifact(
                 kind="image",
+                role=ArtifactRole.DEBUG,
                 title="Intermediate frame grid",
                 description="Sampled preprocessing stages rendered as a comparison grid.",
                 metadata=self._artifact_metadata(

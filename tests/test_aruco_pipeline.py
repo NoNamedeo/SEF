@@ -18,16 +18,12 @@ from library.core.artifacts.Signal import Signal
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.plugins.PluginRegistry import create_builtin_registry
-<<<<<<< HEAD
-from library.core.visualization.VisualArtifact import VideoArtifact
-=======
 from library.core.visualization.VisualArtifact import (
-    DeferredVideoArtifact,
     VIDEO_ARTIFACT_TYPES,
+    DeferredVideoArtifact,
     VideoArtifact,
     VideoFileArtifact,
 )
->>>>>>> 3bf24b2 (ArUco signal cleaner added)
 from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
 from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
 from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
@@ -228,9 +224,9 @@ class ArucoPipelineTests(unittest.TestCase):
 
         self.assertEqual(len(outputs.results), 1)
         self.assertIsInstance(outputs.results[0], ArucoMarkerDisplacementData)
-        self.assertEqual(len(outputs.artifacts), 1)
-        self.assertIsInstance(outputs.artifacts[0], VIDEO_ARTIFACT_TYPES)
-        self.assertGreater(self._materialized_video_size(outputs.artifacts[0]), 0)
+        self.assertEqual(len(outputs.final_artifacts), 1)
+        self.assertIsInstance(outputs.final_artifacts[0], VIDEO_ARTIFACT_TYPES)
+        self.assertGreater(self._materialized_video_size(outputs.final_artifacts[0]), 0)
 
     def _build_frame_buffer(
         self,
@@ -319,8 +315,6 @@ class ArucoPipelineTests(unittest.TestCase):
         max_y = max(point[1] for point in valid_points)
         return max(max_x - min_x, max_y - min_y)
 
-<<<<<<< HEAD
-=======
     @staticmethod
     def _materialized_video_size(artifact) -> int:
         if isinstance(artifact, VideoArtifact):
@@ -331,7 +325,6 @@ class ArucoPipelineTests(unittest.TestCase):
             return artifact.materialize().stat().st_size
         raise AssertionError(f"Unsupported video artifact: {type(artifact).__name__}")
 
->>>>>>> 3bf24b2 (ArUco signal cleaner added)
 
 if __name__ == "__main__":
     unittest.main()

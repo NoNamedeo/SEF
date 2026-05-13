@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-from io import BytesIO
 from typing import Any
 
 import cv2
@@ -20,26 +19,33 @@ from ui.models.pipeline_outputs import (
 )
 from ui.state import session
 
+MAX_INTERMEDIATE_UI_SNAPSHOTS = 80
+MAX_INTERMEDIATE_SNAPSHOT_BYTES = 8 * 1024 * 1024
+
 
 def build_execution_results_view(outputs: PipelineOutputs) -> ExecutionResultsView:
     """Adapt raw pipeline outputs to explicit UI sections."""
     warnings: list[str] = []
-    visualizer_outputs: list[ArtifactOutput] = []
+    final_artifacts: list[ArtifactOutput] = []
+    debug_artifacts: list[ArtifactOutput] = []
     reconstructed_videos: list[ReconstructedVideoOutput] = []
 
-    for artifact in outputs.artifacts:
+    for artifact in outputs.final_artifacts:
         if isinstance(artifact, VIDEO_ARTIFACT_TYPES):
             reconstructed_videos.append(
                 ReconstructedVideoOutput(
                     artifact_id=artifact.artifact_id,
-                    title=artifact.title or "Reconstructed video",
+                    title=artifact.title or "Final video",
                     artifact=artifact,
-                    source="pipeline artifact",
+                    source="final artifact",
                     metadata=dict(artifact.metadata),
                 )
             )
         else:
-            visualizer_outputs.append(ArtifactOutput(artifact=artifact, source="pipeline artifact"))
+            final_artifacts.append(ArtifactOutput(artifact=artifact, source="final artifact"))
+
+    for artifact in outputs.debug_artifacts:
+        debug_artifacts.append(ArtifactOutput(artifact=artifact, source="debug artifact"))
 
     analysis_results = [_build_analysis_result_output(result, idx, warnings) for idx, result in enumerate(outputs.results)]
 
@@ -47,7 +53,7 @@ def build_execution_results_view(outputs: PipelineOutputs) -> ExecutionResultsVi
         for idx, result in enumerate(outputs.results):
             videos, extra_artifacts, extra_warnings = _build_tracking_video_outputs(result, idx)
             reconstructed_videos.extend(videos)
-            visualizer_outputs.extend(extra_artifacts)
+            final_artifacts.extend(extra_artifacts)
             warnings.extend(extra_warnings)
 
     # ── Intermediate frame extraction ─────────────────────────────────────────
@@ -63,14 +69,20 @@ def build_execution_results_view(outputs: PipelineOutputs) -> ExecutionResultsVi
             intermediate_count = len(artifacts)
             intermediate_stages = if_outputs.stage_names if hasattr(if_outputs, "stage_names") else ()
             intermediate_indices = if_outputs.frame_indices if hasattr(if_outputs, "frame_indices") else ()
-            intermediate_snapshots = [_build_intermediate_frame_snapshot(artifact, warnings) for artifact in artifacts]
+            artifacts_for_preview = artifacts[:MAX_INTERMEDIATE_UI_SNAPSHOTS]
+            if len(artifacts) > MAX_INTERMEDIATE_UI_SNAPSHOTS:
+                warnings.append(
+                    f"Mostrati {MAX_INTERMEDIATE_UI_SNAPSHOTS} frame intermedi su {len(artifacts)} per stabilita UI."
+                )
+            intermediate_snapshots = [_build_intermediate_frame_snapshot(artifact, warnings) for artifact in artifacts_for_preview]
             intermediate_snapshots = [item for item in intermediate_snapshots if item is not None]
     except Exception as exc:
         warnings.append(f"Impossibile estrarre frame intermedi: {exc}")
 
     return ExecutionResultsView(
         analysis_results=tuple(analysis_results),
-        visualizer_outputs=tuple(visualizer_outputs),
+        final_artifacts=tuple(final_artifacts),
+        debug_artifacts=tuple(debug_artifacts),
         reconstructed_videos=tuple(reconstructed_videos),
         metadata={
             "pipeline_id": outputs.metadata.pipeline_id,
@@ -331,6 +343,13 @@ def _build_intermediate_frame_snapshot(artifact: Any, warnings: list[str]) -> In
             image_bytes = image
             mime_type = "image/png"
         else:
+            return None
+
+        if len(image_bytes) > MAX_INTERMEDIATE_SNAPSHOT_BYTES:
+            warnings.append(
+                f"Frame intermedio `{getattr(artifact, 'stage_name', 'unknown')}` scartato: "
+                f"preview oltre {MAX_INTERMEDIATE_SNAPSHOT_BYTES} bytes."
+            )
             return None
 
         return IntermediateFrameSnapshot(

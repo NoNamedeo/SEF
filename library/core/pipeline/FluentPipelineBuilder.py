@@ -3,8 +3,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from library.core.interfaces.IFrameExporter import IFrameExporter
+from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
@@ -25,6 +26,7 @@ class FluentPipelineBuilder:
         self._frame_extractor: IFrameExtractor | None = None
         self._signal_extractor: ISignalExtractor | None = None
         self._frame_processors: list[IFrameBufferProcessor] = []
+        self._frame_exporters: list[IFrameExporter] = []
         self._signal_cleaners: list[ISignalCleaner] = []
         self._analyzers: list[IAnalyzer] = []
         self._visualizers: list[IVisualizer] = []
@@ -48,6 +50,16 @@ class FluentPipelineBuilder:
 
     def add_frame_processor(self, processor: IFrameBufferProcessor) -> FluentPipelineBuilder:
         self._frame_processors.append(processor)
+        return self
+
+    def with_frame_exporters(self, exporters: Iterable[IFrameExporter]) -> FluentPipelineBuilder:
+        """Replace file-backed exporters that run after frame processing."""
+        self._frame_exporters = list(exporters)
+        return self
+
+    def add_frame_exporter(self, exporter: IFrameExporter) -> FluentPipelineBuilder:
+        """Add a final-output exporter for processed frames."""
+        self._frame_exporters.append(exporter)
         return self
 
     def with_signal_cleaners(self, cleaners: Iterable[ISignalCleaner]) -> FluentPipelineBuilder:
@@ -124,6 +136,7 @@ class FluentPipelineBuilder:
             frame_extractor=self._frame_extractor,
             signal_extractor=self._signal_extractor,
             frame_processors=list(self._frame_processors),
+            frame_exporters=list(self._frame_exporters),
             signal_cleaners=list(self._signal_cleaners),
             analyzers=list(self._analyzers),
             visualizers=list(self._visualizers),

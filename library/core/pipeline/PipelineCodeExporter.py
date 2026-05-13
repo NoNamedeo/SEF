@@ -89,5 +89,5 @@ def run_pipeline(registry: PluginRegistry | None = None):
 
 if __name__ == "__main__":
     outputs = run_pipeline()
-    print(f"{{len(outputs.results)}} result(s), {{len(outputs.artifacts)}} artifact(s)")
+    print(f"{{len(outputs.results)}} result(s), {{outputs.artifact_count}} artifact(s)")
 '''

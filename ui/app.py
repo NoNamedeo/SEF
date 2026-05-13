@@ -469,7 +469,7 @@ def render_config_lab(registry) -> None:
             pipeline_id = f"config-{uuid.uuid4().hex[:8]}"
             outputs = run_sync(context, pipeline_id=pipeline_id)
             session.put(session.PIPELINE_OUTPUT_PIPELINE_ID, pipeline_id)
-            st.success(f"Pipeline completata: {len(outputs.results)} risultati, {len(outputs.artifacts)} artifact.")
+            st.success(f"Pipeline completata: {len(outputs.results)} risultati, {outputs.artifact_count} artifact.")
             render_pipeline_outputs(outputs, title="Config outputs")
         except Exception as exc:
             st.error(f"Esecuzione fallita: {exc}")
@@ -483,7 +483,7 @@ def execute_sync(registry, config: dict[str, Any], pipeline_id: str) -> None:
         with st.spinner("Pipeline in esecuzione..."):
             outputs = run_sync(context, pipeline_id=pipeline_id)
         session.put(session.PIPELINE_OUTPUT_PIPELINE_ID, pipeline_id)
-        st.success(f"Pipeline completata: {len(outputs.results)} risultati, {len(outputs.artifacts)} artifact.")
+        st.success(f"Pipeline completata: {len(outputs.results)} risultati, {outputs.artifact_count} artifact.")
     except Exception as exc:
         st.error(f"Pipeline fallita: {exc}")
 

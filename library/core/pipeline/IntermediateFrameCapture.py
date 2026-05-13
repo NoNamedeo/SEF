@@ -4,14 +4,12 @@ from collections import OrderedDict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, ClassVar, Protocol
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.IntermediateFrameArtifacts import (
-    IntermediateFrameArtifactCollection,
-    IntermediateFrameArtifactExporter,
-)
+from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
 from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
+from library.exporters.IntermediateFrameArtifactExporter import IntermediateFrameArtifactExporter
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,11 +30,17 @@ class IntermediateFrameCaptureConfig:
     include_original: bool = True
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
+    HARD_MAX_STORED_FRAMES: ClassVar[int] = 250
+
     def __post_init__(self) -> None:
         if self.sampling_interval <= 0:
             raise ValueError("IntermediateFrameCaptureConfig.sampling_interval must be greater than 0.")
         if self.max_stored_frames < 0:
             raise ValueError("IntermediateFrameCaptureConfig.max_stored_frames cannot be negative.")
+        if self.max_stored_frames > self.HARD_MAX_STORED_FRAMES:
+            raise ValueError(
+                f"IntermediateFrameCaptureConfig.max_stored_frames cannot exceed hard limit {self.HARD_MAX_STORED_FRAMES}."
+            )
         if self.export_directory is not None:
             object.__setattr__(self, "export_directory", Path(self.export_directory))
         object.__setattr__(self, "metadata", dict(self.metadata))

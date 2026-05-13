@@ -6,8 +6,9 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from library.core.interfaces.IFrameExporter import IFrameExporter
+from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
@@ -40,6 +41,8 @@ class PipelineContext:
     Optional fields (default to empty collections)
     -----------------------------------------------
     frame_processors : zero or more buffer-level frame preprocessing steps.
+    frame_exporters  : zero or more file-backed final-output exporters that
+                       consume processed frames and return a replayable buffer.
     signal_cleaners  : zero or more smoothing / filtering steps on signals.
     visualizers      : zero or more rendering steps executed after analysis.
     visualizer_bindings
@@ -61,6 +64,7 @@ class PipelineContext:
 
     # ── Optional (with default) ─────────────────────────────────────────────
     frame_processors: Sequence[IFrameBufferProcessor] = field(default_factory=tuple)
+    frame_exporters: Sequence[IFrameExporter] = field(default_factory=tuple)
     signal_cleaners: Sequence[ISignalCleaner] = field(default_factory=tuple)
     visualizers: Sequence[IVisualizer] = field(default_factory=tuple)
     visualizer_bindings: Sequence[VisualizerBinding] = field(default_factory=tuple)
@@ -85,6 +89,11 @@ class PipelineContext:
             self,
             "frame_processors",
             self._frame_processors_tuple(self.frame_processors),
+        )
+        object.__setattr__(
+            self,
+            "frame_exporters",
+            self._frame_exporters_tuple(self.frame_exporters),
         )
         object.__setattr__(
             self,
@@ -140,6 +149,15 @@ class PipelineContext:
         items = PipelineContext._optional_tuple("frame_processors", values)
         if any(not isinstance(item, IFrameBufferProcessor) for item in items):
             raise ValueError("PipelineContext field 'frame_processors' must contain IFrameBufferProcessor instances.")
+        return items
+
+    @staticmethod
+    def _frame_exporters_tuple(
+        values: Sequence[IFrameExporter] | None,
+    ) -> tuple[IFrameExporter, ...]:
+        items = PipelineContext._optional_tuple("frame_exporters", values)
+        if any(not isinstance(item, IFrameExporter) for item in items):
+            raise ValueError("PipelineContext field 'frame_exporters' must contain IFrameExporter instances.")
         return items
 
     @staticmethod

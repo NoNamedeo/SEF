@@ -579,7 +579,8 @@ def print_result_summary(outputs: PipelineOutputs) -> None:
             print(f"- {result.label}: points={len(result.y)}, y={format_series(result.y)}, metadata={format_metadata(result.metadata)}")
         else:
             print(f"- {type(result).__name__}")
-    print(f"- artifacts: {len(outputs.artifacts)}")
+    print(f"- final artifacts: {len(outputs.final_artifacts)}")
+    print(f"- debug artifacts: {len(outputs.debug_artifacts)}")
 
 
 def print_event(event: Event) -> None:

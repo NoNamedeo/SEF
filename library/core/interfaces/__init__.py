@@ -11,6 +11,9 @@ _EXPORTS = {
     "ISingleFrameProcessor": ("library.core.interfaces.ISingleFrameProcessor", "ISingleFrameProcessor"),
     "IFrameExtractor": ("library.core.interfaces.IFrameExtractor", "IFrameExtractor"),
     "IFrameBufferProcessor": ("library.core.interfaces.IFrameBufferProcessor", "IFrameBufferProcessor"),
+    "IFrameExporter": ("library.core.interfaces.IFrameExporter", "IFrameExporter"),
+    "FrameExportContext": ("library.core.interfaces.IFrameExporter", "FrameExportContext"),
+    "FrameExportResult": ("library.core.interfaces.IFrameExporter", "FrameExportResult"),
     "IPipelineMonitor": (
         "library.core.interfaces.pipeline.IPipelineMonitor",
         "IPipelineMonitor",
