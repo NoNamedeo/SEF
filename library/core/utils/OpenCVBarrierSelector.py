@@ -5,6 +5,8 @@ from typing import Iterable
 
 import cv2
 
+from library.core.utils.OpenCVDisplayUtils import DisplayTransform
+
 
 Barrier = tuple[tuple[int, int], tuple[int, int]]
 
@@ -16,18 +18,23 @@ class OpenCVBarrierSelector:
 
     def __init__(self):
         self._base_frame = None
-        self._preview_frame = None
         self._current_start: tuple[int, int] | None = None
         self._cursor: tuple[int, int] | None = None
+        self._display_transform: DisplayTransform | None = None
 
     def _mouse_callback(self, event, x, y, flags, param):
+        if self._display_transform is None:
+            return
+
+        point = self._display_transform.to_original_point(x, y)
+
         if event == cv2.EVENT_LBUTTONDOWN:
-            self._current_start = (x, y)
-            self._cursor = (x, y)
+            self._current_start = point
+            self._cursor = point
         elif event == cv2.EVENT_MOUSEMOVE and self._current_start is not None:
-            self._cursor = (x, y)
+            self._cursor = point
         elif event == cv2.EVENT_LBUTTONUP and self._current_start is not None:
-            self._cursor = (x, y)
+            self._cursor = point
 
     @classmethod
     def select_barriers(
@@ -61,11 +68,16 @@ class OpenCVBarrierSelector:
             frame = cv2.resize(frame, resize)
 
         self._base_frame = frame
-        self._preview_frame = frame.copy()
+        self._display_transform = DisplayTransform.from_image(frame)
 
         barriers: dict[str, Barrier] = {}
 
-        cv2.namedWindow(self.WINDOW_NAME)
+        cv2.namedWindow(self.WINDOW_NAME, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(
+            self.WINDOW_NAME,
+            self._display_transform.display_width,
+            self._display_transform.display_height,
+        )
         cv2.setMouseCallback(self.WINDOW_NAME, self._mouse_callback)
 
         barrier_index = 0
@@ -108,7 +120,8 @@ class OpenCVBarrierSelector:
                     1,
                 )
 
-                cv2.imshow(self.WINDOW_NAME, render)
+                display_render = self._display_transform.resize_for_display(render)
+                cv2.imshow(self.WINDOW_NAME, display_render)
                 key = cv2.waitKey(20) & 0xFF
 
                 if key in (13, 32):

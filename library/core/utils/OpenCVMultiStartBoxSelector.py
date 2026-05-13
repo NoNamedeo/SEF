@@ -3,6 +3,7 @@ from typing import Any, Tuple, List
 
 from library.core.artifacts.Frame import Frame
 from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from library.core.utils.OpenCVDisplayUtils import DisplayTransform
 
 
 class OpenCVMultiStartBoxSelector:
@@ -46,7 +47,11 @@ class OpenCVMultiStartBoxSelector:
 
                 frame = fake_frame.frame
 
+            transform = DisplayTransform.from_image(frame)
             boxes: List[Tuple[int, int, int, int]] = []
+            window_name = "Select Start Boxes"
+            cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+            cv2.resizeWindow(window_name, transform.display_width, transform.display_height)
 
             for i in range(num_boxes):
                 display = frame.copy()
@@ -64,21 +69,22 @@ class OpenCVMultiStartBoxSelector:
                     2,
                 )
 
+                display_for_selection = transform.resize_for_display(display)
                 roi = cv2.selectROI(
-                    "Select Start Boxes",
-                    display,
+                    window_name,
+                    display_for_selection,
                     fromCenter=False,
                     showCrosshair=True,
                 )
 
-                x, y, w, h = map(int, roi)
+                x, y, w, h = transform.to_original_roi(tuple(map(int, roi)))
 
                 if w == 0 or h == 0:
                     break
 
                 boxes.append((x, y, w, h))
 
-            cv2.destroyWindow("Select Start Boxes")
+            cv2.destroyWindow(window_name)
 
             if not boxes:
                 raise ValueError("No ROI selected")

@@ -3,6 +3,7 @@ from typing import Any, Tuple
 
 from library.core.artifacts.Frame import Frame
 from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from library.core.utils.OpenCVDisplayUtils import DisplayTransform
 
 
 class OpenCVStartBoxSelector:
@@ -45,16 +46,23 @@ class OpenCVStartBoxSelector:
 
                 frame = temp_frame.frame
 
+            transform = DisplayTransform.from_image(frame)
+            display_frame = transform.resize_for_display(frame)
+
+            window_name = "Select Start Box"
+            cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+            cv2.resizeWindow(window_name, transform.display_width, transform.display_height)
+
             roi = cv2.selectROI(
-                "Select Start Box",
-                frame,
+                window_name,
+                display_frame,
                 fromCenter=False,
                 showCrosshair=True,
             )
 
-            cv2.destroyWindow("Select Start Box")
+            cv2.destroyWindow(window_name)
 
-            x, y, w, h = map(int, roi)
+            x, y, w, h = transform.to_original_roi(tuple(map(int, roi)))
 
             if w == 0 or h == 0:
                 raise ValueError("No ROI selected")
