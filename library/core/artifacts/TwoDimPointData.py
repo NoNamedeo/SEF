@@ -10,8 +10,8 @@ from library.core.interfaces.IData import IData
 class TwoDimPointData(IData):
     """Chart-ready series returned by analyzers."""
 
-    x: list[float]
-    y: list[float]
+    x: float
+    y: float
     label: str = "signal"
     title: str = "Signal Analysis"
     x_label: str = "X"

@@ -5,6 +5,7 @@ import threading
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping
 
+from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IEventEmitter import IEventEmitter
@@ -20,6 +21,10 @@ from library.core.visualization.VisualArtifact import VisualArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
 
 log = logging.getLogger(__name__)
+
+
+def _cantor(n, m):
+    return (((n + m)(n + m + 1)) / 2) + m
 
 
 class Pipeline:
@@ -77,40 +82,61 @@ class Pipeline:
     # ── Public API ──────────────────────────────────────────────────────────
 
     def run(self) -> PipelineOutputs:
-        def run(self) -> PipelineOutputs:
-            self._inject_event_bus(self._event_bus)
-            ctx = self._context
 
-            frame_buffer = ctx.frame_extractor.buffer
+        self._inject_event_bus(self._event_bus)
 
-            extractor_thread = threading.Thread(
-                target=lambda: self._run_step(
-                    "frame_extraction",
-                    lambda: ctx.frame_extractor.extract(),
-                ),
-                daemon=True,
-            )
+        ctx = self._context
 
-            extractor_thread.start()
+        frame_buffer = ctx.frame_extractor.buffer
 
-            signal_buffer = ctx.signal_extractor.buffer
+        extractor_thread = threading.Thread(
+            target=lambda: self._run_step(
+                "frame_extraction",
+                lambda: ctx.frame_extractor.extract(),
+            ),
+            daemon=True,
+        )
 
-            signal_thread = threading.Thread(
-                target=lambda: self._run_step(
-                    "signal_extraction",
-                    lambda: ctx.signal_extractor.extract(frame_buffer),
-                ),
-                daemon=True,
-            )
+        extractor_thread.start()
 
-            signal_thread.start()
+        # TODO aggiungi anche i frame intermedi
+        intermediate_store = IntermediateFrameArtifactStore(ctx.intermediate_frame_capture)
+        buffer = self._run_step(
+            "frame_processing",
+            lambda: self._frame_processing_stage.apply(
+                buffer,
+                ctx.frame_processors,
+                intermediate_store=intermediate_store,
+            ),
+        )
+        intermediate_frames = intermediate_store.to_collection()
+        buffer, frame_export_artifacts = self._run_frame_exporters(buffer)
+        # TODO fine parte da modificare su frame intermedi
 
-            current_signal = signal_buffer
+        signal_buffer = ctx.signal_extractor.buffer
 
-            cleaner_threads = []
+        signal_thread = threading.Thread(
+            target=lambda: self._run_step(
+                "signal_extraction",
+                lambda: ctx.signal_extractor.extract(frame_buffer),
+            ),
+            daemon=True,
+        )
 
+        signal_thread.start()
+
+        signal_cleaners_number = len(ctx.signal_cleaners)
+        analyzers_number = len(ctx.analyzers)
+
+        cleaner_threads = []
+
+        current_signal = signal_buffer
+
+        if signal_cleaners_number == 0:
+            current_signal._consumers_default = analyzers_number
+        else:
             for i, cleaner in enumerate(ctx.signal_cleaners):
-                input_signal = current_signal
+                input_signal = current_signal.subscribe(i)
                 output_signal = cleaner.buffer
 
                 thread = threading.Thread(
@@ -127,51 +153,71 @@ class Pipeline:
 
                 current_signal = output_signal
 
-            results = []
+            current_signal._consumers_default = analyzers_number
 
-            analyzer_threads = []
+        results: list[IData] = []
 
-            for i, analyzer in enumerate(ctx.analyzers):
-                output_data = analyzer.buffer
+        analyzer_threads = []
 
-                thread = threading.Thread(
-                    target=lambda a=analyzer, s=current_signal, idx=i: results.append(
-                        self._run_step(
-                            f"analysis[{idx}]",
-                            lambda: a.analyze(s),
-                        )
-                    ),
-                    daemon=True,
-                )
+        data_buffers: list[DataBuffer] = []
 
-                thread.start()
+        for i, analyzer in enumerate(ctx.analyzers):
+            signal_subscription = current_signal.subscribe(i)
 
-                analyzer_threads.append(thread)
+            data_buffers.append(analyzer.buffer)
 
-            extractor_thread.join()
-            signal_thread.join()
-
-            for t in cleaner_threads:
-                t.join()
-
-            for t in analyzer_threads:
-                t.join()
-
-            final_artifacts = self._run_visualizers(results)
-
-            return PipelineOutputs(
-                results=tuple(results),
-                final_artifacts=tuple(final_artifacts),
-                debug_artifacts=(),
-                metadata=PipelineRunMetadata(
-                    pipeline_id=self._resolved_pipeline_id(),
-                    generated_at=datetime.now(timezone.utc),
-                    execution_metadata=dict(self._execution_metadata),
+            thread = threading.Thread(
+                target=lambda a=analyzer, s=signal_subscription, idx=i: results.append(
+                    self._run_step(
+                        f"analysis[{idx}]",
+                        lambda: a.analyze(s),
+                    )
                 ),
-                intermediate_frames=IntermediateFrameArtifactCollection(),
+                daemon=True,
             )
+
+            thread.start()
+
+            analyzer_threads.append(thread)
+
+        visual_artifacts: list[VisualArtifact] = []
+
+        visualizer_threads = self._run_visualizers_streaming(
+            data_buffers=data_buffers,
+            artifacts=visual_artifacts,
+        )
+
+        extractor_thread.join()
+        signal_thread.join()
+
+        for t in cleaner_threads:
+            t.join()
+
+        for t in analyzer_threads:
+            t.join()
+
+        for t in visualizer_threads:
+            t.join()
+
+        #TODO
+        final_artifacts = [*frame_export_artifacts, *self._run_visualizers(results)]
+        debug_artifacts = self._run_intermediate_frame_visualizers(intermediate_frames)
+        #TODO
+        outputs = PipelineOutputs(
+            results=tuple(results),
+            final_artifacts=tuple(final_artifacts), #TODO
+            debug_artifacts=tuple(debug_artifacts), #TODO
+            metadata=PipelineRunMetadata(
+                pipeline_id=self._resolved_pipeline_id(),
+                generated_at=datetime.now(timezone.utc),
+                execution_metadata=dict(self._execution_metadata),
+            ),
+            intermediate_frames=intermediate_frames, #TODO
+        )
+        return self._with_reproducibility_exports(outputs)
         """Execute the full pipeline and return results plus visual artifacts."""
         """
+        #VECCHIO PIPELINE SENZA PARALLELISMO
         self._inject_event_bus(self._event_bus)
         ctx = self._context
 
@@ -330,6 +376,81 @@ class Pipeline:
                 )
                 artifacts.extend(rendered)
         return artifacts
+
+    def _run_visualizers_streaming(
+            self,
+            data_buffers: list[DataBuffer],
+            artifacts: list[VisualArtifact],
+    ) -> list[threading.Thread]:
+
+        bindings = [
+            *(VisualizerBinding(v) for v in self._context.visualizers),
+            *self._context.visualizer_bindings,
+        ]
+
+        threads: list[threading.Thread] = []
+
+        data_buffers_consumer_number = [0] * len(data_buffers)
+
+        #mi annoto il numero di consumatori per ogni data_buffer
+        for binding_index, binding in enumerate(bindings):
+            target_indexes = self._run_step(
+                f"visualisation[{binding_index}].targets",
+                lambda b=binding: self._resolve_visualizer_targets(
+                    b,
+                    len(data_buffers),
+                ),
+            )
+
+            for result_index in target_indexes:
+                data_buffers_consumer_number[result_index] += 1
+
+        for index, data_buffer in enumerate(data_buffers):
+            data_buffer._consumers_default = data_buffers_consumer_number[index]
+
+
+        for binding_index, binding in enumerate(bindings):
+
+            target_indexes = self._run_step(
+                f"visualisation[{binding_index}].targets",
+                lambda b=binding: self._resolve_visualizer_targets(
+                    b,
+                    len(data_buffers),
+                ),
+            )
+
+            for result_index in target_indexes:
+                #qui ho usato la formula dell'associazione di Cantor dell'insieme N^2 su N (in pratica
+                #associo in modo univoco ogni coppia di naturali (binding_index,result_index) ad un
+                #naturale singolo, in modo che l'id di subscribe sia univoco
+                buffer = data_buffers[result_index].subscribe(_cantor(binding_index, result_index))
+
+                thread = threading.Thread(
+                    target=lambda
+                        b=binding,
+                        idx=binding_index,
+                        ridx=result_index,
+                        data=buffer: artifacts.extend(
+                        self._run_step(
+                            f"visualisation[{idx}][{ridx}]",
+                            lambda: b.visualizer.render(
+                                data,
+                                self._visualization_context(
+                                    b,
+                                    ridx,
+                                    data,
+                                ),
+                            ),
+                        )
+                    ),
+                    daemon=True,
+                )
+
+                thread.start()
+
+                threads.append(thread)
+
+        return threads
 
     def _run_intermediate_frame_visualizers(
         self,

@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from library.core.artifacts.DataBuffer import DataBuffer
+from library.core.artifacts.DataBuffer import DataBuffer, DataSubscription
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
-from library.core.artifacts.TwoDimPointData import TwoDimPointData
 from library.core.visualization.VisualArtifact import VisualArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
 from library.visualizers.MatplotlibArtifactVisualizer import MatplotlibArtifactVisualizer
@@ -27,10 +26,12 @@ class MatplotlibFunctionStreamVisualizer(MatplotlibArtifactVisualizer):
 
     def render(
         self,
-        data: DataBuffer,
+        data: DataSubscription,
         context: VisualizationContext | None = None,
     ) -> tuple[VisualArtifact, ...]:
+
         graph_data = self._resolve_graph_data(data)
+
         x = np.asarray(graph_data.x, dtype=float)
         y = np.asarray(graph_data.y, dtype=float)
 
@@ -38,19 +39,27 @@ class MatplotlibFunctionStreamVisualizer(MatplotlibArtifactVisualizer):
             figure_size=self.figure_size,
             figure_facecolor=self.figure_facecolor,
         )
+
         self._apply_style(ax, x, y, graph_data)
         fig.tight_layout()
 
         artifact = self._build_image_artifact(
             fig,
             title=graph_data.title or graph_data.label or "Function plot",
-            metadata=self._artifact_metadata(context, {"data_type": type(graph_data).__name__}),
+            metadata=self._artifact_metadata(
+                context,
+                {"data_type": type(graph_data).__name__},
+            ),
         )
+
         return (artifact,)
 
     @staticmethod
-    def _resolve_graph_data(data_buffer: DataBuffer) -> TwoDimGraphData:
-        point_items = [item for item in data_buffer]
+    def _resolve_graph_data(subscription) -> TwoDimGraphData:
+        point_items = list(subscription)
+
+        if not point_items:
+            raise ValueError("Empty DataBuffer")
 
         x_values: list[float] = []
         y_values: list[float] = []
@@ -62,6 +71,7 @@ class MatplotlibFunctionStreamVisualizer(MatplotlibArtifactVisualizer):
             metadata.update(item.metadata)
 
         first_item = point_items[0]
+
         return TwoDimGraphData(
             x=x_values,
             y=y_values,

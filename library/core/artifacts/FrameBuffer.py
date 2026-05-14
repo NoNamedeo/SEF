@@ -19,7 +19,7 @@ class FrameBuffer:
         buffer_size: int | None = None,
         frames: Iterable[Frame] | None = None,
     ):
-        self.capacity = buffer_size or 0
+        self.capacity = buffer_size or 10
         self._queue: Queue = Queue(maxsize=self.capacity)
         self.closed = False
 
