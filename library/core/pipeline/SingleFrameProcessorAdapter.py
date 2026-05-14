@@ -5,8 +5,8 @@ from typing import Any
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
 from library.core.pipeline.IntermediateFrameCapture import (
     IntermediateFrameArtifactStore,
@@ -41,6 +41,34 @@ class SingleFrameProcessorAdapter(IFrameBufferProcessor):
             processor_index=context.processor_index,
             intermediate_store=context.intermediate_store,
         )
+
+    def process_into(
+        self,
+        input_buffer: FrameBuffer,
+        output_buffer: FrameBuffer,
+        *,
+        processor_index: int,
+        intermediate_store: IntermediateFrameArtifactStore | None,
+    ) -> None:
+        """
+        Stream processed frames from ``input_buffer`` into ``output_buffer``.
+
+        This method is used by the pipeline runtime when the wrapped processor
+        is stateless and can be applied one frame at a time without materializing
+        the full intermediate sequence.
+        """
+        try:
+            for source_sequence_index, frame in enumerate(input_buffer):
+                output_buffer.put(
+                    self._process_frame(
+                        frame,
+                        processor_index=processor_index,
+                        source_sequence_index=source_sequence_index,
+                        intermediate_store=intermediate_store,
+                    )
+                )
+        finally:
+            output_buffer.close()
 
     def _process(
         self,

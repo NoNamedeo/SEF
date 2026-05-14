@@ -128,8 +128,6 @@ def StreamTestMain() -> None:
         single_frame_processors=selection_processors,
     )
 
-    mask = OpenCVMaskSelector().select_mask()
-
     stream_context = _build_stream_context(
         video_path,
         start_box,

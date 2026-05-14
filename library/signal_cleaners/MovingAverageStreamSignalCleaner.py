@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from collections import deque
+
+from library.core.artifacts.BoxSignalSample import BoxSignalSample
 from library.core.artifacts.SignalBuffer import SignalBuffer
 from library.core.interfaces.ISignalCleaner import ISignalCleaner
-from library.core.artifacts.BoxSignalSample import BoxSignalSample
 
 
 class MovingAverageStreamCleaner(ISignalCleaner):
@@ -21,30 +23,22 @@ class MovingAverageStreamCleaner(ISignalCleaner):
 
     def clean(self, input_buffer: SignalBuffer) -> SignalBuffer:
         """
-        Read samples from the input buffer, smooth centroids using
-        a moving average window, write cleaned samples into self.buffer,
-        and return the cleaned buffer.
+        Smooth centroids with a causal moving average and stream results.
+
+        A centered moving average requires future samples and therefore forces a
+        full materialization. For realtime streaming this cleaner intentionally
+        uses the last ``window_size`` available samples.
         """
+        window = deque(maxlen=self.window_size)
 
-        samples = list(input_buffer)
-
-        centroids = [sample.centroid for sample in samples]
-
-        for index, sample in enumerate(samples):
-            start = max(0, index - self.window_size // 2)
-            end = min(len(samples), index + self.window_size // 2 + 1)
-
-            window_points = [
-                point
-                for point in centroids[start:end]
-                if point is not None
-            ]
+        for sample in input_buffer:
+            if sample.centroid is not None:
+                window.append(sample.centroid)
 
             smoothed_centroid = None
-
-            if window_points:
-                avg_x = sum(point[0] for point in window_points) / len(window_points)
-                avg_y = sum(point[1] for point in window_points) / len(window_points)
+            if window:
+                avg_x = sum(point[0] for point in window) / len(window)
+                avg_y = sum(point[1] for point in window) / len(window)
 
                 smoothed_centroid = (avg_x, avg_y)
 
@@ -56,9 +50,7 @@ class MovingAverageStreamCleaner(ISignalCleaner):
                 metadata=dict(sample.metadata),
             )
 
-            # Push cleaned sample into output buffer
             self.buffer.put(cleaned_sample)
 
         self.buffer.close()
-
         return self.buffer

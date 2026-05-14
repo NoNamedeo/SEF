@@ -9,6 +9,7 @@ import cv2
 from PIL import Image
 
 from library.analyzers.NoAnalyzer import NoAnalyzer
+from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.enum.FrameRotation import FrameRotation
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
@@ -20,7 +21,9 @@ from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.core.visualization.VisualArtifact import DeferredVideoArtifact, ImageArtifact, VideoArtifact, VideoFileArtifact
 from library.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
 from library.frame_processors.OpenCVBackgroundReplacementFrameProcessor import OpenCVBackgroundReplacementFrameProcessor
+from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
 from library.frame_processors.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
 from library.signal_extractors.NoSignalExtractor import NoSignalExtractor
@@ -30,6 +33,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_FALLBACK_FPS = 24.0
 DEFAULT_MAX_FRAMES = 300
 DEFAULT_DEBUG_MAX_STORED_FRAMES = 12
+DEFAULT_STREAM_BUFFER_SIZE = 4
 DEFAULT_RESIZE = (1080, 1920)
 PIPELINE_ID = "background-replacement-demo"
 
@@ -53,6 +57,7 @@ class BackgroundReplacementPipelineConfig:
     frame_stride: int = 1
     debug_sampling_interval: int = 45
     debug_max_stored_frames: int = DEFAULT_DEBUG_MAX_STORED_FRAMES
+    stream_buffer_size: int = DEFAULT_STREAM_BUFFER_SIZE
     fallback_fps: float = DEFAULT_FALLBACK_FPS
 
     @classmethod
@@ -63,8 +68,7 @@ class BackgroundReplacementPipelineConfig:
             background_image_path=PROJECT_ROOT / "images" / "Tower_without_people.png",
             cleaned_video_path=PROJECT_ROOT / "output" / "cleaned_videos" / "Tower_without_people.mp4",
             artifact_output_dir=PROJECT_ROOT / "output" / "visualizations" / "background_replacement",
-
-            max_frames=9999
+            max_frames=9999,
         )
 
     def validate(self) -> None:
@@ -81,6 +85,8 @@ class BackgroundReplacementPipelineConfig:
             raise ValueError("debug_sampling_interval must be greater than 0.")
         if self.debug_max_stored_frames < 0:
             raise ValueError("debug_max_stored_frames cannot be negative.")
+        if self.stream_buffer_size <= 0:
+            raise ValueError("stream_buffer_size must be greater than 0.")
 
 
 class BackgroundReplacementPipelineFactory:
@@ -96,6 +102,7 @@ class BackgroundReplacementPipelineFactory:
             .with_frame_extractor(
                 OpenCVBufferedFrameExtractor(
                     self._config.video_path,
+                    buffer=FrameBuffer(buffer_size=self._config.stream_buffer_size),
                     config={
                         "max_frames": self._config.max_frames,
                         "stride": self._config.frame_stride,
@@ -113,6 +120,7 @@ class BackgroundReplacementPipelineFactory:
                             self._config.resize,
                         )
                     ),
+                    SingleFrameProcessorAdapter(OpenCVGrayFrameProcessor()),
                 ]
             )
             .add_frame_exporter(

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
-from queue import Queue
+from queue import Empty, Full, Queue
 
 from library.core.artifacts.Frame import Frame
-
 
 _SENTINEL = object()
 
@@ -20,7 +19,9 @@ class FrameBuffer:
         frames: Iterable[Frame] | None = None,
     ):
         self.capacity = buffer_size or 10
-        self._queue: Queue = Queue(maxsize=self.capacity)
+        # Keep one private slot for the end-of-stream sentinel. Public capacity
+        # still describes the maximum number of frame items.
+        self._queue: Queue = Queue(maxsize=self.capacity + 1)
         self.closed = False
 
         if frames:
@@ -44,6 +45,19 @@ class FrameBuffer:
     def close(self) -> None:
         self.closed = True
         self._queue.put(_SENTINEL)
+
+    def abort(self) -> None:
+        """Close the buffer without blocking, dropping queued frames if needed."""
+        self.closed = True
+        while True:
+            try:
+                self._queue.put_nowait(_SENTINEL)
+                return
+            except Full:
+                try:
+                    self._queue.get_nowait()
+                except Empty:
+                    continue
 
     def is_empty(self) -> bool:
         return self._queue.empty()

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from library.core.artifacts.DataBuffer import DataBuffer
-from library.core.artifacts.SignalBuffer import SignalBuffer, SignalSubscription
+from library.core.artifacts.SignalBuffer import SignalSubscription
+from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.artifacts.TwoDimPointData import TwoDimPointData
 from library.core.interfaces.IAnalyzer import IAnalyzer
 
@@ -14,11 +15,11 @@ class VerticalPositionStreamAnalyzer(IAnalyzer):
         self.buffer = buffer or DataBuffer()
         self.use_timestamps = bool(self.config.get("use_timestamps", True))
 
-    def analyze(self, signal: SignalSubscription, consumer_id: int = 0) -> DataBuffer:
+    def analyze(self, signal: SignalSubscription, consumer_id: int = 0) -> TwoDimGraphData:
         data_buffer = self.buffer
         x_label = "Time [s]" if self.use_timestamps else "Frame Index"
-
-
+        x_values: list[float] = []
+        y_values: list[float] = []
 
         for sample in signal:
             if sample.centroid is None:
@@ -31,6 +32,8 @@ class VerticalPositionStreamAnalyzer(IAnalyzer):
             )
 
             y_value = float(-sample.centroid[1])
+            x_values.append(x_value)
+            y_values.append(y_value)
 
             data_buffer.put(
                 TwoDimPointData(
@@ -45,4 +48,12 @@ class VerticalPositionStreamAnalyzer(IAnalyzer):
             )
 
         data_buffer.close()
-        return data_buffer
+        return TwoDimGraphData(
+            x=x_values,
+            y=y_values,
+            label="Vertical Position",
+            title="Vertical Position Over Time",
+            x_label=x_label,
+            y_label="Y Position [px]",
+            metadata={"points": len(x_values), "consumer_id": consumer_id},
+        )

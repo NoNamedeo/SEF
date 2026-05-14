@@ -24,7 +24,6 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
     ):
         super().__init__(config)
         self.path = str(path)
-        self.buffer = buffer or FrameBuffer()
         self.resize = self.config.get("resize")
         self.stride = int(self.config.get("stride", 1))
         self.max_frames = int(self.config.get("max_frames", self.DEFAULT_MAX_FRAMES))
@@ -35,6 +34,7 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
             raise ValueError("max_frames must be greater than 0")
         if self.max_frames > self.HARD_MAX_FRAMES:
             raise ValueError(f"max_frames cannot exceed hard limit {self.HARD_MAX_FRAMES}")
+        self.buffer = buffer or FrameBuffer(buffer_size=self.max_frames + 1)
 
     def extract(self) -> FrameBuffer:
         buffer = self.buffer

@@ -54,6 +54,16 @@ class OpenCVFrameBufferVideoExporter(IFrameExporter):
     def export(self, buffer: FrameBuffer, context: FrameExportContext) -> FrameExportResult:
         """Write the processed stream to disk and return a replayable buffer."""
         output_buffer = buffer.clone_empty()
+        artifacts = self.export_into(buffer, output_buffer, context)
+        return FrameExportResult(buffer=output_buffer, artifacts=artifacts)
+
+    def export_into(
+        self,
+        frames: FrameBuffer,
+        output_buffer: FrameBuffer,
+        context: FrameExportContext,
+    ) -> tuple[VideoFileArtifact, ...]:
+        """Write frames to disk while forwarding them to the next streaming stage."""
         writer: cv2.VideoWriter | None = None
         expected_size: tuple[int, int] | None = None
         written_frames = 0
@@ -63,7 +73,7 @@ class OpenCVFrameBufferVideoExporter(IFrameExporter):
             self.output_path.unlink()
 
         try:
-            for frame in buffer:
+            for frame in frames:
                 if written_frames >= self.max_exported_frames:
                     raise ValueError(f"Video export exceeded max_exported_frames={self.max_exported_frames}.")
 
@@ -90,9 +100,7 @@ class OpenCVFrameBufferVideoExporter(IFrameExporter):
         if not self.output_path.exists() or self.output_path.stat().st_size <= 0:
             raise RuntimeError(f"Video export did not produce a valid file: {self.output_path}")
 
-        return FrameExportResult(
-            buffer=output_buffer,
-            artifacts=(
+        return (
                 VideoFileArtifact(
                     kind="video",
                     role=ArtifactRole.FINAL_OUTPUT,
@@ -109,7 +117,6 @@ class OpenCVFrameBufferVideoExporter(IFrameExporter):
                     mime_type=self.DEFAULT_MIME_TYPE,
                     path=self.output_path,
                 ),
-            ),
         )
 
     def _open_writer(self, size: tuple[int, int]) -> cv2.VideoWriter:

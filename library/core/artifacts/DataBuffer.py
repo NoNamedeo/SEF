@@ -6,7 +6,6 @@ from typing import Dict, List
 
 from library.core.interfaces.IData import IData
 
-
 _SENTINEL = object()
 
 
@@ -38,6 +37,9 @@ class DataBuffer:
 
     def put(self, item: IData) -> None:
         with self._cond:
+            if self._consumers_default <= 0:
+                return
+
             while self.capacity > 0 and len(self._data) >= self.capacity:
                 self._cond.wait()
 
@@ -48,9 +50,29 @@ class DataBuffer:
     def close(self) -> None:
         with self._cond:
             self._closed = True
+            if self._consumers_default <= 0:
+                self._cond.notify_all()
+                return
             self._data.append(_SENTINEL)
             self._refcounts.append(self._consumers_default)
             self._cond.notify_all()
+
+    def abort(self) -> None:
+        """Wake all consumers and discard buffered data after an upstream failure."""
+        with self._cond:
+            self._closed = True
+            self._data.clear()
+            self._refcounts.clear()
+            self._cond.notify_all()
+
+    def set_consumer_count(self, consumers: int) -> None:
+        """Declare how many subscribers must consume each future item."""
+        if consumers < 0:
+            raise ValueError("DataBuffer consumers cannot be negative.")
+        with self._cond:
+            if self._data:
+                raise RuntimeError("DataBuffer consumer count must be configured before data is produced.")
+            self._consumers_default = consumers
 
     def subscribe(self, consumer_id: int):
         with self._cond:
@@ -71,6 +93,7 @@ class DataBuffer:
             if item is _SENTINEL:
                 raise StopIteration
 
+            self._subscribers[consumer_id] += 1
             self._refcounts[idx] -= 1
 
             if self._refcounts[idx] <= 0:
@@ -78,7 +101,6 @@ class DataBuffer:
                 self._refcounts[idx] = 0
                 self._compact_front()
 
-            self._subscribers[consumer_id] += 1
             self._cond.notify_all()
 
             return item

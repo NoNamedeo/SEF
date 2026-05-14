@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Mapping, Protocol
 
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.visualization.VisualArtifact import VisualArtifact
@@ -36,3 +36,15 @@ class IFrameExporter(ABC):
     @abstractmethod
     def export(self, buffer: FrameBuffer, context: FrameExportContext) -> FrameExportResult:
         """Persist or build artifacts from the frame stream and return the next buffer."""
+
+
+class StreamingFrameExporter(Protocol):
+    """Optional contract for exporters that can run without materializing all frames."""
+
+    def export_into(
+        self,
+        frames: FrameBuffer,
+        output_buffer: FrameBuffer,
+        context: FrameExportContext,
+    ) -> tuple[VisualArtifact, ...]:
+        """Export frames while forwarding them to ``output_buffer``."""
