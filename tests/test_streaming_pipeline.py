@@ -14,6 +14,7 @@ from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.artifacts.TwoDimPointData import TwoDimPointData
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
+from library.core.interfaces.IFrameBufferProcessor import FrameProcessorCapabilities, IFrameBufferProcessor
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
@@ -107,6 +108,30 @@ def test_pipeline_streams_frame_exporter_without_buffering_full_video(tmp_path: 
     assert output_path.stat().st_size > 0
 
 
+def test_pipeline_streams_prefix_before_sequence_processor_without_deadlock(tmp_path: Path) -> None:
+    output_path = tmp_path / "hybrid.mp4"
+    add_one = AddOneProcessor()
+    context = (
+        FluentPipelineBuilder()
+        .with_frame_extractor(StreamingFrameExtractor(frame_count=8))
+        .add_frame_processor(SingleFrameProcessorAdapter(add_one))
+        .add_frame_processor(SequenceMeanFrameProcessor())
+        .add_frame_exporter(OpenCVFrameBufferVideoExporter(output_path, fps=10.0, max_exported_frames=8))
+        .with_signal_extractor(NoSignalExtractor())
+        .add_analyzer(NoAnalyzer())
+        .build_context()
+    )
+
+    outputs = Pipeline(context).run()
+
+    assert add_one.processed_indexes == tuple(range(8))
+    assert len(outputs.final_artifacts) == 1
+    assert isinstance(outputs.final_artifacts[0], VideoFileArtifact)
+    assert outputs.final_artifacts[0].metadata["frame_count"] == 8
+    assert output_path.exists()
+    assert output_path.stat().st_size > 0
+
+
 class StreamingFrameExtractor(IFrameExtractor):
     def __init__(self, frame_count: int) -> None:
         super().__init__()
@@ -121,13 +146,41 @@ class StreamingFrameExtractor(IFrameExtractor):
 
 
 class AddOneProcessor(ISingleFrameProcessor):
+    def __init__(self) -> None:
+        super().__init__()
+        self.processed_indexes: tuple[int, ...] = ()
+
     def process(self, frame: Frame) -> Frame:
+        self.processed_indexes = (*self.processed_indexes, int(frame.index or 0))
         return Frame(
             image=frame.image + 1,
             index=frame.index,
             timestamp_seconds=frame.timestamp_seconds,
             metadata=dict(frame.metadata),
         )
+
+
+class SequenceMeanFrameProcessor(IFrameBufferProcessor):
+    capabilities = FrameProcessorCapabilities(
+        supports_streaming=False,
+        requires_complete_sequence=True,
+    )
+
+    def process(self, buffer: FrameBuffer) -> FrameBuffer:
+        frames = list(buffer)
+        output = FrameBuffer(buffer_size=len(frames) + 1)
+        mean_value = int(np.mean([float(frame.image[0, 0, 0]) for frame in frames]))
+        for frame in frames:
+            output.put(
+                Frame(
+                    image=np.full_like(frame.image, mean_value),
+                    index=frame.index,
+                    timestamp_seconds=frame.timestamp_seconds,
+                    metadata=dict(frame.metadata),
+                )
+            )
+        output.close()
+        return output
 
 
 class StreamingSignalExtractor(ISignalExtractor):

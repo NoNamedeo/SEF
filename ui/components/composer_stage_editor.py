@@ -7,11 +7,11 @@ import streamlit as st
 from library.core.plugins.PluginRegistry import PluginCategory
 from ui.services.pipeline_builder_service import (
     STAGE_EDIT_OPTIONS,
+    display_frame_processor_plugin,
     display_stage_plugin,
     ensure_stage_options,
     recommended_analyzers_for_current_signal,
     recommended_frame_extractors,
-    recommended_frame_processors,
     recommended_intermediate_visualizers_for_current_state,
     recommended_signal_cleaners,
     recommended_signal_extractors,
@@ -100,7 +100,7 @@ def _render_frame_processors_editor(registry) -> None:
         "Frame processors",
         single_frame_processor_options_for_current_signal(registry),
         key="sef_builder_frame_processors",
-        format_func=display_stage_plugin(registry, PluginCategory.SINGLE_FRAME_PROCESSOR, recommended_frame_processors()),
+        format_func=display_frame_processor_plugin(registry),
         help="I consigliati compaiono in alto. Le altre opzioni restano selezionabili senza garanzia di compatibilita.",
     )
     render_single_frame_processor_params()
@@ -188,6 +188,8 @@ def render_single_frame_processor_params() -> None:
             c2.checkbox("Detect shadows", key="sef_builder_bg_shadows")
         if "color_stabilization" in selected:
             render_color_stabilization_params()
+        if "dynamic_object_removal" in selected:
+            render_dynamic_object_removal_params()
 
 
 def render_signal_extractor_params() -> None:
@@ -368,6 +370,84 @@ def render_color_stabilization_params() -> None:
             "Emit intermediate artifacts",
             key="sef_builder_color_stab_emit_intermediate",
             help="Registra i frame intermedi di lavoro e luminanza per ispezione.",
+        )
+
+
+def render_dynamic_object_removal_params() -> None:
+    """Render parameter controls for the sequence-aware dynamic object removal processor."""
+    with st.expander("Dynamic object removal params", expanded=True):
+        st.caption(
+            "Rimuove oggetti dinamici sostituendo solo i pixel mascherati con uno sfondo mediano temporale. "
+            "Processor offline: usa max frames e resize conservativi."
+        )
+        c1, c2 = st.columns(2)
+        c1.number_input(
+            "Sampling stride",
+            min_value=1,
+            max_value=100,
+            key="sef_builder_dynamic_removal_sampling_stride",
+        )
+        c2.number_input(
+            "Max sampled frames",
+            min_value=1,
+            max_value=300,
+            key="sef_builder_dynamic_removal_max_sampled_frames",
+        )
+
+        c3, c4 = st.columns(2)
+        c3.slider(
+            "Difference threshold",
+            0,
+            255,
+            key="sef_builder_dynamic_removal_difference_threshold",
+        )
+        c4.number_input(
+            "Max processed frames",
+            min_value=1,
+            max_value=1000,
+            key="sef_builder_dynamic_removal_max_processed_frames",
+        )
+
+        st.divider()
+        c5, c6 = st.columns(2)
+        c5.number_input(
+            "Morph kernel size",
+            min_value=1,
+            max_value=31,
+            step=2,
+            key="sef_builder_dynamic_removal_morph_kernel_size",
+        )
+        c6.number_input(
+            "Min component area",
+            min_value=0,
+            max_value=5000,
+            key="sef_builder_dynamic_removal_min_component_area",
+        )
+
+        c7, c8, c9 = st.columns(3)
+        c7.number_input(
+            "Opening iterations",
+            min_value=0,
+            max_value=10,
+            key="sef_builder_dynamic_removal_opening_iterations",
+        )
+        c8.number_input(
+            "Closing iterations",
+            min_value=0,
+            max_value=10,
+            key="sef_builder_dynamic_removal_closing_iterations",
+        )
+        c9.number_input(
+            "Dilation iterations",
+            min_value=0,
+            max_value=10,
+            key="sef_builder_dynamic_removal_dilation_iterations",
+        )
+
+        st.checkbox(
+            "Emit intermediate artifacts",
+            key="sef_builder_dynamic_removal_emit_intermediate",
+            help="Registra background, mask raw/refined/effective e frame ripulito nella capture intermedia.",
         )
 
 

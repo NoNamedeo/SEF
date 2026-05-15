@@ -56,8 +56,37 @@ def test_frame_buffer_video_exporter_rejects_empty_buffers(tmp_path: Path) -> No
         )
 
 
+def test_frame_buffer_video_exporter_writes_grayscale_frames_as_video(tmp_path: Path) -> None:
+    output_path = tmp_path / "grayscale.mp4"
+    exporter = OpenCVFrameBufferVideoExporter(output_path, fps=12.0)
+
+    result = exporter.export(
+        _frame_buffer(
+            [
+                _grayscale_frame(0, fill_value=20),
+                _grayscale_frame(1, fill_value=80),
+            ]
+        ),
+        FrameExportContext(
+            pipeline_id="test-pipeline",
+            exporter_name="OpenCVFrameBufferVideoExporter",
+            execution_metadata={},
+        ),
+    )
+
+    output_frames = list(result.buffer)
+    assert output_frames[0].image.ndim == 2
+    assert _encoded_frame_count(output_path) == 2
+    assert _first_encoded_frame_channels(output_path) == 3
+
+
 def _frame(index: int, *, fill_value: int) -> Frame:
     image = np.full((12, 16, 3), fill_value, dtype=np.uint8)
+    return Frame(image=image, index=index, timestamp_seconds=index / 12.0)
+
+
+def _grayscale_frame(index: int, *, fill_value: int) -> Frame:
+    image = np.full((12, 16), fill_value, dtype=np.uint8)
     return Frame(image=image, index=index, timestamp_seconds=index / 12.0)
 
 
@@ -73,5 +102,15 @@ def _encoded_frame_count(path: Path) -> int:
     capture = cv2.VideoCapture(str(path))
     try:
         return int(capture.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+    finally:
+        capture.release()
+
+
+def _first_encoded_frame_channels(path: Path) -> int:
+    capture = cv2.VideoCapture(str(path))
+    try:
+        success, frame = capture.read()
+        assert success
+        return int(frame.shape[2])
     finally:
         capture.release()

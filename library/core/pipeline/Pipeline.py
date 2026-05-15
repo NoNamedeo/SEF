@@ -13,10 +13,9 @@ from library.core.interfaces.IData import IData
 from library.core.interfaces.IEventEmitter import IEventEmitter
 from library.core.interfaces.IFrameExporter import FrameExportContext
 from library.core.interfaces.pipeline.IEventBus import IEventBus
-from library.core.pipeline.FrameProcessingStage import FrameProcessingStage
+from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
 from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.core.visualization.PipelineRunMetadata import PipelineRunMetadata
@@ -81,38 +80,51 @@ class Pipeline:
         self._event_bus = event_bus
         self._pipeline_id = pipeline_id
         self._execution_metadata = dict(execution_metadata or {})
-        self._frame_processing_stage = FrameProcessingStage()
 
     # ── Public API ──────────────────────────────────────────────────────────
 
     def run(self) -> PipelineOutputs:
         """Execute the full pipeline and return results plus visual artifacts."""
         self._inject_event_bus(self._event_bus)
-        if self._can_run_streaming():
-            return self._run_streaming()
-        return self._run_batch()
+        return self._run_adaptive()
 
     # ── Internals ───────────────────────────────────────────────────────────
 
-    def _run_batch(self) -> PipelineOutputs:
-        """Run the classic batch pipeline for components that do not expose streaming buffers."""
+    def _run_adaptive(self) -> PipelineOutputs:
+        """Run one adaptive pipeline, materializing only at non-streaming frame boundaries."""
         ctx = self._context
-
-        buffer = self._run_step("frame_extraction", lambda: ctx.frame_extractor.extract())
         intermediate_store = IntermediateFrameArtifactStore(ctx.intermediate_frame_capture)
-        buffer = self._run_step(
-            "frame_processing",
-            lambda: self._frame_processing_stage.apply(
-                buffer,
-                ctx.frame_processors,
-                intermediate_store=intermediate_store,
-            ),
+        frame_buffers: list[FrameBuffer] = []
+        artifacts: list[VisualArtifact] = []
+        artifact_lock = Lock()
+
+        frame_buffer, frame_tasks = self._build_adaptive_frame_pipeline(
+            intermediate_store=intermediate_store,
+            frame_buffers=frame_buffers,
         )
-        intermediate_frames = intermediate_store.to_collection()
-        buffer, frame_export_artifacts = self._run_frame_exporters(buffer)
+        exporters_streaming = all(callable(getattr(exporter, "export_into", None)) for exporter in ctx.frame_exporters)
 
-        signal = self._run_step("signal_extraction", lambda: ctx.signal_extractor.extract(buffer))
+        if self._can_stream_signal_pipeline() and exporters_streaming:
+            outputs = self._run_streaming_signal_tail(
+                frame_buffer=frame_buffer,
+                pending_frame_tasks=frame_tasks,
+                frame_buffers=frame_buffers,
+                artifacts=artifacts,
+                artifact_lock=artifact_lock,
+                intermediate_store=intermediate_store,
+            )
+            return self._with_reproducibility_exports(outputs)
 
+        materialized_buffer = self._materialize_pending_frame_stream(
+            frame_buffer,
+            frame_tasks,
+            frame_buffers=frame_buffers,
+            stage_name="frame_processing.materialize_final",
+        )
+        materialized_buffer, frame_export_artifacts = self._run_frame_exporters(materialized_buffer)
+        artifacts.extend(frame_export_artifacts)
+
+        signal = self._run_step("signal_extraction", lambda: ctx.signal_extractor.extract(materialized_buffer))
         for i, cleaner in enumerate(ctx.signal_cleaners):
             signal = self._run_step(
                 f"signal_cleaning[{i}]",
@@ -124,7 +136,8 @@ class Pipeline:
             data = self._run_step(f"analysis[{i}]", lambda a=analyzer: a.analyze(signal))
             results.append(data)
 
-        final_artifacts = [*frame_export_artifacts, *self._run_visualizers(results)]
+        intermediate_frames = intermediate_store.to_collection()
+        final_artifacts = [*artifacts, *self._run_visualizers(results)]
         debug_artifacts = self._run_intermediate_frame_visualizers(intermediate_frames)
         return self._with_reproducibility_exports(
             self._build_outputs(
@@ -135,44 +148,24 @@ class Pipeline:
             )
         )
 
-    def _can_run_streaming(self) -> bool:
-        """
-        Return True only when every stage exposes the minimal streaming contract.
-
-        The batch path remains the default for legacy components. This keeps the
-        public Pipeline API stable while allowing stream-capable components to
-        run with bounded queues and internal stage parallelism.
-        """
+    def _run_streaming_signal_tail(
+        self,
+        *,
+        frame_buffer: FrameBuffer,
+        pending_frame_tasks: list[Callable[[ThreadPoolExecutor], Future]],
+        frame_buffers: list[FrameBuffer],
+        artifacts: list[VisualArtifact],
+        artifact_lock: Lock,
+        intermediate_store: IntermediateFrameArtifactStore,
+    ) -> PipelineOutputs:
+        """Run frame exporters and signal/result stages concurrently after adaptive frame processing."""
         ctx = self._context
-        return (
-            hasattr(ctx.frame_extractor, "buffer")
-            and hasattr(ctx.signal_extractor, "buffer")
-            and all(callable(getattr(exporter, "export_into", None)) for exporter in ctx.frame_exporters)
-            and all(isinstance(processor, SingleFrameProcessorAdapter) for processor in ctx.frame_processors)
-            and all(hasattr(cleaner, "buffer") for cleaner in ctx.signal_cleaners)
-            and all(hasattr(analyzer, "buffer") for analyzer in ctx.analyzers)
-        )
-
-    def _run_streaming(self) -> PipelineOutputs:
-        """Run stream-capable stages concurrently inside the normal Pipeline."""
-        ctx = self._context
-        intermediate_store = IntermediateFrameArtifactStore(ctx.intermediate_frame_capture)
-        frame_buffers: list[FrameBuffer] = []
         signal_buffers: list[Any] = []
         data_buffers = [analyzer.buffer for analyzer in ctx.analyzers]
-        artifacts: list[VisualArtifact] = []
-        artifact_lock = Lock()
         results: list[IData | None] = [None] * len(ctx.analyzers)
 
-        source_frame_buffer = ctx.frame_extractor.buffer
-        frame_buffers.append(source_frame_buffer)
-        final_frame_buffer, frame_processor_tasks = self._build_streaming_frame_tasks(
-            source_frame_buffer,
-            intermediate_store,
-            frame_buffers,
-        )
         final_frame_buffer, frame_exporter_tasks = self._build_streaming_frame_export_tasks(
-            final_frame_buffer,
+            frame_buffer,
             frame_buffers,
             artifacts,
             artifact_lock,
@@ -194,8 +187,7 @@ class Pipeline:
 
         max_workers = max(
             1,
-            1
-            + len(frame_processor_tasks)
+            len(pending_frame_tasks)
             + len(frame_exporter_tasks)
             + 1
             + len(signal_cleaner_tasks)
@@ -230,15 +222,7 @@ class Pipeline:
                 )
             )
             futures.extend(task(executor) for task in frame_exporter_tasks)
-            futures.extend(task(executor) for task in frame_processor_tasks)
-            futures.append(
-                executor.submit(
-                    lambda: self._run_step(
-                        "frame_extraction",
-                        lambda: ctx.frame_extractor.extract(),
-                    )
-                )
-            )
+            futures.extend(task(executor) for task in pending_frame_tasks)
 
             try:
                 for future in futures:
@@ -249,50 +233,179 @@ class Pipeline:
 
         intermediate_frames = intermediate_store.to_collection()
         debug_artifacts = self._run_intermediate_frame_visualizers(intermediate_frames)
-        return self._with_reproducibility_exports(
-            self._build_outputs(
-                results=tuple(result for result in results if result is not None),
-                final_artifacts=tuple(artifacts),
-                debug_artifacts=tuple(debug_artifacts),
-                intermediate_frames=intermediate_frames,
-            )
+        return self._build_outputs(
+            results=tuple(result for result in results if result is not None),
+            final_artifacts=tuple(artifacts),
+            debug_artifacts=tuple(debug_artifacts),
+            intermediate_frames=intermediate_frames,
         )
 
-    def _build_streaming_frame_tasks(
+    def _build_adaptive_frame_pipeline(
         self,
-        source_buffer: FrameBuffer,
+        *,
         intermediate_store: IntermediateFrameArtifactStore,
         frame_buffers: list[FrameBuffer],
     ) -> tuple[FrameBuffer, list[Callable[[ThreadPoolExecutor], Future]]]:
-        current_buffer = source_buffer
-        tasks: list[Callable[[ThreadPoolExecutor], Future]] = []
-        for processor_index, processor in enumerate(self._context.frame_processors):
-            output_buffer = current_buffer.clone_empty()
-            frame_buffers.append(output_buffer)
+        ctx = self._context
+        source_buffer = getattr(ctx.frame_extractor, "buffer", None)
+        if isinstance(source_buffer, FrameBuffer):
+            frame_buffers.append(source_buffer)
+            current_buffer = source_buffer
+            pending_tasks = [self._frame_extraction_task()]
+        else:
+            current_buffer = self._run_step("frame_extraction", lambda: ctx.frame_extractor.extract())
+            frame_buffers.append(current_buffer)
+            pending_tasks: list[Callable[[ThreadPoolExecutor], Future]] = []
 
-            def submit_processor(
-                executor: ThreadPoolExecutor,
-                *,
-                stage_input: FrameBuffer = current_buffer,
-                stage_output: FrameBuffer = output_buffer,
-                adapter: SingleFrameProcessorAdapter = processor,
-                index: int = processor_index,
-            ) -> Future:
-                return executor.submit(
-                    lambda: self._run_step(
-                        f"frame_processing[{index}]",
-                        lambda: adapter.process_into(
-                            stage_input,
-                            stage_output,
-                            processor_index=index,
-                            intermediate_store=intermediate_store,
-                        ),
+        for processor_index, processor in enumerate(ctx.frame_processors):
+            if self._can_stream_frame_processor(processor):
+                output_buffer = current_buffer.clone_empty()
+                frame_buffers.append(output_buffer)
+                pending_tasks.append(
+                    self._frame_processor_task(
+                        current_buffer,
+                        output_buffer,
+                        processor=processor,
+                        processor_index=processor_index,
+                        intermediate_store=intermediate_store,
                     )
                 )
+                current_buffer = output_buffer
+                continue
 
-            tasks.append(submit_processor)
-            current_buffer = output_buffer
-        return current_buffer, tasks
+            current_buffer = self._materialize_pending_frame_stream(
+                current_buffer,
+                pending_tasks,
+                frame_buffers=frame_buffers,
+                stage_name=f"frame_processing[{processor_index}].materialize_input",
+            )
+            pending_tasks = []
+            current_buffer = self._process_complete_sequence_processor(
+                current_buffer,
+                processor,
+                processor_index=processor_index,
+                intermediate_store=intermediate_store,
+            )
+            frame_buffers.append(current_buffer)
+
+        return current_buffer, pending_tasks
+
+    def _materialize_pending_frame_stream(
+        self,
+        source_buffer: FrameBuffer,
+        pending_tasks: list[Callable[[ThreadPoolExecutor], Future]],
+        *,
+        frame_buffers: list[FrameBuffer],
+        stage_name: str,
+    ) -> FrameBuffer:
+        if not pending_tasks:
+            return self._run_step(stage_name, lambda: self._copy_frame_buffer(source_buffer))
+
+        with ThreadPoolExecutor(max_workers=len(pending_tasks) + 1, thread_name_prefix="sef-frame-boundary") as executor:
+            futures = [task(executor) for task in pending_tasks]
+            materialized_future = executor.submit(
+                lambda: self._run_step(stage_name, lambda: self._copy_frame_buffer(source_buffer))
+            )
+            futures.append(materialized_future)
+            try:
+                for future in futures:
+                    future.result()
+            except Exception:
+                self._abort_streaming_buffers(frame_buffers, [], [])
+                raise
+        return materialized_future.result()
+
+    @staticmethod
+    def _copy_frame_buffer(source_buffer: FrameBuffer) -> FrameBuffer:
+        frames = list(source_buffer)
+        output = FrameBuffer(buffer_size=max(len(frames) + 1, source_buffer.capacity))
+        for frame in frames:
+            output.put(frame)
+        output.close()
+        return output
+
+    def _process_complete_sequence_processor(
+        self,
+        buffer: FrameBuffer,
+        processor: Any,
+        *,
+        processor_index: int,
+        intermediate_store: IntermediateFrameArtifactStore,
+    ) -> FrameBuffer:
+        return self._run_step(
+            f"frame_processing[{processor_index}]",
+            lambda: self._process_frame_buffer_processor(
+                buffer,
+                processor,
+                processor_index=processor_index,
+                intermediate_store=intermediate_store,
+            ),
+        )
+
+    @staticmethod
+    def _process_frame_buffer_processor(
+        buffer: FrameBuffer,
+        processor: Any,
+        *,
+        processor_index: int,
+        intermediate_store: IntermediateFrameArtifactStore,
+    ) -> FrameBuffer:
+        context = FrameProcessorExecutionContext(
+            processor_index=processor_index,
+            processor_name=type(processor).__name__,
+            stage_name=f"frame_processing[{processor_index}].{type(processor).__name__}",
+            intermediate_store=intermediate_store,
+        )
+        process_with_context = getattr(processor, "process_with_context", None)
+        if callable(process_with_context):
+            return process_with_context(buffer, context)
+        return processor.process(buffer)
+
+    def _frame_extraction_task(self) -> Callable[[ThreadPoolExecutor], Future]:
+        return lambda executor: executor.submit(
+            lambda: self._run_step("frame_extraction", lambda: self._context.frame_extractor.extract())
+        )
+
+    def _frame_processor_task(
+        self,
+        input_buffer: FrameBuffer,
+        output_buffer: FrameBuffer,
+        *,
+        processor: Any,
+        processor_index: int,
+        intermediate_store: IntermediateFrameArtifactStore,
+    ) -> Callable[[ThreadPoolExecutor], Future]:
+        def submit_processor(executor: ThreadPoolExecutor) -> Future:
+            return executor.submit(
+                lambda: self._run_step(
+                    f"frame_processing[{processor_index}]",
+                    lambda: processor.process_into(
+                        input_buffer,
+                        output_buffer,
+                        processor_index=processor_index,
+                        intermediate_store=intermediate_store,
+                    ),
+                )
+            )
+
+        return submit_processor
+
+    @staticmethod
+    def _can_stream_frame_processor(processor: Any) -> bool:
+        capabilities = getattr(processor, "capabilities", None)
+        return (
+            bool(getattr(capabilities, "supports_streaming", False))
+            and not bool(getattr(capabilities, "requires_complete_sequence", True))
+            and callable(getattr(processor, "process_into", None))
+        )
+
+    def _can_stream_signal_pipeline(self) -> bool:
+        ctx = self._context
+        return (
+            hasattr(ctx.signal_extractor, "buffer")
+            and all(hasattr(cleaner, "buffer") for cleaner in ctx.signal_cleaners)
+            and all(hasattr(analyzer, "buffer") for analyzer in ctx.analyzers)
+        )
 
     def _build_streaming_frame_export_tasks(
         self,

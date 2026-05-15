@@ -5,7 +5,7 @@ from typing import Any
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
-from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from library.core.interfaces.IFrameBufferProcessor import FrameProcessorCapabilities, IFrameBufferProcessor
 from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
 from library.core.pipeline.IntermediateFrameCapture import (
@@ -21,6 +21,11 @@ class SingleFrameProcessorAdapter(IFrameBufferProcessor):
     This keeps simple frame transformations small and testable while allowing
     the preprocessing stage to operate uniformly on FrameBuffer instances.
     """
+
+    capabilities = FrameProcessorCapabilities(
+        supports_streaming=True,
+        requires_complete_sequence=False,
+    )
 
     def __init__(self, single_frame_processor: ISingleFrameProcessor, config: dict[str, Any] | None = None):
         super().__init__(config)

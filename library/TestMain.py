@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -20,22 +21,30 @@ from library.core.utils.OpenCVMaskSelector import OpenCVMaskSelector
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.core.visualization.VisualArtifact import DeferredVideoArtifact, ImageArtifact, VideoArtifact, VideoFileArtifact
 from library.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
+from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
 from library.frame_processors.OpenCVBackgroundReplacementFrameProcessor import OpenCVBackgroundReplacementFrameProcessor
 from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
 from library.frame_processors.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
+from library.frame_processors.OpenCVZoomFrameProcessor import OpenCVZoomFrameProcessor
 from library.signal_extractors.NoSignalExtractor import NoSignalExtractor
 from library.visualizers.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_FALLBACK_FPS = 24.0
-DEFAULT_MAX_FRAMES = 300
+DEFAULT_MAX_FRAMES = 99
 DEFAULT_DEBUG_MAX_STORED_FRAMES = 12
-DEFAULT_STREAM_BUFFER_SIZE = 4
+DEFAULT_STREAM_BUFFER_SIZE = 8
 DEFAULT_RESIZE = (1080, 1920)
+FAST_DYNAMIC_DEMO_RESIZE = (540, 960)
+FAST_DYNAMIC_DEMO_MAX_FRAMES = 999
+FAST_DYNAMIC_DEMO_STRIDE = 1
+FAST_DYNAMIC_DEMO_MAX_SAMPLED_FRAMES = 24
 PIPELINE_ID = "background-replacement-demo"
+RUN_DYNAMIC_OBJECT_REMOVAL_DEMO = True
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +59,7 @@ class BackgroundReplacementPipelineConfig:
     video_path: Path
     background_image_path: Path
     cleaned_video_path: Path
+    dynamic_cleaned_video_path: Path
     artifact_output_dir: Path
     resize: tuple[int, int] = DEFAULT_RESIZE
     rotation: FrameRotation = FrameRotation.ROTATE_90
@@ -67,15 +77,16 @@ class BackgroundReplacementPipelineConfig:
             video_path=PROJECT_ROOT / "videos" / "Tower.mp4",
             background_image_path=PROJECT_ROOT / "images" / "Tower_without_people.png",
             cleaned_video_path=PROJECT_ROOT / "output" / "cleaned_videos" / "Tower_without_people.mp4",
+            dynamic_cleaned_video_path=PROJECT_ROOT / "output" / "cleaned_videos" / "Tower_dynamic_object_removal.mp4",
             artifact_output_dir=PROJECT_ROOT / "output" / "visualizations" / "background_replacement",
             max_frames=9999,
         )
 
-    def validate(self) -> None:
+    def validate(self, *, require_background_image: bool = True) -> None:
         """Fail fast before opening OpenCV UI selectors or executing the pipeline."""
         if not self.video_path.is_file():
             raise FileNotFoundError(f"Input video not found: {self.video_path}")
-        if not self.background_image_path.is_file():
+        if require_background_image and not self.background_image_path.is_file():
             raise FileNotFoundError(f"Background image not found: {self.background_image_path}")
         if self.max_frames <= 0:
             raise ValueError("max_frames must be greater than 0.")
@@ -134,6 +145,69 @@ class BackgroundReplacementPipelineFactory:
                     title=f"{self._config.video_path.stem} without people",
                     description="Background-replacement final video.",
                     max_exported_frames=self._config.max_frames,
+                )
+            )
+            .with_signal_extractor(NoSignalExtractor())
+            .with_analyzers([NoAnalyzer()])
+            .with_intermediate_frame_capture(self._intermediate_capture_config())
+            .add_intermediate_frame_visualizer(self._intermediate_frame_visualizer())
+            .build_context()
+        )
+
+    def build_dynamic_object_removal_demo(self) -> PipelineContext:
+        """Create a quick demo pipeline for temporal dynamic-object removal."""
+        max_frames = min(self._config.max_frames, FAST_DYNAMIC_DEMO_MAX_FRAMES)
+        stride = max(self._config.frame_stride, FAST_DYNAMIC_DEMO_STRIDE)
+        log.info(
+            "Dynamic object removal demo: resize=%s max_frames=%s stride=%s max_sampled_frames=%s",
+            FAST_DYNAMIC_DEMO_RESIZE,
+            max_frames,
+            stride,
+            FAST_DYNAMIC_DEMO_MAX_SAMPLED_FRAMES,
+        )
+        return (
+            FluentPipelineBuilder()
+            .with_frame_extractor(
+                OpenCVBufferedFrameExtractor(
+                    self._config.video_path,
+                    config={
+                        "max_frames": max_frames,
+                        "stride": stride,
+                    },
+                )
+            )
+            .with_frame_processors(
+                [
+                    SingleFrameProcessorAdapter(OpenCVRotateFrameProcessor(rotation=self._config.rotation)),
+                    SingleFrameProcessorAdapter(OpenCVResizeFrameProcessor(FAST_DYNAMIC_DEMO_RESIZE)),
+                    SingleFrameProcessorAdapter(ColorStabilizationFrameProcessor()),
+                    DynamicObjectRemovalFrameProcessor(
+                        sampling_stride=1,
+                        max_sampled_frames=150,
+                        difference_threshold=3,
+                        difference_mode="max",
+                        morph_kernel_size=5,
+                        opening_iterations=1,
+                        closing_iterations=3,
+                        dilation_iterations=2,
+                        max_sequence_bytes=4096 * 1024 * 1024,
+                        min_component_area=50,
+                        max_processed_frames=9999,
+                        emit_intermediate_artifacts=False,
+                    ),
+                ]
+            )
+            .add_frame_exporter(
+                OpenCVFrameBufferVideoExporter(
+                    output_path=self._config.dynamic_cleaned_video_path,
+                    fps=resolve_output_fps(
+                        self._config.video_path,
+                        stride=stride,
+                        fallback_fps=self._config.fallback_fps,
+                    ),
+                    title=f"{self._config.video_path.stem} dynamic object removal",
+                    description="Temporal median dynamic-object-removal final video.",
+                    max_exported_frames=max_frames,
                 )
             )
             .with_signal_extractor(NoSignalExtractor())
@@ -233,23 +307,33 @@ def run_pipeline(context: PipelineContext) -> PipelineOutputs:
         orchestrator.shutdown()
 
 
-def print_run_summary(config: BackgroundReplacementPipelineConfig, saved_artifacts: Iterable[Path]) -> None:
+def print_run_summary(cleaned_video_path: Path, saved_artifacts: Iterable[Path]) -> None:
     """Write a concise CLI summary for manual demo runs."""
-    print(f"Cleaned video saved to: {config.cleaned_video_path}")
+    print(f"Cleaned video saved to: {cleaned_video_path}")
     for path in saved_artifacts:
         print(f"Visualization artifact saved to: {path}")
 
 
 def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    )
     config = BackgroundReplacementPipelineConfig.default()
-    config.validate()
+    config.validate(require_background_image=not RUN_DYNAMIC_OBJECT_REMOVAL_DEMO)
 
-    mask = select_replacement_mask(config)
-    context = BackgroundReplacementPipelineFactory(config).build(mask)
+    factory = BackgroundReplacementPipelineFactory(config)
+    if RUN_DYNAMIC_OBJECT_REMOVAL_DEMO:
+        context = factory.build_dynamic_object_removal_demo()
+        cleaned_video_path = config.dynamic_cleaned_video_path
+    else:
+        mask = select_replacement_mask(config)
+        context = factory.build(mask)
+        cleaned_video_path = config.cleaned_video_path
     outputs = run_pipeline(context)
     saved_artifacts = PipelineArtifactWriter(config.artifact_output_dir).write(outputs)
 
-    print_run_summary(config, saved_artifacts)
+    print_run_summary(cleaned_video_path, saved_artifacts)
 
 
 if __name__ == "__main__":

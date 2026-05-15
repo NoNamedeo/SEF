@@ -36,9 +36,12 @@ class PluginConfig:
 
     name: str
     params: dict[str, Any] = field(default_factory=dict)
+    processor_type: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         payload: dict[str, Any] = {"name": self.name}
+        if self.processor_type is not None:
+            payload["processor_type"] = self.processor_type
         if self.params:
             payload["params"] = self.params
         return payload
@@ -157,6 +160,16 @@ class BuilderStateSnapshot:
     color_stab_emit_metrics: bool = True
     color_stab_emit_overlay: bool = False
     color_stab_emit_intermediate: bool = False
+    dynamic_removal_sampling_stride: int = 5
+    dynamic_removal_max_sampled_frames: int = 60
+    dynamic_removal_difference_threshold: int = 35
+    dynamic_removal_morph_kernel_size: int = 5
+    dynamic_removal_opening_iterations: int = 1
+    dynamic_removal_closing_iterations: int = 2
+    dynamic_removal_dilation_iterations: int = 1
+    dynamic_removal_min_component_area: int = 80
+    dynamic_removal_max_processed_frames: int = 300
+    dynamic_removal_emit_intermediate: bool = False
     intermediate_capture_enabled: bool = False
     intermediate_capture_max_frames: int = 30
 

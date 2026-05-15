@@ -147,6 +147,7 @@ def create_builtin_registry() -> PluginRegistry:
     from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
     from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
     from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
+    from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
     from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
     from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
     from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
@@ -180,6 +181,13 @@ def create_builtin_registry() -> PluginRegistry:
         "color_stabilization",
         ColorStabilizationFrameProcessor,
         "Stabilize illumination, brightness, and chromatic drift between frames.",
+    )
+
+    registry.register(
+        PluginCategory.FRAME_BUFFER_PROCESSOR,
+        "dynamic_object_removal",
+        DynamicObjectRemovalFrameProcessor,
+        "Remove transient dynamic objects using a temporal median background.",
     )
 
     registry.register(

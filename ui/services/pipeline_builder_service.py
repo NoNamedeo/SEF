@@ -40,6 +40,8 @@ INTERMEDIATE_FRAME_VISUALIZERS = frozenset(
     }
 )
 
+FRAME_BUFFER_PROCESSORS = frozenset({"dynamic_object_removal"})
+
 BUILDER_LAST_SYNCED_MODE_KEY = "sef_builder_last_synced_mode"
 
 STAGE_EDIT_OPTIONS = tuple(stage.value for stage in AnalysisStageKey)
@@ -97,6 +99,16 @@ def initialise_builder_state(registry) -> None:
         "sef_builder_color_stab_emit_metrics": True,
         "sef_builder_color_stab_emit_overlay": False,
         "sef_builder_color_stab_emit_intermediate": False,
+        "sef_builder_dynamic_removal_sampling_stride": 5,
+        "sef_builder_dynamic_removal_max_sampled_frames": 60,
+        "sef_builder_dynamic_removal_difference_threshold": 35,
+        "sef_builder_dynamic_removal_morph_kernel_size": 5,
+        "sef_builder_dynamic_removal_opening_iterations": 1,
+        "sef_builder_dynamic_removal_closing_iterations": 2,
+        "sef_builder_dynamic_removal_dilation_iterations": 1,
+        "sef_builder_dynamic_removal_min_component_area": 80,
+        "sef_builder_dynamic_removal_max_processed_frames": 300,
+        "sef_builder_dynamic_removal_emit_intermediate": False,
         "sef_builder_intermediate_capture_enabled": False,
         "sef_builder_intermediate_capture_max_frames": 30,
         "sef_selected_stage": selected_stage if selected_stage in STAGE_EDIT_OPTIONS else AnalysisStageKey.FRAME_EXTRACTOR.value,
@@ -160,6 +172,16 @@ def builder_state() -> BuilderStateSnapshot:
         color_stab_emit_metrics=bool(st.session_state.get("sef_builder_color_stab_emit_metrics", True)),
         color_stab_emit_overlay=bool(st.session_state.get("sef_builder_color_stab_emit_overlay", False)),
         color_stab_emit_intermediate=bool(st.session_state.get("sef_builder_color_stab_emit_intermediate", False)),
+        dynamic_removal_sampling_stride=int(st.session_state.get("sef_builder_dynamic_removal_sampling_stride", 5)),
+        dynamic_removal_max_sampled_frames=int(st.session_state.get("sef_builder_dynamic_removal_max_sampled_frames", 60)),
+        dynamic_removal_difference_threshold=int(st.session_state.get("sef_builder_dynamic_removal_difference_threshold", 35)),
+        dynamic_removal_morph_kernel_size=int(st.session_state.get("sef_builder_dynamic_removal_morph_kernel_size", 5)),
+        dynamic_removal_opening_iterations=int(st.session_state.get("sef_builder_dynamic_removal_opening_iterations", 1)),
+        dynamic_removal_closing_iterations=int(st.session_state.get("sef_builder_dynamic_removal_closing_iterations", 2)),
+        dynamic_removal_dilation_iterations=int(st.session_state.get("sef_builder_dynamic_removal_dilation_iterations", 1)),
+        dynamic_removal_min_component_area=int(st.session_state.get("sef_builder_dynamic_removal_min_component_area", 80)),
+        dynamic_removal_max_processed_frames=int(st.session_state.get("sef_builder_dynamic_removal_max_processed_frames", 300)),
+        dynamic_removal_emit_intermediate=bool(st.session_state.get("sef_builder_dynamic_removal_emit_intermediate", False)),
         intermediate_capture_enabled=bool(st.session_state.get("sef_builder_intermediate_capture_enabled", False)),
         intermediate_capture_max_frames=int(st.session_state.get("sef_builder_intermediate_capture_max_frames", 30)),
     )
@@ -208,6 +230,26 @@ def display_stage_plugin(registry, category: PluginCategory, recommended: set[st
     def _format(name: str) -> str:
         suffix = " [consigliato]" if name in recommended else " [compatibilita non verificata]"
         return f"{base_formatter(name)}{suffix}"
+
+    return _format
+
+
+def display_frame_processor_plugin(registry):
+    """Create a formatter for single-frame and frame-buffer processors."""
+    recommended = recommended_frame_processors()
+
+    def _format(name: str) -> str:
+        category = (
+            PluginCategory.FRAME_BUFFER_PROCESSOR
+            if name in FRAME_BUFFER_PROCESSORS
+            else PluginCategory.SINGLE_FRAME_PROCESSOR
+        )
+        suffix = " [consigliato]" if name in recommended else " [compatibilita non verificata]"
+        try:
+            plugin = registry.get(category, name)
+            return f"{plugin.name} - {plugin.factory.__name__}{suffix}"
+        except Exception:
+            return f"{name}{suffix}"
 
     return _format
 
@@ -284,7 +326,7 @@ def recommended_visualizers_for_current_state() -> set[str]:
 def recommended_intermediate_visualizers_for_current_state() -> set[str]:
     """Return intermediate-frame visualizers that fit the current debug settings."""
     state = builder_state()
-    if state.intermediate_capture_enabled or state.color_stab_emit_intermediate:
+    if state.intermediate_capture_enabled or state.color_stab_emit_intermediate or state.dynamic_removal_emit_intermediate:
         return {"intermediate_frames_grid"}
     return set()
 
@@ -318,8 +360,12 @@ def analyzer_options_for_current_signal(registry) -> list[str]:
 
 def single_frame_processor_options_for_current_signal(registry) -> list[str]:
     """Return frame processor options ordered by recommendation relevance."""
+    names = [
+        *plugin_names(registry, PluginCategory.SINGLE_FRAME_PROCESSOR),
+        *plugin_names(registry, PluginCategory.FRAME_BUFFER_PROCESSOR),
+    ]
     return ordered_stage_options(
-        plugin_names(registry, PluginCategory.SINGLE_FRAME_PROCESSOR),
+        sorted(set(names)),
         recommended_frame_processors(),
     )
 
@@ -359,6 +405,11 @@ def ensure_stage_options(registry):
     )
     if st.session_state["sef_builder_signal_extractor"] not in signal_extractor_options:
         st.session_state["sef_builder_signal_extractor"] = signal_extractor_options[0] if signal_extractor_options else ""
+
+    frame_processor_options = single_frame_processor_options_for_current_signal(registry)
+    st.session_state["sef_builder_frame_processors"] = [
+        name for name in st.session_state.get("sef_builder_frame_processors", []) if name in frame_processor_options
+    ]
 
     signal_cleaner_options = ordered_stage_options(
         plugin_names(registry, PluginCategory.SIGNAL_CLEANER),
@@ -618,6 +669,25 @@ def _build_single_frame_processor_configs(state: BuilderStateSnapshot) -> tuple[
                         "emit_metrics": state.color_stab_emit_metrics,
                         "emit_comparison_overlay": state.color_stab_emit_overlay,
                         "emit_intermediate_artifacts": state.color_stab_emit_intermediate,
+                    },
+                )
+            )
+        elif name == "dynamic_object_removal":
+            configs.append(
+                PluginConfig(
+                    name=name,
+                    processor_type="frame_buffer",
+                    params={
+                        "sampling_stride": state.dynamic_removal_sampling_stride,
+                        "max_sampled_frames": state.dynamic_removal_max_sampled_frames,
+                        "difference_threshold": state.dynamic_removal_difference_threshold,
+                        "morph_kernel_size": state.dynamic_removal_morph_kernel_size,
+                        "opening_iterations": state.dynamic_removal_opening_iterations,
+                        "closing_iterations": state.dynamic_removal_closing_iterations,
+                        "dilation_iterations": state.dynamic_removal_dilation_iterations,
+                        "min_component_area": state.dynamic_removal_min_component_area,
+                        "max_processed_frames": state.dynamic_removal_max_processed_frames,
+                        "emit_intermediate_artifacts": state.dynamic_removal_emit_intermediate,
                     },
                 )
             )

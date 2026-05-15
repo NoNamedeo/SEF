@@ -119,6 +119,19 @@ def get_registry() -> PluginRegistry:
         log.warning("ColorStabilizationFrameProcessor non disponibile: %s", exc)
 
     try:
+        from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
+
+        _try_register(
+            registry,
+            PluginCategory.FRAME_BUFFER_PROCESSOR,
+            "dynamic_object_removal",
+            DynamicObjectRemovalFrameProcessor,
+            "Rimuove oggetti dinamici usando uno sfondo mediano temporale.",
+        )
+    except Exception as exc:
+        log.warning("DynamicObjectRemovalFrameProcessor non disponibile: %s", exc)
+
+    try:
         from library.frame_processors.OpenCVInpaintFrameProcessor import OpenCVInpaintFrameProcessor
 
         _try_register(

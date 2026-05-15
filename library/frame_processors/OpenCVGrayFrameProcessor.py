@@ -4,8 +4,8 @@ from typing import Any
 
 import cv2
 
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.artifacts.Frame import Frame
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 
 
 class OpenCVGrayFrameProcessor(ISingleFrameProcessor):
