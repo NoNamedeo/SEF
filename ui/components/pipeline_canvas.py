@@ -609,7 +609,7 @@ def _canvas_html(payload: dict) -> str:
           element.style.top = `${{Number(position[1]) || 180}}px`;
 
           const configJson = JSON.stringify(node.details.configuration, null, 2);
-          const executionJson = JSON.stringify(node.details.execution || {}, null, 2);
+          const executionJson = JSON.stringify(node.details.execution || {{}}, null, 2);
           const hasExecution = node.details.execution && Object.keys(node.details.execution).length > 0;
           element.innerHTML = `
             ${{createPortMarkup(node.node_id, node.ports, "input")}}

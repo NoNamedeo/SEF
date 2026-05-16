@@ -9,6 +9,7 @@ from typing import Iterable
 import cv2
 from PIL import Image
 
+from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
 from library.analyzers.NoAnalyzer import NoAnalyzer
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.enum.FrameRotation import FrameRotation
@@ -29,8 +30,12 @@ from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFramePro
 from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
 from library.frame_processors.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
 from library.frame_processors.OpenCVZoomFrameProcessor import OpenCVZoomFrameProcessor
+from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
+from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
 from library.signal_extractors.NoSignalExtractor import NoSignalExtractor
+from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
 from library.visualizers.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
+from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_FALLBACK_FPS = 24.0
@@ -43,7 +48,7 @@ FAST_DYNAMIC_DEMO_MAX_FRAMES = 99
 FAST_DYNAMIC_DEMO_STRIDE = 3
 FAST_DYNAMIC_DEMO_MAX_SAMPLED_FRAMES = 24
 PIPELINE_ID = "background-replacement-demo"
-RUN_DYNAMIC_OBJECT_REMOVAL_DEMO = True
+RUN_DEMO = "ArUco"  # "dynamic_object_removal"
 log = logging.getLogger(__name__)
 
 
@@ -74,7 +79,7 @@ class BackgroundReplacementPipelineConfig:
     def default(cls) -> BackgroundReplacementPipelineConfig:
         """Return the demo defaults used by the original script."""
         return cls(
-            video_path=PROJECT_ROOT / "videos" / "Tower.mp4",
+            video_path=PROJECT_ROOT / "videos" / "ArUco_test_paper_2.MOV",
             background_image_path=PROJECT_ROOT / "images" / "Tower_without_people.png",
             cleaned_video_path=PROJECT_ROOT / "output" / "cleaned_videos" / "Tower_without_people.mp4",
             dynamic_cleaned_video_path=PROJECT_ROOT / "output" / "cleaned_videos" / "Tower_dynamic_object_removal.mp4",
@@ -252,6 +257,45 @@ class BackgroundReplacementPipelineFactory:
             .build_context()
         )
 
+    def build_ArUco_demo(self) -> PipelineContext:
+        return (
+            FluentPipelineBuilder()
+            .with_stream_runtime(
+                {
+                    "frame_buffer_size": 8,
+                    "signal_buffer_size": 8,
+                    "data_buffer_size": 8,
+                    "latency_policy": {"name": "blocking", "params": {}},
+                }
+            )
+            .with_frame_extractor(
+                OpenCVBufferedFrameExtractor(
+                    self._config.video_path,
+                    config={"resize": None, "stride": 1, "max_frames": self._config.max_frames},
+                )
+            )
+            .with_signal_extractor(
+                ArucoMarkerSignalExtractor(
+                    config={"white_border_padding_px": 32},
+                )
+            )
+            .with_signal_cleaners(
+                [
+                    ArucoTemporalStabilizerCleaner(
+                        quality_threshold=0.45,
+                        alpha_high_quality=0.65,
+                        alpha_low_quality=0.2,
+                        max_jump_px=2.0,
+                        smooth_corners=True,
+                    )
+                ]
+            )
+            .with_analyzers([ArucoMarkerDisplacementAnalyzer(marker_ids=[7])])
+            .add_visualizer_for_results(MatplotlibArucoMotionVisualizer(), [0])
+            .add_visualizer_for_results(ArucoAnnotatedVideoVisualizer(config={"lazy": True}), [0])
+            .build_context()
+        )
+
     def _intermediate_capture_config(self) -> IntermediateFrameCaptureConfig:
         return IntermediateFrameCaptureConfig(
             enabled=True,
@@ -355,12 +399,14 @@ def main() -> None:
         format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
     )
     config = BackgroundReplacementPipelineConfig.default()
-    config.validate(require_background_image=not RUN_DYNAMIC_OBJECT_REMOVAL_DEMO)
+    config.validate(require_background_image=RUN_DEMO != "dynamic_object_removal" and RUN_DEMO != "ArUco")
 
     factory = BackgroundReplacementPipelineFactory(config)
-    if RUN_DYNAMIC_OBJECT_REMOVAL_DEMO:
+    if RUN_DEMO == "dynamic_object_removal":
         context = factory.build_dynamic_object_removal_demo()
         cleaned_video_path = config.dynamic_cleaned_video_path
+    elif RUN_DEMO == "ArUco":
+        context = factory.build_ArUco_demo()
     else:
         mask = select_replacement_mask(config)
         context = factory.build(mask)

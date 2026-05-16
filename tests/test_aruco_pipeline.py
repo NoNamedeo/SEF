@@ -10,8 +10,12 @@ import numpy as np
 
 from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
 from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
-from library.core.artifacts.ArucoDisplacementData import ArucoMarkerDisplacementData
+from library.core.artifacts.ArucoDisplacementData import (
+    ArucoMarkerDisplacementData,
+    ArucoMarkerDisplacementFrameData,
+)
 from library.core.artifacts.ArucoMarkerSignalSample import ArucoMarkerObservation, ArucoMarkerSignalSample
+from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
@@ -182,6 +186,67 @@ class ArucoPipelineTests(unittest.TestCase):
         self.assertAlmostEqual(series.displacement_magnitude[1], math.hypot(10.0, 10.0), delta=3.0)
         self.assertTrue(math.isnan(series.displacement_x[2]))
         self.assertEqual(series.stats["detected_samples"], 2.0)
+
+    def test_displacement_analyzer_streams_progressive_frame_data(self) -> None:
+        raw_signal = Signal(
+            [
+                self._aruco_sample(0, 100.0, 100.0, quality=0.9),
+                self._aruco_sample(1, 103.0, 104.0, quality=0.9),
+                self._aruco_sample(2, 108.0, 109.0, quality=0.9),
+            ]
+        )
+        buffer = DataBuffer(buffer_size=8)
+
+        data = ArucoMarkerDisplacementAnalyzer(marker_ids=[7]).analyze_into(raw_signal, buffer)
+        progressive_items = list(buffer.subscribe(0))
+
+        self.assertIsInstance(data, ArucoMarkerDisplacementData)
+        self.assertEqual(len(progressive_items), 3)
+        self.assertTrue(all(isinstance(item, ArucoMarkerDisplacementFrameData) for item in progressive_items))
+        self.assertAlmostEqual(progressive_items[1].displacements[7].displacement_x, 3.0)
+        self.assertAlmostEqual(progressive_items[1].displacements[7].displacement_y, 4.0)
+
+    def test_aruco_execution_plan_is_streamable_with_builtin_outputs(self) -> None:
+        registry = create_builtin_registry()
+        context = ConfigPipelineBuilder(registry).build_context(
+            {
+                "pipeline": {
+                    "runtime": {
+                        "frame_buffer_size": 4,
+                        "signal_buffer_size": 4,
+                        "data_buffer_size": 4,
+                        "latency_policy": {"name": "blocking", "params": {}},
+                    },
+                    "frame_extractor": {
+                        "name": "opencv_buffered",
+                        "params": {
+                            "path": "/tmp/unused_aruco_plan.avi",
+                            "config": {"resize": [240, 240], "stride": 1, "max_frames": 8},
+                        },
+                    },
+                    "signal_extractor": {
+                        "name": "aruco_marker",
+                        "params": {"marker_ids": [7]},
+                    },
+                    "signal_cleaners": [
+                        {"name": "aruco_temporal_stabilizer"},
+                    ],
+                    "analyzers": [
+                        {"name": "aruco_displacement"},
+                    ],
+                    "visualizers": [
+                        {"name": "aruco_motion_plot", "result_indices": [0]},
+                        {"name": "aruco_annotated_video", "result_indices": [0]},
+                    ],
+                }
+            }
+        )
+
+        plan = Pipeline(context).execution_plan()
+
+        self.assertTrue(plan.streamable_end_to_end)
+        self.assertEqual(plan.materialization_boundaries, ())
+        self.assertTrue(all(stage.execution_mode == "streaming" for stage in plan.stages))
 
     def test_relative_motion_analyzer_computes_distance_delta(self) -> None:
         signal = ArucoMarkerSignalExtractor(marker_ids=[7, 8]).extract(

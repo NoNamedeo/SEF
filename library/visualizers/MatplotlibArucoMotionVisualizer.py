@@ -1,18 +1,28 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable
 
 import numpy as np
 
 from library.core.artifacts.ArucoDisplacementData import ArucoMarkerDisplacementData
 from library.core.artifacts.ArucoRelativeMotionData import ArucoMarkerRelativeMotionData
+from library.core.interfaces.IData import IData
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingVisualizer
 from library.core.visualization.VisualArtifact import VisualArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
 from library.visualizers.MatplotlibArtifactVisualizer import MatplotlibArtifactVisualizer
 
 
-class MatplotlibArucoMotionVisualizer(MatplotlibArtifactVisualizer):
+class MatplotlibArucoMotionVisualizer(MatplotlibArtifactVisualizer, IStreamingVisualizer):
     """Render displacement or relative-motion timelines for ArUco markers."""
+
+    capabilities = StageCapabilities.streaming(
+        stateful=True,
+        preserves_order=True,
+        realtime_safe=False,
+    )
 
     def __init__(self, config=None):
         super().__init__(config)
@@ -42,6 +52,16 @@ class MatplotlibArucoMotionVisualizer(MatplotlibArtifactVisualizer):
             "MatplotlibArucoMotionVisualizer requires ArucoMarkerDisplacementData "
             f"or ArucoMarkerRelativeMotionData, got {type(data).__name__}."
         )
+
+    def render_stream(
+        self,
+        data: Iterable[IData],
+        context: VisualizationContext | None = None,
+    ) -> tuple[VisualArtifact, ...]:
+        displacement_data = ArucoMarkerDisplacementData.from_stream_items(data)
+        if not displacement_data.series:
+            return ()
+        return self.render(displacement_data, context)
 
     def _render_displacement(
         self,

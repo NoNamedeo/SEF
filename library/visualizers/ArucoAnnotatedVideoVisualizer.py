@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable
 from typing import Any
 
 import cv2
@@ -9,13 +10,21 @@ import numpy as np
 from library.core.artifacts.ArucoDisplacementData import ArucoMarkerDisplacementData
 from library.core.artifacts.ArucoMarkerSignalSample import ArucoMarkerObservation
 from library.core.interfaces.IData import IData
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingVisualizer
 from library.core.visualization.VisualArtifact import VideoLikeArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
 from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
 
 
-class ArucoAnnotatedVideoVisualizer(TrackingVideoVisualizer):
+class ArucoAnnotatedVideoVisualizer(TrackingVideoVisualizer, IStreamingVisualizer):
     """Return lazy annotated MP4 artifacts for ArUco marker displacement data."""
+
+    capabilities = StageCapabilities.streaming(
+        stateful=True,
+        preserves_order=True,
+        realtime_safe=False,
+    )
 
     def render(
         self,
@@ -29,6 +38,16 @@ class ArucoAnnotatedVideoVisualizer(TrackingVideoVisualizer):
             )
 
         return self._build_video_artifact(data, context)
+
+    def render_stream(
+        self,
+        data: Iterable[IData],
+        context: VisualizationContext | None = None,
+    ) -> tuple[VideoLikeArtifact, ...]:
+        displacement_data = ArucoMarkerDisplacementData.from_stream_items(data)
+        if not displacement_data.frames:
+            return ()
+        return self._build_video_artifact(displacement_data, context)
 
     def _artifact_description(self) -> str:
         return "Annotated video with ArUco corners, centers, and marker ids."
