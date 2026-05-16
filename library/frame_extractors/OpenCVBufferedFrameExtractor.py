@@ -7,14 +7,23 @@ import cv2
 
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingFrameExtractor
+from library.core.pipeline.LatencyPolicy import BlockingFrameLatencyPolicy, FrameLatencyPolicy
 
 
-class OpenCVBufferedFrameExtractor(IFrameExtractor):
+class OpenCVBufferedFrameExtractor(IStreamingFrameExtractor):
     """Read a video with OpenCV and expose raw frames through a FrameBuffer."""
+
+    capabilities = StageCapabilities.streaming(
+        stateful=True,
+        preserves_order=True,
+        realtime_safe=False,
+    )
 
     DEFAULT_MAX_FRAMES = 300
     HARD_MAX_FRAMES = 10_000
+    DEFAULT_STREAM_BUFFER_SIZE = 8
 
     def __init__(
         self,
@@ -26,7 +35,8 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
         self.path = str(path)
         self.resize = self.config.get("resize")
         self.stride = int(self.config.get("stride", 1))
-        self.max_frames = int(self.config.get("max_frames", self.DEFAULT_MAX_FRAMES))
+        raw_max_frames = self.config.get("max_frames", self.DEFAULT_MAX_FRAMES)
+        self.max_frames = self.HARD_MAX_FRAMES if raw_max_frames is None else int(raw_max_frames)
 
         if self.stride <= 0:
             raise ValueError("stride must be greater than 0")
@@ -34,10 +44,18 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
             raise ValueError("max_frames must be greater than 0")
         if self.max_frames > self.HARD_MAX_FRAMES:
             raise ValueError(f"max_frames cannot exceed hard limit {self.HARD_MAX_FRAMES}")
-        self.buffer = buffer or FrameBuffer(buffer_size=self.max_frames + 1)
+        self._default_buffer = buffer
 
     def extract(self) -> FrameBuffer:
-        buffer = self.buffer
+        buffer = self._default_buffer or FrameBuffer(buffer_size=self.max_frames + 1)
+        self.extract_into(buffer, BlockingFrameLatencyPolicy())
+        return buffer
+
+    def extract_into(
+        self,
+        output_buffer: FrameBuffer,
+        latency_policy: FrameLatencyPolicy,
+    ) -> None:
         cap = cv2.VideoCapture(self.path)
 
         if not cap.isOpened():
@@ -75,13 +93,11 @@ class OpenCVBufferedFrameExtractor(IFrameExtractor):
                     timestamp_seconds=timestamp_seconds,
                     metadata=frame_metadata,
                 )
-                buffer.put(frame)
+                latency_policy.publish(frame, output_buffer)
                 yielded_frames += 1
 
                 if self.max_frames is not None and yielded_frames >= self.max_frames:
                     break
         finally:
             cap.release()
-            buffer.close()
-
-        return buffer
+            output_buffer.close()

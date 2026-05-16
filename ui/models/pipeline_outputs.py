@@ -62,6 +62,7 @@ class ExecutionResultsView:
     debug_artifacts: tuple[ArtifactOutput, ...]
     reconstructed_videos: tuple[ReconstructedVideoOutput, ...]
     metadata: Mapping[str, Any]
+    execution_plan: Mapping[str, Any] = field(default_factory=dict)
     warnings: tuple[str, ...] = ()
     intermediate_frame_count: int = 0
     intermediate_frame_stages: tuple[str, ...] = ()

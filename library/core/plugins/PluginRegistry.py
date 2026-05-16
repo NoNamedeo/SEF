@@ -150,6 +150,7 @@ def create_builtin_registry() -> PluginRegistry:
     from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
     from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
     from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+    from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor
     from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
     from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
     from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
@@ -167,6 +168,13 @@ def create_builtin_registry() -> PluginRegistry:
         "opencv_buffered",
         OpenCVBufferedFrameExtractor,
         "Extract frames from a video using OpenCV.",
+    )
+
+    registry.register(
+        PluginCategory.FRAME_EXTRACTOR,
+        "opencv_webcam",
+        OpenCVWebcamFrameExtractor,
+        "Capture frames from a local webcam using OpenCV.",
     )
 
     registry.register(
@@ -201,7 +209,7 @@ def create_builtin_registry() -> PluginRegistry:
         PluginCategory.SIGNAL_EXTRACTOR,
         "aruco_marker",
         ArucoMarkerSignalExtractor,
-        "Detect DICT_6X6_250 ArUco markers frame by frame.",
+        "Detect configurable ArUco markers frame by frame.",
     )
 
     registry.register(

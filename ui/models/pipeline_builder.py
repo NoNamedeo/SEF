@@ -83,6 +83,28 @@ class IntermediateFrameConfiguration:
 
 
 @dataclass(frozen=True, slots=True)
+class RuntimeConfiguration:
+    """Streaming runtime settings emitted in pipeline.runtime."""
+
+    frame_buffer_size: int = 8
+    signal_buffer_size: int = 8
+    data_buffer_size: int = 8
+    latency_policy_name: str = "blocking"
+    latency_policy_params: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "frame_buffer_size": self.frame_buffer_size,
+            "signal_buffer_size": self.signal_buffer_size,
+            "data_buffer_size": self.data_buffer_size,
+            "latency_policy": {
+                "name": self.latency_policy_name,
+                "params": dict(self.latency_policy_params),
+            },
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class PipelineConfiguration:
     """Typed UI representation of the pipeline config passed to the builder."""
 
@@ -93,6 +115,7 @@ class PipelineConfiguration:
     analyzers: tuple[PluginConfig, ...] = ()
     visualizers: tuple[VisualizerConfig, ...] = ()
     intermediate_frames: IntermediateFrameConfiguration | None = None
+    runtime: RuntimeConfiguration = field(default_factory=RuntimeConfiguration)
 
     def to_dict(self) -> dict[str, Any]:
         pipeline = {
@@ -105,6 +128,7 @@ class PipelineConfiguration:
         }
         if self.intermediate_frames is not None:
             pipeline["intermediate_frames"] = self.intermediate_frames.to_dict()
+        pipeline["runtime"] = self.runtime.to_dict()
         return {"pipeline": pipeline}
 
 
@@ -125,6 +149,7 @@ class BuilderStateSnapshot:
     stride: int
     max_frames_enabled: bool
     max_frames: int
+    webcam_index: int
     tracker: str
     show_windows: bool
     moving_average_window: int
@@ -172,6 +197,14 @@ class BuilderStateSnapshot:
     dynamic_removal_emit_intermediate: bool = False
     intermediate_capture_enabled: bool = False
     intermediate_capture_max_frames: int = 30
+    runtime_frame_buffer_size: int = 8
+    runtime_signal_buffer_size: int = 8
+    runtime_data_buffer_size: int = 8
+    runtime_latency_policy: str = "blocking"
+    runtime_adaptive_min_interval: int = 1
+    runtime_adaptive_max_interval: int = 8
+    runtime_adaptive_low_watermark: float = 0.25
+    runtime_adaptive_high_watermark: float = 0.75
 
     @property
     def resize(self) -> tuple[int, int] | None:

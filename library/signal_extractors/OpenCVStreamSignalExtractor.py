@@ -6,14 +6,21 @@ from typing import Any
 import cv2
 
 from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.BoxSignalSample import BoundingBox, BoxSignalSample
 from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
 
 
-class OpenCVStreamSignalExtractor(ISignalExtractor):
+class OpenCVStreamSignalExtractor(IStreamingSignalExtractor):
     """Track a single ROI through buffered frames using an OpenCV tracker."""
+
+    capabilities = StageCapabilities.streaming(
+        stateful=True,
+        preserves_order=True,
+        realtime_safe=True,
+    )
 
     def __init__(
         self,
@@ -25,82 +32,86 @@ class OpenCVStreamSignalExtractor(ISignalExtractor):
         config: dict[str, Any] | None = None,
     ):
         super().__init__(config)
-        self.buffer = buffer or SignalBuffer()
+        self._default_buffer = buffer
         self.tracker_type = tracker_type.upper()
         self.start_box = start_box
         self._tracker_factory = tracker_factory
         self._live_analyzer = live_analyzer
 
     def extract(self, buffer: FrameBuffer) -> SignalBuffer:
+        output = self._default_buffer or SignalBuffer()
+        self.extract_into(buffer, output)
+        return output
+
+    def extract_into(self, buffer: FrameBuffer, output_buffer: SignalBuffer) -> None:
         if self.start_box[2] <= 0 or self.start_box[3] <= 0:
             raise ValueError("example_box must have positive width and height")
 
         tracker = self._build_tracker()
-        samples = self.buffer
         current_box: BoundingBox | None = None
 
-        for position, frame in enumerate(buffer):
-            frame_index = frame.index if frame.index is not None else position
+        try:
+            for position, frame in enumerate(buffer):
+                frame_index = frame.index if frame.index is not None else position
 
-            if position == 0:
-                tracker.init(frame.frame, self.start_box)
-                current_box = self.start_box
-            else:
-                success, updated_box = tracker.update(frame.frame)
-                current_box = self._normalize_box(updated_box) if success else None
+                if position == 0:
+                    tracker.init(frame.frame, self.start_box)
+                    current_box = self.start_box
+                else:
+                    success, updated_box = tracker.update(frame.frame)
+                    current_box = self._normalize_box(updated_box) if success else None
 
-            centroid = None
-            if current_box is not None:
-                x, y, w, h = current_box
-                centroid = (x + w / 2.0, y + h / 2.0)
-
-
-
-            if self._live_analyzer is not None and self.config.get("show_graph"):
-                self.update(frame_index, current_box, centroid, frame)
-
-
-            if self.config.get("show_contours") and current_box is not None:
-                x, y, w, h = current_box
-                roi = frame.frame[y:y + h, x:x + w]
-
-                if roi.size != 0:
-                    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-                    gray = cv2.GaussianBlur(gray, (5, 5), 0)
-
-                    _, thresh = cv2.threshold(
-                        gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-                    )
-                    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-                    thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
-                    contours, _ = cv2.findContours(
-                        thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-                    )
-                    for cnt in contours:
-                        cnt[:, 0, 0] += x
-                        cnt[:, 0, 1] += y
-                        cv2.drawContours(frame.frame, [cnt], -1, (0, 0, 255), 2)
-
-            if self.config.get("show"):
+                centroid = None
                 if current_box is not None:
-                    cv2.rectangle(frame.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                    cv2.imshow("Tracking", frame.frame)
-                    key = cv2.waitKey(1)
-                    if key == 27:  # ESC
-                        break
+                    x, y, w, h = current_box
+                    centroid = (x + w / 2.0, y + h / 2.0)
 
-            samples.put(
-                BoxSignalSample(
-                    frame_index=frame_index,
-                    box=current_box,
-                    centroid=centroid,
-                    timestamp_seconds=frame.timestamp_seconds,
-                    metadata=dict(frame.metadata),
+
+
+                if self._live_analyzer is not None and self.config.get("show_graph"):
+                    self.update(frame_index, current_box, centroid, frame)
+
+
+                if self.config.get("show_contours") and current_box is not None:
+                    x, y, w, h = current_box
+                    roi = frame.frame[y:y + h, x:x + w]
+
+                    if roi.size != 0:
+                        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+                        gray = cv2.GaussianBlur(gray, (5, 5), 0)
+
+                        _, thresh = cv2.threshold(
+                            gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+                        )
+                        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+                        thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+                        contours, _ = cv2.findContours(
+                            thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+                        )
+                        for cnt in contours:
+                            cnt[:, 0, 0] += x
+                            cnt[:, 0, 1] += y
+                            cv2.drawContours(frame.frame, [cnt], -1, (0, 0, 255), 2)
+
+                if self.config.get("show"):
+                    if current_box is not None:
+                        cv2.rectangle(frame.frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                        cv2.imshow("Tracking", frame.frame)
+                        key = cv2.waitKey(1)
+                        if key == 27:  # ESC
+                            break
+
+                output_buffer.put(
+                    BoxSignalSample(
+                        frame_index=frame_index,
+                        box=current_box,
+                        centroid=centroid,
+                        timestamp_seconds=frame.timestamp_seconds,
+                        metadata=dict(frame.metadata),
+                    )
                 )
-            )
-
-        samples.close()
-        return samples
+        finally:
+            output_buffer.close()
 
     def track(self, buffer: FrameBuffer) -> SignalBuffer:
         """Backward-compatible alias."""

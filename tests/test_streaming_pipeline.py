@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 
 import numpy as np
@@ -9,17 +10,27 @@ from library.core.artifacts.BoxSignalSample import BoxSignalSample
 from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SignalBuffer import SignalBuffer
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.artifacts.TwoDimPointData import TwoDimPointData
-from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
-from library.core.interfaces.IFrameBufferProcessor import FrameProcessorCapabilities, IFrameBufferProcessor
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
+from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
-from library.core.interfaces.IVisualizer import IVisualizer
+from library.core.interfaces.StreamingContracts import (
+    IStreamingAnalyzer,
+    IStreamingFrameExtractor,
+    IStreamingSignalExtractor,
+    IStreamingVisualizer,
+)
+from library.core.pipeline.LatencyPolicy import (
+    AdaptiveSamplingFrameLatencyPolicy,
+    DropNewestFrameLatencyPolicy,
+    FrameLatencyPolicy,
+)
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
@@ -132,17 +143,82 @@ def test_pipeline_streams_prefix_before_sequence_processor_without_deadlock(tmp_
     assert output_path.stat().st_size > 0
 
 
-class StreamingFrameExtractor(IFrameExtractor):
+def test_execution_plan_reports_streaming_and_materialization_boundary(tmp_path: Path) -> None:
+    output_path = tmp_path / "planned.mp4"
+    context = (
+        FluentPipelineBuilder()
+        .with_stream_runtime(
+            {
+                "frame_buffer_size": 2,
+                "latency_policy": {"name": "drop_newest", "params": {}},
+            }
+        )
+        .with_frame_extractor(StreamingFrameExtractor(frame_count=5))
+        .add_frame_processor(SingleFrameProcessorAdapter(AddOneProcessor()))
+        .add_frame_processor(SequenceMeanFrameProcessor())
+        .add_frame_exporter(OpenCVFrameBufferVideoExporter(output_path, fps=10.0, max_exported_frames=5))
+        .with_signal_extractor(NoSignalExtractor())
+        .add_analyzer(NoAnalyzer())
+        .build_context()
+    )
+
+    pipeline = Pipeline(context)
+    plan = pipeline.execution_plan()
+
+    assert not plan.streamable_end_to_end
+    assert [stage.stage_id for stage in plan.materialization_boundaries] == ["frame_processing[1]"]
+    assert plan.runtime["latency_policy"]["name"] == "drop_newest"
+
+    outputs = pipeline.run()
+
+    execution_plan = outputs.metadata.execution_plan
+    assert execution_plan["runtime"]["latency_policy"]["name"] == "drop_newest"
+    assert execution_plan["materialization_boundaries"][0]["stage_id"] == "frame_processing[1]"
+
+
+def test_drop_newest_latency_policy_drops_when_queue_is_full() -> None:
+    policy = DropNewestFrameLatencyPolicy()
+    output = FrameBuffer(buffer_size=1)
+
+    assert policy.publish(_frame(0, 0), output) is True
+    assert policy.publish(_frame(1, 1), output) is False
+
+    assert policy.metrics() == {"accepted_frames": 1, "dropped_frames": 1}
+
+
+def test_adaptive_sampling_policy_reduces_accepted_frames_under_pressure() -> None:
+    policy = AdaptiveSamplingFrameLatencyPolicy(
+        min_interval=1,
+        max_interval=3,
+        low_watermark=0.0,
+        high_watermark=0.0,
+    )
+    output = FrameBuffer(buffer_size=2)
+
+    decisions = [policy.publish(_frame(index, index), output) for index in range(6)]
+
+    assert any(not decision for decision in decisions)
+    assert policy.metrics()["dropped_frames"] > 0
+
+
+class StreamingFrameExtractor(IStreamingFrameExtractor):
+    capabilities = StageCapabilities.streaming()
+
     def __init__(self, frame_count: int) -> None:
         super().__init__()
         self._frame_count = frame_count
-        self.buffer = FrameBuffer(buffer_size=2)
 
     def extract(self) -> FrameBuffer:
+        buffer = FrameBuffer(buffer_size=self._frame_count + 1)
+        from library.core.pipeline.LatencyPolicy import BlockingFrameLatencyPolicy
+
+        self.extract_into(buffer, BlockingFrameLatencyPolicy())
+        return buffer
+
+    def extract_into(self, output_buffer: FrameBuffer, latency_policy: FrameLatencyPolicy) -> None:
         for frame_index in range(self._frame_count):
-            self.buffer.put(_frame(frame_index, frame_index))
-        self.buffer.close()
-        return self.buffer
+            latency_policy.publish(_frame(frame_index, frame_index), output_buffer)
+        output_buffer.close()
 
 
 class AddOneProcessor(ISingleFrameProcessor):
@@ -161,10 +237,7 @@ class AddOneProcessor(ISingleFrameProcessor):
 
 
 class SequenceMeanFrameProcessor(IFrameBufferProcessor):
-    capabilities = FrameProcessorCapabilities(
-        supports_streaming=False,
-        requires_complete_sequence=True,
-    )
+    capabilities = StageCapabilities.batch()
 
     def process(self, buffer: FrameBuffer) -> FrameBuffer:
         frames = list(buffer)
@@ -183,47 +256,60 @@ class SequenceMeanFrameProcessor(IFrameBufferProcessor):
         return output
 
 
-class StreamingSignalExtractor(ISignalExtractor):
-    def __init__(self) -> None:
-        super().__init__()
-        self.buffer = SignalBuffer(buffer_size=2)
+class StreamingSignalExtractor(IStreamingSignalExtractor):
+    capabilities = StageCapabilities.streaming()
 
     def extract(self, buffer: FrameBuffer) -> ISignal:
+        return Signal(list(self._samples(buffer)))
+
+    def extract_into(self, buffer: FrameBuffer, output_buffer: SignalBuffer) -> None:
+        for sample in self._samples(buffer):
+            output_buffer.put(sample)
+        output_buffer.close()
+
+    @staticmethod
+    def _samples(buffer: FrameBuffer):
         for frame in buffer:
             value = float(frame.image[0, 0, 0])
-            self.buffer.put(
-                BoxSignalSample(
-                    frame_index=frame.index or 0,
-                    box=None,
-                    centroid=(0.0, value),
-                    timestamp_seconds=frame.timestamp_seconds,
-                )
+            yield BoxSignalSample(
+                frame_index=frame.index or 0,
+                box=None,
+                centroid=(0.0, value),
+                timestamp_seconds=frame.timestamp_seconds,
             )
-        self.buffer.close()
-        return self.buffer
 
 
-class StreamingAnalyzer(IAnalyzer):
-    def __init__(self) -> None:
-        super().__init__()
-        self.buffer = DataBuffer(buffer_size=2)
+class StreamingAnalyzer(IStreamingAnalyzer):
+    capabilities = StageCapabilities.streaming()
 
     def analyze(self, signal: ISignal) -> IData:
+        return self.analyze_into(signal, DataBuffer(buffer_size=2))
+
+    def analyze_into(self, signal: Iterable[ISignalSample], output_buffer: DataBuffer) -> IData:
         x_values: list[float] = []
         y_values: list[float] = []
         for sample in signal:
             value = float(sample.centroid[1]) if sample.centroid is not None else 0.0
             x_values.append(float(sample.frame_index))
             y_values.append(value)
-            self.buffer.put(TwoDimPointData(x=float(sample.frame_index), y=value))
-        self.buffer.close()
+            output_buffer.put(TwoDimPointData(x=float(sample.frame_index), y=value))
+        output_buffer.close()
         return TwoDimGraphData(x=x_values, y=y_values, title="Streaming")
 
 
-class StreamingTextVisualizer(IVisualizer):
+class StreamingTextVisualizer(IStreamingVisualizer):
+    capabilities = StageCapabilities.streaming()
+
     def render(
         self,
         data: IData,
+        context: VisualizationContext | None = None,
+    ) -> tuple[VisualArtifact, ...]:
+        return self.render_stream((data,), context)
+
+    def render_stream(
+        self,
+        data: Iterable[IData],
         context: VisualizationContext | None = None,
     ) -> tuple[VisualArtifact, ...]:
         points = list(data)

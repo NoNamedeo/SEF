@@ -37,6 +37,7 @@ class PipelineConfigExporter:
         "analyzers",
         "visualizers",
         "intermediate_frames",
+        "runtime",
     }
 
     def __init__(
@@ -126,6 +127,7 @@ class PipelineConfigExporter:
                 source_pipeline.get("analyzers"),
             ),
             "visualizers": self._visualizer_entries(context, source_pipeline.get("visualizers")),
+            "runtime": context.stream_runtime.as_dict(),
         }
 
         intermediate_frames = self._intermediate_frames_entry(context, source_pipeline.get("intermediate_frames"))
@@ -464,6 +466,7 @@ class PipelineConfigExporter:
             "pipeline_id": outputs.metadata.pipeline_id,
             "generated_at": outputs.metadata.generated_at.isoformat(),
             "metadata": to_exportable_data(outputs.metadata.execution_metadata),
+            "execution_plan": to_exportable_data(outputs.metadata.execution_plan),
         }
 
     @staticmethod

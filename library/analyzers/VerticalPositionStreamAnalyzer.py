@@ -1,22 +1,39 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 from library.core.artifacts.DataBuffer import DataBuffer
-from library.core.artifacts.SignalBuffer import SignalSubscription
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.artifacts.TwoDimPointData import TwoDimPointData
-from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.ISignalSample import ISignalSample
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingAnalyzer
 
 
-class VerticalPositionStreamAnalyzer(IAnalyzer):
+class VerticalPositionStreamAnalyzer(IStreamingAnalyzer):
     """Build a y-position series from extracted centroids."""
+
+    capabilities = StageCapabilities.streaming(
+        stateful=False,
+        preserves_order=True,
+        realtime_safe=True,
+    )
 
     def __init__(self, buffer: DataBuffer = None, config=None):
         super().__init__(config)
-        self.buffer = buffer or DataBuffer()
+        self._default_buffer = buffer
         self.use_timestamps = bool(self.config.get("use_timestamps", True))
 
-    def analyze(self, signal: SignalSubscription, consumer_id: int = 0) -> TwoDimGraphData:
-        data_buffer = self.buffer
+    def analyze(self, signal: Iterable[ISignalSample], consumer_id: int = 0) -> TwoDimGraphData:
+        output = self._default_buffer or DataBuffer()
+        return self.analyze_into(signal, output, consumer_id=consumer_id)
+
+    def analyze_into(
+        self,
+        signal: Iterable[ISignalSample],
+        output_buffer: DataBuffer,
+        consumer_id: int = 0,
+    ) -> TwoDimGraphData:
         x_label = "Time [s]" if self.use_timestamps else "Frame Index"
         x_values: list[float] = []
         y_values: list[float] = []
@@ -35,7 +52,7 @@ class VerticalPositionStreamAnalyzer(IAnalyzer):
             x_values.append(x_value)
             y_values.append(y_value)
 
-            data_buffer.put(
+            output_buffer.put(
                 TwoDimPointData(
                     x=x_value,
                     y=y_value,
@@ -47,7 +64,7 @@ class VerticalPositionStreamAnalyzer(IAnalyzer):
                 )
             )
 
-        data_buffer.close()
+        output_buffer.close()
         return TwoDimGraphData(
             x=x_values,
             y=y_values,

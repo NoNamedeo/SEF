@@ -8,11 +8,13 @@ import numpy as np
 
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.interfaces.IFrameExporter import FrameExportContext, FrameExportResult, IFrameExporter
+from library.core.interfaces.IFrameExporter import FrameExportContext, FrameExportResult
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingFrameExporter
 from library.core.visualization.VisualArtifact import ArtifactRole, VideoFileArtifact
 
 
-class OpenCVFrameBufferVideoExporter(IFrameExporter):
+class OpenCVFrameBufferVideoExporter(IStreamingFrameExporter):
     """
     Export a processed frame stream to an MP4 file-backed final artifact.
 
@@ -25,6 +27,11 @@ class OpenCVFrameBufferVideoExporter(IFrameExporter):
     DEFAULT_CODEC = "mp4v"
     DEFAULT_MIME_TYPE = "video/mp4"
     DEFAULT_MAX_EXPORTED_FRAMES = 10_000
+    capabilities = StageCapabilities.streaming(
+        stateful=True,
+        preserves_order=True,
+        realtime_safe=True,
+    )
 
     def __init__(
         self,

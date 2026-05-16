@@ -15,8 +15,10 @@ from library.core.artifacts.ArucoMarkerSignalSample import (
 )
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
+from library.core.artifacts.SignalBuffer import SignalBuffer
 from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,10 +67,17 @@ class _DetectionBatch:
     refinement_method: str
 
 
-class ArucoMarkerSignalExtractor(ISignalExtractor):
-    """Detect DICT_6X6_250 ArUco markers frame by frame."""
+class ArucoMarkerSignalExtractor(IStreamingSignalExtractor):
+    """Detect configurable ArUco marker dictionaries frame by frame."""
+
+    capabilities = StageCapabilities.streaming(
+        stateful=False,
+        preserves_order=True,
+        realtime_safe=True,
+    )
 
     DICTIONARY_ID = cv2.aruco.DICT_6X6_250
+    DEFAULT_DICTIONARY_NAME = "DICT_6X6_250"
     DEFAULT_WHITE_BORDER_PADDING_PX = 32
 
     QUALITY_MODEL = "aruco_area_border_shape_v1"
@@ -94,14 +103,52 @@ class ArucoMarkerSignalExtractor(ISignalExtractor):
         self._pose_estimation = self._build_pose_estimation_config()
         self._validate_future_pose_config()
 
-        self._dictionary = cv2.aruco.getPredefinedDictionary(self.DICTIONARY_ID)
+        self._dictionary_name, self._dictionary_id = self._resolve_dictionary_config()
+        self._dictionary = cv2.aruco.getPredefinedDictionary(self._dictionary_id)
         self._detector_parameters = self._build_detector_parameters()
         self._builtin_corner_refinement = self._configure_builtin_corner_refinement(self._detector_parameters)
         self._manual_corner_refinement = self._should_use_manual_corner_refinement()
         self._detector = self._build_detector()
 
+    def _resolve_dictionary_config(self) -> tuple[str, int]:
+        raw_value = self.config.get("aruco_dictionary", self.config.get("dictionary", self.DEFAULT_DICTIONARY_NAME))
+        if isinstance(raw_value, int):
+            return str(raw_value), int(raw_value)
+
+        normalized = str(raw_value).strip().upper().replace("-", "_")
+        if not normalized:
+            raise ValueError("aruco_dictionary cannot be empty.")
+        if normalized.startswith("ARUCO_"):
+            normalized = normalized.removeprefix("ARUCO_")
+        if not normalized.startswith("DICT_"):
+            normalized = f"DICT_{normalized}"
+
+        if not hasattr(cv2.aruco, normalized):
+            supported = ", ".join(self._supported_dictionary_names())
+            raise ValueError(f"Unsupported aruco_dictionary '{raw_value}'. Supported values: {supported}.")
+        return normalized, int(getattr(cv2.aruco, normalized))
+
+    @staticmethod
+    def _supported_dictionary_names() -> tuple[str, ...]:
+        return tuple(
+            sorted(
+                name
+                for name in dir(cv2.aruco)
+                if name.startswith("DICT_") and isinstance(getattr(cv2.aruco, name), int)
+            )
+        )
+
     def extract(self, buffer: FrameBuffer) -> ISignal:
-        samples: list[ArucoMarkerSignalSample] = []
+        return Signal(list(self._samples_from_frames(buffer)))
+
+    def extract_into(self, frames: FrameBuffer, output_buffer: SignalBuffer) -> None:
+        try:
+            for sample in self._samples_from_frames(frames):
+                output_buffer.put(sample)
+        finally:
+            output_buffer.close()
+
+    def _samples_from_frames(self, buffer: FrameBuffer):
         known_marker_ids = set(self.marker_ids or ())
 
         for position, frame in enumerate(buffer):
@@ -120,23 +167,20 @@ class ArucoMarkerSignalExtractor(ISignalExtractor):
                 known_marker_ids=known_marker_ids,
             )
 
-            samples.append(
-                ArucoMarkerSignalSample(
-                    frame_index=int(frame_index),
-                    markers=observations,
-                    timestamp_seconds=frame.timestamp_seconds,
-                    metadata={
-                        **dict(frame.metadata),
-                        "detected_marker_count": sum(1 for observation in observations if observation.detected),
-                        "rejected_candidate_count": len(detection.rejected),
-                        "white_border_fallback_used": detection.used_padding,
-                        "corner_refinement_applied": detection.refinement_applied,
-                        "corner_refinement_method": detection.refinement_method,
-                    },
-                )
+            yield ArucoMarkerSignalSample(
+                frame_index=int(frame_index),
+                markers=observations,
+                timestamp_seconds=frame.timestamp_seconds,
+                metadata={
+                    **dict(frame.metadata),
+                    "aruco_dictionary": self._dictionary_name,
+                    "detected_marker_count": sum(1 for observation in observations if observation.detected),
+                    "rejected_candidate_count": len(detection.rejected),
+                    "white_border_fallback_used": detection.used_padding,
+                    "corner_refinement_applied": detection.refinement_applied,
+                    "corner_refinement_method": detection.refinement_method,
+                },
             )
-
-        return Signal(samples)
 
     def _build_corner_refinement_config(self) -> _CornerRefinementConfig:
         enabled = bool(self.config.get("corner_refinement_enabled", False))

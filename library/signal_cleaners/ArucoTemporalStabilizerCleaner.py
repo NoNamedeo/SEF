@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+from collections.abc import Iterable
 from typing import Any
 
 from library.core.artifacts.ArucoMarkerSignalSample import (
@@ -10,8 +11,11 @@ from library.core.artifacts.ArucoMarkerSignalSample import (
     MarkerCorners,
 )
 from library.core.artifacts.Signal import Signal
+from library.core.artifacts.SignalBuffer import SignalBuffer
 from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalCleaner import ISignalCleaner
+from library.core.interfaces.ISignalSample import ISignalSample
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingSignalCleaner
 
 
 Point2D = tuple[float, float]
@@ -25,8 +29,14 @@ class _MarkerFilterState:
     corners: MarkerCorners | None
 
 
-class ArucoTemporalStabilizerCleaner(ISignalCleaner):
+class ArucoTemporalStabilizerCleaner(IStreamingSignalCleaner):
     """Quality-aware temporal stabilizer for ArUco marker observations."""
+
+    capabilities = StageCapabilities.streaming(
+        stateful=True,
+        preserves_order=True,
+        realtime_safe=True,
+    )
 
     DEFAULT_QUALITY_THRESHOLD = 0.45
     DEFAULT_ALPHA_HIGH_QUALITY = 0.65
@@ -68,6 +78,16 @@ class ArucoTemporalStabilizerCleaner(ISignalCleaner):
         states: dict[int, _MarkerFilterState] = {}
         cleaned_samples = [self._clean_sample(sample, states) for sample in samples]
         return Signal(cleaned_samples, config=dict(signal.config))
+
+    def clean_into(self, input_signal: Iterable[ISignalSample], output_buffer: SignalBuffer) -> None:
+        states: dict[int, _MarkerFilterState] = {}
+        try:
+            for sample in input_signal:
+                if not isinstance(sample, ArucoMarkerSignalSample):
+                    raise TypeError("ArucoTemporalStabilizerCleaner requires ArucoMarkerSignalSample inputs.")
+                output_buffer.put(self._clean_sample(sample, states))
+        finally:
+            output_buffer.close()
 
     def _clean_sample(
         self,

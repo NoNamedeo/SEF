@@ -5,7 +5,8 @@ from typing import Any
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
-from library.core.interfaces.IFrameBufferProcessor import FrameProcessorCapabilities, IFrameBufferProcessor
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor
 from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
 from library.core.pipeline.IntermediateFrameCapture import (
@@ -14,7 +15,7 @@ from library.core.pipeline.IntermediateFrameCapture import (
 )
 
 
-class SingleFrameProcessorAdapter(IFrameBufferProcessor):
+class SingleFrameProcessorAdapter(IStreamingFrameBufferProcessor):
     """
     Adapt an ISingleFrameProcessor to the buffer-level processing pipeline.
 
@@ -22,9 +23,10 @@ class SingleFrameProcessorAdapter(IFrameBufferProcessor):
     the preprocessing stage to operate uniformly on FrameBuffer instances.
     """
 
-    capabilities = FrameProcessorCapabilities(
-        supports_streaming=True,
-        requires_complete_sequence=False,
+    capabilities = StageCapabilities.streaming(
+        stateful=False,
+        supports_frame_parallelism=True,
+        realtime_safe=True,
     )
 
     def __init__(self, single_frame_processor: ISingleFrameProcessor, config: dict[str, Any] | None = None):

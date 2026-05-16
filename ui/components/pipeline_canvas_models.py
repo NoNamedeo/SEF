@@ -58,6 +58,7 @@ class NodeDetails:
     output_types: tuple[str, ...] = ()
     emitted_events: tuple[str, ...] = ()
     configuration: dict[str, Any] = field(default_factory=dict)
+    execution: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)

@@ -88,6 +88,11 @@ def _render_frame_extractor_editor(registry, frame_extractor_options: list[str])
     c3.checkbox("Limita frame", key="sef_builder_max_frames_enabled")
     if st.session_state["sef_builder_max_frames_enabled"]:
         st.slider("Max frame", 20, 1200, key="sef_builder_max_frames", step=20)
+    if st.session_state.get("sef_builder_frame_extractor") == "opencv_webcam":
+        st.number_input("Webcam index", min_value=0, max_value=16, key="sef_builder_webcam_index")
+
+    st.divider()
+    render_stream_runtime_params()
 
     # Intermediate frame capture controls
     st.divider()
@@ -466,4 +471,64 @@ def render_intermediate_frame_capture_params() -> None:
             key="sef_builder_intermediate_capture_max_frames",
             step=5,
             help="Numero massimo di frame intermedi da mantenere in memoria.",
+        )
+
+
+def render_stream_runtime_params() -> None:
+    """Render bounded-buffer and latency policy controls for the adaptive runtime."""
+    st.caption("Streaming runtime")
+    c1, c2, c3 = st.columns(3)
+    c1.number_input(
+        "Frame buffer",
+        min_value=1,
+        max_value=128,
+        key="sef_builder_runtime_frame_buffer_size",
+    )
+    c2.number_input(
+        "Signal buffer",
+        min_value=1,
+        max_value=128,
+        key="sef_builder_runtime_signal_buffer_size",
+    )
+    c3.number_input(
+        "Data buffer",
+        min_value=1,
+        max_value=128,
+        key="sef_builder_runtime_data_buffer_size",
+    )
+
+    st.selectbox(
+        "Latency policy",
+        ["blocking", "drop_newest", "drop_oldest", "adaptive_sampling"],
+        key="sef_builder_runtime_latency_policy",
+        help="blocking preserva tutti i frame; le altre policy privilegiano latenza bassa in realtime.",
+    )
+    if st.session_state.get("sef_builder_runtime_latency_policy") == "adaptive_sampling":
+        a1, a2 = st.columns(2)
+        a1.number_input(
+            "Adaptive min interval",
+            min_value=1,
+            max_value=30,
+            key="sef_builder_runtime_adaptive_min_interval",
+        )
+        a2.number_input(
+            "Adaptive max interval",
+            min_value=1,
+            max_value=60,
+            key="sef_builder_runtime_adaptive_max_interval",
+        )
+        w1, w2 = st.columns(2)
+        w1.slider(
+            "Low watermark",
+            0.0,
+            1.0,
+            key="sef_builder_runtime_adaptive_low_watermark",
+            step=0.05,
+        )
+        w2.slider(
+            "High watermark",
+            0.0,
+            1.0,
+            key="sef_builder_runtime_adaptive_high_watermark",
+            step=0.05,
         )

@@ -5,9 +5,12 @@ from typing import Any
 
 from library.core.interfaces.ISignal import ISignal
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.interfaces.StageCapabilities import StageCapabilities
 
 
 class ISignalExtractor(ABC):
+    capabilities = StageCapabilities.batch()
+
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
 

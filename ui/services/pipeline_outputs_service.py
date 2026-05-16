@@ -89,6 +89,7 @@ def build_execution_results_view(outputs: PipelineOutputs) -> ExecutionResultsVi
             "generated_at": outputs.metadata.generated_at.isoformat(),
             "execution_metadata": dict(outputs.metadata.execution_metadata),
         },
+        execution_plan=dict(outputs.metadata.execution_plan),
         warnings=tuple(warnings),
         intermediate_frame_count=intermediate_count,
         intermediate_frame_stages=intermediate_stages,

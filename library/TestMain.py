@@ -39,8 +39,8 @@ DEFAULT_DEBUG_MAX_STORED_FRAMES = 12
 DEFAULT_STREAM_BUFFER_SIZE = 8
 DEFAULT_RESIZE = (1080, 1920)
 FAST_DYNAMIC_DEMO_RESIZE = (540, 960)
-FAST_DYNAMIC_DEMO_MAX_FRAMES = 999
-FAST_DYNAMIC_DEMO_STRIDE = 1
+FAST_DYNAMIC_DEMO_MAX_FRAMES = 99
+FAST_DYNAMIC_DEMO_STRIDE = 3
 FAST_DYNAMIC_DEMO_MAX_SAMPLED_FRAMES = 24
 PIPELINE_ID = "background-replacement-demo"
 RUN_DYNAMIC_OBJECT_REMOVAL_DEMO = True
@@ -180,12 +180,30 @@ class BackgroundReplacementPipelineFactory:
                 [
                     SingleFrameProcessorAdapter(OpenCVRotateFrameProcessor(rotation=self._config.rotation)),
                     SingleFrameProcessorAdapter(OpenCVResizeFrameProcessor(FAST_DYNAMIC_DEMO_RESIZE)),
-                    SingleFrameProcessorAdapter(ColorStabilizationFrameProcessor()),
+                    SingleFrameProcessorAdapter(
+                        ColorStabilizationFrameProcessor(
+                            color_space="LAB",
+                            techniques=[
+                                "luminance_normalization",
+                                "temporal_smoothing",
+                                "gamma_correction",
+                            ],
+                            stabilization_strength=0.45,
+                            temporal_alpha=0.08,
+                            luminance_max_shift=18.0,
+                            gamma_limits=(0.85, 1.20),
+                            stabilize_chroma=True,
+                            chroma_strength=0.15,
+                            max_chroma_shift=5.0,
+                            scene_change_luminance_threshold=35.0,
+                            emit_metrics=True,
+                        )
+                    ),
                     DynamicObjectRemovalFrameProcessor(
                         sampling_stride=1,
-                        max_sampled_frames=150,
-                        difference_threshold=3,
-                        difference_mode="max",
+                        max_sampled_frames=200,
+                        difference_threshold=0.5,
+                        difference_mode="luma",
                         morph_kernel_size=5,
                         opening_iterations=1,
                         closing_iterations=3,
@@ -194,6 +212,23 @@ class BackgroundReplacementPipelineFactory:
                         min_component_area=50,
                         max_processed_frames=9999,
                         emit_intermediate_artifacts=False,
+                    ),
+                    SingleFrameProcessorAdapter(
+                        ColorStabilizationFrameProcessor(
+                            color_space="LAB",
+                            techniques=[
+                                "temporal_smoothing",
+                                "gamma_correction",
+                            ],
+                            stabilization_strength=0.25,
+                            temporal_alpha=0.12,
+                            luminance_max_shift=10.0,
+                            gamma_limits=(0.9, 1.12),
+                            stabilize_chroma=True,
+                            chroma_strength=0.10,
+                            max_chroma_shift=3.0,
+                            emit_metrics=False,
+                        )
                     ),
                 ]
             )

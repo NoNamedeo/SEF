@@ -16,6 +16,7 @@ from ui.models.pipeline_builder import (
     PipelineConfiguration,
     PluginConfig,
     VisualizerConfig,
+    RuntimeConfiguration,
 )
 from ui.state import session
 
@@ -64,6 +65,7 @@ def initialise_builder_state(registry) -> None:
         "sef_builder_stride": 2,
         "sef_builder_max_frames_enabled": True,
         "sef_builder_max_frames": 180,
+        "sef_builder_webcam_index": 0,
         "sef_builder_tracker": "MIL",
         "sef_builder_show_windows": False,
         "sef_builder_mavg_window": 5,
@@ -111,6 +113,14 @@ def initialise_builder_state(registry) -> None:
         "sef_builder_dynamic_removal_emit_intermediate": False,
         "sef_builder_intermediate_capture_enabled": False,
         "sef_builder_intermediate_capture_max_frames": 30,
+        "sef_builder_runtime_frame_buffer_size": 8,
+        "sef_builder_runtime_signal_buffer_size": 8,
+        "sef_builder_runtime_data_buffer_size": 8,
+        "sef_builder_runtime_latency_policy": "blocking",
+        "sef_builder_runtime_adaptive_min_interval": 1,
+        "sef_builder_runtime_adaptive_max_interval": 8,
+        "sef_builder_runtime_adaptive_low_watermark": 0.25,
+        "sef_builder_runtime_adaptive_high_watermark": 0.75,
         "sef_selected_stage": selected_stage if selected_stage in STAGE_EDIT_OPTIONS else AnalysisStageKey.FRAME_EXTRACTOR.value,
     }
     for key, value in defaults.items():
@@ -137,6 +147,7 @@ def builder_state() -> BuilderStateSnapshot:
         stride=int(st.session_state.get("sef_builder_stride", 2)),
         max_frames_enabled=bool(st.session_state.get("sef_builder_max_frames_enabled", True)),
         max_frames=int(st.session_state.get("sef_builder_max_frames", 180)),
+        webcam_index=int(st.session_state.get("sef_builder_webcam_index", 0)),
         tracker=str(st.session_state.get("sef_builder_tracker", "MIL")),
         show_windows=bool(st.session_state.get("sef_builder_show_windows", False)),
         moving_average_window=int(st.session_state.get("sef_builder_mavg_window", 5)),
@@ -184,6 +195,14 @@ def builder_state() -> BuilderStateSnapshot:
         dynamic_removal_emit_intermediate=bool(st.session_state.get("sef_builder_dynamic_removal_emit_intermediate", False)),
         intermediate_capture_enabled=bool(st.session_state.get("sef_builder_intermediate_capture_enabled", False)),
         intermediate_capture_max_frames=int(st.session_state.get("sef_builder_intermediate_capture_max_frames", 30)),
+        runtime_frame_buffer_size=int(st.session_state.get("sef_builder_runtime_frame_buffer_size", 8)),
+        runtime_signal_buffer_size=int(st.session_state.get("sef_builder_runtime_signal_buffer_size", 8)),
+        runtime_data_buffer_size=int(st.session_state.get("sef_builder_runtime_data_buffer_size", 8)),
+        runtime_latency_policy=str(st.session_state.get("sef_builder_runtime_latency_policy", "blocking")),
+        runtime_adaptive_min_interval=int(st.session_state.get("sef_builder_runtime_adaptive_min_interval", 1)),
+        runtime_adaptive_max_interval=int(st.session_state.get("sef_builder_runtime_adaptive_max_interval", 8)),
+        runtime_adaptive_low_watermark=float(st.session_state.get("sef_builder_runtime_adaptive_low_watermark", 0.25)),
+        runtime_adaptive_high_watermark=float(st.session_state.get("sef_builder_runtime_adaptive_high_watermark", 0.75)),
     )
 
 
@@ -265,7 +284,7 @@ def selected_resize() -> tuple[int, int] | None:
 
 
 def recommended_frame_extractors() -> set[str]:
-    return {"opencv_buffered"}
+    return {"opencv_buffered", "opencv_webcam"}
 
 
 def recommended_frame_processors() -> set[str]:
@@ -466,29 +485,46 @@ def build_pipeline_configuration_from_state() -> PipelineConfiguration:
     barriers = session.get(session.BARRIERS) or {}
 
     return PipelineConfiguration(
-        frame_extractor=PluginConfig(
-            name=state.frame_extractor,
-            params={
-                "path": video_path or "",
-                "config": {
-                    "resize": state.resize,
-                    "stride": state.stride,
-                    "max_frames": state.max_frames if state.max_frames_enabled else None,
-                },
-            },
-        ),
+        frame_extractor=_build_frame_extractor_config(state, video_path),
         signal_extractor=_build_signal_extractor_config(state, roi, video_path),
         frame_processors=_build_single_frame_processor_configs(state),
         signal_cleaners=_build_signal_cleaner_configs(state),
         analyzers=_build_analyzer_configs(state, barriers),
         visualizers=_build_visualizer_configs(state),
         intermediate_frames=_build_intermediate_frame_configuration(state),
+        runtime=_build_runtime_configuration(state),
     )
 
 
 def generated_pipeline_config_dict() -> dict[str, Any]:
     """Return the current generated config as a plain dict."""
     return build_pipeline_configuration_from_state().to_dict()
+
+
+def _build_frame_extractor_config(
+    state: BuilderStateSnapshot,
+    video_path: str | None,
+) -> PluginConfig:
+    extractor_config = {
+        "resize": state.resize,
+        "stride": state.stride,
+        "max_frames": state.max_frames if state.max_frames_enabled else None,
+    }
+    if state.frame_extractor == "opencv_webcam":
+        return PluginConfig(
+            name=state.frame_extractor,
+            params={
+                "camera_index": state.webcam_index,
+                "config": extractor_config,
+            },
+        )
+    return PluginConfig(
+        name=state.frame_extractor,
+        params={
+            "path": video_path or "",
+            "config": extractor_config,
+        },
+    )
 
 
 def current_pipeline_config_dict() -> dict[str, Any]:
@@ -507,7 +543,11 @@ def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
     signal_extractor = dict(pipeline.get("signal_extractor", {}))
     signal_extractor_params = dict(signal_extractor.get("params", {}))
 
-    if not session.get(session.VIDEO_PATH) and not dict(frame_extractor.get("params", {})).get("path"):
+    if (
+        str(frame_extractor.get("name", "")) != "opencv_webcam"
+        and not session.get(session.VIDEO_PATH)
+        and not dict(frame_extractor.get("params", {})).get("path")
+    ):
         issues.append("Seleziona un video nella tab Composer.")
 
     extractor_name = str(signal_extractor.get("name", ""))
@@ -815,4 +855,23 @@ def _build_intermediate_frame_configuration(
             PluginConfig(name=name, params={"config": {"show": False}})
             for name in state.intermediate_visualizers
         ),
+    )
+
+
+def _build_runtime_configuration(state: BuilderStateSnapshot) -> RuntimeConfiguration:
+    """Build the explicit pipeline.runtime section used by adaptive execution."""
+    params: dict[str, Any] = {}
+    if state.runtime_latency_policy == "adaptive_sampling":
+        params = {
+            "min_interval": state.runtime_adaptive_min_interval,
+            "max_interval": state.runtime_adaptive_max_interval,
+            "low_watermark": state.runtime_adaptive_low_watermark,
+            "high_watermark": state.runtime_adaptive_high_watermark,
+        }
+    return RuntimeConfiguration(
+        frame_buffer_size=state.runtime_frame_buffer_size,
+        signal_buffer_size=state.runtime_signal_buffer_size,
+        data_buffer_size=state.runtime_data_buffer_size,
+        latency_policy_name=state.runtime_latency_policy,
+        latency_policy_params=params,
     )

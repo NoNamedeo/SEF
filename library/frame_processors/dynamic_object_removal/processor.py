@@ -21,7 +21,8 @@ from library.core.artifacts.MaskOperations import (
     normalize_binary_mask,
     subtract_masks,
 )
-from library.core.interfaces.IFrameBufferProcessor import FrameProcessorCapabilities, IFrameBufferProcessor
+from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
 from library.frame_processors.dynamic_object_removal.background_estimator import (
     BackgroundEstimator,
@@ -56,9 +57,9 @@ class DynamicObjectRemovalFrameProcessor(IFrameBufferProcessor):
     streaming single-frame processor.
     """
 
-    capabilities = FrameProcessorCapabilities(
-        supports_streaming=False,
-        requires_complete_sequence=True,
+    capabilities = StageCapabilities.batch(
+        stateful=True,
+        realtime_safe=False,
     )
 
     def __init__(

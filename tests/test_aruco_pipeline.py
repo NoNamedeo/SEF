@@ -70,6 +70,33 @@ class ArucoPipelineTests(unittest.TestCase):
         self.assertTrue(observation.detected)
         self.assertIsNotNone(observation.center)
 
+    def test_extractor_detects_configured_4x4_dictionary_marker(self) -> None:
+        marker = self._generate_marker_image(12, 96, dictionary_id=cv2.aruco.DICT_4X4_50)
+        canvas = np.full((180, 180), 255, dtype=np.uint8)
+        canvas[42:138, 42:138] = marker
+        buffer = FrameBuffer(1)
+        buffer.put(Frame(image=cv2.cvtColor(canvas, cv2.COLOR_GRAY2BGR), index=0, timestamp_seconds=0.0))
+        buffer.close()
+
+        signal = ArucoMarkerSignalExtractor(
+            marker_ids=[12],
+            config={"aruco_dictionary": "DICT_4X4_50"},
+        ).extract(buffer)
+
+        observation = list(signal)[0].marker_by_id(12)
+        self.assertIsNotNone(observation)
+        self.assertTrue(observation.detected)
+        self.assertEqual(list(signal)[0].metadata["aruco_dictionary"], "DICT_4X4_50")
+
+    def test_extractor_accepts_short_dictionary_alias(self) -> None:
+        extractor = ArucoMarkerSignalExtractor(config={"aruco_dictionary": "4x4_50"})
+
+        self.assertEqual(extractor._dictionary_name, "DICT_4X4_50")
+
+    def test_extractor_rejects_unknown_dictionary(self) -> None:
+        with self.assertRaises(ValueError):
+            ArucoMarkerSignalExtractor(config={"aruco_dictionary": "DICT_UNKNOWN"})
+
     def test_extractor_supports_manual_subpixel_refinement_and_quality_metadata(self) -> None:
         signal = ArucoMarkerSignalExtractor(
             marker_ids=[7],
@@ -271,8 +298,8 @@ class ArucoPipelineTests(unittest.TestCase):
         return cv2.cvtColor(canvas, cv2.COLOR_GRAY2BGR)
 
     @staticmethod
-    def _generate_marker_image(marker_id: int, side: int) -> np.ndarray:
-        dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
+    def _generate_marker_image(marker_id: int, side: int, dictionary_id: int = cv2.aruco.DICT_6X6_250) -> np.ndarray:
+        dictionary = cv2.aruco.getPredefinedDictionary(dictionary_id)
         if hasattr(cv2.aruco, "generateImageMarker"):
             return cv2.aruco.generateImageMarker(dictionary, marker_id, side)
 

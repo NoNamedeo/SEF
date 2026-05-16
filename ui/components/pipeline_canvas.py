@@ -609,6 +609,8 @@ def _canvas_html(payload: dict) -> str:
           element.style.top = `${{Number(position[1]) || 180}}px`;
 
           const configJson = JSON.stringify(node.details.configuration, null, 2);
+          const executionJson = JSON.stringify(node.details.execution || {}, null, 2);
+          const hasExecution = node.details.execution && Object.keys(node.details.execution).length > 0;
           element.innerHTML = `
             ${{createPortMarkup(node.node_id, node.ports, "input")}}
             ${{createPortMarkup(node.node_id, node.ports, "output")}}
@@ -647,6 +649,12 @@ def _canvas_html(payload: dict) -> str:
                 <strong>Emitted events</strong>
                 <div class="detail-list">${{node.details.emitted_events.map(item => `<span class="detail-token">${{item}}</span>`).join("") || "<span class='detail-token'>none observed</span>"}}</div>
               </div>
+              ${{hasExecution ? `
+                <div class="detail-group">
+                  <strong>Execution</strong>
+                  <pre class="config">${{executionJson}}</pre>
+                </div>
+              ` : ""}}
               <div class="detail-group">
                 <strong>Configuration parameters</strong>
                 <pre class="config">${{configJson}}</pre>

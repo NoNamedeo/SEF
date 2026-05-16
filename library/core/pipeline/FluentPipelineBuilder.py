@@ -11,6 +11,7 @@ from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
 from library.core.pipeline.PipelineContext import PipelineContext
+from library.core.pipeline.StreamRuntimeConfig import StreamRuntimeConfig
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 
 
@@ -33,6 +34,7 @@ class FluentPipelineBuilder:
         self._visualizer_bindings: list[VisualizerBinding] = []
         self._intermediate_frame_capture = IntermediateFrameCaptureConfig.disabled()
         self._intermediate_frame_visualizers: list[IVisualizer] = []
+        self._stream_runtime = StreamRuntimeConfig()
 
     # ── Pipeline components ─────────────────────────────────────────────────
 
@@ -128,6 +130,15 @@ class FluentPipelineBuilder:
         self._intermediate_frame_visualizers.append(visualizer)
         return self
 
+    def with_stream_runtime(self, config: StreamRuntimeConfig | dict | None) -> FluentPipelineBuilder:
+        """Configure bounded buffers and latency policy for adaptive streaming."""
+        self._stream_runtime = (
+            config
+            if isinstance(config, StreamRuntimeConfig)
+            else StreamRuntimeConfig.from_mapping(config)
+        )
+        return self
+
     # ── Context helper ──────────────────────────────────────────────────────
 
     def build_context(self) -> PipelineContext:
@@ -143,4 +154,5 @@ class FluentPipelineBuilder:
             visualizer_bindings=list(self._visualizer_bindings),
             intermediate_frame_capture=self._intermediate_frame_capture,
             intermediate_frame_visualizers=list(self._intermediate_frame_visualizers),
+            stream_runtime=self._stream_runtime,
         )

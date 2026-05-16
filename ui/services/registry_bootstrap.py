@@ -47,6 +47,19 @@ def get_registry() -> PluginRegistry:
     except Exception as exc:
         log.warning("OpenCVBufferedFrameExtractor non disponibile: %s", exc)
 
+    try:
+        from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor
+
+        _try_register(
+            registry,
+            PluginCategory.FRAME_EXTRACTOR,
+            "opencv_webcam",
+            OpenCVWebcamFrameExtractor,
+            "Acquisisce frame live da webcam con OpenCV.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVWebcamFrameExtractor non disponibile: %s", exc)
+
     # ── Frame processors ────────────────────────────────────────────────────────
     try:
         from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
@@ -188,7 +201,7 @@ def get_registry() -> PluginRegistry:
             PluginCategory.SIGNAL_EXTRACTOR,
             "aruco_marker",
             ArucoMarkerSignalExtractor,
-            "Rileva marker ArUco DICT_6X6_250 frame-by-frame.",
+            "Rileva marker ArUco configurabili frame-by-frame.",
         )
     except Exception as exc:
         log.warning("ArucoMarkerSignalExtractor non disponibile: %s", exc)

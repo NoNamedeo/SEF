@@ -14,6 +14,8 @@ from typing import Any, Iterable
 
 from library.core.events.Event import Event
 from library.core.events.PipelineEvent import PipelineEvent
+from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+from library.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
 from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from ui.components.pipeline_canvas_models import (
@@ -60,6 +62,7 @@ def build_pipeline_canvas_model(
     pipeline = dict(config.get("pipeline", {}))
     issue_map = _group_runtime_issues(runtime_issues)
     stage_events = _collect_stage_events(pipeline, registry, recent_events)
+    execution_by_stage = _execution_summary_by_stage(config, registry)
     stage_positions = canvas_layout()
     viewport = canvas_viewport()
 
@@ -73,6 +76,7 @@ def build_pipeline_canvas_model(
             issue_map,
             latest_snapshot,
             stage_events.get("frame_extractor", ()),
+            execution_by_stage.get("frame_extractor", {}),
         ),
         _frame_processors_node(
             pipeline,
@@ -81,6 +85,7 @@ def build_pipeline_canvas_model(
             issue_map,
             latest_snapshot,
             stage_events.get("frame_processors", ()),
+            execution_by_stage.get("frame_processors", {}),
         ),
         _signal_extractor_node(
             pipeline,
@@ -89,6 +94,7 @@ def build_pipeline_canvas_model(
             issue_map,
             latest_snapshot,
             stage_events.get("signal_extractor", ()),
+            execution_by_stage.get("signal_extractor", {}),
         ),
         _signal_cleaners_node(
             pipeline,
@@ -97,6 +103,7 @@ def build_pipeline_canvas_model(
             issue_map,
             latest_snapshot,
             stage_events.get("signal_cleaners", ()),
+            execution_by_stage.get("signal_cleaners", {}),
         ),
         _analyzers_node(
             pipeline,
@@ -105,6 +112,7 @@ def build_pipeline_canvas_model(
             issue_map,
             latest_snapshot,
             stage_events.get("analyzers", ()),
+            execution_by_stage.get("analyzers", {}),
         ),
         _visualizers_node(
             pipeline,
@@ -113,6 +121,7 @@ def build_pipeline_canvas_model(
             issue_map,
             latest_snapshot,
             stage_events.get("visualizers", ()),
+            execution_by_stage.get("visualizers", {}),
         ),
     ]
 
@@ -143,6 +152,7 @@ def _frame_extractor_node(
     issue_map: dict[str, list[str]],
     snapshot: PipelineRunSnapshot | None,
     emitted_events: tuple[str, ...],
+    execution: dict[str, Any],
 ) -> CanvasNode:
     extractor = dict(pipeline.get("frame_extractor", {}))
     params = dict(extractor.get("params", {}))
@@ -166,6 +176,7 @@ def _frame_extractor_node(
             input_types=("VideoSource",),
             output_types=("FrameBuffer",),
             emitted_events=emitted_events,
+            execution=execution,
             configuration={
                 "path": preview,
                 "resize": config.get("resize"),
@@ -174,7 +185,7 @@ def _frame_extractor_node(
             },
         ),
         ports=ports,
-        preview=f"source: {preview}",
+        preview=_execution_preview(execution, fallback=f"source: {preview}"),
         position=_position_for("frame_extractor", positions),
         warnings=tuple(issue_map["frame_extractor"]),
         selected=selected_stage == "frame_extractor",
@@ -188,6 +199,7 @@ def _frame_processors_node(
     issue_map: dict[str, list[str]],
     snapshot: PipelineRunSnapshot | None,
     emitted_events: tuple[str, ...],
+    execution: dict[str, Any],
 ) -> CanvasNode:
     processors = [dict(item) for item in pipeline.get("frame_processors", [])]
     component_names = tuple(item.get("name", "unnamed") for item in processors) or ("none",)
@@ -205,13 +217,14 @@ def _frame_processors_node(
             input_types=("FrameBuffer",),
             output_types=("FrameBuffer",),
             emitted_events=emitted_events,
+            execution=execution,
             configuration=_named_component_configuration(processors),
         ),
         ports=(
             _port("frame_processors", "frames_in", "FrameBuffer", PortDirection.INPUT, PortDataType.FRAME),
             _port("frame_processors", "frames_out", "ProcessedFrameBuffer", PortDirection.OUTPUT, PortDataType.FRAME),
         ),
-        preview=f"{len(processors)} processor active" if processors else "pass-through stage",
+        preview=_execution_preview(execution, fallback=f"{len(processors)} processor active" if processors else "pass-through stage"),
         position=_position_for("frame_processors", positions),
         warnings=tuple(issue_map["frame_processors"]),
         selected=selected_stage == "frame_processors",
@@ -225,6 +238,7 @@ def _signal_extractor_node(
     issue_map: dict[str, list[str]],
     snapshot: PipelineRunSnapshot | None,
     emitted_events: tuple[str, ...],
+    execution: dict[str, Any],
 ) -> CanvasNode:
     extractor = dict(pipeline.get("signal_extractor", {}))
     params = dict(extractor.get("params", {}))
@@ -250,10 +264,11 @@ def _signal_extractor_node(
             input_types=("FrameBuffer",),
             output_types=(_signal_expected_output(component_name),),
             emitted_events=emitted_events,
+            execution=execution,
             configuration=params,
         ),
         ports=tuple(ports),
-        preview=_signal_preview(component_name),
+        preview=_execution_preview(execution, fallback=_signal_preview(component_name)),
         position=_position_for("signal_extractor", positions),
         warnings=tuple(issue_map["signal_extractor"]),
         selected=selected_stage == "signal_extractor",
@@ -267,6 +282,7 @@ def _signal_cleaners_node(
     issue_map: dict[str, list[str]],
     snapshot: PipelineRunSnapshot | None,
     emitted_events: tuple[str, ...],
+    execution: dict[str, Any],
 ) -> CanvasNode:
     cleaners = [dict(item) for item in pipeline.get("signal_cleaners", [])]
     component_names = tuple(item.get("name", "unnamed") for item in cleaners) or ("none",)
@@ -284,13 +300,14 @@ def _signal_cleaners_node(
             input_types=("Signal",),
             output_types=("Signal",),
             emitted_events=emitted_events,
+            execution=execution,
             configuration=_named_component_configuration(cleaners),
         ),
         ports=(
             _port("signal_cleaners", "signal_in", "Signal", PortDirection.INPUT, PortDataType.SIGNAL),
             _port("signal_cleaners", "signal_out", "CleanSignal", PortDirection.OUTPUT, PortDataType.SIGNAL),
         ),
-        preview=f"{len(cleaners)} transform active" if cleaners else "pass-through stage",
+        preview=_execution_preview(execution, fallback=f"{len(cleaners)} transform active" if cleaners else "pass-through stage"),
         position=_position_for("signal_cleaners", positions),
         warnings=tuple(issue_map["signal_cleaners"]),
         selected=selected_stage == "signal_cleaners",
@@ -304,6 +321,7 @@ def _analyzers_node(
     issue_map: dict[str, list[str]],
     snapshot: PipelineRunSnapshot | None,
     emitted_events: tuple[str, ...],
+    execution: dict[str, Any],
 ) -> CanvasNode:
     analyzers = [dict(item) for item in pipeline.get("analyzers", [])]
     component_names = tuple(item.get("name", "unnamed") for item in analyzers) or ("none",)
@@ -321,13 +339,14 @@ def _analyzers_node(
             input_types=("Signal",),
             output_types=("AnalysisResult[]",),
             emitted_events=emitted_events,
+            execution=execution,
             configuration=_named_component_configuration(analyzers),
         ),
         ports=(
             _port("analyzers", "signal_in", "Signal", PortDirection.INPUT, PortDataType.SIGNAL),
             _port("analyzers", "analysis_out", "Analysis", PortDirection.OUTPUT, PortDataType.ANALYSIS),
         ),
-        preview=f"{len(analyzers)} output planned" if analyzers else "no analytics configured",
+        preview=_execution_preview(execution, fallback=f"{len(analyzers)} output planned" if analyzers else "no analytics configured"),
         position=_position_for("analyzers", positions),
         warnings=tuple(issue_map["analyzers"]),
         selected=selected_stage == "analyzers",
@@ -341,6 +360,7 @@ def _visualizers_node(
     issue_map: dict[str, list[str]],
     snapshot: PipelineRunSnapshot | None,
     emitted_events: tuple[str, ...],
+    execution: dict[str, Any],
 ) -> CanvasNode:
     visualizers = [dict(item) for item in pipeline.get("visualizers", [])]
     component_names = tuple(item.get("name", "unnamed") for item in visualizers) or ("ui-results",)
@@ -359,13 +379,14 @@ def _visualizers_node(
             input_types=("AnalysisResult[]",),
             output_types=("RenderedView",),
             emitted_events=emitted_events,
+            execution=execution,
             configuration=_named_component_configuration(visualizers),
         ),
         ports=(
             _port("visualizers", "analysis_in", "Analysis", PortDirection.INPUT, PortDataType.ANALYSIS),
             _port("visualizers", "view_out", "View", PortDirection.OUTPUT, PortDataType.VIEW, required=False),
         ),
-        preview=target_preview,
+        preview=_execution_preview(execution, fallback=target_preview),
         position=_position_for("visualizers", positions),
         warnings=tuple(issue_map["visualizers"]),
         selected=selected_stage == "visualizers",
@@ -559,6 +580,47 @@ def _collect_stage_events(
             if event.source in source_names:
                 stage_events[stage_key].add(event.event_type)
     return {stage_key: tuple(sorted(values)) for stage_key, values in stage_events.items()}
+
+
+def _execution_summary_by_stage(
+    config: dict[str, Any],
+    registry: PluginRegistry,
+) -> dict[str, dict[str, Any]]:
+    """Build grouped execution-plan details for the visual canvas."""
+    try:
+        context = ConfigPipelineBuilder(registry).build_context(config)
+        plan = PipelineExecutionPlanner().build(context)
+    except Exception as exc:
+        return {"frame_extractor": {"plan_error": str(exc)}}
+
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for stage in plan.stages:
+        grouped[stage.stage_group].append(stage.as_dict())
+
+    return {
+        group: {
+            "streaming_stages": sum(1 for stage in stages if stage.get("execution_mode") == "streaming"),
+            "batch_stages": sum(1 for stage in stages if stage.get("execution_mode") == "batch"),
+            "materialization_boundaries": [
+                stage for stage in stages if stage.get("materializes_input")
+            ],
+            "stages": stages,
+        }
+        for group, stages in grouped.items()
+    }
+
+
+def _execution_preview(execution: dict[str, Any], *, fallback: str) -> str:
+    if not execution:
+        return fallback
+    if execution.get("plan_error"):
+        return "execution plan unavailable"
+    streaming = int(execution.get("streaming_stages", 0))
+    batch = int(execution.get("batch_stages", 0))
+    materializations = len(execution.get("materialization_boundaries", []) or [])
+    mode = "streaming" if streaming and not batch else "batch" if batch and not streaming else "hybrid"
+    suffix = f", materializes={materializations}" if materializations else ""
+    return f"{mode}: {streaming} streaming / {batch} batch{suffix}"
 
 
 def _group_runtime_issues(issues: list[str]) -> dict[str, list[str]]:

@@ -13,6 +13,7 @@ from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
+from library.core.pipeline.StreamRuntimeConfig import StreamRuntimeConfig
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 
 
@@ -52,7 +53,9 @@ class PipelineContext:
                        debug snapshots.
     intermediate_frame_visualizers
                      : optional visualizers that render the captured debug
-                       collection, never normal analysis results.
+                     collection, never normal analysis results.
+    stream_runtime   : bounded-buffer and latency policy settings used by the
+                       adaptive execution runtime.
     source_config    : optional construction metadata used by exporters to
                        recreate the original registry-driven configuration.
     """
@@ -72,6 +75,7 @@ class PipelineContext:
         default_factory=IntermediateFrameCaptureConfig.disabled
     )
     intermediate_frame_visualizers: Sequence[IVisualizer] = field(default_factory=tuple)
+    stream_runtime: StreamRuntimeConfig = field(default_factory=StreamRuntimeConfig)
     source_config: Mapping[str, Any] = field(default_factory=dict, compare=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -117,6 +121,9 @@ class PipelineContext:
             "intermediate_frame_visualizers",
             self._optional_tuple("intermediate_frame_visualizers", self.intermediate_frame_visualizers),
         )
+        if not isinstance(self.stream_runtime, StreamRuntimeConfig):
+            raise ValueError("PipelineContext field 'stream_runtime' must be a StreamRuntimeConfig.")
+        self.stream_runtime.validate()
         object.__setattr__(self, "source_config", self._source_config_mapping(self.source_config))
 
     @staticmethod

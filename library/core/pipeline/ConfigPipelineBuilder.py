@@ -9,6 +9,7 @@ from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCapt
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineErrors import PipelineConfigurationError
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
+from library.core.pipeline.StreamRuntimeConfig import StreamRuntimeConfig
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 
@@ -67,6 +68,14 @@ class ConfigPipelineBuilder:
         visualizers:
           - name: intermediate_frames_grid
 
+      runtime:                          # optional streaming runtime policy
+        frame_buffer_size: 8
+        signal_buffer_size: 8
+        data_buffer_size: 8
+        latency_policy:
+          name: blocking                # blocking | drop_newest | drop_oldest | adaptive_sampling
+          params: {}
+
     Raises
     ------
     PipelineConfigurationError
@@ -118,6 +127,7 @@ class ConfigPipelineBuilder:
                     self._intermediate_frame_visualizers(cfg),
                     "pipeline.intermediate_frames.visualizers",
                 ),
+                stream_runtime=self._stream_runtime(cfg),
                 source_config={"pipeline": deepcopy(cfg)},
             )
         except PipelineConfigurationError:
@@ -205,6 +215,10 @@ class ConfigPipelineBuilder:
         if not capture_config and section.get("visualizers"):
             capture_config["enabled"] = True
         return IntermediateFrameCaptureConfig.from_mapping(capture_config)
+
+    @staticmethod
+    def _stream_runtime(cfg: dict[str, Any]) -> StreamRuntimeConfig:
+        return StreamRuntimeConfig.from_mapping(cfg.get("runtime"))
 
     @staticmethod
     def _frame_processor_debug_capture_requested(cfg: dict[str, Any]) -> bool:

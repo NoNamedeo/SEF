@@ -9,13 +9,26 @@ from typing import Any, Callable, Mapping
 from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from library.core.artifacts.SignalBuffer import SignalBuffer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IEventEmitter import IEventEmitter
 from library.core.interfaces.IFrameExporter import FrameExportContext
+from library.core.interfaces.StreamingContracts import (
+    IStreamingAnalyzer,
+    IStreamingFrameBufferProcessor,
+    IStreamingFrameExporter,
+    IStreamingFrameExtractor,
+    IStreamingSignalCleaner,
+    IStreamingSignalExtractor,
+    IStreamingVisualizer,
+)
 from library.core.interfaces.pipeline.IEventBus import IEventBus
+from library.core.pipeline.LatencyPolicy import FrameLatencyPolicy
 from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
 from library.core.pipeline.PipelineContext import PipelineContext
+from library.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
+from library.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.core.visualization.PipelineRunMetadata import PipelineRunMetadata
@@ -80,13 +93,20 @@ class Pipeline:
         self._event_bus = event_bus
         self._pipeline_id = pipeline_id
         self._execution_metadata = dict(execution_metadata or {})
+        self._execution_plan = PipelineExecutionPlanner().build(context)
+        self._latency_policy_metrics: dict[str, Any] = {}
 
     # ── Public API ──────────────────────────────────────────────────────────
 
     def run(self) -> PipelineOutputs:
         """Execute the full pipeline and return results plus visual artifacts."""
         self._inject_event_bus(self._event_bus)
+        log.info("%s", self._execution_plan.as_text())
         return self._run_adaptive()
+
+    def execution_plan(self) -> PipelineExecutionPlan:
+        """Return the execution plan that will be used by ``run``."""
+        return self._execution_plan
 
     # ── Internals ───────────────────────────────────────────────────────────
 
@@ -97,12 +117,14 @@ class Pipeline:
         frame_buffers: list[FrameBuffer] = []
         artifacts: list[VisualArtifact] = []
         artifact_lock = Lock()
+        latency_policy = ctx.stream_runtime.latency_policy.create()
 
         frame_buffer, frame_tasks = self._build_adaptive_frame_pipeline(
             intermediate_store=intermediate_store,
             frame_buffers=frame_buffers,
+            latency_policy=latency_policy,
         )
-        exporters_streaming = all(callable(getattr(exporter, "export_into", None)) for exporter in ctx.frame_exporters)
+        exporters_streaming = all(self._can_stream_frame_exporter(exporter) for exporter in ctx.frame_exporters)
 
         if self._can_stream_signal_pipeline() and exporters_streaming:
             outputs = self._run_streaming_signal_tail(
@@ -112,6 +134,7 @@ class Pipeline:
                 artifacts=artifacts,
                 artifact_lock=artifact_lock,
                 intermediate_store=intermediate_store,
+                latency_policy=latency_policy,
             )
             return self._with_reproducibility_exports(outputs)
 
@@ -139,6 +162,7 @@ class Pipeline:
         intermediate_frames = intermediate_store.to_collection()
         final_artifacts = [*artifacts, *self._run_visualizers(results)]
         debug_artifacts = self._run_intermediate_frame_visualizers(intermediate_frames)
+        self._latency_policy_metrics = latency_policy.metrics()
         return self._with_reproducibility_exports(
             self._build_outputs(
                 results=tuple(results),
@@ -157,11 +181,12 @@ class Pipeline:
         artifacts: list[VisualArtifact],
         artifact_lock: Lock,
         intermediate_store: IntermediateFrameArtifactStore,
+        latency_policy: FrameLatencyPolicy,
     ) -> PipelineOutputs:
         """Run frame exporters and signal/result stages concurrently after adaptive frame processing."""
         ctx = self._context
         signal_buffers: list[Any] = []
-        data_buffers = [analyzer.buffer for analyzer in ctx.analyzers]
+        data_buffers = [DataBuffer(buffer_size=ctx.stream_runtime.data_buffer_size) for _ in ctx.analyzers]
         results: list[IData | None] = [None] * len(ctx.analyzers)
 
         final_frame_buffer, frame_exporter_tasks = self._build_streaming_frame_export_tasks(
@@ -171,7 +196,7 @@ class Pipeline:
             artifact_lock,
         )
 
-        first_signal_buffer = ctx.signal_extractor.buffer
+        first_signal_buffer = SignalBuffer(buffer_size=ctx.stream_runtime.signal_buffer_size)
         signal_buffers.append(first_signal_buffer)
         final_signal_buffer, signal_cleaner_tasks = self._build_streaming_signal_cleaner_tasks(
             first_signal_buffer,
@@ -209,6 +234,7 @@ class Pipeline:
                 self._submit_streaming_analyzers(
                     executor,
                     final_signal_buffer=final_signal_buffer,
+                    data_buffers=data_buffers,
                     results=results,
                 )
             )
@@ -217,7 +243,7 @@ class Pipeline:
                 executor.submit(
                     lambda: self._run_step(
                         "signal_extraction",
-                        lambda: ctx.signal_extractor.extract(final_frame_buffer),
+                        lambda: ctx.signal_extractor.extract_into(final_frame_buffer, first_signal_buffer),
                     )
                 )
             )
@@ -233,6 +259,7 @@ class Pipeline:
 
         intermediate_frames = intermediate_store.to_collection()
         debug_artifacts = self._run_intermediate_frame_visualizers(intermediate_frames)
+        self._latency_policy_metrics = latency_policy.metrics()
         return self._build_outputs(
             results=tuple(result for result in results if result is not None),
             final_artifacts=tuple(artifacts),
@@ -245,13 +272,13 @@ class Pipeline:
         *,
         intermediate_store: IntermediateFrameArtifactStore,
         frame_buffers: list[FrameBuffer],
+        latency_policy: FrameLatencyPolicy,
     ) -> tuple[FrameBuffer, list[Callable[[ThreadPoolExecutor], Future]]]:
         ctx = self._context
-        source_buffer = getattr(ctx.frame_extractor, "buffer", None)
-        if isinstance(source_buffer, FrameBuffer):
-            frame_buffers.append(source_buffer)
-            current_buffer = source_buffer
-            pending_tasks = [self._frame_extraction_task()]
+        if self._can_stream_frame_extractor(ctx.frame_extractor):
+            current_buffer = FrameBuffer(buffer_size=ctx.stream_runtime.frame_buffer_size)
+            frame_buffers.append(current_buffer)
+            pending_tasks = [self._frame_extraction_task(current_buffer, latency_policy)]
         else:
             current_buffer = self._run_step("frame_extraction", lambda: ctx.frame_extractor.extract())
             frame_buffers.append(current_buffer)
@@ -259,7 +286,7 @@ class Pipeline:
 
         for processor_index, processor in enumerate(ctx.frame_processors):
             if self._can_stream_frame_processor(processor):
-                output_buffer = current_buffer.clone_empty()
+                output_buffer = FrameBuffer(buffer_size=ctx.stream_runtime.frame_buffer_size)
                 frame_buffers.append(output_buffer)
                 pending_tasks.append(
                     self._frame_processor_task(
@@ -361,9 +388,25 @@ class Pipeline:
             return process_with_context(buffer, context)
         return processor.process(buffer)
 
-    def _frame_extraction_task(self) -> Callable[[ThreadPoolExecutor], Future]:
+    def _frame_extraction_task(
+        self,
+        output_buffer: FrameBuffer,
+        latency_policy: FrameLatencyPolicy,
+    ) -> Callable[[ThreadPoolExecutor], Future]:
         return lambda executor: executor.submit(
-            lambda: self._run_step("frame_extraction", lambda: self._context.frame_extractor.extract())
+            lambda: self._run_step(
+                "frame_extraction",
+                lambda: self._context.frame_extractor.extract_into(output_buffer, latency_policy),
+            )
+        )
+
+    @staticmethod
+    def _can_stream_frame_extractor(extractor: Any) -> bool:
+        capabilities = getattr(extractor, "capabilities", None)
+        return (
+            isinstance(extractor, IStreamingFrameExtractor)
+            and bool(getattr(capabilities, "supports_streaming", False))
+            and not bool(getattr(capabilities, "requires_complete_sequence", True))
         )
 
     def _frame_processor_task(
@@ -394,17 +437,58 @@ class Pipeline:
     def _can_stream_frame_processor(processor: Any) -> bool:
         capabilities = getattr(processor, "capabilities", None)
         return (
-            bool(getattr(capabilities, "supports_streaming", False))
+            isinstance(processor, IStreamingFrameBufferProcessor)
+            and bool(getattr(capabilities, "supports_streaming", False))
             and not bool(getattr(capabilities, "requires_complete_sequence", True))
-            and callable(getattr(processor, "process_into", None))
+        )
+
+    @staticmethod
+    def _can_stream_frame_exporter(exporter: Any) -> bool:
+        capabilities = getattr(exporter, "capabilities", None)
+        return (
+            isinstance(exporter, IStreamingFrameExporter)
+            and bool(getattr(capabilities, "supports_streaming", False))
+            and not bool(getattr(capabilities, "requires_complete_sequence", True))
         )
 
     def _can_stream_signal_pipeline(self) -> bool:
         ctx = self._context
+        visualizers = [
+            *(ctx.visualizers),
+            *(binding.visualizer for binding in ctx.visualizer_bindings),
+        ]
         return (
-            hasattr(ctx.signal_extractor, "buffer")
-            and all(hasattr(cleaner, "buffer") for cleaner in ctx.signal_cleaners)
-            and all(hasattr(analyzer, "buffer") for analyzer in ctx.analyzers)
+            self._can_stream_signal_extractor(ctx.signal_extractor)
+            and all(self._can_stream_signal_cleaner(cleaner) for cleaner in ctx.signal_cleaners)
+            and all(self._can_stream_analyzer(analyzer) for analyzer in ctx.analyzers)
+            and all(isinstance(visualizer, IStreamingVisualizer) for visualizer in visualizers)
+        )
+
+    @staticmethod
+    def _can_stream_signal_extractor(extractor: Any) -> bool:
+        capabilities = getattr(extractor, "capabilities", None)
+        return (
+            isinstance(extractor, IStreamingSignalExtractor)
+            and bool(getattr(capabilities, "supports_streaming", False))
+            and not bool(getattr(capabilities, "requires_complete_sequence", True))
+        )
+
+    @staticmethod
+    def _can_stream_signal_cleaner(cleaner: Any) -> bool:
+        capabilities = getattr(cleaner, "capabilities", None)
+        return (
+            isinstance(cleaner, IStreamingSignalCleaner)
+            and bool(getattr(capabilities, "supports_streaming", False))
+            and not bool(getattr(capabilities, "requires_complete_sequence", True))
+        )
+
+    @staticmethod
+    def _can_stream_analyzer(analyzer: Any) -> bool:
+        capabilities = getattr(analyzer, "capabilities", None)
+        return (
+            isinstance(analyzer, IStreamingAnalyzer)
+            and bool(getattr(capabilities, "supports_streaming", False))
+            and not bool(getattr(capabilities, "requires_complete_sequence", True))
         )
 
     def _build_streaming_frame_export_tasks(
@@ -417,7 +501,9 @@ class Pipeline:
         current_buffer = source_buffer
         tasks: list[Callable[[ThreadPoolExecutor], Future]] = []
         for exporter_index, exporter in enumerate(self._context.frame_exporters):
-            output_buffer = current_buffer.clone_empty()
+            if not isinstance(exporter, IStreamingFrameExporter):
+                raise TypeError(f"{type(exporter).__name__} does not implement IStreamingFrameExporter.")
+            output_buffer = FrameBuffer(buffer_size=self._context.stream_runtime.frame_buffer_size)
             frame_buffers.append(output_buffer)
 
             def submit_exporter(
@@ -460,7 +546,9 @@ class Pipeline:
         tasks: list[Callable[[ThreadPoolExecutor], Future]] = []
         for cleaner_index, cleaner in enumerate(self._context.signal_cleaners):
             input_signal = current_signal.subscribe(cleaner_index)
-            output_signal = cleaner.buffer
+            if not isinstance(cleaner, IStreamingSignalCleaner):
+                raise TypeError(f"{type(cleaner).__name__} does not implement IStreamingSignalCleaner.")
+            output_signal = SignalBuffer(buffer_size=self._context.stream_runtime.signal_buffer_size)
             signal_buffers.append(output_signal)
 
             def submit_cleaner(
@@ -468,12 +556,13 @@ class Pipeline:
                 *,
                 cleaner_component: Any = cleaner,
                 signal_input: Any = input_signal,
+                signal_output: SignalBuffer = output_signal,
                 index: int = cleaner_index,
             ) -> Future:
                 return executor.submit(
                     lambda: self._run_step(
                         f"signal_cleaning[{index}]",
-                        lambda: cleaner_component.clean(signal_input),
+                        lambda: cleaner_component.clean_into(signal_input, signal_output),
                     )
                 )
 
@@ -521,6 +610,7 @@ class Pipeline:
         executor: ThreadPoolExecutor,
         *,
         final_signal_buffer: Any,
+        data_buffers: list[DataBuffer],
         results: list[Any],
     ) -> list[Future]:
         futures: list[Future] = []
@@ -533,7 +623,7 @@ class Pipeline:
                         idx,
                         self._run_step(
                             f"analysis[{idx}]",
-                            lambda: a.analyze(s),
+                            lambda: a.analyze_into(s, data_buffers[idx]),
                         ),
                     )
                 )
@@ -562,7 +652,7 @@ class Pipeline:
                         artifact_lock,
                         self._run_step(
                             f"visualisation[{idx}][{ridx}]",
-                            lambda: b.visualizer.render(
+                            lambda: b.visualizer.render_stream(
                                 data,
                                 self._visualization_context(
                                     b,
@@ -615,7 +705,11 @@ class Pipeline:
             metadata=PipelineRunMetadata(
                 pipeline_id=self._resolved_pipeline_id(),
                 generated_at=datetime.now(timezone.utc),
-                execution_metadata=dict(self._execution_metadata),
+                execution_metadata={
+                    **dict(self._execution_metadata),
+                    "latency_policy_metrics": dict(self._latency_policy_metrics),
+                },
+                execution_plan=self._execution_plan.as_dict(),
             ),
             intermediate_frames=intermediate_frames,
         )
@@ -687,6 +781,7 @@ class Pipeline:
                 pipeline_id=outputs.metadata.pipeline_id,
                 generated_at=outputs.metadata.generated_at,
                 execution_metadata=outputs.metadata.execution_metadata,
+                execution_plan=outputs.metadata.execution_plan,
                 reproducibility=reproducibility,
             ),
             intermediate_frames=outputs.intermediate_frames,
