@@ -7,7 +7,13 @@ from library.core.artifacts.FrameBuffer import FrameBuffer
 
 
 class PipelineBuffers:
-    """Utility operations for bounded buffers used during pipeline execution."""
+    """
+    Utility operations for bounded buffers used during pipeline execution.
+
+    Buffer operations are kept here because they are cross-cutting primitives:
+    frame execution, materialization and streaming failure handling all need
+    them, but none of those executors should own generic buffer mechanics.
+    """
 
     @staticmethod
     def copy_frame_buffer(source_buffer: FrameBuffer) -> FrameBuffer:
@@ -16,6 +22,8 @@ class PipelineBuffers:
 
         A new buffer is returned so downstream batch-only components can iterate
         independently from the producer stream that fed the materialization.
+        The returned buffer is closed and sized to hold all copied frames plus a
+        sentinel slot when needed by the underlying bounded-buffer contract.
         """
         frames = list(source_buffer)
         output = FrameBuffer(buffer_size=max(len(frames) + 1, source_buffer.capacity))
@@ -30,7 +38,13 @@ class PipelineBuffers:
         signal_buffers: list[Any],
         data_buffers: list[DataBuffer],
     ) -> None:
-        """Unblock producers and consumers after a concurrent stage fails."""
+        """
+        Unblock producers and consumers after a concurrent stage fails.
+
+        The method intentionally uses duck typing for ``abort`` because frame,
+        signal and data buffers share the behavior without requiring a common
+        inheritance hierarchy.
+        """
         for buffer in [*frame_buffers, *signal_buffers, *data_buffers]:
             abort = getattr(buffer, "abort", None)
             if callable(abort):

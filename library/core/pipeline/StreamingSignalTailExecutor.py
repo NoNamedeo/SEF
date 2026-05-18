@@ -37,6 +37,24 @@ class StreamingSignalTailExecutor:
     It wires frame exporters, signal extraction, signal cleaners, analyzers,
     and stream visualizers into one bounded-buffer graph. All graph-building
     rules live here, leaving ``Pipeline`` free from threading details.
+
+    Concurrency model
+    -----------------
+    The executor starts consumers before producers:
+    1. streaming visualizers subscribe to analyzer data buffers;
+    2. streaming analyzers subscribe to the final signal buffer;
+    3. signal cleaners subscribe to the previous signal buffer;
+    4. signal extraction consumes the final frame stream;
+    5. frame exporters and upstream frame tasks produce frame data.
+
+    This order avoids bounded-buffer deadlocks because downstream consumers are
+    already waiting before upstream stages publish data.
+
+    Failure handling
+    ----------------
+    If any future fails, all known frame, signal, and data buffers are aborted.
+    Aborting is required to unblock producers or consumers that may otherwise be
+    waiting on a full or empty bounded buffer.
     """
 
     def __init__(
@@ -59,7 +77,20 @@ class StreamingSignalTailExecutor:
         intermediate_store: IntermediateFrameArtifactStore,
         latency_policy: FrameLatencyPolicy,
     ) -> PipelineExecutionResult:
-        """Run every streaming-capable stage after the frame pipeline."""
+        """
+        Run every streaming-capable stage after the frame pipeline.
+
+        Parameters
+        ----------
+        frame_pipeline:
+            Output from ``FramePipelineExecutor`` containing the latest frame
+            buffer and upstream frame tasks that still need to be scheduled.
+        intermediate_store:
+            Store containing intermediate frame captures produced upstream.
+        latency_policy:
+            Runtime latency policy whose metrics are attached to the final
+            internal execution result.
+        """
         artifacts: list[VisualArtifact] = []
         artifact_lock = Lock()
         signal_buffers: list[Any] = []
@@ -198,6 +229,14 @@ class StreamingSignalTailExecutor:
         data_buffers: list[DataBuffer],
         visualizer_targets: list[tuple[int, VisualizerBinding, int]],
     ) -> None:
+        """
+        Declare subscriber counts before producers start publishing.
+
+        ``SignalBuffer`` and ``DataBuffer`` need consumer counts to know when a
+        published item may be released. Counts must be configured once, before
+        any stage starts, otherwise a producer can publish data that never gets
+        acknowledged by all expected consumers.
+        """
         for signal_buffer in signal_buffers[:-1]:
             signal_buffer.set_consumer_count(1)
         signal_buffers[-1].set_consumer_count(len(self._context.analyzers))

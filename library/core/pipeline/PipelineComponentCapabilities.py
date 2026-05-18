@@ -22,6 +22,16 @@ class PipelineComponentCapabilities:
     The same rules decide whether a stage may stream, where the pipeline must
     materialize, and whether the signal tail can run concurrently. Centralizing
     the checks prevents the execution path and planning path from drifting.
+
+    Rule
+    ----
+    A component is streamable only when both conditions are true:
+    - it implements the matching streaming interface;
+    - its ``StageCapabilities`` explicitly says it supports streaming and does
+      not require a complete sequence.
+
+    Visualizers are the exception: they currently expose streaming support by
+    implementing ``IStreamingVisualizer``.
     """
 
     @staticmethod

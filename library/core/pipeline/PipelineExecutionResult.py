@@ -14,7 +14,14 @@ ThreadedStageTask = Callable[[ThreadPoolExecutor], Future[Any]]
 
 @dataclass(frozen=True)
 class FramePipelineResult:
-    """Frame pipeline output plus pending streaming work that still must drain."""
+    """
+    Frame pipeline output plus pending streaming work that still must drain.
+
+    ``FramePipelineExecutor`` returns this object before the whole pipeline is
+    complete. The adaptive executor can either schedule the pending tasks as
+    part of a fully streaming tail or materialize the current frame stream for
+    batch execution.
+    """
 
     frame_buffer: FrameBuffer
     pending_tasks: tuple[ThreadedStageTask, ...]
@@ -23,7 +30,13 @@ class FramePipelineResult:
 
 @dataclass(frozen=True)
 class PipelineExecutionResult:
-    """Raw execution result before metadata and reproducibility exports are attached."""
+    """
+    Raw execution result before public metadata and reproducibility exports.
+
+    Executors return this DTO to keep execution independent from presentation
+    details. ``PipelineOutputAssembler`` is responsible for translating it into
+    the stable public ``PipelineOutputs`` contract.
+    """
 
     results: tuple[Any, ...]
     final_artifacts: tuple[VisualArtifact, ...]

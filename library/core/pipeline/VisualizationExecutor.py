@@ -19,6 +19,15 @@ class VisualizationExecutor:
     This class owns visualizer binding resolution and ``VisualizationContext``
     creation. Pipeline execution can therefore treat visualization as a port,
     not as a collection of index and metadata rules.
+
+    Binding model
+    -------------
+    Visualizers can be attached in two ways:
+    - unbound visualizers render every analyzer result;
+    - ``VisualizerBinding`` instances render only selected result indexes.
+
+    The same binding rules are used for batch rendering and streaming target
+    expansion, so visualizer behavior does not depend on execution mode.
     """
 
     def __init__(
@@ -35,7 +44,13 @@ class VisualizationExecutor:
         self._execution_metadata = dict(execution_metadata)
 
     def run_final_visualizers(self, results: list[IData]) -> list[VisualArtifact]:
-        """Render artifacts for final analyzer results."""
+        """
+        Render artifacts for final analyzer results.
+
+        Artifacts are returned in binding order and then result-index order.
+        Invalid binding indexes are reported through the shared stage executor,
+        preserving the same error shape as every other pipeline stage.
+        """
         artifacts: list[VisualArtifact] = []
         for binding_index, binding in enumerate(self._bindings()):
             target_indexes = self._target_indexes(binding_index, binding, len(results))
@@ -47,7 +62,13 @@ class VisualizationExecutor:
         self,
         intermediate_frames: IntermediateFrameArtifactCollection,
     ) -> list[VisualArtifact]:
-        """Render debug artifacts from captured intermediate frame snapshots."""
+        """
+        Render debug artifacts from captured intermediate frame snapshots.
+
+        Intermediate visualizers are intentionally separate from normal result
+        visualizers because they consume diagnostic frame collections rather
+        than analyzer output data.
+        """
         if intermediate_frames.is_empty:
             return []
 
@@ -64,7 +85,13 @@ class VisualizationExecutor:
         return artifacts
 
     def streaming_targets(self, result_count: int) -> list[tuple[int, VisualizerBinding, int]]:
-        """Return the stream visualizer bindings expanded to concrete result indexes."""
+        """
+        Return stream visualizer bindings expanded to concrete result indexes.
+
+        The returned tuples contain the binding index, binding object and target
+        result index. ``StreamingSignalTailExecutor`` uses this information to
+        create one data-buffer subscription per visualizer/result pair.
+        """
         targets: list[tuple[int, VisualizerBinding, int]] = []
         for binding_index, binding in enumerate(self._bindings()):
             for result_index in self._target_indexes(binding_index, binding, result_count):

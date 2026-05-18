@@ -7,7 +7,14 @@ from library.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
 
 
 class SignalPipelineExecutor:
-    """Runs the batch signal extraction, cleaning, and analysis tail."""
+    """
+    Runs the batch signal extraction, cleaning, and analysis tail.
+
+    This executor is used whenever the downstream tail cannot run fully in
+    streaming mode. It assumes the frame input is already replayable and closed,
+    then executes signal extraction, signal cleaning, and analyzers in the exact
+    order declared by ``PipelineContext``.
+    """
 
     def __init__(
         self,
@@ -19,7 +26,14 @@ class SignalPipelineExecutor:
         self._stage_executor = stage_executor
 
     def run_batch(self, frames: FrameBuffer) -> list[IData]:
-        """Extract a signal from materialized frames and run all analyzers."""
+        """
+        Extract a signal from materialized frames and run all analyzers.
+
+        Returns
+        -------
+        list[IData]
+            Analyzer results in the same order as ``context.analyzers``.
+        """
         signal = self._stage_executor.run("signal_extraction", lambda: self._context.signal_extractor.extract(frames))
 
         for cleaner_index, cleaner in enumerate(self._context.signal_cleaners):

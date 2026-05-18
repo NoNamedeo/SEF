@@ -20,6 +20,17 @@ class FramePipelineExecutor:
 
     The executor supports mixed pipelines: streaming stages are chained through
     bounded buffers, and batch-only stages trigger a materialization boundary.
+
+    Ownership
+    ---------
+    This class owns only the frame segment of the pipeline:
+    - frame extraction;
+    - single-frame or frame-buffer processing;
+    - conversion from streaming buffers to materialized buffers when required;
+    - intermediate frame capture integration.
+
+    It deliberately does not run exporters, signal extraction, analyzers, or
+    visualizers. Those concerns are handled by dedicated collaborators.
     """
 
     def __init__(
@@ -37,7 +48,27 @@ class FramePipelineExecutor:
         intermediate_store: IntermediateFrameArtifactStore,
         latency_policy: FrameLatencyPolicy,
     ) -> FramePipelineResult:
-        """Return the latest frame buffer and any streaming tasks still pending."""
+        """
+        Build the frame pipeline and return its current output buffer.
+
+        Streaming processors are appended as pending threaded tasks. Batch-only
+        processors force materialization of all pending upstream streams before
+        processing continues.
+
+        Parameters
+        ----------
+        intermediate_store:
+            Store used by frame processors to publish debug/intermediate
+            artifacts.
+        latency_policy:
+            Backpressure policy used by streaming frame extractors.
+
+        Returns
+        -------
+        FramePipelineResult
+            Latest frame buffer, pending streaming tasks, and every frame buffer
+            that may need aborting if a concurrent stage fails.
+        """
         frame_buffers: list[FrameBuffer] = []
         current_buffer, pending_tasks = self._extract_frames(frame_buffers, latency_policy)
 
@@ -82,7 +113,15 @@ class FramePipelineExecutor:
         frame_buffers: list[FrameBuffer],
         stage_name: str,
     ) -> FrameBuffer:
-        """Drain pending streaming tasks and return a replayable frame buffer."""
+        """
+        Drain pending streaming tasks and return a replayable frame buffer.
+
+        Materialization is the explicit boundary between streaming and batch
+        execution. The method starts all pending producers and a consumer that
+        copies the source stream into a new closed ``FrameBuffer``. If any
+        producer or the materializer fails, all known frame buffers are aborted
+        to unblock waiting threads.
+        """
         tasks = list(pending_tasks)
         if not tasks:
             return self._stage_executor.run(stage_name, lambda: PipelineBuffers.copy_frame_buffer(source_buffer))

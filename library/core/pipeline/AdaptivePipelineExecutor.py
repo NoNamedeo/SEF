@@ -18,6 +18,22 @@ class AdaptivePipelineExecutor:
     Frame stages may stream until a batch-only boundary appears. The signal tail
     runs concurrently only when every downstream component supports streaming;
     otherwise the frame stream is materialized and the classic batch tail runs.
+
+    Design rationale
+    ----------------
+    This class is the policy layer between the facade and concrete stage
+    executors. It does not know how frames, signals, or visualizers are
+    processed; it only decides which already-specialized executor should own the
+    next step. That keeps streaming decisions explicit and testable.
+
+    Execution modes
+    ---------------
+    - Batch end-to-end: no upstream stream exists, so no materialization boundary
+      is needed.
+    - Streaming end-to-end: every required downstream component consumes bounded
+      buffers, so no materialization boundary is needed.
+    - Hybrid: upstream frame stages may stream, then a downstream batch-only
+      component forces materialization before the batch tail continues.
     """
 
     def __init__(
@@ -38,7 +54,16 @@ class AdaptivePipelineExecutor:
         self._visualization_executor = visualization_executor
 
     def run(self) -> PipelineExecutionResult:
-        """Execute the pipeline through the best available batch/streaming path."""
+        """
+        Execute the pipeline through the best available batch/streaming path.
+
+        Returns
+        -------
+        PipelineExecutionResult
+            Internal result containing domain data, artifacts, debug captures
+            and latency metrics. Public metadata is added later by
+            ``PipelineOutputAssembler``.
+        """
         intermediate_store = IntermediateFrameArtifactStore(self._context.intermediate_frame_capture)
         latency_policy = self._context.stream_runtime.latency_policy.create()
         frame_pipeline = self._frame_pipeline_executor.build(

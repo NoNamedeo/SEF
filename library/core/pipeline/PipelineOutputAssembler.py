@@ -18,6 +18,12 @@ class PipelineOutputAssembler:
     The executor classes return domain data and artifacts only. This assembler
     owns metadata, execution-plan snapshots, and reproducibility exports so the
     execution path does not depend on serialization details.
+
+    Boundary role
+    -------------
+    ``PipelineExecutionResult`` is an internal DTO. ``PipelineOutputs`` is the
+    public contract consumed by scripts, tests and UI services. This assembler
+    is the only component that should translate between those two shapes.
     """
 
     def __init__(
@@ -34,7 +40,13 @@ class PipelineOutputAssembler:
         self._execution_metadata = dict(execution_metadata)
 
     def build(self, execution_result: PipelineExecutionResult) -> PipelineOutputs:
-        """Return final outputs enriched with metadata and reproducibility data."""
+        """
+        Return final outputs enriched with metadata and reproducibility data.
+
+        The method is intentionally side-effect free: it derives metadata and
+        export artifacts from the context, execution plan and raw result without
+        mutating the context or the artifacts returned by executors.
+        """
         outputs = PipelineOutputs(
             results=execution_result.results,
             final_artifacts=execution_result.final_artifacts,

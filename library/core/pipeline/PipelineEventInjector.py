@@ -17,6 +17,10 @@ class PipelineEventInjector:
 
     Event emission is an optional adapter concern. Keeping it isolated avoids
     spreading ``IEventEmitter`` checks across the execution code.
+
+    Components that do not implement ``IEventEmitter`` are ignored. Passing
+    ``event_bus=None`` is valid and explicitly puts event-aware components in a
+    silent mode for runs that do not need domain events.
     """
 
     def inject(
@@ -26,7 +30,12 @@ class PipelineEventInjector:
         event_bus: IEventBus | None,
         metadata: Mapping[str, Any],
     ) -> None:
-        """Attach the current event bus and runtime metadata to all emitters."""
+        """
+        Attach the current event bus and runtime metadata to all emitters.
+
+        Metadata is copied for every component so later mutations by one
+        component cannot leak into another component's event context.
+        """
         for component in self._components(context):
             if isinstance(component, IEventEmitter):
                 component.event_bus = event_bus

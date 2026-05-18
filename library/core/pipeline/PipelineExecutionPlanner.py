@@ -12,9 +12,23 @@ from library.core.pipeline.PipelineExecutionPlan import (
 
 
 class PipelineExecutionPlanner:
-    """Build the single source of truth used to explain adaptive execution."""
+    """
+    Builds the execution plan used to explain adaptive runtime decisions.
+
+    The planner is read-only: it inspects the context and component
+    capabilities, but it never executes stages or mutates components. Its output
+    is attached to ``PipelineOutputs`` so users can understand why a run used
+    streaming, batch execution, or materialization boundaries.
+    """
 
     def build(self, context: PipelineContext) -> PipelineExecutionPlan:
+        """
+        Build a plan for the provided context.
+
+        The returned plan mirrors the same capability rules used by
+        ``AdaptivePipelineExecutor``. Keeping both paths aligned is essential:
+        what the user sees before execution must match what the runtime does.
+        """
         frame_bytes = self._estimated_frame_bytes(context)
         queue_bytes = self._queue_bytes(frame_bytes, context.stream_runtime.frame_buffer_size)
         materialized_bytes = self._materialized_bytes(frame_bytes, context)

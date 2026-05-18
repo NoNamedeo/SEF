@@ -19,6 +19,17 @@ class FrameExporterExecutor:
 
     Exporters are kept separate from frame processors because they produce
     user-facing artifacts while also forwarding frames to the signal tail.
+
+    Batch contract
+    --------------
+    A batch exporter receives a materialized ``FrameBuffer`` and returns a
+    result containing a replacement/forwarded buffer plus exported artifacts.
+
+    Streaming contract
+    ------------------
+    A streaming exporter consumes an input buffer, writes artifacts while frames
+    pass through, and publishes the forwarded stream into an output buffer.
+    The caller owns task scheduling; this executor only builds the tasks.
     """
 
     def __init__(
@@ -35,7 +46,12 @@ class FrameExporterExecutor:
         self._execution_metadata = dict(execution_metadata)
 
     def run_batch(self, buffer: FrameBuffer) -> tuple[FrameBuffer, list[VisualArtifact]]:
-        """Run exporters after frame processing has been materialized."""
+        """
+        Run exporters after frame processing has been materialized.
+
+        Returns the final buffer that should feed signal extraction, along with
+        every artifact produced by frame exporters in declaration order.
+        """
         artifacts: list[VisualArtifact] = []
         current_buffer = buffer
         for exporter_index, exporter in enumerate(self._context.frame_exporters):
@@ -54,7 +70,14 @@ class FrameExporterExecutor:
         artifacts: list[VisualArtifact],
         artifact_lock: Any,
     ) -> tuple[FrameBuffer, list[ThreadedStageTask]]:
-        """Create exporter tasks that write artifacts while forwarding frames."""
+        """
+        Create exporter tasks that write artifacts while forwarding frames.
+
+        The returned buffer is the output of the last exporter and must be used
+        as the frame input for streaming signal extraction. The caller must
+        schedule the returned tasks together with upstream frame tasks so
+        producers and consumers can make progress concurrently.
+        """
         current_buffer = source_buffer
         tasks: list[ThreadedStageTask] = []
         for exporter_index, exporter in enumerate(self._context.frame_exporters):
