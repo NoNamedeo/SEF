@@ -16,9 +16,9 @@ class PipelineStageExecutor:
     Executes one named pipeline stage and normalizes failures.
 
     Keeping this concern outside ``Pipeline`` makes error handling reusable by
-    frame, signal, visualization, and streaming executors. Each executor can
-    stay focused on its own workflow while all stages still produce the same
-    diagnostic error shape.
+    frame, signal, visualization, and streaming runtime collaborators. Each
+    collaborator can stay focused on its own workflow while all stages still
+    produce the same diagnostic error shape.
 
     Stage naming convention
     -----------------------

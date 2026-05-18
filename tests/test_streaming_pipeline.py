@@ -14,6 +14,7 @@ from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SignalBuffer import SignalBuffer
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.artifacts.TwoDimPointData import TwoDimPointData
+from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
 from library.core.interfaces.StageCapabilities import StageCapabilities
@@ -33,6 +34,12 @@ from library.core.pipeline.LatencyPolicy import (
 )
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
+from library.core.pipeline.PipelineExecutionPolicy import (
+    DefaultPipelineExecutionPolicy,
+    PipelineExecutionDecision,
+    PipelineExecutionMode,
+    PipelineStagePolicyContext,
+)
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.visualization.VisualArtifact import TextArtifact, VideoFileArtifact, VisualArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
@@ -176,6 +183,107 @@ def test_execution_plan_reports_streaming_and_materialization_boundary(tmp_path:
     assert execution_plan["materialization_boundaries"][0]["stage_id"] == "frame_processing[1]"
 
 
+def test_pipeline_avoids_isolated_streaming_switch_before_batch_processor() -> None:
+    context = (
+        FluentPipelineBuilder()
+        .with_frame_extractor(StreamingFrameExtractor(frame_count=4))
+        .add_frame_processor(SequenceMeanFrameProcessor())
+        .with_signal_extractor(NoSignalExtractor())
+        .add_analyzer(NoAnalyzer())
+        .build_context()
+    )
+
+    plan = Pipeline(context).execution_plan()
+    stages = {stage.stage_id: stage for stage in plan.stages}
+
+    assert stages["frame_extraction"].execution_mode == "batch"
+    assert stages["frame_processing[0]"].execution_mode == "batch"
+    assert plan.materialization_boundaries == ()
+
+
+def test_pipeline_restarts_streaming_after_frame_batch_boundary(tmp_path: Path) -> None:
+    output_path = tmp_path / "restart.mp4"
+    context = (
+        FluentPipelineBuilder()
+        .with_frame_extractor(StreamingFrameExtractor(frame_count=5))
+        .add_frame_processor(SingleFrameProcessorAdapter(AddOneProcessor()))
+        .add_frame_processor(SequenceMeanFrameProcessor())
+        .add_frame_exporter(OpenCVFrameBufferVideoExporter(output_path, fps=10.0, max_exported_frames=5))
+        .with_signal_extractor(StreamingSignalExtractor())
+        .add_analyzer(StreamingAnalyzer())
+        .add_visualizer_for_results(StreamingTextVisualizer(), [0])
+        .build_context()
+    )
+
+    pipeline = Pipeline(context)
+    plan = pipeline.execution_plan()
+    stages = {stage.stage_id: stage for stage in plan.stages}
+
+    assert stages["frame_processing[1]"].materializes_input
+    assert stages["frame_export[0]"].execution_mode == "streaming"
+    assert stages["signal_extraction"].execution_mode == "streaming"
+    assert stages["analysis[0]"].execution_mode == "streaming"
+
+    outputs = pipeline.run()
+
+    video_artifacts = [artifact for artifact in outputs.final_artifacts if isinstance(artifact, VideoFileArtifact)]
+    text_artifacts = [artifact for artifact in outputs.final_artifacts if isinstance(artifact, TextArtifact)]
+    assert len(video_artifacts) == 1
+    assert len(text_artifacts) == 1
+    assert text_artifacts[0].content == "streamed=5;sum=15.0"
+
+
+def test_pipeline_runs_streaming_and_batch_analyzers_from_same_signal_stream() -> None:
+    context = (
+        FluentPipelineBuilder()
+        .with_frame_extractor(StreamingFrameExtractor(frame_count=3))
+        .with_signal_extractor(StreamingSignalExtractor())
+        .add_analyzer(StreamingAnalyzer())
+        .add_analyzer(BatchSumAnalyzer())
+        .add_visualizer_for_results(StreamingTextVisualizer(), [0])
+        .build_context()
+    )
+
+    pipeline = Pipeline(context)
+    plan = pipeline.execution_plan()
+    stages = {stage.stage_id: stage for stage in plan.stages}
+
+    assert stages["analysis[0]"].execution_mode == "streaming"
+    assert stages["analysis[1]"].execution_mode == "batch"
+    assert stages["analysis[1]"].materializes_input
+
+    outputs = pipeline.run()
+
+    assert len(outputs.results) == 2
+    assert outputs.results[0].y == [0.0, 1.0, 2.0]
+    assert outputs.results[1].y == [3.0]
+    assert len(outputs.final_artifacts) == 1
+    assert outputs.final_artifacts[0].content == "streamed=3;sum=3.0"
+
+
+def test_pipeline_uses_interchangeable_execution_policy() -> None:
+    context = (
+        FluentPipelineBuilder()
+        .with_frame_extractor(StreamingFrameExtractor(frame_count=4))
+        .add_frame_processor(SequenceMeanFrameProcessor())
+        .with_signal_extractor(NoSignalExtractor())
+        .add_analyzer(NoAnalyzer())
+        .build_context()
+    )
+
+    pipeline = Pipeline(context, execution_policy=ForceStreamingSourcePolicy())
+    plan = pipeline.execution_plan()
+    stages = {stage.stage_id: stage for stage in plan.stages}
+
+    assert stages["frame_extraction"].execution_mode == "streaming"
+    assert stages["frame_extraction"].reason == "test policy forces source streaming"
+    assert stages["frame_processing[0]"].materializes_input
+
+    outputs = pipeline.run()
+
+    assert len(outputs.results) == 1
+
+
 def test_drop_newest_latency_policy_drops_when_queue_is_full() -> None:
     policy = DropNewestFrameLatencyPolicy()
     output = FrameBuffer(buffer_size=1)
@@ -297,6 +405,18 @@ class StreamingAnalyzer(IStreamingAnalyzer):
         return TwoDimGraphData(x=x_values, y=y_values, title="Streaming")
 
 
+class BatchSumAnalyzer(IAnalyzer):
+    capabilities = StageCapabilities.batch()
+
+    def analyze(self, signal: ISignal) -> IData:
+        values = [
+            float(sample.centroid[1])
+            for sample in signal
+            if getattr(sample, "centroid", None) is not None
+        ]
+        return TwoDimGraphData(x=[0.0], y=[sum(values)], title="Batch sum")
+
+
 class StreamingTextVisualizer(IStreamingVisualizer):
     capabilities = StageCapabilities.streaming()
 
@@ -320,6 +440,16 @@ class StreamingTextVisualizer(IStreamingVisualizer):
                 content=f"streamed={len(points)};sum={sum(point.y for point in points)}",
             ),
         )
+
+
+class ForceStreamingSourcePolicy(DefaultPipelineExecutionPolicy):
+    def decide_source(self, context: PipelineStagePolicyContext) -> PipelineExecutionDecision:
+        if context.stage_streamable:
+            return PipelineExecutionDecision(
+                PipelineExecutionMode.STREAMING,
+                "test policy forces source streaming",
+            )
+        return super().decide_source(context)
 
 
 def _frame(index: int, value: int) -> Frame:

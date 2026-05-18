@@ -43,7 +43,12 @@ class VisualizationExecutor:
         self._pipeline_id = pipeline_id
         self._execution_metadata = dict(execution_metadata)
 
-    def run_final_visualizers(self, results: list[IData]) -> list[VisualArtifact]:
+    def run_final_visualizers(
+        self,
+        results: list[IData],
+        *,
+        skip_targets: set[tuple[int, int]] | None = None,
+    ) -> list[VisualArtifact]:
         """
         Render artifacts for final analyzer results.
 
@@ -52,9 +57,12 @@ class VisualizationExecutor:
         preserving the same error shape as every other pipeline stage.
         """
         artifacts: list[VisualArtifact] = []
+        skipped = skip_targets or set()
         for binding_index, binding in enumerate(self._bindings()):
             target_indexes = self._target_indexes(binding_index, binding, len(results))
             for result_index in target_indexes:
+                if (binding_index, result_index) in skipped:
+                    continue
                 artifacts.extend(self._render_result(binding_index, binding, result_index, results[result_index]))
         return artifacts
 
@@ -89,7 +97,7 @@ class VisualizationExecutor:
         Return stream visualizer bindings expanded to concrete result indexes.
 
         The returned tuples contain the binding index, binding object and target
-        result index. ``StreamingSignalTailExecutor`` uses this information to
+        result index. ``SegmentedPipelineExecutor`` uses this information to
         create one data-buffer subscription per visualizer/result pair.
         """
         targets: list[tuple[int, VisualizerBinding, int]] = []
@@ -97,6 +105,10 @@ class VisualizationExecutor:
             for result_index in self._target_indexes(binding_index, binding, result_count):
                 targets.append((binding_index, binding, result_index))
         return targets
+
+    def targets(self, result_count: int) -> list[tuple[int, VisualizerBinding, int]]:
+        """Return every visualizer binding expanded to concrete result indexes."""
+        return self.streaming_targets(result_count)
 
     def context_for(self, binding: VisualizerBinding, result_index: int, data: Any) -> VisualizationContext:
         """Create the context passed to a visualizer for one result stream."""
@@ -163,9 +175,4 @@ class VisualizationExecutor:
     @staticmethod
     def resolve_targets(binding: VisualizerBinding, result_count: int) -> tuple[int, ...]:
         """Resolve optional binding indexes against the available analyzer results."""
-        if binding.result_indices is None:
-            return tuple(range(result_count))
-        invalid = [index for index in binding.result_indices if index >= result_count]
-        if invalid:
-            raise ValueError(f"Visualizer target index out of range: {invalid}; available result indexes: 0..{result_count - 1}.")
-        return tuple(binding.result_indices)
+        return binding.target_indexes(result_count)

@@ -22,9 +22,9 @@ from library.core.utils.OpenCVMaskSelector import OpenCVMaskSelector
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.core.visualization.VisualArtifact import DeferredVideoArtifact, ImageArtifact, VideoArtifact, VideoFileArtifact
 from library.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
-from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
+from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
 from library.frame_processors.OpenCVBackgroundReplacementFrameProcessor import OpenCVBackgroundReplacementFrameProcessor
 from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
@@ -48,7 +48,7 @@ FAST_DYNAMIC_DEMO_MAX_FRAMES = 99
 FAST_DYNAMIC_DEMO_STRIDE = 3
 FAST_DYNAMIC_DEMO_MAX_SAMPLED_FRAMES = 24
 PIPELINE_ID = "background-replacement-demo"
-RUN_DEMO = "ArUco"  # "dynamic_object_removal"
+RUN_DEMO = "dynamic_object_removal"  # "ArUco"
 log = logging.getLogger(__name__)
 
 

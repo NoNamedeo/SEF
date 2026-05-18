@@ -6,10 +6,14 @@ from library.core.interfaces.pipeline.IEventBus import IEventBus
 from library.core.interfaces.pipeline.IPipelineFactory import IPipelineFactory
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.PipelineContext import PipelineContext
+from library.core.pipeline.PipelineExecutionPolicy import PipelineExecutionPolicy
 
 
 class DefaultPipelineFactory(IPipelineFactory):
     """Default factory that keeps Pipeline construction outside the orchestrator."""
+
+    def __init__(self, execution_policy: PipelineExecutionPolicy | None = None) -> None:
+        self._execution_policy = execution_policy
 
     def create(
         self,
@@ -23,4 +27,5 @@ class DefaultPipelineFactory(IPipelineFactory):
             event_bus=event_bus,
             pipeline_id=pipeline_id,
             execution_metadata=execution_metadata,
+            execution_policy=self._execution_policy,
         )

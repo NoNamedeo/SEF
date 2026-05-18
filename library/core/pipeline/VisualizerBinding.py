@@ -30,3 +30,24 @@ class VisualizerBinding:
         if any(index < 0 for index in indices):
             raise ValueError("VisualizerBinding result_indices cannot contain negative indexes.")
         object.__setattr__(self, "result_indices", indices)
+
+    def target_indexes(self, result_count: int) -> tuple[int, ...]:
+        """
+        Resolve this binding against the available analyzer result indexes.
+
+        The method belongs to the value object because index validation is part
+        of the binding contract, not a concern of planner or renderer code.
+        """
+        if result_count < 0:
+            raise ValueError("VisualizerBinding result_count cannot be negative.")
+        if self.result_indices is None:
+            return tuple(range(result_count))
+
+        invalid = [index for index in self.result_indices if index >= result_count]
+        if invalid:
+            available = f"0..{result_count - 1}" if result_count > 0 else "<none>"
+            raise ValueError(
+                f"Visualizer target index out of range: {invalid}; "
+                f"available result indexes: {available}."
+            )
+        return tuple(self.result_indices)

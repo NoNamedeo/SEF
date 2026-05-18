@@ -12,7 +12,7 @@ class PipelineBuffers:
 
     Buffer operations are kept here because they are cross-cutting primitives:
     frame execution, materialization and streaming failure handling all need
-    them, but none of those executors should own generic buffer mechanics.
+    them, but no runtime collaborator should own generic buffer mechanics.
     """
 
     @staticmethod

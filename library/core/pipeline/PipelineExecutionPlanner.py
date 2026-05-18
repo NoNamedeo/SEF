@@ -4,11 +4,19 @@ from typing import Any
 
 from library.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
 from library.core.pipeline.PipelineContext import PipelineContext
+from library.core.pipeline.PipelineExecutionLookahead import PipelineExecutionLookahead
+from library.core.pipeline.PipelineExecutionPolicy import (
+    DefaultPipelineExecutionPolicy,
+    PipelineExecutionEstimates,
+    PipelineExecutionPolicy,
+    PipelineStagePolicyContext,
+)
 from library.core.pipeline.PipelineExecutionPlan import (
     ExecutionPlanStage,
     PipelineExecutionPlan,
     capabilities_of,
 )
+from library.core.pipeline.VisualizerBinding import VisualizerBinding
 
 
 class PipelineExecutionPlanner:
@@ -21,33 +29,56 @@ class PipelineExecutionPlanner:
     streaming, batch execution, or materialization boundaries.
     """
 
+    def __init__(self, execution_policy: PipelineExecutionPolicy | None = None) -> None:
+        self._execution_policy = execution_policy or DefaultPipelineExecutionPolicy()
+
     def build(self, context: PipelineContext) -> PipelineExecutionPlan:
         """
         Build a plan for the provided context.
 
-        The returned plan mirrors the same capability rules used by
-        ``AdaptivePipelineExecutor``. Keeping both paths aligned is essential:
+        The returned plan mirrors the same capability and policy rules used by
+        ``SegmentedPipelineExecutor``. Keeping both paths aligned is essential:
         what the user sees before execution must match what the runtime does.
         """
-        frame_bytes = self._estimated_frame_bytes(context)
-        queue_bytes = self._queue_bytes(frame_bytes, context.stream_runtime.frame_buffer_size)
-        materialized_bytes = self._materialized_bytes(frame_bytes, context)
+        estimates = PipelineExecutionEstimates.from_context(context)
+        lookahead = PipelineExecutionLookahead(context)
         stages: list[ExecutionPlanStage] = []
 
-        frame_stream_pending = self._is_streaming_frame_extractor(context.frame_extractor)
+        frame_decision = self._execution_policy.decide_source(
+            PipelineStagePolicyContext(
+                stage_id="frame_extraction",
+                stage_group="frame_extractor",
+                stage_streamable=self._is_streaming_frame_extractor(context.frame_extractor),
+                downstream_streamable=lookahead.frame_successor_streamable(processor_index=0),
+                estimated_queue_bytes=estimates.frame_queue_bytes,
+                estimated_materialized_bytes=estimates.materialized_frame_bytes,
+            )
+        )
+        frame_stream_pending = frame_decision.streams
         stages.append(
             self._stage(
                 "frame_extraction",
                 "frame_extractor",
                 context.frame_extractor,
                 streaming=frame_stream_pending,
-                reason="explicit streaming frame extractor" if frame_stream_pending else "batch frame extractor",
-                estimated_queue_bytes=queue_bytes if frame_stream_pending else None,
+                reason=frame_decision.reason,
+                estimated_queue_bytes=estimates.frame_queue_bytes if frame_stream_pending else None,
             )
         )
 
         for index, processor in enumerate(context.frame_processors):
-            streaming = self._is_streaming_frame_processor(processor)
+            decision = self._execution_policy.decide_stage(
+                PipelineStagePolicyContext(
+                    stage_id=f"frame_processing[{index}]",
+                    stage_group="frame_processors",
+                    stage_streamable=self._is_streaming_frame_processor(processor),
+                    input_is_streaming=frame_stream_pending,
+                    downstream_streamable=lookahead.frame_successor_streamable(processor_index=index + 1),
+                    estimated_queue_bytes=estimates.frame_queue_bytes,
+                    estimated_materialized_bytes=estimates.materialized_frame_bytes,
+                )
+            )
+            streaming = decision.streams
             materializes = frame_stream_pending and not streaming
             stages.append(
                 self._stage(
@@ -56,17 +87,26 @@ class PipelineExecutionPlanner:
                     processor,
                     streaming=streaming,
                     materializes_input=materializes,
-                    reason="explicit streaming frame processor" if streaming else "requires complete frame sequence",
-                    estimated_queue_bytes=queue_bytes if streaming else None,
-                    estimated_materialized_bytes=materialized_bytes if materializes else None,
+                    reason=decision.reason,
+                    estimated_queue_bytes=estimates.frame_queue_bytes if streaming else None,
+                    estimated_materialized_bytes=estimates.materialized_frame_bytes if materializes else None,
                 )
             )
             frame_stream_pending = streaming
 
-        exporters_streaming = all(self._is_streaming_frame_exporter(exporter) for exporter in context.frame_exporters)
-        signal_tail_streaming = self._is_streaming_signal_tail(context)
         for index, exporter in enumerate(context.frame_exporters):
-            streaming = exporters_streaming and signal_tail_streaming and self._is_streaming_frame_exporter(exporter)
+            decision = self._execution_policy.decide_stage(
+                PipelineStagePolicyContext(
+                    stage_id=f"frame_export[{index}]",
+                    stage_group="frame_exporters",
+                    stage_streamable=self._is_streaming_frame_exporter(exporter),
+                    input_is_streaming=frame_stream_pending,
+                    downstream_streamable=lookahead.frame_export_successor_streamable(exporter_index=index + 1),
+                    estimated_queue_bytes=estimates.frame_queue_bytes,
+                    estimated_materialized_bytes=estimates.materialized_frame_bytes,
+                )
+            )
+            streaming = decision.streams
             materializes = frame_stream_pending and not streaming
             stages.append(
                 self._stage(
@@ -75,14 +115,25 @@ class PipelineExecutionPlanner:
                     exporter,
                     streaming=streaming,
                     materializes_input=materializes,
-                    reason="streaming frame exporter" if streaming else "frame tail materializes before export",
-                    estimated_queue_bytes=queue_bytes if streaming else None,
-                    estimated_materialized_bytes=materialized_bytes if materializes else None,
+                    reason=decision.reason,
+                    estimated_queue_bytes=estimates.frame_queue_bytes if streaming else None,
+                    estimated_materialized_bytes=estimates.materialized_frame_bytes if materializes else None,
                 )
             )
             frame_stream_pending = streaming
 
-        signal_streaming = signal_tail_streaming and self._is_streaming_signal_extractor(context.signal_extractor)
+        signal_decision = self._execution_policy.decide_stage(
+            PipelineStagePolicyContext(
+                stage_id="signal_extraction",
+                stage_group="signal_extractor",
+                stage_streamable=self._is_streaming_signal_extractor(context.signal_extractor),
+                input_is_streaming=frame_stream_pending,
+                downstream_streamable=lookahead.signal_successor_streamable(cleaner_index=0),
+                estimated_queue_bytes=estimates.signal_queue_bytes,
+                estimated_materialized_bytes=estimates.materialized_frame_bytes,
+            )
+        )
+        signal_streaming = signal_decision.streams
         signal_materializes = frame_stream_pending and not signal_streaming
         stages.append(
             self._stage(
@@ -91,48 +142,77 @@ class PipelineExecutionPlanner:
                 context.signal_extractor,
                 streaming=signal_streaming,
                 materializes_input=signal_materializes,
-                reason="explicit streaming signal extractor" if signal_streaming else "batch signal extractor or batch downstream tail",
-                estimated_queue_bytes=self._signal_queue_bytes(context) if signal_streaming else None,
-                estimated_materialized_bytes=materialized_bytes if signal_materializes else None,
+                reason=signal_decision.reason,
+                estimated_queue_bytes=estimates.signal_queue_bytes if signal_streaming else None,
+                estimated_materialized_bytes=estimates.materialized_frame_bytes if signal_materializes else None,
             )
         )
 
         for index, cleaner in enumerate(context.signal_cleaners):
-            streaming = signal_tail_streaming and self._is_streaming_signal_cleaner(cleaner)
+            decision = self._execution_policy.decide_stage(
+                PipelineStagePolicyContext(
+                    stage_id=f"signal_cleaning[{index}]",
+                    stage_group="signal_cleaners",
+                    stage_streamable=self._is_streaming_signal_cleaner(cleaner),
+                    input_is_streaming=signal_streaming,
+                    downstream_streamable=lookahead.signal_successor_streamable(cleaner_index=index + 1),
+                    estimated_queue_bytes=estimates.signal_queue_bytes,
+                )
+            )
+            streaming = decision.streams
+            materializes = signal_streaming and not streaming
             stages.append(
                 self._stage(
                     f"signal_cleaning[{index}]",
                     "signal_cleaners",
                     cleaner,
                     streaming=streaming,
-                    reason="explicit streaming signal cleaner" if streaming else "batch signal cleaner",
-                    estimated_queue_bytes=self._signal_queue_bytes(context) if streaming else None,
+                    materializes_input=materializes,
+                    reason=decision.reason,
+                    estimated_queue_bytes=estimates.signal_queue_bytes if streaming else None,
                 )
             )
+            signal_streaming = streaming
 
+        analyzer_streaming: list[bool] = []
+        streaming_visualizer_result_indexes = self._streaming_visualizer_result_indexes(context)
         for index, analyzer in enumerate(context.analyzers):
-            streaming = signal_tail_streaming and self._is_streaming_analyzer(analyzer)
+            decision = self._execution_policy.decide_analyzer(
+                PipelineStagePolicyContext(
+                    stage_id=f"analysis[{index}]",
+                    stage_group="analyzers",
+                    stage_streamable=self._is_streaming_analyzer(analyzer),
+                    input_is_streaming=signal_streaming,
+                    progressive_consumer=index in streaming_visualizer_result_indexes,
+                    estimated_queue_bytes=estimates.data_queue_bytes,
+                )
+            )
+            streaming = decision.streams
+            analyzer_streaming.append(streaming)
             stages.append(
                 self._stage(
                     f"analysis[{index}]",
                     "analyzers",
                     analyzer,
                     streaming=streaming,
-                    reason="explicit streaming analyzer" if streaming else "batch analyzer",
-                    estimated_queue_bytes=self._data_queue_bytes(context) if streaming else None,
+                    materializes_input=signal_streaming and not streaming,
+                    reason=decision.reason,
+                    estimated_queue_bytes=estimates.data_queue_bytes if streaming else None,
                 )
             )
 
-        visualizers = [*context.visualizers, *(binding.visualizer for binding in context.visualizer_bindings)]
-        for index, visualizer in enumerate(visualizers):
-            streaming = signal_tail_streaming and PipelineComponentCapabilities.can_stream_visualizer(visualizer)
+        for index, binding in enumerate(self._visualizer_bindings(context)):
+            target_indexes = binding.target_indexes(len(context.analyzers))
+            streaming = PipelineComponentCapabilities.can_stream_visualizer(binding.visualizer) and any(
+                analyzer_streaming[target_index] for target_index in target_indexes
+            )
             stages.append(
                 self._stage(
                     f"visualisation[{index}]",
                     "visualizers",
-                    visualizer,
+                    binding.visualizer,
                     streaming=streaming,
-                    reason="explicit streaming visualizer" if streaming else "final artifact visualizer",
+                    reason="consumes progressive analyzer data" if streaming else "renders final analyzer result",
                 )
             )
 
@@ -189,39 +269,17 @@ class PipelineExecutionPlanner:
     def _is_streaming_analyzer(component: Any) -> bool:
         return PipelineComponentCapabilities.can_stream_analyzer(component)
 
-    @staticmethod
-    def _is_streaming_signal_tail(context: PipelineContext) -> bool:
-        return PipelineComponentCapabilities.can_stream_signal_tail(context)
+    def _streaming_visualizer_result_indexes(self, context: PipelineContext) -> set[int]:
+        result_indexes: set[int] = set()
+        for binding in self._visualizer_bindings(context):
+            if not PipelineComponentCapabilities.can_stream_visualizer(binding.visualizer):
+                continue
+            result_indexes.update(binding.target_indexes(len(context.analyzers)))
+        return result_indexes
 
     @staticmethod
-    def _estimated_frame_bytes(context: PipelineContext) -> int | None:
-        resize = getattr(context.frame_extractor, "resize", None)
-        if not isinstance(resize, (tuple, list)) or len(resize) != 2:
-            return None
-        width, height = int(resize[0]), int(resize[1])
-        if width <= 0 or height <= 0:
-            return None
-        return width * height * 3
-
-    @staticmethod
-    def _queue_bytes(frame_bytes: int | None, capacity: int) -> int | None:
-        if frame_bytes is None:
-            return None
-        return frame_bytes * capacity
-
-    @staticmethod
-    def _signal_queue_bytes(context: PipelineContext) -> int:
-        return context.stream_runtime.signal_buffer_size * 1024
-
-    @staticmethod
-    def _data_queue_bytes(context: PipelineContext) -> int:
-        return context.stream_runtime.data_buffer_size * 1024
-
-    @staticmethod
-    def _materialized_bytes(frame_bytes: int | None, context: PipelineContext) -> int | None:
-        if frame_bytes is None:
-            return None
-        max_frames = getattr(context.frame_extractor, "max_frames", None)
-        if max_frames is None:
-            return None
-        return frame_bytes * int(max_frames)
+    def _visualizer_bindings(context: PipelineContext) -> list[VisualizerBinding]:
+        return [
+            *(VisualizerBinding(visualizer) for visualizer in context.visualizers),
+            *context.visualizer_bindings,
+        ]

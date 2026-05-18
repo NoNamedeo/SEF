@@ -5,18 +5,18 @@ from collections.abc import Mapping
 from typing import Any
 
 from library.core.interfaces.pipeline.IEventBus import IEventBus
-from library.core.pipeline.AdaptivePipelineExecutor import AdaptivePipelineExecutor
-from library.core.pipeline.FrameExporterExecutor import FrameExporterExecutor
-from library.core.pipeline.FramePipelineExecutor import FramePipelineExecutor
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineErrors import PipelineExecutionError
 from library.core.pipeline.PipelineEventInjector import PipelineEventInjector
 from library.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
 from library.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
+from library.core.pipeline.PipelineExecutionPolicy import (
+    DefaultPipelineExecutionPolicy,
+    PipelineExecutionPolicy,
+)
 from library.core.pipeline.PipelineOutputAssembler import PipelineOutputAssembler
 from library.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
-from library.core.pipeline.SignalPipelineExecutor import SignalPipelineExecutor
-from library.core.pipeline.StreamingSignalTailExecutor import StreamingSignalTailExecutor
+from library.core.pipeline.SegmentedPipelineExecutor import SegmentedPipelineExecutor
 from library.core.pipeline.VisualizationExecutor import VisualizationExecutor
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 
@@ -31,23 +31,25 @@ class Pipeline:
 
     ``Pipeline`` intentionally coordinates collaborators instead of owning the
     workflow details. Frame execution, signal analysis, visualization, event
-    injection, and output assembly are delegated to focused components in this
-    package. This keeps the public API stable while avoiding a god object.
+    injection, and output assembly are delegated to focused collaborators in
+    this package. This keeps the public API stable while avoiding a god object.
 
     Responsibilities
     ----------------
     - Validate no business rule directly; validation belongs to
       ``PipelineContext`` and the concrete components.
     - Build a stable execution plan before the run starts.
+    - Keep execution-mode decisions behind ``PipelineExecutionPolicy``.
     - Inject runtime event metadata into event-aware components.
-    - Delegate execution to ``AdaptivePipelineExecutor``.
+    - Delegate execution to ``SegmentedPipelineExecutor``.
     - Convert the internal execution result into public ``PipelineOutputs``.
 
     Extension notes
     ---------------
-    New execution behavior should normally be introduced through one of the
-    focused executors rather than by adding stage logic here. This class should
-    remain thin so callers can treat it as a stable facade.
+    New execution behavior should normally be introduced through a custom
+    ``PipelineExecutionPolicy`` or through segmented runtime collaborators
+    rather than by adding stage logic here. This class should remain thin so
+    callers can treat it as a stable facade.
     """
 
     def __init__(
@@ -56,6 +58,7 @@ class Pipeline:
         event_bus: IEventBus | None = None,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        execution_policy: PipelineExecutionPolicy | None = None,
     ) -> None:
         """
         Create a pipeline facade for an already-built context.
@@ -72,12 +75,16 @@ class Pipeline:
         execution_metadata:
             Additional metadata copied into event contexts, visualizer contexts,
             exporter contexts, and final run metadata.
+        execution_policy:
+            Optional strategy used by planner and runtime to choose batch or
+            streaming execution for each stage.
         """
         self._context = context
         self._event_bus = event_bus
         self._pipeline_id = pipeline_id
         self._execution_metadata = dict(execution_metadata or {})
-        self._execution_plan = PipelineExecutionPlanner().build(context)
+        self._execution_policy = execution_policy or DefaultPipelineExecutionPolicy()
+        self._execution_plan = PipelineExecutionPlanner(self._execution_policy).build(context)
         self._stage_executor = PipelineStageExecutor()
 
     def run(self) -> PipelineOutputs:
@@ -114,37 +121,20 @@ class Pipeline:
         """
         return self._execution_plan
 
-    def _build_executor(self) -> AdaptivePipelineExecutor:
-        frame_exporter_executor = FrameExporterExecutor(
-            context=self._context,
-            stage_executor=self._stage_executor,
-            pipeline_id=self._pipeline_id,
-            execution_metadata=self._execution_metadata,
-        )
+    def _build_executor(self) -> SegmentedPipelineExecutor:
         visualization_executor = VisualizationExecutor(
             context=self._context,
             stage_executor=self._stage_executor,
             pipeline_id=self._pipeline_id,
             execution_metadata=self._execution_metadata,
         )
-        return AdaptivePipelineExecutor(
+        return SegmentedPipelineExecutor(
             context=self._context,
-            frame_pipeline_executor=FramePipelineExecutor(
-                context=self._context,
-                stage_executor=self._stage_executor,
-            ),
-            frame_exporter_executor=frame_exporter_executor,
-            signal_pipeline_executor=SignalPipelineExecutor(
-                context=self._context,
-                stage_executor=self._stage_executor,
-            ),
-            streaming_tail_executor=StreamingSignalTailExecutor(
-                context=self._context,
-                stage_executor=self._stage_executor,
-                frame_exporter_executor=frame_exporter_executor,
-                visualization_executor=visualization_executor,
-            ),
+            stage_executor=self._stage_executor,
             visualization_executor=visualization_executor,
+            execution_policy=self._execution_policy,
+            pipeline_id=self._pipeline_id,
+            execution_metadata=self._execution_metadata,
         )
 
     def _build_output_assembler(self) -> PipelineOutputAssembler:
