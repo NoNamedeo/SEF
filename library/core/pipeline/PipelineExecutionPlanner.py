@@ -2,15 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from library.core.interfaces.StreamingContracts import (
-    IStreamingAnalyzer,
-    IStreamingFrameBufferProcessor,
-    IStreamingFrameExporter,
-    IStreamingFrameExtractor,
-    IStreamingSignalCleaner,
-    IStreamingSignalExtractor,
-    IStreamingVisualizer,
-)
+from library.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineExecutionPlan import (
     ExecutionPlanStage,
@@ -119,7 +111,7 @@ class PipelineExecutionPlanner:
 
         visualizers = [*context.visualizers, *(binding.visualizer for binding in context.visualizer_bindings)]
         for index, visualizer in enumerate(visualizers):
-            streaming = signal_tail_streaming and isinstance(visualizer, IStreamingVisualizer)
+            streaming = signal_tail_streaming and PipelineComponentCapabilities.can_stream_visualizer(visualizer)
             stages.append(
                 self._stage(
                     f"visualisation[{index}]",
@@ -161,42 +153,31 @@ class PipelineExecutionPlanner:
 
     @staticmethod
     def _is_streaming_frame_extractor(component: Any) -> bool:
-        caps = capabilities_of(component)
-        return isinstance(component, IStreamingFrameExtractor) and caps.supports_streaming and not caps.requires_complete_sequence
+        return PipelineComponentCapabilities.can_stream_frame_extractor(component)
 
     @staticmethod
     def _is_streaming_frame_processor(component: Any) -> bool:
-        caps = capabilities_of(component)
-        return isinstance(component, IStreamingFrameBufferProcessor) and caps.supports_streaming and not caps.requires_complete_sequence
+        return PipelineComponentCapabilities.can_stream_frame_processor(component)
 
     @staticmethod
     def _is_streaming_frame_exporter(component: Any) -> bool:
-        caps = capabilities_of(component)
-        return isinstance(component, IStreamingFrameExporter) and caps.supports_streaming and not caps.requires_complete_sequence
+        return PipelineComponentCapabilities.can_stream_frame_exporter(component)
 
     @staticmethod
     def _is_streaming_signal_extractor(component: Any) -> bool:
-        caps = capabilities_of(component)
-        return isinstance(component, IStreamingSignalExtractor) and caps.supports_streaming and not caps.requires_complete_sequence
+        return PipelineComponentCapabilities.can_stream_signal_extractor(component)
 
     @staticmethod
     def _is_streaming_signal_cleaner(component: Any) -> bool:
-        caps = capabilities_of(component)
-        return isinstance(component, IStreamingSignalCleaner) and caps.supports_streaming and not caps.requires_complete_sequence
+        return PipelineComponentCapabilities.can_stream_signal_cleaner(component)
 
     @staticmethod
     def _is_streaming_analyzer(component: Any) -> bool:
-        caps = capabilities_of(component)
-        return isinstance(component, IStreamingAnalyzer) and caps.supports_streaming and not caps.requires_complete_sequence
+        return PipelineComponentCapabilities.can_stream_analyzer(component)
 
-    def _is_streaming_signal_tail(self, context: PipelineContext) -> bool:
-        visualizers = [*context.visualizers, *(binding.visualizer for binding in context.visualizer_bindings)]
-        return (
-            self._is_streaming_signal_extractor(context.signal_extractor)
-            and all(self._is_streaming_signal_cleaner(cleaner) for cleaner in context.signal_cleaners)
-            and all(self._is_streaming_analyzer(analyzer) for analyzer in context.analyzers)
-            and all(isinstance(visualizer, IStreamingVisualizer) for visualizer in visualizers)
-        )
+    @staticmethod
+    def _is_streaming_signal_tail(context: PipelineContext) -> bool:
+        return PipelineComponentCapabilities.can_stream_signal_tail(context)
 
     @staticmethod
     def _estimated_frame_bytes(context: PipelineContext) -> int | None:
