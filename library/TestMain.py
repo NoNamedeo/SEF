@@ -48,7 +48,7 @@ FAST_DYNAMIC_DEMO_MAX_FRAMES = 99
 FAST_DYNAMIC_DEMO_STRIDE = 3
 FAST_DYNAMIC_DEMO_MAX_SAMPLED_FRAMES = 24
 PIPELINE_ID = "background-replacement-demo"
-RUN_DEMO = "dynamic_object_removal"  # "ArUco"
+RUN_DEMO = ""  # "ArUco"
 log = logging.getLogger(__name__)
 
 
