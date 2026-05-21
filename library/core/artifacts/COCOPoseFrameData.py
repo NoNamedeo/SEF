@@ -18,6 +18,7 @@ class COCOPoseFrameData(IData):
     centroid: tuple[float, float] | None = None
     timestamp_seconds: float | None = None
     frame_size: tuple[int, int] | None = None
+    frame_image: np.ndarray | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
 

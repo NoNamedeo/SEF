@@ -68,5 +68,6 @@ class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
             centroid=sample.centroid,
             timestamp_seconds=sample.timestamp_seconds,
             frame_size=sample.metadata.get("frame_size"),
+            frame_image=sample.metadata.get("frame_image"),
             metadata=dict(sample.metadata),
         )

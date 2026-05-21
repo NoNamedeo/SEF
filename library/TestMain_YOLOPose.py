@@ -14,13 +14,13 @@ from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder  #
 from library.core.pipeline.PipelineContext import PipelineContext  # noqa: E402
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator  # noqa: E402
 from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor  # noqa: E402
-from library.signal_extractors.YOLOSkeletonCOCOStreamSIgnalExtractor import (  # noqa: E402
+from library.signal_extractors.YOLOSkeletonCOCOStreamSignalExtractor import (  # noqa: E402
     YOLOSkeletonCOCOStreamSignalExtractor,
 )
 from library.visualizers.OpenCVCOCOPoseRealtimeVisualizer import OpenCVCOCOPoseRealtimeVisualizer  # noqa: E402
 
 DEFAULT_CAMERA_INDEX = 0
-DEFAULT_MAX_FRAMES = 300
+DEFAULT_MAX_FRAMES = 9999
 DEFAULT_MODEL_NAME = "yolo11s-pose.pt"
 
 
@@ -30,6 +30,7 @@ def build_yolo_pose_webcam_pipeline(
     max_frames: int = DEFAULT_MAX_FRAMES,
     model_name: str = DEFAULT_MODEL_NAME,
     mirror: bool = False,
+    light: bool = False,
 ) -> PipelineContext:
     """Build the existing SEF streaming pipeline for a realtime YOLO pose smoke test."""
 
@@ -54,11 +55,21 @@ def build_yolo_pose_webcam_pipeline(
         .with_signal_extractor(
             YOLOSkeletonCOCOStreamSignalExtractor(
                 model_name=model_name,
-                config={"show_graph": False},
+                config={
+                    "include_frame_image": not light,
+                    "show_graph": False,
+                },
             )
         )
         .add_analyzer(COCOPoseStreamAnalyzer())
-        .add_visualizer_for_results(OpenCVCOCOPoseRealtimeVisualizer(), [0])
+        .add_visualizer_for_results(
+            OpenCVCOCOPoseRealtimeVisualizer(
+                config={
+                    "draw_source_frame": not light,
+                },
+            ),
+            [0],
+        )
         .build_context()
     )
 
@@ -72,6 +83,7 @@ def TestMain_YOLOPose() -> None:
         max_frames=args.max_frames,
         model_name=args.model,
         mirror=args.mirror,
+        light=args.light,
     )
 
     orchestrator = PipelineOrchestrator()
@@ -89,6 +101,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--max-frames", type=_positive_int, default=DEFAULT_MAX_FRAMES)
     parser.add_argument("--model", default=DEFAULT_MODEL_NAME)
     parser.add_argument("--mirror", action="store_true")
+    parser.add_argument(
+        "--light",
+        action="store_true",
+        help="Render only the pose layer on a synthetic canvas without carrying source frames.",
+    )
     return parser.parse_args()
 
 

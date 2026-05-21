@@ -61,6 +61,7 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
         self._model = self.load_model(model_name)
         self._default_buffer = buffer
         self._live_analyzer = live_analyzer
+        self._include_frame_image = bool(self.config.get("include_frame_image", False))
 
     def extract(self, buffer: FrameBuffer) -> SignalBuffer:
         output = self._default_buffer or SignalBuffer()
@@ -84,10 +85,7 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
                     confidence=conf,
                     centroid=centroid,
                     timestamp_seconds=frame.timestamp_seconds,
-                    metadata={
-                        "source": "yolo11-pose",
-                        "frame_size": (int(frame.frame.shape[1]), int(frame.frame.shape[0])),
-                    },
+                    metadata=self._sample_metadata(frame.frame),
                 )
 
                 if self._live_analyzer is not None and self.config.get("show_graph"):
@@ -127,6 +125,15 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
             (left_hip[0] + right_hip[0]) / 2.0,
             (left_hip[1] + right_hip[1]) / 2.0,
         )
+
+    def _sample_metadata(self, image: np.ndarray) -> dict[str, Any]:
+        metadata: dict[str, Any] = {
+            "source": "yolo11-pose",
+            "frame_size": (int(image.shape[1]), int(image.shape[0])),
+        }
+        if self._include_frame_image:
+            metadata["frame_image"] = image.copy()
+        return metadata
 
     def load_model(self, model_name: str = "yolo11-pose.pt") -> YOLO:
         try:

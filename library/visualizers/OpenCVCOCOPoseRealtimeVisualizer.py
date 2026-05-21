@@ -42,6 +42,7 @@ class OpenCVCOCOPoseRealtimeVisualizer(IStreamingVisualizer):
     def __init__(self, config=None):
         super().__init__(config)
         self.window_name = self.config.get("window_name", "YOLO Pose COCO")
+        self.draw_source_frame = bool(self.config.get("draw_source_frame", True))
         self.keypoint_threshold = float(self.config.get("keypoint_threshold", 0.3))
         self.canvas_size = tuple(self.config.get("canvas_size", (1280, 720)))
         self.wait_ms = int(self.config.get("wait_ms", 1))
@@ -94,6 +95,9 @@ class OpenCVCOCOPoseRealtimeVisualizer(IStreamingVisualizer):
         return ()
 
     def _build_canvas(self, pose_frame: COCOPoseFrameData) -> np.ndarray:
+        if self.draw_source_frame and pose_frame.frame_image is not None:
+            return pose_frame.frame_image.copy()
+
         width, height = pose_frame.frame_size or self.canvas_size
         return np.full((int(height), int(width), 3), self.background_color, dtype=np.uint8)
 
@@ -129,6 +133,16 @@ class OpenCVCOCOPoseRealtimeVisualizer(IStreamingVisualizer):
 
     def _draw_status(self, canvas: np.ndarray, pose_frame: COCOPoseFrameData) -> None:
         label = f"frame: {pose_frame.frame_index} | ESC/q: close preview"
+        cv2.putText(
+            canvas,
+            label,
+            (16, 32),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.72,
+            (20, 20, 20),
+            4,
+            cv2.LINE_AA,
+        )
         cv2.putText(
             canvas,
             label,
