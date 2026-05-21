@@ -65,6 +65,17 @@ def test_coco_pose_stream_analyzer_does_not_retain_frames_by_default() -> None:
     assert result.metadata == {"frames": 3, "retained_frames": 0}
 
 
+def test_coco_pose_stream_analyzer_aborts_upstream_when_output_is_closed() -> None:
+    output = DataBuffer(buffer_size=2, consumers=0)
+    output.abort()
+    signal = AbortableSignal([])
+
+    result = COCOPoseStreamAnalyzer().analyze_into(signal, output)
+
+    assert signal.aborted is True
+    assert result.metadata == {"frames": 0, "retained_frames": 0}
+
+
 def test_opencv_coco_pose_realtime_visualizer_consumes_pose_stream(monkeypatch) -> None:
     calls: list[str] = []
 
@@ -114,3 +125,46 @@ def test_opencv_coco_pose_realtime_visualizer_draws_over_source_frame(monkeypatc
 
     assert len(rendered_frames) == 1
     np.testing.assert_array_equal(rendered_frames[0][-1, -1], source_frame[-1, -1])
+
+
+def test_opencv_coco_pose_realtime_visualizer_aborts_stream_on_escape(monkeypatch) -> None:
+    monkeypatch.setattr("cv2.namedWindow", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("cv2.imshow", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("cv2.waitKey", lambda *_args, **_kwargs: 27)
+    monkeypatch.setattr("cv2.destroyWindow", lambda *_args, **_kwargs: None)
+
+    pose_frame = COCOPoseFrameData(
+        frame_index=1,
+        skeleton=np.zeros((17, 2), dtype=float),
+        confidence=np.ones(17, dtype=float),
+        frame_size=(64, 48),
+    )
+    stream = AbortableDataStream([pose_frame])
+
+    OpenCVCOCOPoseRealtimeVisualizer(config={"window_name": "test"}).render_stream(stream)
+
+    assert stream.aborted is True
+
+
+class AbortableSignal:
+    def __init__(self, samples):
+        self._samples = samples
+        self.aborted = False
+
+    def __iter__(self):
+        return iter(self._samples)
+
+    def abort(self) -> None:
+        self.aborted = True
+
+
+class AbortableDataStream:
+    def __init__(self, items):
+        self._items = items
+        self.aborted = False
+
+    def __iter__(self):
+        return iter(self._items)
+
+    def abort(self) -> None:
+        self.aborted = True

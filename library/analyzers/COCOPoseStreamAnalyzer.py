@@ -43,13 +43,19 @@ class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
         frames: list[COCOPoseFrameData] = []
         frame_count = 0
         try:
-            for sample in signal:
+            signal_iterator = iter(signal)
+            while not output_buffer.closed:
+                sample = next(signal_iterator)
                 pose_frame = self._map_sample(sample)
                 frame_count += 1
                 if self._retain_frames:
                     frames.append(pose_frame)
                 output_buffer.put(pose_frame)
+        except StopIteration:
+            pass
         finally:
+            if output_buffer.closed:
+                self._abort_upstream(signal)
             output_buffer.close()
 
         return COCOPoseSequenceData(
@@ -81,3 +87,9 @@ class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
             frame_image=frame_image,
             metadata=metadata,
         )
+
+    @staticmethod
+    def _abort_upstream(signal: Iterable[ISignalSample]) -> None:
+        abort = getattr(signal, "abort", None)
+        if callable(abort):
+            abort()

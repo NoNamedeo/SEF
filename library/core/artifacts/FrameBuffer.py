@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
 from queue import Empty, Full, Queue
+from time import sleep
 
 from library.core.artifacts.Frame import Frame
 
@@ -29,11 +30,16 @@ class FrameBuffer:
                 self.put(f)
 
     def put(self, frame: Frame) -> None:
-        self._queue.put(frame)
+        while not self.closed:
+            try:
+                self._queue.put(frame, timeout=0.05)
+                return
+            except Full:
+                continue
 
     def try_put(self, frame: Frame) -> bool:
         """Publish a frame without blocking. Return False when the queue is full."""
-        if self.size() >= self.capacity:
+        if self.closed or self.size() >= self.capacity:
             return False
         try:
             self._queue.put_nowait(frame)
@@ -43,6 +49,8 @@ class FrameBuffer:
 
     def drop_oldest(self) -> Frame | None:
         """Drop and return the oldest queued frame item, if one is available."""
+        if self.closed:
+            return None
         try:
             item = self._queue.get_nowait()
         except Empty:
@@ -65,7 +73,15 @@ class FrameBuffer:
 
     def close(self) -> None:
         self.closed = True
-        self._queue.put(_SENTINEL)
+        while True:
+            try:
+                self._queue.put_nowait(_SENTINEL)
+                return
+            except Full:
+                try:
+                    self._queue.get_nowait()
+                except Empty:
+                    sleep(0.001)
 
     def abort(self) -> None:
         """Close the buffer without blocking, dropping queued frames if needed."""
