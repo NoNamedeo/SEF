@@ -29,10 +29,11 @@ def test_coco_pose_stream_analyzer_maps_skeleton_samples_to_pose_frames() -> Non
     )
     output = DataBuffer(buffer_size=2, consumers=0)
 
-    result = COCOPoseStreamAnalyzer().analyze_into(signal, output)
+    result = COCOPoseStreamAnalyzer(config={"retain_frames": True}).analyze_into(signal, output)
 
     assert isinstance(result, COCOPoseSequenceData)
     assert len(result.frames) == 1
+    assert result.metadata == {"frames": 1, "retained_frames": 1}
     frame = result.frames[0]
     assert frame.frame_index == 7
     assert frame.frame_size == (640, 480)
@@ -40,6 +41,28 @@ def test_coco_pose_stream_analyzer_maps_skeleton_samples_to_pose_frames() -> Non
     np.testing.assert_array_equal(frame.skeleton, skeleton)
     np.testing.assert_array_equal(frame.confidence, confidence)
     np.testing.assert_array_equal(frame.frame_image, frame_image)
+    assert "frame_image" not in frame.metadata
+
+
+def test_coco_pose_stream_analyzer_does_not_retain_frames_by_default() -> None:
+    skeleton = np.zeros((17, 2), dtype=float)
+    confidence = np.ones(17, dtype=float)
+    frame_image = np.zeros((32, 32, 3), dtype=np.uint8)
+    samples = [
+        COCOSkeletonSignalSample(
+            frame_index=index,
+            skeleton=skeleton,
+            confidence=confidence,
+            metadata={"frame_size": (32, 32), "frame_image": frame_image},
+        )
+        for index in range(3)
+    ]
+    output = DataBuffer(buffer_size=2, consumers=0)
+
+    result = COCOPoseStreamAnalyzer().analyze_into(Signal(samples), output)
+
+    assert result.frames == []
+    assert result.metadata == {"frames": 3, "retained_frames": 0}
 
 
 def test_opencv_coco_pose_realtime_visualizer_consumes_pose_stream(monkeypatch) -> None:
