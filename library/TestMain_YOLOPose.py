@@ -14,7 +14,7 @@ from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder  #
 from library.core.pipeline.PipelineContext import PipelineContext  # noqa: E402
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator  # noqa: E402
 from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor  # noqa: E402
-from library.signal_extractors.YOLOSkeletonCOCOStreamSIgnalExtractor import (  # noqa: E402
+from library.signal_extractors.YOLOSkeletonCOCOStreamSignalExtractor import (  # noqa: E402
     YOLOSkeletonCOCOStreamSignalExtractor,
 )
 from library.visualizers.OpenCVCOCOPoseRealtimeVisualizer import OpenCVCOCOPoseRealtimeVisualizer  # noqa: E402
