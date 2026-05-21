@@ -5,6 +5,8 @@ from collections.abc import Iterable
 from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.artifacts.TwoDimPointData import TwoDimPointData
+from library.core.interfaces.BufferContracts import IBuffer
+from library.core.interfaces.IData import IData
 from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingAnalyzer
@@ -31,7 +33,7 @@ class VerticalPositionStreamAnalyzer(IStreamingAnalyzer):
     def analyze_into(
         self,
         signal: Iterable[ISignalSample],
-        output_buffer: DataBuffer,
+        output_buffer: IBuffer[IData],
         consumer_id: int = 0,
     ) -> TwoDimGraphData:
         x_label = "Time [s]" if self.use_timestamps else "Frame Index"

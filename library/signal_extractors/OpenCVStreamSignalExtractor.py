@@ -5,10 +5,12 @@ from typing import Any
 
 import cv2
 
-from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
-from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.BoxSignalSample import BoundingBox, BoxSignalSample
+from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
+from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
+from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
 
@@ -43,7 +45,7 @@ class OpenCVStreamSignalExtractor(IStreamingSignalExtractor):
         self.extract_into(buffer, output)
         return output
 
-    def extract_into(self, buffer: FrameBuffer, output_buffer: SignalBuffer) -> None:
+    def extract_into(self, buffer: IFrameBuffer, output_buffer: IBuffer[ISignalSample]) -> None:
         if self.start_box[2] <= 0 or self.start_box[3] <= 0:
             raise ValueError("example_box must have positive width and height")
 

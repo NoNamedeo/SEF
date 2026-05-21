@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Any
 
 from library.core.artifacts.ArucoMarkerSignalSample import (
@@ -11,12 +11,11 @@ from library.core.artifacts.ArucoMarkerSignalSample import (
     MarkerCorners,
 )
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingSignalCleaner
-
 
 Point2D = tuple[float, float]
 
@@ -79,7 +78,7 @@ class ArucoTemporalStabilizerCleaner(IStreamingSignalCleaner):
         cleaned_samples = [self._clean_sample(sample, states) for sample in samples]
         return Signal(cleaned_samples, config=dict(signal.config))
 
-    def clean_into(self, input_signal: Iterable[ISignalSample], output_buffer: SignalBuffer) -> None:
+    def clean_into(self, input_signal: Iterable[ISignalSample], output_buffer: IBuffer[ISignalSample]) -> None:
         states: dict[int, _MarkerFilterState] = {}
         try:
             for sample in input_signal:
@@ -173,7 +172,7 @@ class ArucoTemporalStabilizerCleaner(IStreamingSignalCleaner):
             return observation.corners
         return tuple(
             self._ema_point(previous_point, current_point, alpha)
-            for previous_point, current_point in zip(state.corners, observation.corners)
+            for previous_point, current_point in zip(state.corners, observation.corners, strict=True)
         )  # type: ignore[return-value]
 
     def _filter_center(

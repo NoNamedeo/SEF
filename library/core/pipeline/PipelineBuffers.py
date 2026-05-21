@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Any
 
-from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.interfaces.BufferContracts import IAbortableBuffer, IFrameBuffer
 
 
 class PipelineBuffers:
@@ -16,7 +17,7 @@ class PipelineBuffers:
     """
 
     @staticmethod
-    def copy_frame_buffer(source_buffer: FrameBuffer) -> FrameBuffer:
+    def copy_frame_buffer(source_buffer: IFrameBuffer) -> FrameBuffer:
         """
         Materialize a frame stream into a replayable buffer.
 
@@ -34,18 +35,14 @@ class PipelineBuffers:
 
     @staticmethod
     def abort_all(
-        frame_buffers: list[FrameBuffer],
-        signal_buffers: list[Any],
-        data_buffers: list[DataBuffer],
+        *buffer_groups: Iterable[IAbortableBuffer[Any]],
     ) -> None:
         """
         Unblock producers and consumers after a concurrent stage fails.
 
-        The method intentionally uses duck typing for ``abort`` because frame,
-        signal and data buffers share the behavior without requiring a common
-        inheritance hierarchy.
+        Failure handling depends only on the abortable-buffer contract, so new
+        buffer implementations can join the runtime without changing this helper.
         """
-        for buffer in [*frame_buffers, *signal_buffers, *data_buffers]:
-            abort = getattr(buffer, "abort", None)
-            if callable(abort):
-                abort()
+        for buffers in buffer_groups:
+            for buffer in buffers:
+                buffer.abort()

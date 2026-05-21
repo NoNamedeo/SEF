@@ -5,7 +5,9 @@ from concurrent.futures import ThreadPoolExecutor
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.pipeline.PipelineBuffers import PipelineBuffers
 from library.core.pipeline.PipelineExecutionResources import PipelineExecutionResources
 from library.core.pipeline.PipelineRuntimeState import FrameRuntimeState, SignalRuntimeState, ThreadedStageTask
@@ -99,7 +101,7 @@ class PipelineBoundaryMaterializer:
             buffers=self._resources.signal_buffers,
         )
 
-    def _signal_publisher_task(self, signal: ISignal, output: SignalBuffer) -> ThreadedStageTask:
+    def _signal_publisher_task(self, signal: ISignal, output: IBuffer[ISignalSample]) -> ThreadedStageTask:
         return lambda executor: executor.submit(
             lambda: self._stage_executor.run(
                 "signal_stream.publish",
@@ -108,7 +110,7 @@ class PipelineBoundaryMaterializer:
         )
 
     @staticmethod
-    def _publish_signal(signal: ISignal, output: SignalBuffer) -> None:
+    def _publish_signal(signal: ISignal, output: IBuffer[ISignalSample]) -> None:
         try:
             for sample in signal:
                 output.put(sample)

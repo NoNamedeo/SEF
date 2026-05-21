@@ -6,6 +6,7 @@ import cv2
 
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.interfaces.BufferContracts import IFrameBuffer
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingFrameExtractor
 from library.core.pipeline.LatencyPolicy import BlockingFrameLatencyPolicy, FrameLatencyPolicy
@@ -51,7 +52,7 @@ class OpenCVWebcamFrameExtractor(IStreamingFrameExtractor):
 
     def extract_into(
         self,
-        output_buffer: FrameBuffer,
+        output_buffer: IFrameBuffer,
         latency_policy: FrameLatencyPolicy,
     ) -> None:
         capture = cv2.VideoCapture(self.camera_index)

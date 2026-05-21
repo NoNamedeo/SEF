@@ -4,10 +4,14 @@ from importlib import import_module
 
 _EXPORTS = {
     "IAnalyzer": ("library.core.interfaces.IAnalyzer", "IAnalyzer"),
+    "IAbortableBuffer": ("library.core.interfaces.BufferContracts", "IAbortableBuffer"),
     "IBranchingRule": ("library.core.interfaces.pipeline.IBranchingRule", "IBranchingRule"),
+    "IBuffer": ("library.core.interfaces.BufferContracts", "IBuffer"),
+    "IBufferSubscription": ("library.core.interfaces.BufferContracts", "IBufferSubscription"),
     "IData": ("library.core.interfaces.IData", "IData"),
     "IEventEmitter": ("library.core.interfaces.IEventEmitter", "IEventEmitter"),
     "IEventBus": ("library.core.interfaces.pipeline.IEventBus", "IEventBus"),
+    "IFrameBuffer": ("library.core.interfaces.BufferContracts", "IFrameBuffer"),
     "ISingleFrameProcessor": ("library.core.interfaces.ISingleFrameProcessor", "ISingleFrameProcessor"),
     "IFrameExtractor": ("library.core.interfaces.IFrameExtractor", "IFrameExtractor"),
     "IFrameBufferProcessor": ("library.core.interfaces.IFrameBufferProcessor", "IFrameBufferProcessor"),
@@ -41,6 +45,7 @@ _EXPORTS = {
     "ISignal": ("library.core.interfaces.ISignal", "ISignal"),
     "ISignalCleaner": ("library.core.interfaces.ISignalCleaner", "ISignalCleaner"),
     "ISignalExtractor": ("library.core.interfaces.ISignalExtractor", "ISignalExtractor"),
+    "ISubscribableBuffer": ("library.core.interfaces.BufferContracts", "ISubscribableBuffer"),
     "IVisualizer": ("library.core.interfaces.IVisualizer", "IVisualizer"),
 }
 

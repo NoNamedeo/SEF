@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from threading import Condition
 from typing import Dict, List
 
+from library.core.interfaces.BufferContracts import IBufferSubscription
 from library.core.interfaces.ISignalSample import ISignalSample
 
 _SENTINEL = object()
@@ -89,7 +90,7 @@ class SignalBuffer:
     # -------------------------
     # SUBSCRIPTION
     # -------------------------
-    def subscribe(self, consumer_id: int):
+    def subscribe(self, consumer_id: int) -> IBufferSubscription[ISignalSample]:
         with self._cond:
             self._subscribers[consumer_id] = 0
             return SignalSubscription(self, consumer_id)
@@ -142,7 +143,7 @@ class SignalSubscription:
     def __iter__(self):
         return self
 
-    def __next__(self):
+    def __next__(self) -> ISignalSample:
         return self._buffer._get_for(self._id)
 
     def abort(self) -> None:

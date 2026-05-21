@@ -6,8 +6,9 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.BufferContracts import IAbortableBuffer, ISubscribableBuffer
 from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalSample import ISignalSample
 
 ThreadedStageTask = Callable[[ThreadPoolExecutor], Future[Any]]
 
@@ -30,9 +31,9 @@ class SignalRuntimeState:
     """Mutable runtime state for the current signal segment."""
 
     signal: ISignal | None = None
-    buffer: SignalBuffer | None = None
+    buffer: ISubscribableBuffer[ISignalSample] | None = None
     pending_tasks: list[ThreadedStageTask] = field(default_factory=list)
-    buffers: list[Any] = field(default_factory=list)
+    buffers: list[IAbortableBuffer[Any]] = field(default_factory=list)
 
     @property
     def is_streaming(self) -> bool:

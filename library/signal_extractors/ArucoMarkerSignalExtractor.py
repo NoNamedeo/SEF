@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -13,10 +13,12 @@ from library.core.artifacts.ArucoMarkerSignalSample import (
     ArucoMarkerSignalSample,
     MarkerCorners,
 )
+from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
 
@@ -141,14 +143,14 @@ class ArucoMarkerSignalExtractor(IStreamingSignalExtractor):
     def extract(self, buffer: FrameBuffer) -> ISignal:
         return Signal(list(self._samples_from_frames(buffer)))
 
-    def extract_into(self, frames: FrameBuffer, output_buffer: SignalBuffer) -> None:
+    def extract_into(self, frames: IFrameBuffer, output_buffer: IBuffer[ISignalSample]) -> None:
         try:
             for sample in self._samples_from_frames(frames):
                 output_buffer.put(sample)
         finally:
             output_buffer.close()
 
-    def _samples_from_frames(self, buffer: FrameBuffer):
+    def _samples_from_frames(self, buffer: Iterable[Frame]):
         known_marker_ids = set(self.marker_ids or ())
 
         for position, frame in enumerate(buffer):
@@ -500,7 +502,7 @@ class ArucoMarkerSignalExtractor(IStreamingSignalExtractor):
             return {}
 
         observations: dict[int, ArucoMarkerObservation] = {}
-        for marker_id, raw_corners in zip(detection.ids.flatten().tolist(), detection.corners):
+        for marker_id, raw_corners in zip(detection.ids.flatten().tolist(), detection.corners, strict=True):
             observation = self._build_detected_observation(
                 marker_id=int(marker_id),
                 raw_corners=raw_corners,

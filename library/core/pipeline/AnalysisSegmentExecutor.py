@@ -5,6 +5,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 
 from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.Signal import Signal
+from library.core.interfaces.BufferContracts import ISubscribableBuffer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.ISignal import ISignal
 from library.core.pipeline.PipelineBoundaryMaterializer import PipelineBoundaryMaterializer
@@ -226,12 +227,12 @@ class AnalysisSegmentExecutor:
     def _data_buffers_for_streaming_analyzers(
         self,
         visualizer_targets: list[tuple[int, VisualizerBinding, int]],
-    ) -> list[DataBuffer]:
+    ) -> list[ISubscribableBuffer[IData]]:
         consumer_counts = [0] * len(self._context.analyzers)
         for _, _, result_index in visualizer_targets:
             consumer_counts[result_index] += 1
 
-        buffers: list[DataBuffer] = []
+        buffers: list[ISubscribableBuffer[IData]] = []
         for consumer_count in consumer_counts:
             buffer = DataBuffer(buffer_size=self._context.stream_runtime.data_buffer_size)
             buffer.set_consumer_count(consumer_count)
@@ -244,7 +245,7 @@ class AnalysisSegmentExecutor:
         executor: ThreadPoolExecutor,
         *,
         final_signal: SignalRuntimeState,
-        data_buffers: list[DataBuffer],
+        data_buffers: list[ISubscribableBuffer[IData]],
         results: list[IData | None],
         streaming_indexes: list[int],
     ) -> list[Future]:
@@ -273,7 +274,7 @@ class AnalysisSegmentExecutor:
         executor: ThreadPoolExecutor,
         *,
         visualizer_targets: list[tuple[int, VisualizerBinding, int]],
-        data_buffers: list[DataBuffer],
+        data_buffers: list[ISubscribableBuffer[IData]],
     ) -> list[Future]:
         futures: list[Future] = []
         result_count = len(data_buffers)
@@ -301,7 +302,7 @@ class AnalysisSegmentExecutor:
         self,
         *,
         visualizer_targets: list[tuple[int, VisualizerBinding, int]],
-        data_buffers: list[DataBuffer],
+        data_buffers: list[ISubscribableBuffer[IData]],
     ) -> None:
         result_count = len(data_buffers)
         for binding_index, binding, result_index in visualizer_targets:

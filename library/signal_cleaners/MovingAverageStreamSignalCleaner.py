@@ -5,6 +5,7 @@ from collections.abc import Iterable
 
 from library.core.artifacts.BoxSignalSample import BoxSignalSample
 from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingSignalCleaner
@@ -41,7 +42,7 @@ class MovingAverageStreamCleaner(IStreamingSignalCleaner):
         self.clean_into(input_buffer, output)
         return output
 
-    def clean_into(self, input_buffer: Iterable[ISignalSample], output_buffer: SignalBuffer) -> None:
+    def clean_into(self, input_buffer: Iterable[ISignalSample], output_buffer: IBuffer[ISignalSample]) -> None:
         window = deque(maxlen=self.window_size)
 
         try:

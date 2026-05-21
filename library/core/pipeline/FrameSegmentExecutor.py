@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from typing import Any
 
+from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from library.core.interfaces.IFrameExporter import FrameExportContext
 from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
@@ -129,10 +131,10 @@ class FrameSegmentExecutor:
             )
             processed = self._stage_executor.run(
                 f"frame_processing[{processor_index}]",
-                lambda p=processor, b=buffer: self._process_frame_buffer(
+                lambda p=processor, b=buffer, idx=processor_index: self._process_frame_buffer(
                     b,
                     p,
-                    processor_index=processor_index,
+                    processor_index=idx,
                     intermediate_store=intermediate_store,
                 ),
             )
@@ -248,7 +250,7 @@ class FrameSegmentExecutor:
 
     def _frame_extraction_task(
         self,
-        output: FrameBuffer,
+        output: IFrameBuffer,
         latency_policy: FrameLatencyPolicy,
     ) -> ThreadedStageTask:
         return lambda executor: executor.submit(
@@ -260,8 +262,8 @@ class FrameSegmentExecutor:
 
     def _frame_processor_task(
         self,
-        input_buffer: FrameBuffer,
-        output_buffer: FrameBuffer,
+        input_buffer: Iterable[Frame],
+        output_buffer: IBuffer[Frame],
         *,
         processor: Any,
         processor_index: int,
@@ -281,8 +283,8 @@ class FrameSegmentExecutor:
 
     def _frame_exporter_task(
         self,
-        input_buffer: FrameBuffer,
-        output_buffer: FrameBuffer,
+        input_buffer: Iterable[Frame],
+        output_buffer: IBuffer[Frame],
         *,
         exporter: Any,
         exporter_index: int,

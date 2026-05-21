@@ -9,7 +9,9 @@ import numpy as np
 from library.core.artifacts.COCOSkeletonSignalSample import COCOSkeletonSignalSample
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
+from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
 
@@ -68,7 +70,7 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
         self.extract_into(buffer, output)
         return output
 
-    def extract_into(self, buffer: FrameBuffer, output_buffer: SignalBuffer) -> None:
+    def extract_into(self, buffer: IFrameBuffer, output_buffer: IBuffer[ISignalSample]) -> None:
         try:
             for position, frame in enumerate(buffer):
                 if output_buffer.closed:

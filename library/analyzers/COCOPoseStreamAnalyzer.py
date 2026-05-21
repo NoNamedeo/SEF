@@ -6,6 +6,7 @@ from typing import Any
 from library.core.artifacts.COCOPoseFrameData import COCOPoseFrameData, COCOPoseSequenceData
 from library.core.artifacts.COCOSkeletonSignalSample import COCOSkeletonSignalSample
 from library.core.artifacts.DataBuffer import DataBuffer
+from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalSample import ISignalSample
@@ -38,7 +39,7 @@ class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
     def analyze_into(
         self,
         signal: Iterable[ISignalSample],
-        output_buffer: DataBuffer,
+        output_buffer: IBuffer[IData],
     ) -> COCOPoseSequenceData:
         frames: list[COCOPoseFrameData] = []
         frame_count = 0
