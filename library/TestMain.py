@@ -19,10 +19,12 @@ from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.utils.OpenCVMaskSelector import OpenCVMaskSelector
+from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.core.visualization.VisualArtifact import DeferredVideoArtifact, ImageArtifact, VideoArtifact, VideoFileArtifact
 from library.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor
 from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
 from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
 from library.frame_processors.OpenCVBackgroundReplacementFrameProcessor import OpenCVBackgroundReplacementFrameProcessor
@@ -33,6 +35,7 @@ from library.frame_processors.OpenCVZoomFrameProcessor import OpenCVZoomFramePro
 from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
 from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
 from library.signal_extractors.NoSignalExtractor import NoSignalExtractor
+from library.signal_extractors.OpenCVStreamSignalExtractor import OpenCVStreamSignalExtractor
 from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
 from library.visualizers.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
 from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
@@ -79,12 +82,12 @@ class BackgroundReplacementPipelineConfig:
     def default(cls) -> BackgroundReplacementPipelineConfig:
         """Return the demo defaults used by the original script."""
         return cls(
-            video_path=PROJECT_ROOT / "videos" / "ArUco_test_paper_2.MOV",
+            video_path=PROJECT_ROOT / "videos" / "Tower.mp4",
             background_image_path=PROJECT_ROOT / "images" / "Tower_without_people.png",
-            cleaned_video_path=PROJECT_ROOT / "output" / "cleaned_videos" / "Tower_without_people.mp4",
+            cleaned_video_path=PROJECT_ROOT / "output" / "cleaned_videos" / "Test_cleaned_video.mp4",
             dynamic_cleaned_video_path=PROJECT_ROOT / "output" / "cleaned_videos" / "Tower_dynamic_object_removal.mp4",
             artifact_output_dir=PROJECT_ROOT / "output" / "visualizations" / "background_replacement",
-            max_frames=9999,
+            max_frames=600,
         )
 
     def validate(self, *, require_background_image: bool = True) -> None:
@@ -111,32 +114,36 @@ class BackgroundReplacementPipelineFactory:
     def __init__(self, config: BackgroundReplacementPipelineConfig) -> None:
         self._config = config
 
-    def build(self, mask) -> PipelineContext:
+    def build(self, mask, box) -> PipelineContext:
         """Create a validated PipelineContext for one selected replacement mask."""
         return (
             FluentPipelineBuilder()
             .with_frame_extractor(
-                OpenCVBufferedFrameExtractor(
-                    self._config.video_path,
-                    buffer=FrameBuffer(buffer_size=self._config.stream_buffer_size),
-                    config={
-                        "max_frames": self._config.max_frames,
-                        "stride": self._config.frame_stride,
-                    },
-                )
+                # OpenCVBufferedFrameExtractor(
+                #     self._config.video_path,
+                #     buffer=FrameBuffer(buffer_size=self._config.stream_buffer_size),
+                #     config={
+                #         "max_frames": self._config.max_frames,
+                #         "stride": self._config.frame_stride,
+                #     },
+                # )
+                OpenCVWebcamFrameExtractor(config={"max_frames": 300})
             )
             .with_frame_processors(
                 [
-                    SingleFrameProcessorAdapter(OpenCVRotateFrameProcessor(rotation=self._config.rotation)),
-                    SingleFrameProcessorAdapter(OpenCVResizeFrameProcessor(self._config.resize)),
-                    SingleFrameProcessorAdapter(
-                        OpenCVBackgroundReplacementFrameProcessor(
-                            str(self._config.background_image_path),
-                            mask,
-                            self._config.resize,
-                        )
-                    ),
-                    SingleFrameProcessorAdapter(OpenCVGrayFrameProcessor()),
+                    # SingleFrameProcessorAdapter(OpenCVRotateFrameProcessor(rotation=self._config.rotation)),
+                    # SingleFrameProcessorAdapter(OpenCVResizeFrameProcessor(self._config.resize)),
+                    # SingleFrameProcessorAdapter(
+                    #     OpenCVBackgroundReplacementFrameProcessor(
+                    #         str(self._config.background_image_path),
+                    #         mask,
+                    #         self._config.resize,
+                    #     )
+                    # ),
+
+                    # DynamicObjectRemovalFrameProcessor(max_processed_frames=1000, max_sequence_bytes=9999999999),
+
+                    # SingleFrameProcessorAdapter(OpenCVGrayFrameProcessor()),
                 ]
             )
             .add_frame_exporter(
@@ -152,7 +159,39 @@ class BackgroundReplacementPipelineFactory:
                     max_exported_frames=self._config.max_frames,
                 )
             )
-            .with_signal_extractor(NoSignalExtractor())
+            .with_signal_extractor(OpenCVStreamSignalExtractor(start_box = box, config={"show": True}))
+            .with_analyzers([NoAnalyzer()])
+            .with_intermediate_frame_capture(self._intermediate_capture_config())
+            .add_intermediate_frame_visualizer(self._intermediate_frame_visualizer())
+            .build_context()
+        )
+
+    def build_camera_demo(self, box) -> PipelineContext:
+        """Create a validated PipelineContext for one selected replacement mask."""
+        return (
+            FluentPipelineBuilder()
+            .with_frame_extractor(
+                OpenCVWebcamFrameExtractor(config={"max_frames": 300})
+            )
+            .with_frame_processors(
+                [
+
+                ]
+            )
+            .add_frame_exporter(
+                OpenCVFrameBufferVideoExporter(
+                    output_path=self._config.cleaned_video_path,
+                    fps=resolve_output_fps(
+                        self._config.video_path,
+                        stride=self._config.frame_stride,
+                        fallback_fps=self._config.fallback_fps,
+                    ),
+                    title=f"{self._config.video_path.stem} without people",
+                    description="Background-replacement final video.",
+                    max_exported_frames=self._config.max_frames,
+                )
+            )
+            .with_signal_extractor(OpenCVStreamSignalExtractor(start_box = box, config={"show": True}))
             .with_analyzers([NoAnalyzer()])
             .with_intermediate_frame_capture(self._intermediate_capture_config())
             .add_intermediate_frame_visualizer(self._intermediate_frame_visualizer())
@@ -407,9 +446,14 @@ def main() -> None:
         cleaned_video_path = config.dynamic_cleaned_video_path
     elif RUN_DEMO == "ArUco":
         context = factory.build_ArUco_demo()
+    elif RUN_DEMO == "webcam":
+        context = factory.build_camera_demo((300, 200, 150, 150))
     else:
-        mask = select_replacement_mask(config)
-        context = factory.build(mask)
+        mask = None
+        #mask = select_replacement_mask(config)
+        box = None
+        #box = OpenCVStartBoxSelector().select_start(str(config.video_path))
+        context = factory.build(mask, box)
         cleaned_video_path = config.cleaned_video_path
     outputs = run_pipeline(context)
     saved_artifacts = PipelineArtifactWriter(config.artifact_output_dir).write(outputs)
