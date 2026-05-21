@@ -34,6 +34,7 @@ models/
 
 # YOLO Pose models
 library/signal_extractors/YOLOPoseModels/
+library/YOLOPoseModels/
 
 .DS_Store
 __pycache__/

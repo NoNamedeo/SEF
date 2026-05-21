@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-import urllib
+import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import cv2
 import numpy as np
-from ultralytics import YOLO
-
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.SignalBuffer import SignalBuffer
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
-from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
 
 from library.core.artifacts.COCOSkeletonSignalSample import COCOSkeletonSignalSample
+from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
+from library.core.interfaces.StageCapabilities import StageCapabilities
+from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
+
+if TYPE_CHECKING:
+    from ultralytics import YOLO
 
 
 class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
@@ -29,33 +29,30 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
         realtime_safe=True,
     )
 
-    #lista ordinata dei 17 punti che vado a prendere nello skeleton
+    # lista ordinata dei 17 punti che vado a prendere nello skeleton
     COCO_17 = [
         "nose",
-        "left_eye", "right_eye",
-        "left_ear", "right_ear",
-        "left_shoulder", "right_shoulder",
-        "left_elbow", "right_elbow",
-        "left_wrist", "right_wrist",
-        "left_hip", "right_hip",
-        "left_knee", "right_knee",
-        "left_ankle", "right_ankle",
-    ]
-
-    #per disegnare lo stickman
-    COCO_EDGES = [
-        (5, 6),  # shoulders
-        (5, 7), (7, 9),  # left arm
-        (6, 8), (8, 10),  # right arm
-        (5, 11), (6, 12),  # torso
-        (11, 12),  # hips
-        (11, 13), (13, 15),  # left leg
-        (12, 14), (14, 16)  # right leg
+        "left_eye",
+        "right_eye",
+        "left_ear",
+        "right_ear",
+        "left_shoulder",
+        "right_shoulder",
+        "left_elbow",
+        "right_elbow",
+        "left_wrist",
+        "right_wrist",
+        "left_hip",
+        "right_hip",
+        "left_knee",
+        "right_knee",
+        "left_ankle",
+        "right_ankle",
     ]
 
     def __init__(
         self,
-        model_name: str = "yolo11s-pose.pt", #c'è anche yolov8n-pose.pt (più veloce)
+        model_name: str = "yolo11s-pose.pt",  # c'è anche yolov8n-pose.pt (più veloce)
         buffer: SignalBuffer | None = None,
         live_analyzer: ILiveAnalyzer | None = None,
         config: dict[str, Any] | None = None,
@@ -89,27 +86,9 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
                     timestamp_seconds=frame.timestamp_seconds,
                     metadata={
                         "source": "yolo11-pose",
+                        "frame_size": (int(frame.frame.shape[1]), int(frame.frame.shape[0])),
                     },
                 )
-
-                if self.config.get("show"):
-                    vis_frame = frame.frame.copy()
-
-                    self._draw_skeleton(vis_frame, skeleton, conf)
-
-                    cv2.circle(
-                        vis_frame,
-                        (int(centroid[0]), int(centroid[1])),
-                        5,
-                        (0, 0, 255),
-                        -1
-                    )
-
-                    cv2.imshow("YOLO Pose COCO", vis_frame)
-
-                    key = cv2.waitKey(1)
-                    if key == 27:  # ESC
-                        break
 
                 if self._live_analyzer is not None and self.config.get("show_graph"):
                     self.update(sample)
@@ -129,9 +108,11 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
             return np.zeros((17, 2)), np.zeros(17)
 
         kpts = result.keypoints
+        if kpts.xy.shape[0] == 0:
+            return np.zeros((17, 2)), np.zeros(17)
 
-        xy = kpts.xy[0].cpu().numpy()        # [17,2]
-        conf = kpts.conf[0].cpu().numpy()    # [17]
+        xy = kpts.xy[0].cpu().numpy()  # [17,2]
+        conf = np.ones(17) if kpts.conf is None else kpts.conf[0].cpu().numpy()  # [17]
 
         return xy, conf
 
@@ -147,35 +128,12 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
             (left_hip[1] + right_hip[1]) / 2.0,
         )
 
-    def _draw_skeleton(self, frame_img, skeleton, conf=None, threshold=0.3):
-        """
-        Draw COCO skeleton on frame
-        """
-
-        # draw joints
-        for i, (x, y) in enumerate(skeleton):
-            if conf is not None and conf[i] < threshold:
-                continue
-
-            cv2.circle(
-                frame_img,
-                (int(x), int(y)),
-                4,
-                (0, 255, 0),
-                -1
-            )
-
-        # draw edges
-        for a, b in self.COCO_EDGES:
-            if conf is not None and (conf[a] < threshold or conf[b] < threshold):
-                continue
-
-            pt1 = tuple(map(int, skeleton[a]))
-            pt2 = tuple(map(int, skeleton[b]))
-
-            cv2.line(frame_img, pt1, pt2, (255, 0, 0), 2)
-
     def load_model(self, model_name: str = "yolo11-pose.pt") -> YOLO:
+        try:
+            from ultralytics import YOLO
+        except ImportError as exc:
+            raise RuntimeError("Ultralytics is required for YOLO pose extraction. Install it with: pip install ultralytics") from exc
+
         base_dir = Path(__file__).resolve().parents[1]
         model_dir = base_dir / "YOLOPoseModels"
         model_dir.mkdir(exist_ok=True, parents=True)

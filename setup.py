@@ -11,5 +11,6 @@ setup(
         "numpy",
         "opencv-contrib-python",
         "streamlit",
+        "ultralytics",
     ],
 )

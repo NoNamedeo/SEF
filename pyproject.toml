@@ -12,6 +12,7 @@ dependencies = [
   "numpy",
   "opencv-contrib-python",
   "streamlit",
+  "ultralytics",
 ]
 
 [tool.setuptools.packages.find]

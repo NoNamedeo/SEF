@@ -32,6 +32,7 @@ class OpenCVWebcamFrameExtractor(IStreamingFrameExtractor):
         super().__init__(config)
         self.camera_index = int(camera_index)
         self.resize = self.config.get("resize")
+        self.mirror = bool(self.config.get("mirror", False))
         self.stride = self._optional_positive_int(self.config.get("stride", 1), field_name="stride") or 1
         self.max_frames = self._optional_positive_int(
             self.config.get("max_frames", self.DEFAULT_MAX_FRAMES),
@@ -62,6 +63,9 @@ class OpenCVWebcamFrameExtractor(IStreamingFrameExtractor):
         try:
             captured_frames = 0
             while self.max_frames is None or frame_index < self.max_frames:
+                if output_buffer.closed:
+                    break
+
                 success, image = capture.read()
                 if not success:
                     break
@@ -70,6 +74,8 @@ class OpenCVWebcamFrameExtractor(IStreamingFrameExtractor):
                     continue
                 if self.resize is not None:
                     image = cv2.resize(image, self.resize)
+                if self.mirror:
+                    image = cv2.flip(image, 1)
 
                 fps = float(capture.get(cv2.CAP_PROP_FPS) or 0.0)
                 timestamp_seconds = (frame_index / fps) if fps > 0 else None
