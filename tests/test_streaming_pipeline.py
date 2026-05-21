@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -17,22 +18,22 @@ from library.core.artifacts.TwoDimPointData import TwoDimPointData
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
-from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import (
     IStreamingAnalyzer,
     IStreamingFrameExtractor,
     IStreamingSignalExtractor,
     IStreamingVisualizer,
 )
+from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.LatencyPolicy import (
     AdaptiveSamplingFrameLatencyPolicy,
     DropNewestFrameLatencyPolicy,
     FrameLatencyPolicy,
 )
-from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.PipelineExecutionPolicy import (
     DefaultPipelineExecutionPolicy,
@@ -102,6 +103,26 @@ def test_pipeline_runs_stream_capable_components_with_live_visualizer() -> None:
     assert len(outputs.final_artifacts) == 1
     assert isinstance(outputs.final_artifacts[0], TextArtifact)
     assert outputs.final_artifacts[0].content == "streamed=3;sum=6.0"
+
+
+def test_pipeline_runs_main_thread_streaming_visualizer_on_calling_thread() -> None:
+    visualizer = MainThreadStreamingTextVisualizer()
+    expected_thread_id = threading.get_ident()
+    context = (
+        FluentPipelineBuilder()
+        .with_frame_extractor(StreamingFrameExtractor(frame_count=3))
+        .with_signal_extractor(StreamingSignalExtractor())
+        .add_analyzer(StreamingAnalyzer())
+        .add_visualizer_for_results(visualizer, [0])
+        .build_context()
+    )
+
+    outputs = Pipeline(context).run()
+
+    assert visualizer.render_thread_id == expected_thread_id
+    assert len(outputs.final_artifacts) == 1
+    assert isinstance(outputs.final_artifacts[0], TextArtifact)
+    assert outputs.final_artifacts[0].content == "streamed=3;sum=3.0"
 
 
 def test_pipeline_streams_frame_exporter_without_buffering_full_video(tmp_path: Path) -> None:
@@ -440,6 +461,22 @@ class StreamingTextVisualizer(IStreamingVisualizer):
                 content=f"streamed={len(points)};sum={sum(point.y for point in points)}",
             ),
         )
+
+
+class MainThreadStreamingTextVisualizer(StreamingTextVisualizer):
+    requires_main_thread = True
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.render_thread_id: int | None = None
+
+    def render_stream(
+        self,
+        data: Iterable[IData],
+        context: VisualizationContext | None = None,
+    ) -> tuple[VisualArtifact, ...]:
+        self.render_thread_id = threading.get_ident()
+        return super().render_stream(data, context)
 
 
 class ForceStreamingSourcePolicy(DefaultPipelineExecutionPolicy):

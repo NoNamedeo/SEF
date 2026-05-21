@@ -81,6 +81,10 @@ class AnalysisSegmentExecutor:
         materialized_signal = state.signal
 
         visualizer_targets = self._streaming_visualizer_targets(set(streaming_indexes))
+        main_thread_visualizer_targets = self._main_thread_visualizer_targets(visualizer_targets)
+        threaded_visualizer_targets = [
+            target for target in visualizer_targets if target not in main_thread_visualizer_targets
+        ]
         streamed_target_keys = {
             (binding_index, result_index)
             for binding_index, _, result_index in visualizer_targets
@@ -109,7 +113,7 @@ class AnalysisSegmentExecutor:
             futures.extend(
                 self._submit_streaming_visualizers(
                     executor,
-                    visualizer_targets=visualizer_targets,
+                    visualizer_targets=threaded_visualizer_targets,
                     data_buffers=data_buffers,
                 )
             )
@@ -133,6 +137,10 @@ class AnalysisSegmentExecutor:
             futures.extend(task(executor) for task in final_signal.pending_tasks)
 
             try:
+                self._run_main_thread_streaming_visualizers(
+                    visualizer_targets=main_thread_visualizer_targets,
+                    data_buffers=data_buffers,
+                )
                 for future in futures:
                     future.result()
             except Exception:
@@ -204,6 +212,16 @@ class AnalysisSegmentExecutor:
             )
             if PipelineComponentCapabilities.can_stream_visualizer(binding.visualizer)
         }
+
+    @staticmethod
+    def _main_thread_visualizer_targets(
+        visualizer_targets: list[tuple[int, VisualizerBinding, int]],
+    ) -> list[tuple[int, VisualizerBinding, int]]:
+        return [
+            target
+            for target in visualizer_targets
+            if bool(getattr(target[1].visualizer, "requires_main_thread", False))
+        ]
 
     def _data_buffers_for_streaming_analyzers(
         self,
@@ -278,6 +296,26 @@ class AnalysisSegmentExecutor:
                 )
             )
         return futures
+
+    def _run_main_thread_streaming_visualizers(
+        self,
+        *,
+        visualizer_targets: list[tuple[int, VisualizerBinding, int]],
+        data_buffers: list[DataBuffer],
+    ) -> None:
+        result_count = len(data_buffers)
+        for binding_index, binding, result_index in visualizer_targets:
+            data_subscription = data_buffers[result_index].subscribe(
+                self._stream_consumer_id(binding_index, result_index, result_count)
+            )
+            self._resources.add_final_artifacts(
+                self._render_streaming_visualizer(
+                    binding=binding,
+                    binding_index=binding_index,
+                    result_index=result_index,
+                    data=data_subscription,
+                )
+            )
 
     def _render_streaming_visualizer(
         self,
