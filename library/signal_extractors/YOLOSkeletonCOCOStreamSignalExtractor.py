@@ -71,6 +71,10 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
     def extract_into(self, buffer: FrameBuffer, output_buffer: SignalBuffer) -> None:
         try:
             for position, frame in enumerate(buffer):
+                if output_buffer.closed:
+                    buffer.abort()
+                    break
+
                 frame_index = frame.index if frame.index is not None else position
 
                 result = self._model(frame.frame, verbose=False)[0]

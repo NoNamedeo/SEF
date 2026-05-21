@@ -37,15 +37,23 @@ class DataBuffer:
 
     def put(self, item: IData) -> None:
         with self._cond:
-            if self._consumers_default <= 0:
+            if self._closed or self._consumers_default <= 0:
                 return
 
             while self.capacity > 0 and len(self._data) >= self.capacity:
+                if self._closed:
+                    return
                 self._cond.wait()
 
             self._data.append(item)
             self._refcounts.append(self._consumers_default)
             self._cond.notify_all()
+
+    @property
+    def closed(self) -> bool:
+        """Return True when the buffer has been closed or aborted."""
+        with self._cond:
+            return self._closed
 
     def close(self) -> None:
         with self._cond:
@@ -123,3 +131,7 @@ class DataSubscription:
 
     def __next__(self):
         return self._buffer._get_for(self._id)
+
+    def abort(self) -> None:
+        """Abort the source buffer for cooperative downstream cancellation."""
+        self._buffer.abort()

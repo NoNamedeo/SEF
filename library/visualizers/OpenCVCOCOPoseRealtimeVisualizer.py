@@ -86,8 +86,10 @@ class OpenCVCOCOPoseRealtimeVisualizer(IStreamingVisualizer):
                 cv2.imshow(self.window_name, np.ascontiguousarray(canvas))
 
                 if self._should_stop(cv2.waitKey(self.wait_ms)):
+                    self._abort_stream(data)
                     display_enabled = False
                     cv2.destroyWindow(self.window_name)
+                    break
         finally:
             if display_enabled:
                 cv2.destroyWindow(self.window_name)
@@ -165,6 +167,12 @@ class OpenCVCOCOPoseRealtimeVisualizer(IStreamingVisualizer):
     def _should_stop(key_code: int) -> bool:
         normalized_key = key_code & 0xFF
         return normalized_key in (27, ord("q"), ord("Q"))
+
+    @staticmethod
+    def _abort_stream(data: Iterable[IData]) -> None:
+        abort = getattr(data, "abort", None)
+        if callable(abort):
+            abort()
 
     @staticmethod
     def _require_pose_frame(item: IData) -> COCOPoseFrameData:

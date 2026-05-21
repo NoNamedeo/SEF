@@ -58,6 +58,16 @@ def test_frame_buffer_can_close_when_full() -> None:
     assert [frame.index for frame in buffer] == [0, 1]
 
 
+def test_frame_buffer_rejects_new_frames_after_abort() -> None:
+    buffer = FrameBuffer(buffer_size=1)
+    buffer.abort()
+
+    buffer.put(_frame(0, 0))
+
+    assert buffer.try_put(_frame(1, 1)) is False
+    assert list(buffer) == []
+
+
 def test_signal_and_data_buffers_preserve_order_for_multiple_consumers() -> None:
     signal_buffer = SignalBuffer(buffer_size=2)
     signal_buffer.set_consumer_count(2)
