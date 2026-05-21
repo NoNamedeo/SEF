@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.interfaces.BufferContracts import IFrameBuffer
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,7 +52,7 @@ class FrameLatencyPolicy(ABC):
     """Strategy used by live/streaming extractors when the frame queue is under pressure."""
 
     @abstractmethod
-    def publish(self, frame: Frame, output_buffer: FrameBuffer) -> bool:
+    def publish(self, frame: Frame, output_buffer: IFrameBuffer) -> bool:
         """Publish ``frame`` to ``output_buffer`` or drop it. Return True when accepted."""
 
     def metrics(self) -> dict[str, Any]:
@@ -66,7 +66,7 @@ class BlockingFrameLatencyPolicy(FrameLatencyPolicy):
     def __init__(self) -> None:
         self.accepted_frames = 0
 
-    def publish(self, frame: Frame, output_buffer: FrameBuffer) -> bool:
+    def publish(self, frame: Frame, output_buffer: IFrameBuffer) -> bool:
         output_buffer.put(frame)
         self.accepted_frames += 1
         return True
@@ -82,7 +82,7 @@ class DropNewestFrameLatencyPolicy(FrameLatencyPolicy):
         self.accepted_frames = 0
         self.dropped_frames = 0
 
-    def publish(self, frame: Frame, output_buffer: FrameBuffer) -> bool:
+    def publish(self, frame: Frame, output_buffer: IFrameBuffer) -> bool:
         if output_buffer.try_put(frame):
             self.accepted_frames += 1
             return True
@@ -100,7 +100,7 @@ class DropOldestFrameLatencyPolicy(FrameLatencyPolicy):
         self.accepted_frames = 0
         self.dropped_frames = 0
 
-    def publish(self, frame: Frame, output_buffer: FrameBuffer) -> bool:
+    def publish(self, frame: Frame, output_buffer: IFrameBuffer) -> bool:
         if output_buffer.try_put(frame):
             self.accepted_frames += 1
             return True
@@ -158,7 +158,7 @@ class AdaptiveSamplingFrameLatencyPolicy(FrameLatencyPolicy):
             low_watermark=float(params.get("low_watermark", 0.25)),
         )
 
-    def publish(self, frame: Frame, output_buffer: FrameBuffer) -> bool:
+    def publish(self, frame: Frame, output_buffer: IFrameBuffer) -> bool:
         self.seen_frames += 1
         self._update_interval(output_buffer)
         if (self.seen_frames - 1) % self.current_interval != 0:
@@ -183,7 +183,7 @@ class AdaptiveSamplingFrameLatencyPolicy(FrameLatencyPolicy):
             "current_interval": self.current_interval,
         }
 
-    def _update_interval(self, output_buffer: FrameBuffer) -> None:
+    def _update_interval(self, output_buffer: IFrameBuffer) -> None:
         fill_ratio = output_buffer.fill_ratio()
         if fill_ratio >= self.high_watermark:
             self.current_interval = min(self.max_interval, self.current_interval + 1)

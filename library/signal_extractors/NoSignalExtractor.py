@@ -6,7 +6,9 @@ from library.core.artifacts.BoxSignalSample import BoxSignalSample
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from library.core.interfaces.ISignal import ISignal
+from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
 
@@ -31,7 +33,7 @@ class NoSignalExtractor(IStreamingSignalExtractor):
         self.extract_into(buffer, samples)
         return Signal(list(samples))
 
-    def extract_into(self, frames: FrameBuffer, output_buffer: SignalBuffer) -> None:
+    def extract_into(self, frames: IFrameBuffer, output_buffer: IBuffer[ISignalSample]) -> None:
         last_frame_index = 0
         last_timestamp = None
         for frame in frames:

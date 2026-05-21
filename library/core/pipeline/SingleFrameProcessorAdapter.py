@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Any
 
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
 from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
+from library.core.interfaces.BufferContracts import IBuffer
+from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
 from library.core.pipeline.IntermediateFrameCapture import (
     IntermediateFrameArtifactStore,
@@ -51,8 +53,8 @@ class SingleFrameProcessorAdapter(IStreamingFrameBufferProcessor):
 
     def process_into(
         self,
-        input_buffer: FrameBuffer,
-        output_buffer: FrameBuffer,
+        input_buffer: Iterable[Frame],
+        output_buffer: IBuffer[Frame],
         *,
         processor_index: int,
         intermediate_store: IntermediateFrameArtifactStore | None,

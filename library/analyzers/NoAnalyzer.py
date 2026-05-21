@@ -4,7 +4,7 @@ from collections.abc import Iterable
 
 from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.NoData import NoData
-from library.core.interfaces.IAnalyzer import IAnalyzer
+from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalSample import ISignalSample
@@ -27,7 +27,7 @@ class NoAnalyzer(IStreamingAnalyzer):
     def analyze(self, signal: ISignal) -> IData:
         return self.analyze_into(signal, DataBuffer(buffer_size=1))
 
-    def analyze_into(self, signal: Iterable[ISignalSample], output_buffer: DataBuffer) -> IData:
+    def analyze_into(self, signal: Iterable[ISignalSample], output_buffer: IBuffer[IData]) -> IData:
         for _sample in signal:
             pass
         output_buffer.close()

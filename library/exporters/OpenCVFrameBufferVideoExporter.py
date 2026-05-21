@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +9,7 @@ import numpy as np
 
 from library.core.artifacts.Frame import Frame
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.IFrameExporter import FrameExportContext, FrameExportResult
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingFrameExporter
@@ -67,8 +69,8 @@ class OpenCVFrameBufferVideoExporter(IStreamingFrameExporter):
 
     def export_into(
         self,
-        frames: FrameBuffer,
-        output_buffer: FrameBuffer,
+        frames: Iterable[Frame],
+        output_buffer: IBuffer[Frame],
         context: FrameExportContext,
     ) -> tuple[VideoFileArtifact, ...]:
         """Write frames to disk while forwarding them to the next streaming stage."""

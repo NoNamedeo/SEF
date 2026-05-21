@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from typing import Any
 
 from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.pipeline.PipelineBoundaryMaterializer import PipelineBoundaryMaterializer
 from library.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
@@ -145,8 +146,8 @@ class SignalSegmentExecutor:
 
     def _signal_extraction_task(
         self,
-        frames,
-        output: SignalBuffer,
+        frames: IFrameBuffer,
+        output: IBuffer[ISignalSample],
     ) -> ThreadedStageTask:
         return lambda executor: executor.submit(
             lambda: self._stage_executor.run(
@@ -158,7 +159,7 @@ class SignalSegmentExecutor:
     def _signal_cleaner_task(
         self,
         input_signal: Iterable[ISignalSample],
-        output: SignalBuffer,
+        output: IBuffer[ISignalSample],
         *,
         cleaner: Any,
         cleaner_index: int,

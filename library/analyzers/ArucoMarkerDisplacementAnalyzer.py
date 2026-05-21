@@ -4,13 +4,15 @@ import math
 from collections.abc import Iterable, Sequence
 from typing import Any
 
-from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.ArucoDisplacementData import (
     ArucoMarkerDisplacementData,
     ArucoMarkerDisplacementFrameData,
     ArucoMarkerDisplacementObservation,
 )
 from library.core.artifacts.ArucoMarkerSignalSample import ArucoMarkerSignalSample, Point2D
+from library.core.artifacts.DataBuffer import DataBuffer
+from library.core.interfaces.BufferContracts import IBuffer
+from library.core.interfaces.IData import IData
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.StageCapabilities import StageCapabilities
@@ -44,7 +46,7 @@ class ArucoMarkerDisplacementAnalyzer(IStreamingAnalyzer):
     def analyze_into(
         self,
         signal: Iterable[ISignalSample],
-        output_buffer: DataBuffer,
+        output_buffer: IBuffer[IData],
     ) -> ArucoMarkerDisplacementData:
         progressive_frames: list[ArucoMarkerDisplacementFrameData] = []
         baselines: dict[int, Point2D] = {}

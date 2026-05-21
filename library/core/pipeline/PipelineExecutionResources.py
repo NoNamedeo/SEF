@@ -4,8 +4,8 @@ from collections.abc import Iterable
 from threading import Lock
 from typing import Any
 
-from library.core.artifacts.DataBuffer import DataBuffer
 from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.interfaces.BufferContracts import IAbortableBuffer
 from library.core.pipeline.PipelineBuffers import PipelineBuffers
 from library.core.visualization.VisualArtifact import VisualArtifact
 
@@ -21,8 +21,8 @@ class PipelineExecutionResources:
 
     def __init__(self) -> None:
         self.frame_buffers: list[FrameBuffer] = []
-        self.signal_buffers: list[Any] = []
-        self.data_buffers: list[DataBuffer] = []
+        self.signal_buffers: list[IAbortableBuffer[Any]] = []
+        self.data_buffers: list[IAbortableBuffer[Any]] = []
         self._final_artifacts: list[VisualArtifact] = []
         self._artifact_lock = Lock()
 

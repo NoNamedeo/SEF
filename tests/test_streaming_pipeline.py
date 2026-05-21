@@ -15,6 +15,12 @@ from library.core.artifacts.Signal import Signal
 from library.core.artifacts.SignalBuffer import SignalBuffer
 from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
 from library.core.artifacts.TwoDimPointData import TwoDimPointData
+from library.core.interfaces.BufferContracts import (
+    IBuffer,
+    IBufferSubscription,
+    IFrameBuffer,
+    ISubscribableBuffer,
+)
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
@@ -92,6 +98,20 @@ def test_signal_and_data_buffers_preserve_order_for_multiple_consumers() -> None
 
     assert [point.y for point in first_data_consumer] == [1.0, 2.0]
     assert [point.y for point in second_data_consumer] == [1.0, 2.0]
+
+
+def test_buffers_satisfy_runtime_contracts() -> None:
+    frame_buffer = FrameBuffer(buffer_size=1)
+    signal_buffer = SignalBuffer(buffer_size=1)
+    data_buffer = DataBuffer(buffer_size=1)
+
+    assert isinstance(frame_buffer, IBuffer)
+    assert isinstance(frame_buffer, IFrameBuffer)
+    assert isinstance(signal_buffer, ISubscribableBuffer)
+    assert isinstance(data_buffer, ISubscribableBuffer)
+
+    signal_buffer.set_consumer_count(1)
+    assert isinstance(signal_buffer.subscribe(0), IBufferSubscription)
 
 
 def test_pipeline_runs_stream_capable_components_with_live_visualizer() -> None:
@@ -354,7 +374,7 @@ class StreamingFrameExtractor(IStreamingFrameExtractor):
         self.extract_into(buffer, BlockingFrameLatencyPolicy())
         return buffer
 
-    def extract_into(self, output_buffer: FrameBuffer, latency_policy: FrameLatencyPolicy) -> None:
+    def extract_into(self, output_buffer: IFrameBuffer, latency_policy: FrameLatencyPolicy) -> None:
         for frame_index in range(self._frame_count):
             latency_policy.publish(_frame(frame_index, frame_index), output_buffer)
         output_buffer.close()
@@ -401,7 +421,7 @@ class StreamingSignalExtractor(IStreamingSignalExtractor):
     def extract(self, buffer: FrameBuffer) -> ISignal:
         return Signal(list(self._samples(buffer)))
 
-    def extract_into(self, buffer: FrameBuffer, output_buffer: SignalBuffer) -> None:
+    def extract_into(self, buffer: IFrameBuffer, output_buffer: IBuffer[ISignalSample]) -> None:
         for sample in self._samples(buffer):
             output_buffer.put(sample)
         output_buffer.close()
@@ -424,7 +444,7 @@ class StreamingAnalyzer(IStreamingAnalyzer):
     def analyze(self, signal: ISignal) -> IData:
         return self.analyze_into(signal, DataBuffer(buffer_size=2))
 
-    def analyze_into(self, signal: Iterable[ISignalSample], output_buffer: DataBuffer) -> IData:
+    def analyze_into(self, signal: Iterable[ISignalSample], output_buffer: IBuffer[IData]) -> IData:
         x_values: list[float] = []
         y_values: list[float] = []
         for sample in signal:
