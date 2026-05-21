@@ -61,7 +61,7 @@ def build_yolo_pose_webcam_pipeline(
                 },
             )
         )
-        .add_analyzer(COCOPoseStreamAnalyzer())
+        .add_analyzer(COCOPoseStreamAnalyzer(config={"retain_frames": False}))
         .add_visualizer_for_results(
             OpenCVCOCOPoseRealtimeVisualizer(
                 config={

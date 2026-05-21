@@ -29,6 +29,7 @@ class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
     ) -> None:
         super().__init__(config)
         self._default_buffer = buffer
+        self._retain_frames = bool(self.config.get("retain_frames", False))
 
     def analyze(self, signal: ISignal) -> IData:
         output = self._default_buffer or DataBuffer()
@@ -40,17 +41,23 @@ class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
         output_buffer: DataBuffer,
     ) -> COCOPoseSequenceData:
         frames: list[COCOPoseFrameData] = []
+        frame_count = 0
         try:
             for sample in signal:
                 pose_frame = self._map_sample(sample)
-                frames.append(pose_frame)
+                frame_count += 1
+                if self._retain_frames:
+                    frames.append(pose_frame)
                 output_buffer.put(pose_frame)
         finally:
             output_buffer.close()
 
         return COCOPoseSequenceData(
             frames=frames,
-            metadata={"frames": len(frames)},
+            metadata={
+                "frames": frame_count,
+                "retained_frames": len(frames),
+            },
         )
 
     @staticmethod
@@ -61,13 +68,16 @@ class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
                 f"got {type(sample).__name__}."
             )
 
+        metadata = dict(sample.metadata)
+        frame_image = metadata.pop("frame_image", None)
+
         return COCOPoseFrameData(
             frame_index=sample.frame_index,
             skeleton=sample.skeleton,
             confidence=sample.confidence,
             centroid=sample.centroid,
             timestamp_seconds=sample.timestamp_seconds,
-            frame_size=sample.metadata.get("frame_size"),
-            frame_image=sample.metadata.get("frame_image"),
-            metadata=dict(sample.metadata),
+            frame_size=metadata.get("frame_size"),
+            frame_image=frame_image,
+            metadata=metadata,
         )

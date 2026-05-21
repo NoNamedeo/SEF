@@ -132,7 +132,7 @@ class YOLOSkeletonCOCOStreamSignalExtractor(IStreamingSignalExtractor):
             "frame_size": (int(image.shape[1]), int(image.shape[0])),
         }
         if self._include_frame_image:
-            metadata["frame_image"] = image.copy()
+            metadata["frame_image"] = image
         return metadata
 
     def load_model(self, model_name: str = "yolo11-pose.pt") -> YOLO:
