@@ -32,6 +32,9 @@ external/
 # Models
 models/
 
+# YOLO Pose models
+library/signal_extractors/YOLOPoseModels/
+
 .DS_Store
 __pycache__/
 *.pyc
