@@ -36,6 +36,9 @@ models/
 library/signal_extractors/YOLOPoseModels/
 library/YOLOPoseModels/
 
+# Datasets
+datasets/
+
 .DS_Store
 __pycache__/
 *.pyc

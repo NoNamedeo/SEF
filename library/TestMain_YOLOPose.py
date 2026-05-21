@@ -4,6 +4,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from library.visualizers.OpenCVCOCOTennisPoseRealtimeVisualizer import OpenCVCOCOTennisPoseRealtimeVisualizer
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -63,7 +65,7 @@ def build_yolo_pose_webcam_pipeline(
         )
         .add_analyzer(COCOPoseStreamAnalyzer(config={"retain_frames": False}))
         .add_visualizer_for_results(
-            OpenCVCOCOPoseRealtimeVisualizer(
+            OpenCVCOCOTennisPoseRealtimeVisualizer(
                 config={
                     "draw_source_frame": not light,
                 },
