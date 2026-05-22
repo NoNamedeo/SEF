@@ -16,10 +16,16 @@ from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingAnalyzer
+from library.core.pose.COCOSkeletonNormalizer import (
+    COCOSkeletonNormalizationConfig,
+    COCOSkeletonNormalizer,
+)
+
+DEFAULT_TENNIS_MODEL_PATH = Path(__file__).resolve().parents[2] / "models/skeleton_rf.joblib"
 
 
 class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
-    """Map COCO skeleton signal samples to visualization-ready pose data."""
+    """Classify tennis movement from normalized COCO skeletons while preserving raw pose data."""
 
     capabilities = StageCapabilities.streaming(
         stateful=False,
@@ -36,14 +42,22 @@ class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
 
     def __init__(
         self,
-        model_path: str = Path(__file__).resolve().parents[2] / "models/skeleton_rf.joblib",
+        model_path: str | Path = DEFAULT_TENNIS_MODEL_PATH,
+        model: Any | None = None,
+        normalizer: COCOSkeletonNormalizer | None = None,
         buffer: DataBuffer | None = None,
         config: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(config)
         self._default_buffer = buffer
         self._retain_frames = bool(self.config.get("retain_frames", False))
-        self._model = joblib.load(model_path)
+        self._include_normalized_skeleton = bool(self.config.get("include_normalized_skeleton", False))
+        self._model = model if model is not None else joblib.load(model_path)
+        self._normalizer = normalizer or COCOSkeletonNormalizer(
+            COCOSkeletonNormalizationConfig.from_mapping(
+                self.config.get("skeleton_normalization")
+            )
+        )
 
     def analyze(self, signal: ISignal) -> IData:
         output = self._default_buffer or DataBuffer()
@@ -83,34 +97,53 @@ class COCOPoseStreamAnalyzer(IStreamingAnalyzer):
         )
 
     def _map_sample(self, sample: ISignalSample) -> COCOPoseTennisFrameData:
-
         if not isinstance(sample, COCOSkeletonSignalSample):
             raise TypeError(
-                "COCOPoseStreamAnalyzer requires COCOSkeletonSignalSample"
+                "COCOPoseStreamAnalyzer requires COCOSkeletonSignalSample, "
+                f"got {type(sample).__name__}."
             )
 
-        skeleton = np.asarray(sample.skeleton, dtype=np.float32).flatten().reshape(1, -1)
-
-        pred_id = int(self._model.predict(skeleton)[0])
+        raw_skeleton = np.asarray(sample.skeleton, dtype=np.float32)
+        normalized = self._normalizer.normalize(raw_skeleton)
+        model_features = normalized.skeleton.flatten().reshape(1, -1)
+        pred_id = int(self._model.predict(model_features)[0])
         movement = self.LABEL_MAP.get(pred_id, "unknown")
+        prediction_confidence = self._prediction_confidence(model_features)
 
         metadata = dict(sample.metadata)
         frame_image = metadata.pop("frame_image", None)
+        metadata.update(
+            {
+                "predicted_class_id": pred_id,
+                "prediction_input": "normalized_coco_skeleton",
+                "skeleton_normalization": normalized.metadata(),
+            }
+        )
+        if prediction_confidence is not None:
+            metadata["prediction_confidence"] = prediction_confidence
+        if self._include_normalized_skeleton:
+            metadata["normalized_skeleton"] = normalized.skeleton.copy()
 
         return COCOPoseTennisFrameData(
             frame_index=sample.frame_index,
-            skeleton=sample.skeleton,
+            skeleton=raw_skeleton,
             confidence=sample.confidence,
             centroid=sample.centroid,
             tennis_movement=movement,
             timestamp_seconds=sample.timestamp_seconds,
             frame_size=metadata.get("frame_size"),
             frame_image=frame_image,
-            metadata={
-                **metadata,
-                "predicted_class_id": pred_id,
-            },
+            metadata=metadata,
         )
+
+    def _prediction_confidence(self, model_features: np.ndarray) -> float | None:
+        predict_proba = getattr(self._model, "predict_proba", None)
+        if not callable(predict_proba):
+            return None
+        probabilities = np.asarray(predict_proba(model_features), dtype=np.float32)
+        if probabilities.ndim != 2 or probabilities.shape[0] == 0 or probabilities.shape[1] == 0:
+            return None
+        return float(np.max(probabilities[0]))
 
     @staticmethod
     def _abort_upstream(signal: Iterable[ISignalSample]) -> None:

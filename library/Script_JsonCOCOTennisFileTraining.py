@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 from tqdm import tqdm
 from ultralytics import YOLO
 
+from library.core.pose.COCOSkeletonNormalizer import (
+    COCOSkeletonNormalizationConfig,
+    COCOSkeletonNormalizer,
+)
 from library.Trainer_class_COCOSkeletonTennis import Trainer_class_COCOSkeletonTennis
 
 # ----------------------------
@@ -20,11 +23,6 @@ LABEL_MAP = {
     "ready_position": 2,
     "serve": 3,
 }
-
-LEFT_SHOULDER = 5
-RIGHT_SHOULDER = 6
-LEFT_HIP = 11
-RIGHT_HIP = 12
 
 # ----------------------------
 # PATHS (relativi al progetto)
@@ -163,6 +161,7 @@ def build_dataset():
 
     print(f"[SAVED] {OUTPUT_FILE}")
 
+
 def normalize_skeleton(
     skeleton: list | np.ndarray,
     *,
@@ -171,104 +170,31 @@ def normalize_skeleton(
     align_rotation: bool = False,
     min_scale: float = 1e-6,
 ) -> np.ndarray:
+    normalizer = COCOSkeletonNormalizer(
+        COCOSkeletonNormalizationConfig(
+            center_on_pelvis=center_on_pelvis,
+            normalize_scale=normalize_scale,
+            align_rotation=align_rotation,
+            min_scale=min_scale,
+        )
+    )
+    return normalizer.normalize(skeleton).skeleton
 
-    skeleton = np.asarray(skeleton, dtype=np.float32).copy()
-
-    # ----------------------------
-    # 1. PELVIS CENTERING
-    # ----------------------------
-    pelvis_center = _pelvis_center(skeleton)
-
-    if pelvis_center is not None and center_on_pelvis:
-        skeleton -= pelvis_center
-
-    # ----------------------------
-    # 2. SCALE NORMALIZATION (TORSO)
-    # ----------------------------
-    torso_scale = _torso_scale(skeleton)
-
-    if torso_scale is not None and torso_scale > min_scale and normalize_scale:
-        skeleton /= torso_scale
-
-    # ----------------------------
-    # 3. ROTATION ALIGNMENT (optional)
-    # ----------------------------
-    if align_rotation:
-        angle = _rotation_angle(skeleton)
-
-        if angle is not None:
-            skeleton = _rotate_skeleton(skeleton, -angle)
-
-    return skeleton
-
-
-# =========================================================
-# INTERNAL HELPERS (identici alla tua pipeline streaming)
-# =========================================================
-
-def _pelvis_center(skeleton: np.ndarray):
-    lh = skeleton[LEFT_HIP]
-    rh = skeleton[RIGHT_HIP]
-
-    if _invalid(lh) or _invalid(rh):
-        return None
-
-    return (lh + rh) / 2.0
-
-
-def _torso_scale(skeleton: np.ndarray):
-    ls = skeleton[LEFT_SHOULDER]
-    rs = skeleton[RIGHT_SHOULDER]
-    lh = skeleton[LEFT_HIP]
-    rh = skeleton[RIGHT_HIP]
-
-    if _invalid(ls) or _invalid(rs) or _invalid(lh) or _invalid(rh):
-        return None
-
-    shoulder_center = (ls + rs) / 2.0
-    hip_center = (lh + rh) / 2.0
-
-    return float(np.linalg.norm(shoulder_center - hip_center))
-
-
-def _rotation_angle(skeleton: np.ndarray):
-    ls = skeleton[LEFT_SHOULDER]
-    rs = skeleton[RIGHT_SHOULDER]
-
-    if _invalid(ls) or _invalid(rs):
-        return None
-
-    delta = rs - ls
-    return float(np.arctan2(delta[1], delta[0]))
-
-
-def _rotate_skeleton(skeleton: np.ndarray, angle: float):
-    c = np.cos(angle)
-    s = np.sin(angle)
-
-    R = np.array([
-        [c, -s],
-        [s,  c]
-    ], dtype=np.float32)
-
-    return skeleton @ R.T
-
-
-def _invalid(point: np.ndarray) -> bool:
-    return np.all(point == 0)
 
 # ----------------------------
 # MAIN
 # ----------------------------
 
+
 def train_model():
     trainer = Trainer_class_COCOSkeletonTennis(
         json_path=OUTPUT_FILE,
-        model_output_path= BASE_DIR / "models/skeleton_rf.joblib",
+        model_output_path=BASE_DIR / "models/skeleton_rf.joblib",
     )
 
     trainer.train()
     trainer.save_model()
+
 
 if __name__ == "__main__":
     """Classe inutile mi serviva solo per costruire il json di training per COCO tennis"""

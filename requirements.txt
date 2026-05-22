@@ -6,3 +6,5 @@ setuptools==82.0.1
 streamlit==1.56.0
 streamlit-drawable-canvas==0.9.3
 ultralytics
+joblib
+scikit-learn

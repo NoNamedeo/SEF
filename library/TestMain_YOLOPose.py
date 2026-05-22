@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import sys
 from pathlib import Path
 
+from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.visualizers.OpenCVCOCOTennisPoseRealtimeVisualizer import OpenCVCOCOTennisPoseRealtimeVisualizer
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
 
 # Script entrypoint: package imports need the project root when run as `python library/...`.
 from library.analyzers.COCOPoseStreamAnalyzer import COCOPoseStreamAnalyzer  # noqa: E402
@@ -40,8 +47,8 @@ def build_yolo_pose_webcam_pipeline(
         FluentPipelineBuilder()
         .with_stream_runtime(
             {
-                "frame_buffer_size": 2,
-                "signal_buffer_size": 2,
+                "frame_buffer_size": 1,
+                "signal_buffer_size": 1,
                 "latency_policy": {"name": "drop_oldest"},
             }
         )
@@ -90,7 +97,10 @@ def TestMain_YOLOPose() -> None:
 
     orchestrator = PipelineOrchestrator()
     try:
-        orchestrator.run(context, pipeline_id="yolo-pose-webcam")
+        outputs = orchestrator.run(context, pipeline_id="yolo-pose-webcam")
+
+        print("Results summary:  \n")
+        print("Latency policy metrics: ", outputs.metadata.execution_metadata["latency_policy_metrics"], ".\n")
     finally:
         orchestrator.shutdown()
 
