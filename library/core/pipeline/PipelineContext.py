@@ -13,6 +13,7 @@ from library.core.interfaces.ISignalCleaner import ISignalCleaner
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.interfaces.IVisualizer import IVisualizer
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
+from library.core.pipeline.PipelineErrors import PipelineContextError
 from library.core.pipeline.StreamRuntimeConfig import StreamRuntimeConfig
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
 
@@ -80,9 +81,9 @@ class PipelineContext:
 
     def __post_init__(self) -> None:
         if self.frame_extractor is None:
-            raise ValueError("PipelineContext requires a frame_extractor.")
+            raise PipelineContextError("PipelineContext requires a frame_extractor.", path="frame_extractor")
         if self.signal_extractor is None:
-            raise ValueError("PipelineContext requires a signal_extractor.")
+            raise PipelineContextError("PipelineContext requires a signal_extractor.", path="signal_extractor")
 
         object.__setattr__(
             self,
@@ -115,14 +116,20 @@ class PipelineContext:
             self._visualizer_bindings_tuple(self.visualizer_bindings),
         )
         if not isinstance(self.intermediate_frame_capture, IntermediateFrameCaptureConfig):
-            raise ValueError("PipelineContext field 'intermediate_frame_capture' must be an IntermediateFrameCaptureConfig.")
+            raise PipelineContextError(
+                "PipelineContext field 'intermediate_frame_capture' must be an IntermediateFrameCaptureConfig.",
+                path="intermediate_frame_capture",
+            )
         object.__setattr__(
             self,
             "intermediate_frame_visualizers",
             self._optional_tuple("intermediate_frame_visualizers", self.intermediate_frame_visualizers),
         )
         if not isinstance(self.stream_runtime, StreamRuntimeConfig):
-            raise ValueError("PipelineContext field 'stream_runtime' must be a StreamRuntimeConfig.")
+            raise PipelineContextError(
+                "PipelineContext field 'stream_runtime' must be a StreamRuntimeConfig.",
+                path="stream_runtime",
+            )
         self.stream_runtime.validate()
         object.__setattr__(self, "source_config", self._source_config_mapping(self.source_config))
 
@@ -130,23 +137,26 @@ class PipelineContext:
     def _required_tuple(name: str, values: Sequence) -> tuple:
         items = PipelineContext._optional_tuple(name, values)
         if not items:
-            raise ValueError(f"PipelineContext requires at least one {name[:-1]}.")
+            raise PipelineContextError(f"PipelineContext requires at least one {name[:-1]}.", path=name)
         return items
 
     @staticmethod
     def _optional_tuple(name: str, values: Sequence | None) -> tuple:
         if values is None:
-            raise ValueError(f"PipelineContext field '{name}' cannot be None.")
+            raise PipelineContextError(f"PipelineContext field '{name}' cannot be None.", path=name)
         items = tuple(values)
         if any(item is None for item in items):
-            raise ValueError(f"PipelineContext field '{name}' cannot contain None.")
+            raise PipelineContextError(f"PipelineContext field '{name}' cannot contain None.", path=name)
         return items
 
     @staticmethod
     def _visualizer_bindings_tuple(values: Sequence[VisualizerBinding] | None) -> tuple[VisualizerBinding, ...]:
         items = PipelineContext._optional_tuple("visualizer_bindings", values)
         if any(not isinstance(item, VisualizerBinding) for item in items):
-            raise ValueError("PipelineContext field 'visualizer_bindings' must contain VisualizerBinding instances.")
+            raise PipelineContextError(
+                "PipelineContext field 'visualizer_bindings' must contain VisualizerBinding instances.",
+                path="visualizer_bindings",
+            )
         return items
 
     @staticmethod
@@ -155,7 +165,10 @@ class PipelineContext:
     ) -> tuple[IFrameBufferProcessor, ...]:
         items = PipelineContext._optional_tuple("frame_processors", values)
         if any(not isinstance(item, IFrameBufferProcessor) for item in items):
-            raise ValueError("PipelineContext field 'frame_processors' must contain IFrameBufferProcessor instances.")
+            raise PipelineContextError(
+                "PipelineContext field 'frame_processors' must contain IFrameBufferProcessor instances.",
+                path="frame_processors",
+            )
         return items
 
     @staticmethod
@@ -164,7 +177,10 @@ class PipelineContext:
     ) -> tuple[IFrameExporter, ...]:
         items = PipelineContext._optional_tuple("frame_exporters", values)
         if any(not isinstance(item, IFrameExporter) for item in items):
-            raise ValueError("PipelineContext field 'frame_exporters' must contain IFrameExporter instances.")
+            raise PipelineContextError(
+                "PipelineContext field 'frame_exporters' must contain IFrameExporter instances.",
+                path="frame_exporters",
+            )
         return items
 
     @staticmethod
@@ -172,5 +188,5 @@ class PipelineContext:
         if value is None:
             return {}
         if not isinstance(value, Mapping):
-            raise ValueError("PipelineContext field 'source_config' must be a mapping.")
+            raise PipelineContextError("PipelineContext field 'source_config' must be a mapping.", path="source_config")
         return deepcopy(dict(value))

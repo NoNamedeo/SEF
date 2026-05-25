@@ -6,6 +6,7 @@ from typing import Any, Mapping
 
 from library.core.artifacts.Frame import Frame
 from library.core.interfaces.BufferContracts import IFrameBuffer
+from library.core.pipeline.PipelineErrors import LatencyPolicyError
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,13 +21,16 @@ class LatencyPolicyConfig:
         if value is None:
             return cls()
         if not isinstance(value, Mapping):
-            raise ValueError("latency_policy must be a mapping.")
+            raise LatencyPolicyError("latency_policy must be a mapping.", path="pipeline.runtime.latency_policy")
         name = str(value.get("name", "blocking")).strip().lower()
         if not name:
-            raise ValueError("latency_policy.name cannot be empty.")
+            raise LatencyPolicyError("latency_policy.name cannot be empty.", path="pipeline.runtime.latency_policy.name")
         params = value.get("params", {})
         if not isinstance(params, Mapping):
-            raise ValueError("latency_policy.params must be a mapping.")
+            raise LatencyPolicyError(
+                "latency_policy.params must be a mapping.",
+                path="pipeline.runtime.latency_policy.params",
+            )
         return cls(name=name, params=dict(params))
 
     def create(self) -> FrameLatencyPolicy:
@@ -39,9 +43,10 @@ class LatencyPolicyConfig:
             return DropOldestFrameLatencyPolicy()
         if self.name == "adaptive_sampling":
             return AdaptiveSamplingFrameLatencyPolicy.from_mapping(self.params)
-        raise ValueError(
+        raise LatencyPolicyError(
             "Unsupported latency policy "
-            f"'{self.name}'. Supported values: blocking, drop_newest, drop_oldest, adaptive_sampling."
+            f"'{self.name}'. Supported values: blocking, drop_newest, drop_oldest, adaptive_sampling.",
+            path="pipeline.runtime.latency_policy.name",
         )
 
     def as_dict(self) -> dict[str, Any]:
@@ -135,11 +140,20 @@ class AdaptiveSamplingFrameLatencyPolicy(FrameLatencyPolicy):
         low_watermark: float = 0.25,
     ) -> None:
         if min_interval <= 0:
-            raise ValueError("min_interval must be greater than 0.")
+            raise LatencyPolicyError(
+                "min_interval must be greater than 0.",
+                path="pipeline.runtime.latency_policy.params.min_interval",
+            )
         if max_interval < min_interval:
-            raise ValueError("max_interval must be greater than or equal to min_interval.")
+            raise LatencyPolicyError(
+                "max_interval must be greater than or equal to min_interval.",
+                path="pipeline.runtime.latency_policy.params.max_interval",
+            )
         if not (0.0 <= low_watermark <= high_watermark <= 1.0):
-            raise ValueError("watermarks must satisfy 0 <= low_watermark <= high_watermark <= 1.")
+            raise LatencyPolicyError(
+                "watermarks must satisfy 0 <= low_watermark <= high_watermark <= 1.",
+                path="pipeline.runtime.latency_policy.params",
+            )
         self.min_interval = int(min_interval)
         self.max_interval = int(max_interval)
         self.high_watermark = float(high_watermark)
@@ -152,10 +166,22 @@ class AdaptiveSamplingFrameLatencyPolicy(FrameLatencyPolicy):
     @classmethod
     def from_mapping(cls, params: Mapping[str, Any]) -> AdaptiveSamplingFrameLatencyPolicy:
         return cls(
-            min_interval=int(params.get("min_interval", 1)),
-            max_interval=int(params.get("max_interval", 8)),
-            high_watermark=float(params.get("high_watermark", 0.75)),
-            low_watermark=float(params.get("low_watermark", 0.25)),
+            min_interval=_coerce_int(
+                params.get("min_interval", 1),
+                "pipeline.runtime.latency_policy.params.min_interval",
+            ),
+            max_interval=_coerce_int(
+                params.get("max_interval", 8),
+                "pipeline.runtime.latency_policy.params.max_interval",
+            ),
+            high_watermark=_coerce_float(
+                params.get("high_watermark", 0.75),
+                "pipeline.runtime.latency_policy.params.high_watermark",
+            ),
+            low_watermark=_coerce_float(
+                params.get("low_watermark", 0.25),
+                "pipeline.runtime.latency_policy.params.low_watermark",
+            ),
         )
 
     def publish(self, frame: Frame, output_buffer: IFrameBuffer) -> bool:
@@ -189,3 +215,17 @@ class AdaptiveSamplingFrameLatencyPolicy(FrameLatencyPolicy):
             self.current_interval = min(self.max_interval, self.current_interval + 1)
         elif fill_ratio <= self.low_watermark:
             self.current_interval = max(self.min_interval, self.current_interval - 1)
+
+
+def _coerce_int(value: Any, path: str) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise LatencyPolicyError(f"{path} must be an integer.", path=path, cause=exc) from exc
+
+
+def _coerce_float(value: Any, path: str) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise LatencyPolicyError(f"{path} must be a number.", path=path, cause=exc) from exc

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pprint import pformat
+from textwrap import dedent
 from typing import Any, Mapping
 
 from library.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
@@ -34,7 +35,9 @@ class PipelineCodeExporter:
     def export_config(export_config: Mapping[str, Any]) -> str:
         """Return executable Python source for an already-built export config."""
         config_literal = pformat(dict(export_config), width=100, sort_dicts=False)
-        return f'''from __future__ import annotations
+        template = dedent(
+            '''\
+                from __future__ import annotations
 
                 from typing import Any
 
@@ -44,8 +47,8 @@ class PipelineCodeExporter:
                 from library.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
 
 
-                PIPELINE_EXPORT: dict[str, Any] = {config_literal}
-                PIPELINE_CONFIG: dict[str, Any] = {{"pipeline": PIPELINE_EXPORT["pipeline"]}}
+                PIPELINE_EXPORT: dict[str, Any] = __PIPELINE_EXPORT__
+                PIPELINE_CONFIG: dict[str, Any] = {"pipeline": PIPELINE_EXPORT["pipeline"]}
 
 
                 def build_registry() -> PluginRegistry:
@@ -79,15 +82,17 @@ class PipelineCodeExporter:
 
                 def run_pipeline(registry: PluginRegistry | None = None):
                     """Execute the rebuilt pipeline through the public orchestrator facade."""
-                    execution = PIPELINE_EXPORT.get("execution", {{}})
+                    execution = PIPELINE_EXPORT.get("execution", {})
                     return PipelineOrchestrator().run(
                         build_context(registry),
                         pipeline_id=execution.get("pipeline_id"),
-                        execution_metadata=execution.get("metadata", {{}}),
+                        execution_metadata=execution.get("metadata", {}),
                     )
 
 
                 if __name__ == "__main__":
                     outputs = run_pipeline()
-                    print(f"{{len(outputs.results)}} result(s), {{outputs.artifact_count}} artifact(s)")
+                    print(f"{len(outputs.results)} result(s), {outputs.artifact_count} artifact(s)")
                 '''
+        ).strip()
+        return template.replace("__PIPELINE_EXPORT__", config_literal) + "\n"

@@ -7,7 +7,12 @@ from typing import Any
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
 from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineErrors import PipelineConfigurationError
+from library.core.pipeline.PipelineErrors import (
+    ConfigSchemaError,
+    PipelineConfigurationError,
+    PluginConstructionError,
+    PluginResolutionError,
+)
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.pipeline.StreamRuntimeConfig import StreamRuntimeConfig
 from library.core.pipeline.VisualizerBinding import VisualizerBinding
@@ -89,10 +94,10 @@ class ConfigPipelineBuilder:
 
     # ── Public API ───────────────────────────────────────────────────────────
 
-    def build_context(self, config: dict) -> PipelineContext:
-        cfg = self._required_mapping(config, "pipeline")
-
+    def build_context(self, config: Mapping[str, Any]) -> PipelineContext:
         try:
+            root = self._ensure_mapping(config, "config")
+            cfg = self._required_mapping(root, "pipeline")
             return PipelineContext(
                 frame_extractor=self._create(
                     PluginCategory.FRAME_EXTRACTOR,
@@ -133,7 +138,7 @@ class ConfigPipelineBuilder:
         except PipelineConfigurationError:
             raise
         except Exception as exc:
-            raise PipelineConfigurationError(f"Invalid pipeline configuration: {exc}") from exc
+            raise PipelineConfigurationError(f"Invalid pipeline configuration: {exc}", cause=exc) from exc
 
     # ── Internals ────────────────────────────────────────────────────────────
 
@@ -141,15 +146,33 @@ class ConfigPipelineBuilder:
         name = self._required_string(cfg, f"{path}.name")
         params = cfg.get("params", {})
         if not isinstance(params, dict):
-            raise PipelineConfigurationError(f"'{path}.params' must be a mapping.")
+            raise ConfigSchemaError(f"'{path}.params' must be a mapping.", path=f"{path}.params")
         try:
             return self._registry.create(category, name, **params)
         except KeyError as exc:
-            raise PipelineConfigurationError(f"Unknown plugin '{name}' for '{path}' in category '{category}'.") from exc
+            available = [definition.name for definition in self._registry.list(category)]
+            raise PluginResolutionError(
+                category=str(category),
+                name=name,
+                path=path,
+                available=available,
+                cause=exc,
+            ) from exc
         except TypeError as exc:
-            raise PipelineConfigurationError(f"Invalid params for plugin '{name}' at '{path}': {exc}") from exc
+            raise PluginConstructionError(
+                category=str(category),
+                name=name,
+                path=path,
+                cause=exc,
+                invalid_params=True,
+            ) from exc
         except Exception as exc:
-            raise PipelineConfigurationError(f"Failed to create plugin '{name}' at '{path}': {exc}") from exc
+            raise PluginConstructionError(
+                category=str(category),
+                name=name,
+                path=path,
+                cause=exc,
+            ) from exc
 
     def _frame_processors(self, cfg: dict[str, Any]) -> list[IFrameBufferProcessor]:
         entries = self._optional_list(cfg, "frame_processors", "pipeline.frame_processors")
@@ -163,8 +186,9 @@ class ConfigPipelineBuilder:
             elif processor_type == "frame_buffer":
                 processors.append(self._create(PluginCategory.FRAME_BUFFER_PROCESSOR, entry, path))
             else:
-                raise PipelineConfigurationError(
-                    f"'{path}.processor_type' must be 'single_frame' or 'frame_buffer'."
+                raise ConfigSchemaError(
+                    f"'{path}.processor_type' must be 'single_frame' or 'frame_buffer'.",
+                    path=f"{path}.processor_type",
                 )
         return processors
 
@@ -210,7 +234,10 @@ class ConfigPipelineBuilder:
                 return IntermediateFrameCaptureConfig.from_mapping({"enabled": True})
             return IntermediateFrameCaptureConfig.disabled()
         if not isinstance(section, dict):
-            raise PipelineConfigurationError("'pipeline.intermediate_frames' must be a mapping.")
+            raise ConfigSchemaError(
+                "'pipeline.intermediate_frames' must be a mapping.",
+                path="pipeline.intermediate_frames",
+            )
         capture_config = {key: value for key, value in section.items() if key != "visualizers"}
         if not capture_config and section.get("visualizers"):
             capture_config["enabled"] = True
@@ -255,19 +282,25 @@ class ConfigPipelineBuilder:
         if section is None:
             return []
         if not isinstance(section, dict):
-            raise PipelineConfigurationError("'pipeline.intermediate_frames' must be a mapping.")
+            raise ConfigSchemaError(
+                "'pipeline.intermediate_frames' must be a mapping.",
+                path="pipeline.intermediate_frames",
+            )
         value = section.get("visualizers", [])
         if not isinstance(value, list):
-            raise PipelineConfigurationError("'pipeline.intermediate_frames.visualizers' must be a list.")
+            raise ConfigSchemaError(
+                "'pipeline.intermediate_frames.visualizers' must be a list.",
+                path="pipeline.intermediate_frames.visualizers",
+            )
         return value
 
     @staticmethod
     def _result_indices(config: dict[str, Any], path: str) -> tuple[int, ...]:
         value = config.get("result_indices")
         if not isinstance(value, list):
-            raise PipelineConfigurationError(f"'{path}' must be a list of non-negative integers.")
+            raise ConfigSchemaError(f"'{path}' must be a list of non-negative integers.", path=path)
         if any(not isinstance(index, int) or index < 0 for index in value):
-            raise PipelineConfigurationError(f"'{path}' must contain only non-negative integers.")
+            raise ConfigSchemaError(f"'{path}' must contain only non-negative integers.", path=path)
         return tuple(value)
 
     @staticmethod
@@ -278,7 +311,7 @@ class ConfigPipelineBuilder:
     ) -> dict[str, Any]:
         display_path = path or key
         if key not in config:
-            raise PipelineConfigurationError(f"Missing required config section '{display_path}'.")
+            raise ConfigSchemaError(f"Missing required config section '{display_path}'.", path=display_path)
         return ConfigPipelineBuilder._ensure_mapping(config[key], display_path)
 
     @staticmethod
@@ -289,10 +322,10 @@ class ConfigPipelineBuilder:
     ) -> list[dict[str, Any]]:
         display_path = path or key
         if key not in config:
-            raise PipelineConfigurationError(f"Missing required config section '{display_path}'.")
+            raise ConfigSchemaError(f"Missing required config section '{display_path}'.", path=display_path)
         value = config[key]
         if not isinstance(value, list):
-            raise PipelineConfigurationError(f"'{display_path}' must be a list.")
+            raise ConfigSchemaError(f"'{display_path}' must be a list.", path=display_path)
         return value
 
     @staticmethod
@@ -304,21 +337,21 @@ class ConfigPipelineBuilder:
         display_path = path or key
         value = config.get(key, [])
         if not isinstance(value, list):
-            raise PipelineConfigurationError(f"'{display_path}' must be a list.")
+            raise ConfigSchemaError(f"'{display_path}' must be a list.", path=display_path)
         return value
 
     @staticmethod
     def _required_string(config: dict[str, Any], path: str) -> str:
         key = path.rsplit(".", maxsplit=1)[-1]
         if key not in config:
-            raise PipelineConfigurationError(f"Missing required config section '{path}'.")
+            raise ConfigSchemaError(f"Missing required config section '{path}'.", path=path)
         value = config[key]
         if not isinstance(value, str) or not value:
-            raise PipelineConfigurationError(f"'{path}' must be a non-empty string.")
+            raise ConfigSchemaError(f"'{path}' must be a non-empty string.", path=path)
         return value
 
     @staticmethod
     def _ensure_mapping(value: Any, path: str) -> dict[str, Any]:
-        if not isinstance(value, dict):
-            raise PipelineConfigurationError(f"'{path}' must be a mapping.")
-        return value
+        if not isinstance(value, Mapping):
+            raise ConfigSchemaError(f"'{path}' must be a mapping.", path=path)
+        return dict(value)

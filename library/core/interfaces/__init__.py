@@ -12,6 +12,7 @@ _EXPORTS = {
     "IEventEmitter": ("library.core.interfaces.IEventEmitter", "IEventEmitter"),
     "IEventBus": ("library.core.interfaces.pipeline.IEventBus", "IEventBus"),
     "IFrameBuffer": ("library.core.interfaces.BufferContracts", "IFrameBuffer"),
+    "ILiveAnalyzer": ("library.core.interfaces.ILiveAnalyzer", "ILiveAnalyzer"),
     "ISingleFrameProcessor": ("library.core.interfaces.ISingleFrameProcessor", "ISingleFrameProcessor"),
     "IFrameExtractor": ("library.core.interfaces.IFrameExtractor", "IFrameExtractor"),
     "IFrameBufferProcessor": ("library.core.interfaces.IFrameBufferProcessor", "IFrameBufferProcessor"),
@@ -30,6 +31,10 @@ _EXPORTS = {
         "library.core.interfaces.pipeline.IPipelineMonitor",
         "IPipelineMonitor",
     ),
+    "IPipelineOutputStore": (
+        "library.core.interfaces.pipeline.IPipelineOutputStore",
+        "IPipelineOutputStore",
+    ),
     "IPipelineFactory": (
         "library.core.interfaces.pipeline.IPipelineFactory",
         "IPipelineFactory",
@@ -42,9 +47,11 @@ _EXPORTS = {
         "library.core.interfaces.pipeline.IPipelineValidator",
         "IPipelineValidator",
     ),
+    "IRetryPolicy": ("library.core.interfaces.pipeline.IRetryPolicy", "IRetryPolicy"),
     "ISignal": ("library.core.interfaces.ISignal", "ISignal"),
     "ISignalCleaner": ("library.core.interfaces.ISignalCleaner", "ISignalCleaner"),
     "ISignalExtractor": ("library.core.interfaces.ISignalExtractor", "ISignalExtractor"),
+    "ISignalSample": ("library.core.interfaces.ISignalSample", "ISignalSample"),
     "ISubscribableBuffer": ("library.core.interfaces.BufferContracts", "ISubscribableBuffer"),
     "IVisualizer": ("library.core.interfaces.IVisualizer", "IVisualizer"),
 }
@@ -62,3 +69,12 @@ def __getattr__(name: str):
     value = getattr(module, attr_name)
     globals()[name] = value
     return value
+
+
+def __dir__() -> list[str]:
+    return sorted(__all__)
+
+
+for _name in ("ISignalSample", "StageCapabilities"):
+    __getattr__(_name)
+del _name

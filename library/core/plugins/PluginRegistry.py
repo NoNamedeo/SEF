@@ -146,11 +146,11 @@ def create_builtin_registry() -> PluginRegistry:
     from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
     from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
     from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
+    from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+    from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor
     from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
     from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
     from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
-    from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-    from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor
     from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
     from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
     from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
