@@ -8,10 +8,10 @@ directional edges and contract validation affordances.
 
 from __future__ import annotations
 
+import base64
 import json
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 from ui.components.pipeline_canvas_models import PipelineCanvasModel
 
@@ -27,8 +27,10 @@ def render_pipeline_canvas(model: PipelineCanvasModel, *, height: int = 620) -> 
     }
     payload = model.to_payload()
     payload["theme"] = theme
-    components.html(
-        _canvas_html(payload),
+    html = _canvas_html(payload)
+    src = "data:text/html;base64," + base64.b64encode(html.encode("utf-8")).decode("ascii")
+    st.iframe(
+        src,
         height=height,
     )
 
@@ -466,8 +468,17 @@ def _canvas_html(payload: dict) -> str:
         </div>
         <div class="viewport" id="viewport">
           <div class="grid"></div>
-          <div class="surface" id="surface" style="width:{payload["surface_width"]}px;height:{payload["surface_height"]}px;">
-            <svg id="edges" width="{payload["surface_width"]}" height="{payload["surface_height"]}" viewBox="0 0 {payload["surface_width"]} {payload["surface_height"]}">
+          <div
+            class="surface"
+            id="surface"
+            style="width:{payload["surface_width"]}px;height:{payload["surface_height"]}px;"
+          >
+            <svg
+              id="edges"
+              width="{payload["surface_width"]}"
+              height="{payload["surface_height"]}"
+              viewBox="0 0 {payload["surface_width"]} {payload["surface_height"]}"
+            >
               <defs>
                 <!-- troppo grandi  <marker id="arrowhead-main" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
                   <polygon points="0 0, 120 3, 0 4" fill="color-mix(in srgb, var(--primary) 44%, var(--text))"></polygon>
@@ -639,15 +650,27 @@ def _canvas_html(payload: dict) -> str:
             <div class="details">
               <div class="detail-group">
                 <strong>Input type(s)</strong>
-                <div class="detail-list">${{node.details.input_types.map(item => `<span class="detail-token">${{item}}</span>`).join("") || "<span class='detail-token'>none</span>"}}</div>
+                <div class="detail-list">${{
+                  node.details.input_types
+                    .map(item => `<span class="detail-token">${{item}}</span>`)
+                    .join("") || "<span class='detail-token'>none</span>"
+                }}</div>
               </div>
               <div class="detail-group">
                 <strong>Output type(s)</strong>
-                <div class="detail-list">${{node.details.output_types.map(item => `<span class="detail-token">${{item}}</span>`).join("") || "<span class='detail-token'>none</span>"}}</div>
+                <div class="detail-list">${{
+                  node.details.output_types
+                    .map(item => `<span class="detail-token">${{item}}</span>`)
+                    .join("") || "<span class='detail-token'>none</span>"
+                }}</div>
               </div>
               <div class="detail-group">
                 <strong>Emitted events</strong>
-                <div class="detail-list">${{node.details.emitted_events.map(item => `<span class="detail-token">${{item}}</span>`).join("") || "<span class='detail-token'>none observed</span>"}}</div>
+                <div class="detail-list">${{
+                  node.details.emitted_events
+                    .map(item => `<span class="detail-token">${{item}}</span>`)
+                    .join("") || "<span class='detail-token'>none observed</span>"
+                }}</div>
               </div>
               ${{hasExecution ? `
                 <div class="detail-group">
@@ -898,7 +921,11 @@ def _canvas_html(payload: dict) -> str:
               if (!dropTarget) {{
                 showTooltip(event.clientX - 120, event.clientY - 18, "Drop on an input port to validate the contract.");
               }} else if (dropTarget.dataset.type !== state.tempConnection.sourceType) {{
-                showTooltip(event.clientX - 120, event.clientY - 18, `${{state.tempConnection.sourceType}} cannot connect to ${{dropTarget.dataset.type}}.`);
+                showTooltip(
+                  event.clientX - 120,
+                  event.clientY - 18,
+                  `${{state.tempConnection.sourceType}} cannot connect to ${{dropTarget.dataset.type}}.`
+                );
               }} else {{
                 createLocalEdge(port, dropTarget);
                 showTooltip(event.clientX - 120, event.clientY - 18, "Connection added to the workspace.");

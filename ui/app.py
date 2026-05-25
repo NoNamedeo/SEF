@@ -25,20 +25,26 @@ from library.core.events.PipelineLifecycleEvent import PipelineLifecycleEvent  #
 from library.core.plugins.PluginRegistry import PluginCategory  # noqa: E402
 from ui.components.composer_geometry import render_video_and_geometry  # noqa: E402
 from ui.components.composer_stage_editor import render_stage_parameter_editor  # noqa: E402
+from ui.components.execution_plan_viewer import render_execution_plan  # noqa: E402
 from ui.components.pipeline_canvas import render_pipeline_canvas  # noqa: E402
 from ui.components.pipeline_outputs_viewer import render_pipeline_outputs  # noqa: E402
 from ui.components.pipeline_status_dashboard import (  # noqa: E402
     render_event_timeline,
     render_pipeline_status_dashboard,
 )
+from ui.components.realtime_preview_viewer import render_realtime_preview  # noqa: E402
+from ui.services.execution_plan_service import build_execution_plan_preview, summarize_execution_plan  # noqa: E402
 from ui.services.pipeline_builder_service import (  # noqa: E402
     apply_aruco_preset,
     apply_dense_flow_preset,
     apply_multi_object_preset,
     apply_tracking_preset,
+    apply_yolo_pose_preset,
     current_pipeline_config_dict,
     generated_pipeline_config_dict,
+    has_manual_config_override,
     initialise_builder_state,
+    main_thread_visualizer_names,
     stage_labels,
     sync_mode_with_components,
     validate_runtime_requirements,
@@ -55,16 +61,32 @@ from ui.services.pipeline_service import (  # noqa: E402
     cancel_async,
     clear_event_records,
     configure_branching_rules,
+    configure_runner,
     context_from_config,
     dispatch_trigger,
     event_integration_status,
     event_records,
     pipeline_outputs,
     run_sync,
+    runner_parallelism,
     snapshots,
     submit_async,
 )
+from ui.services.realtime_preview_service import (  # noqa: E402
+    config_has_streamlit_realtime_visualizer,
+    preview_has_content,
+    reset_sink,
+    streamlit_realtime_visualizer_names,
+    with_realtime_sink_ids,
+)
 from ui.services.registry_bootstrap import get_registry  # noqa: E402
+from ui.services.ui_log_service import (  # noqa: E402
+    available_log_levels,
+    clear_log_records,
+    install_ui_log_capture,
+    log_records,
+    set_capture_level,
+)
 from ui.state import session  # noqa: E402
 from ui.state.canvas import (  # noqa: E402
     ensure_canvas_state,
@@ -84,6 +106,7 @@ st.set_page_config(
 
 
 def main() -> None:
+    install_ui_log_capture()
     registry = get_registry()
     ensure_canvas_state()
     initialise_builder_state(registry)
@@ -92,10 +115,13 @@ def main() -> None:
     render_sidebar(registry)
     render_header(registry)
 
-    tab_compose, tab_execute, tab_registry, tab_config = st.tabs(["Composer", "Run & Monitor", "Registry", "Config"])
+    tab_compose, tab_plan, tab_execute, tab_registry, tab_config = st.tabs(["Composer", "Plan & Logs", "Run & Monitor", "Registry", "Config"])
 
     with tab_compose:
         render_composer(registry)
+
+    with tab_plan:
+        render_plan_and_logs(registry)
 
     with tab_execute:
         render_execution(registry)
@@ -135,6 +161,9 @@ def render_sidebar(registry) -> None:
         if st.button("ArUco wall motion", width="stretch"):
             apply_aruco_preset()
             st.rerun()
+        if st.button("YOLO pose realtime", width="stretch"):
+            apply_yolo_pose_preset()
+            st.rerun()
 
         st.divider()
         counts = {category: len(registry.list(category)) for category in PluginCategory}
@@ -155,8 +184,8 @@ def render_sidebar(registry) -> None:
 def render_header(registry) -> None:
     st.title("SEF Studio")
     st.caption(
-        "Composer applicativo per pipeline video: scegli i componenti dal registry, "
-        "configura ROI e barriere, esegui in sync o async e osserva eventi e stati."
+        "Composer applicativo per pipeline video: scegli componenti dal registry, "
+        "controlla runtime stream/batch, osserva piano, eventi, output e log."
     )
 
 
@@ -164,7 +193,13 @@ def render_composer(registry) -> None:
     st.subheader("Composizione visuale")
     mode = st.radio(
         "Scenario",
-        ["Single object tracking", "Multi-object barriers", "Dense optical flow", "ArUco wall micromovements"],
+        [
+            "Single object tracking",
+            "Multi-object barriers",
+            "Dense optical flow",
+            "ArUco wall micromovements",
+            "YOLO pose realtime",
+        ],
         key="sef_builder_mode",
         horizontal=True,
     )
@@ -182,6 +217,21 @@ def render_composer(registry) -> None:
     st.divider()
     st.subheader("Configurazione generata")
     render_composer_config_editor()
+
+
+def render_plan_and_logs(registry) -> None:
+    st.subheader("Plan & Logs")
+    config = current_pipeline_config_dict()
+    preview = build_execution_plan_preview(config, registry)
+    if preview.error:
+        st.error(f"Planner non disponibile: {preview.error}")
+    elif preview.plan is not None:
+        render_execution_plan(preview.plan, title="Piano runtime sincronizzato")
+    else:
+        st.info("Nessun piano disponibile per la configurazione corrente.")
+
+    st.divider()
+    render_log_terminal(key_prefix="plan")
 
 
 def render_interactive_pipeline_board(registry) -> None:
@@ -221,14 +271,20 @@ def render_composer_config_editor() -> None:
     if should_refresh_editor_widget(widget_value, previous_baseline):
         st.session_state[widget_key] = current_text
 
-    if st.button("Ripristina config generata", width="stretch"):
+    override_enabled = has_manual_config_override()
+    if override_enabled:
+        st.warning("Override JSON attivo: Run usa il JSON applicato, non i controlli del composer.")
+
+    restore_label = "Disattiva override JSON e usa controlli composer" if override_enabled else "Sincronizza dai controlli composer"
+    if st.button(restore_label, width="stretch"):
         session.put(raw_key, generated_text)
         session.put(baseline_key, generated_text)
         session.put(widget_key, generated_text)
         session.put(session.PIPELINE_CONFIG, generated_config)
+        session.put(session.PIPELINE_CONFIG_OVERRIDE_ENABLED, False)
         st.rerun()
 
-    st.caption("Modifica il JSON qui sotto. Se resta valido, Run usera questa versione.")
+    st.caption("Modifica il JSON qui sotto solo se vuoi un override esplicito della configurazione generata dai controlli.")
     edited_text = st.text_area(
         "Config JSON modificabile",
         key=widget_key,
@@ -236,13 +292,21 @@ def render_composer_config_editor() -> None:
     )
     session.put(raw_key, edited_text)
 
+    apply_clicked = st.button("Applica override JSON", type="primary", width="stretch")
     try:
         edited_config = parse_config_text(edited_text)
-        session.put(session.PIPELINE_CONFIG, edited_config)
-        st.success("JSON valido. Run usera questa versione.")
+        if apply_clicked:
+            session.put(session.PIPELINE_CONFIG, edited_config)
+            session.put(session.PIPELINE_CONFIG_OVERRIDE_ENABLED, True)
+            st.success("Override JSON applicato. Run usera questa versione.")
+            st.rerun()
+        elif override_enabled:
+            st.info("JSON valido. Run usa ancora l'ultimo override applicato.")
+        else:
+            st.success("JSON valido. Run usa i controlli composer finche non applichi l'override.")
     except Exception as exc:
         st.error(f"JSON non valido: {exc}")
-        st.warning("Run usera l'ultima versione valida o la configurazione generata se non esiste un override valido.")
+        st.warning("Run usera i controlli composer o l'ultimo override valido gia applicato.")
         if session.get(session.PIPELINE_CONFIG) is None:
             session.put(session.PIPELINE_CONFIG, generated_config)
 
@@ -310,11 +374,52 @@ def render_event_integration_editor(registry) -> None:
                 st.error(f"Configurazione branching fallita: {exc}")
 
 
+def render_log_terminal(*, key_prefix: str) -> None:
+    """Render a bounded terminal-like log viewer with level filtering."""
+    st.markdown("### Terminale log")
+    c1, c2, c3 = st.columns([0.35, 0.35, 0.30])
+    show_logs = c1.toggle("Mostra log", key=f"sef_show_log_terminal_{key_prefix}")
+    selected_level = c2.selectbox(
+        "Livello",
+        available_log_levels(),
+        index=1,
+        key=f"sef_log_terminal_level_{key_prefix}",
+    )
+    set_capture_level(selected_level)
+    if c3.button("Clear logs", width="stretch", key=f"sef_clear_logs_{key_prefix}"):
+        clear_log_records()
+        st.rerun()
+
+    if not show_logs:
+        st.caption("Attiva la visualizzazione per ispezionare i log Python di `library` e `ui`.")
+        return
+
+    records = log_records(selected_level)
+    if not records:
+        st.info("Nessun log per il livello selezionato.")
+        return
+
+    st.code("\n".join(record.as_terminal_line() for record in records[-160:]), language="text")
+
+
+def render_log_tail() -> None:
+    """Render recent logs without adding another level controller."""
+    selected_level = str(st.session_state.get("sef_log_terminal_level_plan", "INFO"))
+    records = log_records(selected_level)
+    if not records:
+        st.info("Nessun log recente per il livello selezionato nella tab Plan & Logs.")
+        return
+    st.code("\n".join(record.as_terminal_line() for record in records[-80:]), language="text")
+
+
 def render_execution(registry) -> None:
     st.subheader("Run & Monitor")
     config = current_pipeline_config_dict()
-    generated_config = generated_pipeline_config_dict()
     issues = validate_runtime_requirements(config)
+    plan_preview = build_execution_plan_preview(config, registry)
+    plan_summary = summarize_execution_plan(plan_preview.plan) if plan_preview.plan else None
+    main_thread_visualizers = main_thread_visualizer_names(config, registry)
+    browser_realtime_visualizers = streamlit_realtime_visualizer_names(config)
 
     status_cols = st.columns(4)
     status_cols[0].metric("Active", len(active_ids()))
@@ -322,13 +427,41 @@ def render_execution(registry) -> None:
     status_cols[2].metric("Events", len(event_records()))
     status_cols[3].metric("Analyzers", len(config.get("pipeline", {}).get("analyzers", [])))
 
+    if plan_summary is not None:
+        plan_cols = st.columns(4)
+        plan_cols[0].metric("Streaming stages", plan_summary["streaming_count"])
+        plan_cols[1].metric("Batch stages", plan_summary["batch_count"])
+        plan_cols[2].metric("Materializations", plan_summary["materialization_count"])
+        plan_cols[3].metric("Parallel-capable", plan_summary["parallel_count"])
+    elif plan_preview.error:
+        st.warning(f"Planner non disponibile: {plan_preview.error}")
+
     if issues:
         for issue in issues:
             st.warning(issue)
-    if config != generated_config:
+    if has_manual_config_override():
         st.info("Run sta usando l'override JSON della tab Composer, non la config generata dai controlli.")
+    if main_thread_visualizers:
+        st.warning(
+            "I visualizer live OpenCV aprono finestre native e non sono supportati nel runtime Streamlit. "
+            f"Selezionati: {', '.join(main_thread_visualizers)}."
+        )
+    if browser_realtime_visualizers:
+        st.info(
+            "Preview realtime browser attiva: usa Submit async per vedere i frame mentre la pipeline gira. "
+            f"Selezionati: {', '.join(browser_realtime_visualizers)}."
+        )
 
-    col_run, col_monitor = st.columns([0.55, 1.45], gap="large")
+    run_width_percent = st.slider(
+        "Larghezza Esecuzione / Preview",
+        min_value=25,
+        max_value=75,
+        value=int(st.session_state.get("sef_run_panel_width_percent", 38)),
+        step=5,
+        key="sef_run_panel_width_percent",
+        help="Regola lo spazio orizzontale tra esecuzione/preview live e monitor/status.",
+    )
+    col_run, col_monitor = st.columns([run_width_percent, 100 - run_width_percent], gap="large")
     with col_run:
         st.markdown("### Esecuzione")
         pipeline_id = st.text_input(
@@ -336,8 +469,28 @@ def render_execution(registry) -> None:
             value=f"ui-{uuid.uuid4().hex[:8]}",
             key="sef_run_pipeline_id",
         )
-        sync_clicked = st.button("Run sync", type="primary", width="stretch", disabled=bool(issues))
-        async_clicked = st.button("Submit async", width="stretch", disabled=bool(issues))
+        worker_count = st.number_input(
+            "Background workers",
+            min_value=1,
+            max_value=8,
+            value=runner_parallelism(),
+            key="sef_runner_max_workers",
+            help="Numero massimo di pipeline async eseguibili in parallelo.",
+        )
+        ok, message = configure_runner(int(worker_count))
+        if not ok:
+            st.warning(message)
+        sync_clicked = st.button(
+            "Run sync",
+            type="primary",
+            width="stretch",
+            disabled=bool(issues) or bool(browser_realtime_visualizers),
+        )
+        async_clicked = st.button(
+            "Submit async",
+            width="stretch",
+            disabled=bool(issues) or bool(main_thread_visualizers),
+        )
 
         if sync_clicked:
             execute_sync(registry, config, pipeline_id)
@@ -345,6 +498,9 @@ def render_execution(registry) -> None:
             execute_async(registry, config, pipeline_id)
 
         current_pipeline_id = session.get(session.PIPELINE_OUTPUT_PIPELINE_ID)
+        preview_pipeline_id = _realtime_preview_pipeline_id(current_pipeline_id, pipeline_id)
+        if browser_realtime_visualizers or preview_has_content(preview_pipeline_id):
+            render_realtime_preview(preview_pipeline_id, title="Preview realtime")
         render_stored_outputs_browser(default_pipeline_id=current_pipeline_id)
 
     with col_monitor:
@@ -357,6 +513,13 @@ def render_execution(registry) -> None:
 
         render_pipeline_status_dashboard(snapshots(), event_records(), title="Pipeline status")
         render_event_timeline(event_records())
+        with st.expander("Execution plan", expanded=False):
+            if plan_preview.plan is not None:
+                render_execution_plan(plan_preview.plan, title=None)
+            elif plan_preview.error:
+                st.error(plan_preview.error)
+        with st.expander("Terminale log", expanded=False):
+            render_log_tail()
         with st.expander("Controls", expanded=False):
             active = active_ids()
             if active:
@@ -465,8 +628,10 @@ def render_config_lab(registry) -> None:
     if c2.button("Run config", type="primary", width="stretch"):
         try:
             config = json.loads(raw_config)
-            context = context_from_config(config, registry)
+            _raise_runtime_issues(config)
             pipeline_id = f"config-{uuid.uuid4().hex[:8]}"
+            execution_config = _prepare_execution_config(config, pipeline_id)
+            context = context_from_config(execution_config, registry)
             outputs = run_sync(context, pipeline_id=pipeline_id)
             session.put(session.PIPELINE_OUTPUT_PIPELINE_ID, pipeline_id)
             st.success(f"Pipeline completata: {len(outputs.results)} risultati, {outputs.artifact_count} artifact.")
@@ -474,12 +639,32 @@ def render_config_lab(registry) -> None:
         except Exception as exc:
             st.error(f"Esecuzione fallita: {exc}")
 
+    if st.button("Submit async config", width="stretch"):
+        try:
+            config = json.loads(raw_config)
+            _raise_runtime_issues(config)
+            pipeline_id = f"config-{uuid.uuid4().hex[:8]}"
+            execution_config = _prepare_execution_config(config, pipeline_id)
+            context = context_from_config(execution_config, registry)
+            submitted_id = submit_async(pipeline_id, context)
+            session.put(session.PIPELINE_OUTPUT_PIPELINE_ID, submitted_id)
+            st.success(f"Pipeline {submitted_id} sottomessa in background.")
+            time.sleep(0.2)
+            st.rerun()
+        except Exception as exc:
+            st.error(f"Submit config fallito: {exc}")
+
+    preview_pipeline_id = session.get(session.REALTIME_PREVIEW_PIPELINE_ID)
+    if preview_pipeline_id and preview_has_content(preview_pipeline_id):
+        render_realtime_preview(preview_pipeline_id, title="Preview realtime config")
+
 
 def execute_sync(registry, config: dict[str, Any], pipeline_id: str) -> None:
     try:
         session.clear(session.TRACKING_VIDEO_CACHE)
         session.clear(session.PIPELINE_OUTPUTS)
-        context = context_from_config(config, registry)
+        execution_config = _prepare_execution_config(config, pipeline_id)
+        context = context_from_config(execution_config, registry)
         with st.spinner("Pipeline in esecuzione..."):
             outputs = run_sync(context, pipeline_id=pipeline_id)
         session.put(session.PIPELINE_OUTPUT_PIPELINE_ID, pipeline_id)
@@ -492,7 +677,8 @@ def execute_async(registry, config: dict[str, Any], pipeline_id: str) -> None:
     try:
         session.clear(session.TRACKING_VIDEO_CACHE)
         session.clear(session.PIPELINE_OUTPUTS)
-        context = context_from_config(config, registry)
+        execution_config = _prepare_execution_config(config, pipeline_id)
+        context = context_from_config(execution_config, registry)
         submitted_id = submit_async(pipeline_id, context)
         session.put(session.PIPELINE_OUTPUT_PIPELINE_ID, submitted_id)
         st.success(f"Pipeline {submitted_id} sottomessa in background.")
@@ -500,6 +686,29 @@ def execute_async(registry, config: dict[str, Any], pipeline_id: str) -> None:
         st.rerun()
     except Exception as exc:
         st.error(f"Submit fallita: {exc}")
+
+
+def _prepare_execution_config(config: dict[str, Any], pipeline_id: str) -> dict[str, Any]:
+    if not config_has_streamlit_realtime_visualizer(config):
+        return config
+    reset_sink(pipeline_id)
+    session.put(session.REALTIME_PREVIEW_PIPELINE_ID, pipeline_id)
+    return with_realtime_sink_ids(config, pipeline_id)
+
+
+def _raise_runtime_issues(config: dict[str, Any]) -> None:
+    issues = validate_runtime_requirements(config)
+    if issues:
+        raise ValueError("Config non eseguibile dalla UI: " + " ".join(issues))
+
+
+def _realtime_preview_pipeline_id(current_pipeline_id: str | None, fallback_pipeline_id: str) -> str:
+    preview_pipeline_id = session.get(session.REALTIME_PREVIEW_PIPELINE_ID)
+    if isinstance(preview_pipeline_id, str) and preview_pipeline_id:
+        return preview_pipeline_id
+    if isinstance(current_pipeline_id, str) and current_pipeline_id:
+        return current_pipeline_id
+    return fallback_pipeline_id
 
 
 def register_runtime_plugin(registry, category: PluginCategory, name: str, class_path: str, description: str) -> None:

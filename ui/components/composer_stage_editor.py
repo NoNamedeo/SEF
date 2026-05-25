@@ -36,14 +36,16 @@ def render_stage_parameter_editor(registry) -> None:
     ) = ensure_stage_options(registry)
     labels = stage_labels()
 
-    stage = st.segmented_control(
-        "Editor stage",
-        options=STAGE_EDIT_OPTIONS,
-        format_func=lambda key: labels[key],
-        selection_mode="single",
-        default=selected_stage(),
-        key="sef_selected_stage",
-    )
+    stage_widget_options = {
+        "label": "Editor stage",
+        "options": STAGE_EDIT_OPTIONS,
+        "format_func": lambda key: labels[key],
+        "selection_mode": "single",
+        "key": "sef_selected_stage",
+    }
+    if "sef_selected_stage" not in st.session_state:
+        stage_widget_options["default"] = selected_stage()
+    stage = st.segmented_control(**stage_widget_options)
     if stage is None:
         stage = STAGE_EDIT_OPTIONS[0]
     if stage != last_query_stage():
@@ -90,6 +92,29 @@ def _render_frame_extractor_editor(registry, frame_extractor_options: list[str])
         st.slider("Max frame", 20, 1200, key="sef_builder_max_frames", step=20)
     if st.session_state.get("sef_builder_frame_extractor") == "opencv_webcam":
         st.number_input("Webcam index", min_value=0, max_value=16, key="sef_builder_webcam_index")
+        c4, c5, c6 = st.columns(3)
+        c4.checkbox("Mirror", key="sef_builder_webcam_mirror")
+        c5.number_input(
+            "Camera width",
+            min_value=0,
+            max_value=7680,
+            key="sef_builder_webcam_width",
+            help="0 lascia scegliere il driver.",
+        )
+        c6.number_input(
+            "Camera height",
+            min_value=0,
+            max_value=4320,
+            key="sef_builder_webcam_height",
+            help="0 lascia scegliere il driver.",
+        )
+        st.number_input(
+            "Camera FPS",
+            min_value=0,
+            max_value=240,
+            key="sef_builder_webcam_fps",
+            help="0 lascia scegliere il driver.",
+        )
 
     st.divider()
     render_stream_runtime_params()
@@ -140,6 +165,7 @@ def _render_analyzers_editor(registry, analyzer_options: list[str]) -> None:
         format_func=display_stage_plugin(registry, PluginCategory.ANALYZER, recommended_analyzers_for_current_signal()),
         help="I consigliati compaiono in alto. Le altre opzioni restano selezionabili senza garanzia di compatibilita.",
     )
+    render_analyzer_params()
 
 
 def _render_visualizers_editor(
@@ -156,6 +182,7 @@ def _render_visualizers_editor(
     )
     if st.session_state["sef_builder_visualizers"]:
         render_visualizer_target_inputs()
+        render_visualizer_params()
 
     st.divider()
     st.multiselect(
@@ -200,10 +227,13 @@ def render_single_frame_processor_params() -> None:
 def render_signal_extractor_params() -> None:
     extractor = selected_signal_extractor()
     with st.expander("Signal extractor params", expanded=True):
-        if extractor in {"opencv_tracker", "opencv_multi_tracker"}:
+        if extractor in {"opencv_tracker", "opencv_stream_tracker", "opencv_multi_tracker"}:
             c1, c2 = st.columns(2)
             c1.selectbox("Tracker", ["MIL", "KCF", "CSRT"], key="sef_builder_tracker")
-            c2.checkbox("OpenCV preview windows", key="sef_builder_show_windows")
+            if extractor == "opencv_stream_tracker":
+                c2.caption("Streaming tracker: preview OpenCV disattivata dalla UI.")
+            else:
+                c2.checkbox("OpenCV preview windows", key="sef_builder_show_windows")
             if extractor == "opencv_multi_tracker":
                 st.text_input("Nomi barriere", key="sef_builder_barrier_names")
                 c3, c4 = st.columns(2)
@@ -213,6 +243,14 @@ def render_signal_extractor_params() -> None:
             st.slider("Cell size", 6, 48, key="sef_builder_dense_cell_size")
         elif extractor == "aruco_marker":
             st.caption("Per ArUco e consigliato usare Resize=Originale e Stride=1 nel frame extractor.")
+        elif extractor == "yolo_coco_pose":
+            st.text_input("YOLO model", key="sef_builder_yolo_model_name")
+            st.checkbox(
+                "Include source frame for live overlay",
+                key="sef_builder_yolo_include_frame_image",
+                help="Necessario per disegnare i keypoint sopra il frame originale.",
+            )
+            st.caption("Per realtime usa webcam, Stride=1, buffer piccoli e latency policy drop_oldest.")
 
 
 def render_signal_cleaner_params() -> None:
@@ -220,7 +258,7 @@ def render_signal_cleaner_params() -> None:
     if not selected:
         return
     with st.expander("Signal cleaner params", expanded=False):
-        if "moving_average" in selected:
+        if "moving_average" in selected or "moving_average_stream" in selected:
             st.slider("Moving average window", 3, 31, key="sef_builder_mavg_window", step=2)
         if "outlier_rejection" in selected:
             c1, c2 = st.columns(2)
@@ -236,6 +274,53 @@ def render_signal_cleaner_params() -> None:
             c3.slider("Aruco alpha high quality", 0.0, 1.0, key="sef_builder_aruco_alpha_high_quality", step=0.01)
             c4.slider("Aruco alpha low quality", 0.0, 1.0, key="sef_builder_aruco_alpha_low_quality", step=0.01)
             st.checkbox("Smooth ArUco corners", key="sef_builder_aruco_smooth_corners")
+        if "coco_skeleton_normalization" in selected:
+            st.caption("Usalo per analisi skeleton offline; evita la preview overlay live dopo normalizzazione.")
+            n1, n2, n3 = st.columns(3)
+            n1.checkbox("Center pelvis", key="sef_builder_coco_norm_center_on_pelvis")
+            n2.checkbox("Normalize scale", key="sef_builder_coco_norm_normalize_scale")
+            n3.checkbox("Align rotation", key="sef_builder_coco_norm_align_rotation")
+            st.number_input(
+                "Min scale",
+                min_value=0.000001,
+                max_value=1.0,
+                step=0.000001,
+                format="%.6f",
+                key="sef_builder_coco_norm_min_scale",
+            )
+
+
+def render_analyzer_params() -> None:
+    """Render analyzer-specific controls that influence generated config."""
+    selected = set(st.session_state.get("sef_builder_analyzers", []))
+    if "coco_pose_stream" not in selected:
+        return
+    with st.expander("COCO pose analyzer params", expanded=True):
+        st.checkbox(
+            "Retain analyzed frames",
+            key="sef_builder_coco_pose_retain_frames",
+            help="Mantiene la sequenza in memoria per output batch; in realtime lascialo disattivo.",
+        )
+        st.checkbox(
+            "Include normalized skeleton metadata",
+            key="sef_builder_coco_pose_include_normalized",
+        )
+
+
+def render_visualizer_params() -> None:
+    """Render selected visualizer controls without leaking core classes into the page."""
+    selected = set(st.session_state.get("sef_builder_visualizers", []))
+    if not selected.intersection({"opencv_coco_pose_realtime", "opencv_coco_tennis_pose_realtime"}):
+        return
+    with st.expander("Realtime pose visualizer params", expanded=True):
+        st.checkbox("Draw source frame", key="sef_builder_yolo_draw_source_frame")
+        st.slider(
+            "Keypoint threshold",
+            0.0,
+            1.0,
+            key="sef_builder_yolo_keypoint_threshold",
+            step=0.05,
+        )
 
 
 def render_visualizer_target_inputs() -> None:
@@ -477,6 +562,12 @@ def render_intermediate_frame_capture_params() -> None:
 def render_stream_runtime_params() -> None:
     """Render bounded-buffer and latency policy controls for the adaptive runtime."""
     st.caption("Streaming runtime")
+    preset_col1, preset_col2 = st.columns(2)
+    if preset_col1.button("Realtime low latency", width="stretch", key="sef_runtime_realtime_preset"):
+        _apply_realtime_runtime_preset()
+    if preset_col2.button("Batch full fidelity", width="stretch", key="sef_runtime_batch_preset"):
+        _apply_batch_runtime_preset()
+
     c1, c2, c3 = st.columns(3)
     c1.number_input(
         "Frame buffer",
@@ -532,3 +623,17 @@ def render_stream_runtime_params() -> None:
             key="sef_builder_runtime_adaptive_high_watermark",
             step=0.05,
         )
+
+
+def _apply_realtime_runtime_preset() -> None:
+    st.session_state["sef_builder_runtime_frame_buffer_size"] = 1
+    st.session_state["sef_builder_runtime_signal_buffer_size"] = 1
+    st.session_state["sef_builder_runtime_data_buffer_size"] = 1
+    st.session_state["sef_builder_runtime_latency_policy"] = "drop_oldest"
+
+
+def _apply_batch_runtime_preset() -> None:
+    st.session_state["sef_builder_runtime_frame_buffer_size"] = 8
+    st.session_state["sef_builder_runtime_signal_buffer_size"] = 8
+    st.session_state["sef_builder_runtime_data_buffer_size"] = 8
+    st.session_state["sef_builder_runtime_latency_policy"] = "blocking"

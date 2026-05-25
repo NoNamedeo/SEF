@@ -21,10 +21,12 @@ BARRIER_SELECTION_STATE = "sef_barrier_selection_state"  # BarrierSelectionState
 PIPELINE_OUTPUTS = "sef_pipeline_outputs"   # PipelineOutputs
 PIPELINE_OUTPUT_PIPELINE_ID = "sef_pipeline_output_pipeline_id"  # str
 PIPELINE_CONFIG  = "sef_pipeline_config"    # dict  — last config used in Config Builder
+PIPELINE_CONFIG_OVERRIDE_ENABLED = "sef_pipeline_config_override_enabled"  # bool
 PIPELINE_CONFIG_EDITOR_RAW = "sef_pipeline_config_editor_raw"  # str
 PIPELINE_CONFIG_EDITOR_BASELINE = "sef_pipeline_config_editor_baseline"  # str
 PIPELINE_CONFIG_EDITOR_WIDGET = "sef_pipeline_config_editor_widget"  # str
 LOG_RECORDS      = "sef_log_records"        # list[dict]
+REALTIME_PREVIEW_PIPELINE_ID = "sef_realtime_preview_pipeline_id"  # str
 TRACKING_VIDEO_CACHE = "sef_tracking_video_cache"  # dict[str, dict[str, Any]]
 
 

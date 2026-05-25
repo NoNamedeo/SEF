@@ -5,6 +5,7 @@ from __future__ import annotations
 import streamlit as st
 
 from library.core.visualization.PipelineOutputs import PipelineOutputs
+from ui.components.execution_plan_viewer import render_execution_plan
 from ui.components.rendering_utils import (
     materialize_video_artifact,
     render_safe_metadata,
@@ -99,42 +100,6 @@ def render_pipeline_outputs(outputs: PipelineOutputs, *, title: str | None = Non
 
     with tab_metadata:
         render_safe_metadata("Run metadata", view.metadata, expanded=True)
-
-
-def render_execution_plan(execution_plan: dict) -> None:
-    """Render stream/batch decisions, materialization boundaries, and memory estimates."""
-    if not execution_plan:
-        st.info("Execution plan non disponibile.")
-        return
-
-    c1, c2 = st.columns(2)
-    c1.metric("End-to-end streaming", "si" if execution_plan.get("streamable_end_to_end") else "no")
-    runtime = dict(execution_plan.get("runtime", {}) or {})
-    latency_policy = dict(runtime.get("latency_policy", {}) or {})
-    c2.metric("Latency policy", latency_policy.get("name", "unknown"))
-
-    stages = list(execution_plan.get("stages", []) or [])
-    if stages:
-        st.dataframe(
-            [
-                {
-                    "stage": stage.get("stage_id"),
-                    "component": stage.get("component_name"),
-                    "mode": stage.get("execution_mode"),
-                    "materializes": bool(stage.get("materializes_input")),
-                    "queue bytes": stage.get("estimated_queue_bytes"),
-                    "materialized bytes": stage.get("estimated_materialized_bytes"),
-                    "reason": stage.get("reason"),
-                }
-                for stage in stages
-            ],
-            use_container_width=True,
-        )
-
-    boundaries = execution_plan.get("materialization_boundaries", []) or []
-    if boundaries:
-        st.warning(f"Materialization boundary presenti: {len(boundaries)}")
-        render_safe_metadata("Materialization boundaries", {"items": boundaries}, expanded=False)
 
 
 def render_intermediate_frame_comparison(view: ExecutionResultsView) -> None:

@@ -29,8 +29,7 @@ from library.core.pipeline.PipelineContext import PipelineContext  # noqa: E402
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator  # noqa: E402
 from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot  # noqa: E402
 from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner  # noqa: E402
-from library.core.plugins.PluginRegistry import PluginRegistry  # noqa: E402
-from library.core.plugins.PluginRegistry import PluginCategory  # noqa: E402
+from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry  # noqa: E402
 from library.core.visualization.PipelineOutputs import PipelineOutputs  # noqa: E402
 from library.retry_policies.NoRetryPolicy import NoRetryPolicy  # noqa: E402
 
@@ -40,6 +39,7 @@ _monitor: InMemoryPipelineMonitor | None = None
 _output_store: InMemoryPipelineOutputStore | None = None
 _runner: ThreadedPipelineRunner | None = None
 _orchestrator: PipelineOrchestrator | None = None
+_runner_max_workers = 2
 _lifecycle_bus: EventBus | None = None
 _domain_bus: EventBus | None = None
 _branching_coordinator: BranchingCoordinator | None = None
@@ -93,7 +93,7 @@ def _get_runner() -> ThreadedPipelineRunner:
             output_store=_get_output_store(),
             retry_policy=NoRetryPolicy(),
             lifecycle_bus=_get_lifecycle_bus(),
-            max_workers=1,
+            max_workers=_runner_max_workers,
         )
     return _runner
 
@@ -129,6 +129,36 @@ def cancel_async(pipeline_id: str) -> bool:
 def active_ids() -> list[str]:
     """Return IDs of currently active pipelines."""
     return _get_orchestrator().active_ids()
+
+
+def configure_runner(max_workers: int) -> tuple[bool, str]:
+    """
+    Configure background runner parallelism for future runs.
+
+    Existing active pipelines keep their current executor. When no run is
+    active, changing this value safely swaps the UI runner without touching the
+    core pipeline implementation.
+    """
+    global _runner, _orchestrator, _runner_max_workers
+    parsed = int(max_workers)
+    if parsed <= 0:
+        return False, "max_workers deve essere maggiore di zero."
+    if parsed == _runner_max_workers:
+        return True, f"Runner configurato con {parsed} worker."
+    if _runner is not None and _runner.active_ids():
+        return False, "Ci sono pipeline attive: cambia i worker quando il runner e idle."
+
+    if _runner is not None:
+        _runner.shutdown(wait=False)
+    _runner = None
+    _orchestrator = None
+    _runner_max_workers = parsed
+    return True, f"Runner aggiornato a {parsed} worker."
+
+
+def runner_parallelism() -> int:
+    """Return the configured background worker count."""
+    return _runner_max_workers
 
 
 def snapshots() -> list[PipelineRunSnapshot]:
@@ -246,7 +276,11 @@ def _normalise_config(config: dict[str, Any]) -> dict[str, Any]:
         params = dict(signal_extractor.get("params", {}))
         extractor_config = dict(params.get("config", {}))
         extractor_name = str(signal_extractor.get("name", ""))
-        if extractor_name in {"opencv_tracker", "opencv_multi_tracker"} and frame_source_path and "source_path" not in extractor_config:
+        if (
+            extractor_name in {"opencv_tracker", "opencv_stream_tracker", "opencv_multi_tracker"}
+            and frame_source_path
+            and "source_path" not in extractor_config
+        ):
             extractor_config["source_path"] = frame_source_path
         if extractor_config:
             params["config"] = extractor_config

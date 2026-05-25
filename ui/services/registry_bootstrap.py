@@ -145,6 +145,23 @@ def get_registry() -> PluginRegistry:
         log.warning("DynamicObjectRemovalFrameProcessor non disponibile: %s", exc)
 
     try:
+        from library.frame_processors.RealtimeFrameTapProcessor import RealtimeFrameTapProcessor
+        from ui.services.realtime_preview_service import sink_for_id
+
+        def realtime_frame_tap_factory(config=None, sink_id=None):
+            return RealtimeFrameTapProcessor(config=config, sink=sink_for_id(sink_id))
+
+        _try_register(
+            registry,
+            PluginCategory.FRAME_BUFFER_PROCESSOR,
+            "realtime_frame_tap",
+            realtime_frame_tap_factory,
+            "Pubblica frame grezzi verso una preview realtime senza alterare la pipeline.",
+        )
+    except Exception as exc:
+        log.warning("RealtimeFrameTapProcessor non disponibile: %s", exc)
+
+    try:
         from library.frame_processors.OpenCVInpaintFrameProcessor import OpenCVInpaintFrameProcessor
 
         _try_register(
@@ -194,6 +211,19 @@ def get_registry() -> PluginRegistry:
         log.warning("OpenCVBufferedSignalExtractor non disponibile: %s", exc)
 
     try:
+        from library.signal_extractors.OpenCVStreamSignalExtractor import OpenCVStreamSignalExtractor
+
+        _try_register(
+            registry,
+            PluginCategory.SIGNAL_EXTRACTOR,
+            "opencv_stream_tracker",
+            OpenCVStreamSignalExtractor,
+            "Tracker singolo oggetto con contratto streaming e preview live opzionale.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVStreamSignalExtractor non disponibile: %s", exc)
+
+    try:
         from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
 
         _try_register(
@@ -232,6 +262,19 @@ def get_registry() -> PluginRegistry:
     except Exception as exc:
         log.warning("OpenCVDenseFarnebackSignalExtractor non disponibile: %s", exc)
 
+    try:
+        from library.signal_extractors.YOLOSkeletonCOCOStreamSignalExtractor import YOLOSkeletonCOCOStreamSignalExtractor
+
+        _try_register(
+            registry,
+            PluginCategory.SIGNAL_EXTRACTOR,
+            "yolo_coco_pose",
+            YOLOSkeletonCOCOStreamSignalExtractor,
+            "Estrae keypoint COCO 17 in streaming con YOLO pose.",
+        )
+    except Exception as exc:
+        log.warning("YOLOSkeletonCOCOStreamSignalExtractor non disponibile: %s", exc)
+
     # ── Signal cleaners ───────────────────────────────────────────────────────
     try:
         from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
@@ -254,6 +297,19 @@ def get_registry() -> PluginRegistry:
         log.warning("MovingAverageCleaner non disponibile: %s", exc)
 
     try:
+        from library.signal_cleaners.MovingAverageStreamSignalCleaner import MovingAverageStreamCleaner
+
+        _try_register(
+            registry,
+            PluginCategory.SIGNAL_CLEANER,
+            "moving_average_stream",
+            MovingAverageStreamCleaner,
+            "Smoothing causale dei centroidi compatibile con pipeline streaming.",
+        )
+    except Exception as exc:
+        log.warning("MovingAverageStreamCleaner non disponibile: %s", exc)
+
+    try:
         from library.signal_cleaners.OutlierRejectionCleaner import OutlierRejectionCleaner
 
         _try_register(registry, PluginCategory.SIGNAL_CLEANER, "outlier_rejection", OutlierRejectionCleaner, "Rimozione outlier dal segnale.")
@@ -272,6 +328,19 @@ def get_registry() -> PluginRegistry:
         )
     except Exception as exc:
         log.warning("SignalWidenerCleaner non disponibile: %s", exc)
+
+    try:
+        from library.signal_cleaners.COCOSkeletonNormalizationSignalCleaner import COCOSkeletonNormalizationSignalCleaner
+
+        _try_register(
+            registry,
+            PluginCategory.SIGNAL_CLEANER,
+            "coco_skeleton_normalization",
+            COCOSkeletonNormalizationSignalCleaner,
+            "Normalizza keypoint COCO per analisi basate su skeleton.",
+        )
+    except Exception as exc:
+        log.warning("COCOSkeletonNormalizationSignalCleaner non disponibile: %s", exc)
 
     # ── Analyzers ─────────────────────────────────────────────────────────────
     try:
@@ -364,6 +433,19 @@ def get_registry() -> PluginRegistry:
         log.warning("TrackingPlaybackAnalyzer non disponibile: %s", exc)
 
     try:
+        from library.analyzers.COCOPoseStreamAnalyzer import COCOPoseStreamAnalyzer
+
+        _try_register(
+            registry,
+            PluginCategory.ANALYZER,
+            "coco_pose_stream",
+            COCOPoseStreamAnalyzer,
+            "Classifica movimento da skeleton COCO in streaming e mantiene i frame pose.",
+        )
+    except Exception as exc:
+        log.warning("COCOPoseStreamAnalyzer non disponibile: %s", exc)
+
+    try:
         from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
 
         _try_register(
@@ -453,6 +535,49 @@ def get_registry() -> PluginRegistry:
         )
     except Exception as exc:
         log.warning("ArucoAnnotatedVideoVisualizer non disponibile: %s", exc)
+
+    try:
+        from library.visualizers.OpenCVCOCOPoseRealtimeVisualizer import OpenCVCOCOPoseRealtimeVisualizer
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "opencv_coco_pose_realtime",
+            OpenCVCOCOPoseRealtimeVisualizer,
+            "Preview live OpenCV dei keypoint COCO.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVCOCOPoseRealtimeVisualizer non disponibile: %s", exc)
+
+    try:
+        from library.visualizers.OpenCVCOCOTennisPoseRealtimeVisualizer import OpenCVCOCOTennisPoseRealtimeVisualizer
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "opencv_coco_tennis_pose_realtime",
+            OpenCVCOCOTennisPoseRealtimeVisualizer,
+            "Preview live OpenCV dei keypoint COCO con movimento tennis classificato.",
+        )
+    except Exception as exc:
+        log.warning("OpenCVCOCOTennisPoseRealtimeVisualizer non disponibile: %s", exc)
+
+    try:
+        from library.visualizers.RealtimeCOCOPoseFrameVisualizer import RealtimeCOCOPoseFrameVisualizer
+        from ui.services.realtime_preview_service import sink_for_id
+
+        def streamlit_coco_pose_realtime_factory(config=None, sink_id=None):
+            return RealtimeCOCOPoseFrameVisualizer(config=config, sink=sink_for_id(sink_id))
+
+        _try_register(
+            registry,
+            PluginCategory.VISUALIZER,
+            "streamlit_coco_pose_realtime",
+            streamlit_coco_pose_realtime_factory,
+            "Preview realtime browser-compatible dei keypoint COCO per Streamlit.",
+        )
+    except Exception as exc:
+        log.warning("RealtimeCOCOPoseFrameVisualizer non disponibile: %s", exc)
 
     try:
         from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer

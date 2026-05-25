@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import streamlit as st
@@ -15,9 +16,10 @@ from ui.models.pipeline_builder import (
     IntermediateFrameConfiguration,
     PipelineConfiguration,
     PluginConfig,
-    VisualizerConfig,
     RuntimeConfiguration,
+    VisualizerConfig,
 )
+from ui.services.realtime_preview_service import STREAMLIT_COCO_POSE_REALTIME_VISUALIZER, STREAMLIT_REALTIME_VISUALIZERS
 from ui.state import session
 
 TRACKING_ANALYZERS = (
@@ -28,6 +30,14 @@ TRACKING_ANALYZERS = (
     "vertical_frequency",
     "horizontal_frequency",
 )
+
+TRACKING_SIGNAL_EXTRACTORS = {"opencv_tracker", "opencv_stream_tracker"}
+YOLO_POSE_SIGNAL_EXTRACTOR = "yolo_coco_pose"
+YOLO_POSE_ANALYZERS = ("coco_pose_stream",)
+YOLO_POSE_VISUALIZERS = {
+    "opencv_coco_pose_realtime",
+    "opencv_coco_tennis_pose_realtime",
+}
 
 ARUCO_ANALYZERS = (
     "aruco_displacement",
@@ -66,8 +76,22 @@ def initialise_builder_state(registry) -> None:
         "sef_builder_max_frames_enabled": True,
         "sef_builder_max_frames": 180,
         "sef_builder_webcam_index": 0,
+        "sef_builder_webcam_mirror": False,
+        "sef_builder_webcam_width": 0,
+        "sef_builder_webcam_height": 0,
+        "sef_builder_webcam_fps": 0,
         "sef_builder_tracker": "MIL",
         "sef_builder_show_windows": False,
+        "sef_builder_yolo_model_name": "yolo11s-pose.pt",
+        "sef_builder_yolo_include_frame_image": True,
+        "sef_builder_yolo_draw_source_frame": True,
+        "sef_builder_yolo_keypoint_threshold": 0.30,
+        "sef_builder_coco_pose_retain_frames": False,
+        "sef_builder_coco_pose_include_normalized": False,
+        "sef_builder_coco_norm_center_on_pelvis": True,
+        "sef_builder_coco_norm_normalize_scale": True,
+        "sef_builder_coco_norm_align_rotation": False,
+        "sef_builder_coco_norm_min_scale": 0.000001,
         "sef_builder_mavg_window": 5,
         "sef_builder_outlier_threshold": 3.5,
         "sef_builder_outlier_mode": "clip",
@@ -148,8 +172,22 @@ def builder_state() -> BuilderStateSnapshot:
         max_frames_enabled=bool(st.session_state.get("sef_builder_max_frames_enabled", True)),
         max_frames=int(st.session_state.get("sef_builder_max_frames", 180)),
         webcam_index=int(st.session_state.get("sef_builder_webcam_index", 0)),
+        webcam_mirror=bool(st.session_state.get("sef_builder_webcam_mirror", False)),
+        webcam_width=int(st.session_state.get("sef_builder_webcam_width", 0)),
+        webcam_height=int(st.session_state.get("sef_builder_webcam_height", 0)),
+        webcam_fps=int(st.session_state.get("sef_builder_webcam_fps", 0)),
         tracker=str(st.session_state.get("sef_builder_tracker", "MIL")),
         show_windows=bool(st.session_state.get("sef_builder_show_windows", False)),
+        yolo_model_name=str(st.session_state.get("sef_builder_yolo_model_name", "yolo11s-pose.pt")),
+        yolo_include_frame_image=bool(st.session_state.get("sef_builder_yolo_include_frame_image", True)),
+        yolo_draw_source_frame=bool(st.session_state.get("sef_builder_yolo_draw_source_frame", True)),
+        yolo_keypoint_threshold=float(st.session_state.get("sef_builder_yolo_keypoint_threshold", 0.30)),
+        coco_pose_retain_frames=bool(st.session_state.get("sef_builder_coco_pose_retain_frames", False)),
+        coco_pose_include_normalized_skeleton=bool(st.session_state.get("sef_builder_coco_pose_include_normalized", False)),
+        coco_norm_center_on_pelvis=bool(st.session_state.get("sef_builder_coco_norm_center_on_pelvis", True)),
+        coco_norm_normalize_scale=bool(st.session_state.get("sef_builder_coco_norm_normalize_scale", True)),
+        coco_norm_align_rotation=bool(st.session_state.get("sef_builder_coco_norm_align_rotation", False)),
+        coco_norm_min_scale=float(st.session_state.get("sef_builder_coco_norm_min_scale", 0.000001)),
         moving_average_window=int(st.session_state.get("sef_builder_mavg_window", 5)),
         outlier_threshold=float(st.session_state.get("sef_builder_outlier_threshold", 3.5)),
         outlier_mode=str(st.session_state.get("sef_builder_outlier_mode", "clip")),
@@ -289,7 +327,7 @@ def recommended_frame_extractors() -> set[str]:
 
 def recommended_frame_processors() -> set[str]:
     extractor = selected_signal_extractor()
-    if extractor in {"opencv_tracker", "opencv_multi_tracker"}:
+    if extractor in {"opencv_tracker", "opencv_stream_tracker", "opencv_multi_tracker"}:
         return {"smoothing"}
     return set()
 
@@ -302,12 +340,16 @@ def recommended_signal_extractors() -> set[str]:
         return {"dense_optical_flow"}
     if mode == "ArUco wall micromovements":
         return {"aruco_marker"}
+    if mode == "YOLO pose realtime":
+        return {YOLO_POSE_SIGNAL_EXTRACTOR}
     return {"opencv_tracker"}
 
 
 def recommended_signal_cleaners() -> set[str]:
     if selected_signal_extractor() == "opencv_tracker":
         return {"moving_average"}
+    if selected_signal_extractor() == "opencv_stream_tracker":
+        return {"moving_average_stream"}
     if selected_signal_extractor() == "aruco_marker":
         return {"aruco_temporal_stabilizer"}
     return set()
@@ -321,6 +363,8 @@ def recommended_analyzers_for_current_signal() -> set[str]:
         return {"dense_vector_field"}
     if extractor == "aruco_marker":
         return set(ARUCO_ANALYZERS)
+    if extractor == YOLO_POSE_SIGNAL_EXTRACTOR:
+        return set(YOLO_POSE_ANALYZERS)
     return set(TRACKING_ANALYZERS)
 
 
@@ -339,6 +383,8 @@ def recommended_visualizers_for_current_state() -> set[str]:
         recommended.add("aruco_motion_plot")
     if "aruco_displacement" in selected_analyzers:
         recommended.add("aruco_annotated_video")
+    if selected_analyzers & set(YOLO_POSE_ANALYZERS):
+        recommended.add(STREAMLIT_COCO_POSE_REALTIME_VISUALIZER)
     return recommended
 
 
@@ -364,6 +410,9 @@ def suggested_visualizer_target_indices(
         "tracking_video": {"tracking_playback"},
         "aruco_motion_plot": set(ARUCO_ANALYZERS),
         "aruco_annotated_video": {"aruco_displacement"},
+        "opencv_coco_pose_realtime": {"coco_pose_stream"},
+        "opencv_coco_tennis_pose_realtime": {"coco_pose_stream"},
+        STREAMLIT_COCO_POSE_REALTIME_VISUALIZER: {"coco_pose_stream"},
     }
     compatible_analyzers = compatibility_map.get(visualizer_name)
     if compatible_analyzers is None:
@@ -511,6 +560,14 @@ def _build_frame_extractor_config(
         "max_frames": state.max_frames if state.max_frames_enabled else None,
     }
     if state.frame_extractor == "opencv_webcam":
+        if state.webcam_mirror:
+            extractor_config["mirror"] = True
+        if state.webcam_width > 0:
+            extractor_config["width"] = state.webcam_width
+        if state.webcam_height > 0:
+            extractor_config["height"] = state.webcam_height
+        if state.webcam_fps > 0:
+            extractor_config["fps"] = state.webcam_fps
         return PluginConfig(
             name=state.frame_extractor,
             params={
@@ -529,10 +586,17 @@ def _build_frame_extractor_config(
 
 def current_pipeline_config_dict() -> dict[str, Any]:
     """Return the effective config used by execution."""
+    if not has_manual_config_override():
+        return generated_pipeline_config_dict()
     config = session.get(session.PIPELINE_CONFIG)
     if isinstance(config, dict):
         return config
     return generated_pipeline_config_dict()
+
+
+def has_manual_config_override() -> bool:
+    """Return True only when the user explicitly enabled the JSON override."""
+    return bool(session.get(session.PIPELINE_CONFIG_OVERRIDE_ENABLED, False))
 
 
 def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
@@ -554,7 +618,7 @@ def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
     selected_analyzers = {str(item.get("name", "")) for item in pipeline.get("analyzers", [])}
     selected_frame_processors = {str(item.get("name", "")) for item in pipeline.get("frame_processors", [])}
 
-    if extractor_name in {"opencv_tracker", "opencv_multi_tracker"}:
+    if extractor_name in {"opencv_tracker", "opencv_stream_tracker", "opencv_multi_tracker"}:
         roi = signal_extractor_params.get("start_box") or session.get(session.ROI_BOX)
         if not roi or roi[2] <= 0 or roi[3] <= 0:
             issues.append("Disegna una ROI valida per il tracker.")
@@ -584,10 +648,57 @@ def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
     if extractor_name in {"opencv_multi_tracker", "dense_optical_flow"} and "opencv_gray" in selected_frame_processors:
         issues.append("Rimuovi opencv_gray: questo extractor richiede frame BGR.")
 
+    if extractor_name == YOLO_POSE_SIGNAL_EXTRACTOR:
+        visualizers = {str(item.get("name", "")) for item in pipeline.get("visualizers", [])}
+        cleaners = {str(item.get("name", "")) for item in pipeline.get("signal_cleaners", [])}
+        model_name = str(signal_extractor_params.get("model_name", "yolo11s-pose.pt"))
+        model_path = Path(__file__).resolve().parents[2] / "library" / "YOLOPoseModels" / model_name
+        if not model_path.exists():
+            issues.append(f"Modello YOLO non trovato: {model_path}.")
+        if "coco_pose_stream" not in selected_analyzers:
+            issues.append("Per YOLO pose seleziona l'analyzer coco_pose_stream.")
+        if visualizers & YOLO_POSE_VISUALIZERS:
+            issues.append(
+                "I visualizer live OpenCV non sono eseguibili dentro Streamlit: "
+                "rimuovili dalla UI oppure esegui questa pipeline da script/VSCode."
+            )
+        if visualizers & YOLO_POSE_VISUALIZERS and "coco_skeleton_normalization" in cleaners:
+            issues.append(
+                "Rimuovi coco_skeleton_normalization quando usi la preview live: il visualizer richiede keypoint in coordinate frame."
+            )
+        if "streamlit_coco_pose_realtime" in visualizers:
+            frame_extractor_name = str(frame_extractor.get("name", ""))
+            frame_config = dict(dict(frame_extractor.get("params", {})).get("config", {}))
+            max_frames = frame_config.get("max_frames")
+            if frame_extractor_name == "opencv_buffered" and max_frames is None:
+                issues.append(
+                    "Per preview realtime da file imposta un limite Max frames: "
+                    "con max_frames=null il video puo restare in esecuzione molto a lungo."
+                )
+
     if not pipeline.get("analyzers"):
         issues.append("Seleziona almeno un analyzer.")
 
     return issues
+
+
+def main_thread_visualizer_names(config: dict[str, Any], registry) -> tuple[str, ...]:
+    """Return configured visualizers that declare a main-thread rendering requirement."""
+    names: list[str] = []
+    pipeline = dict(config.get("pipeline", {}))
+    for item in pipeline.get("visualizers", []) or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name", ""))
+        if not name:
+            continue
+        try:
+            factory = registry.get(PluginCategory.VISUALIZER, name).factory
+        except Exception:
+            continue
+        if bool(getattr(factory, "requires_main_thread", False)):
+            names.append(name)
+    return tuple(names)
 
 
 def sync_mode_with_components(mode: str) -> None:
@@ -595,6 +706,7 @@ def sync_mode_with_components(mode: str) -> None:
     if st.session_state.get(BUILDER_LAST_SYNCED_MODE_KEY) == mode:
         return
 
+    _disable_json_override()
     st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = mode
     if mode == "Single object tracking":
         apply_tracking_components()
@@ -604,9 +716,12 @@ def sync_mode_with_components(mode: str) -> None:
         apply_dense_flow_components()
     elif mode == "ArUco wall micromovements":
         apply_aruco_components()
+    elif mode == "YOLO pose realtime":
+        apply_yolo_pose_components()
 
 
 def apply_tracking_preset() -> None:
+    _disable_json_override()
     st.session_state["sef_builder_mode"] = "Single object tracking"
     st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = "Single object tracking"
     apply_tracking_components()
@@ -620,6 +735,7 @@ def apply_tracking_components() -> None:
 
 
 def apply_multi_object_preset() -> None:
+    _disable_json_override()
     st.session_state["sef_builder_mode"] = "Multi-object barriers"
     st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = "Multi-object barriers"
     apply_multi_object_components()
@@ -633,6 +749,7 @@ def apply_multi_object_components() -> None:
 
 
 def apply_dense_flow_preset() -> None:
+    _disable_json_override()
     st.session_state["sef_builder_mode"] = "Dense optical flow"
     st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = "Dense optical flow"
     apply_dense_flow_components()
@@ -646,6 +763,7 @@ def apply_dense_flow_components() -> None:
 
 
 def apply_aruco_preset() -> None:
+    _disable_json_override()
     st.session_state["sef_builder_mode"] = "ArUco wall micromovements"
     st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = "ArUco wall micromovements"
     apply_aruco_components()
@@ -662,6 +780,37 @@ def apply_aruco_components() -> None:
     st.session_state["sef_builder_stride"] = 1
     st.session_state["sef_builder_max_frames_enabled"] = True
     st.session_state["sef_builder_max_frames"] = 180
+
+
+def apply_yolo_pose_preset() -> None:
+    _disable_json_override()
+    st.session_state["sef_builder_mode"] = "YOLO pose realtime"
+    st.session_state[BUILDER_LAST_SYNCED_MODE_KEY] = "YOLO pose realtime"
+    apply_yolo_pose_components()
+
+
+def apply_yolo_pose_components() -> None:
+    st.session_state["sef_builder_frame_extractor"] = "opencv_webcam"
+    st.session_state["sef_builder_signal_extractor"] = YOLO_POSE_SIGNAL_EXTRACTOR
+    st.session_state["sef_builder_signal_cleaners"] = []
+    st.session_state["sef_builder_analyzers"] = ["coco_pose_stream"]
+    st.session_state["sef_builder_visualizers"] = [STREAMLIT_COCO_POSE_REALTIME_VISUALIZER]
+    st.session_state["sef_builder_frame_processors"] = []
+    st.session_state["sef_builder_resize"] = "640x480"
+    st.session_state["sef_builder_stride"] = 1
+    st.session_state["sef_builder_max_frames_enabled"] = True
+    st.session_state["sef_builder_max_frames"] = 300
+    st.session_state["sef_builder_runtime_frame_buffer_size"] = 1
+    st.session_state["sef_builder_runtime_signal_buffer_size"] = 1
+    st.session_state["sef_builder_runtime_data_buffer_size"] = 1
+    st.session_state["sef_builder_runtime_latency_policy"] = "drop_oldest"
+    st.session_state["sef_builder_yolo_include_frame_image"] = True
+    st.session_state["sef_builder_yolo_draw_source_frame"] = True
+
+
+def _disable_json_override() -> None:
+    """Make generated composer state the execution source after scenario changes."""
+    session.put(session.PIPELINE_CONFIG_OVERRIDE_ENABLED, False)
 
 
 def _build_single_frame_processor_configs(state: BuilderStateSnapshot) -> tuple[PluginConfig, ...]:
@@ -755,12 +904,23 @@ def _build_signal_extractor_config(
                 }
             },
         )
+    if state.signal_extractor == YOLO_POSE_SIGNAL_EXTRACTOR:
+        return PluginConfig(
+            name=state.signal_extractor,
+            params={
+                "model_name": state.yolo_model_name,
+                "config": {
+                    "include_frame_image": state.yolo_include_frame_image,
+                    "show_graph": False,
+                },
+            },
+        )
 
     params: dict[str, Any] = {
         "tracker_type": state.tracker,
         "start_box": roi,
         "config": {
-            "show": state.show_windows,
+            "show": state.show_windows if state.signal_extractor != "opencv_stream_tracker" else False,
             "source_path": video_path,
         },
     }
@@ -777,7 +937,7 @@ def _build_signal_extractor_config(
 def _build_signal_cleaner_configs(state: BuilderStateSnapshot) -> tuple[PluginConfig, ...]:
     configs: list[PluginConfig] = []
     for name in state.signal_cleaners:
-        if name == "moving_average":
+        if name in {"moving_average", "moving_average_stream"}:
             configs.append(PluginConfig(name=name, params={"window_size": state.moving_average_window}))
         elif name == "outlier_rejection":
             configs.append(
@@ -804,6 +964,18 @@ def _build_signal_cleaner_configs(state: BuilderStateSnapshot) -> tuple[PluginCo
                     },
                 )
             )
+        elif name == "coco_skeleton_normalization":
+            configs.append(
+                PluginConfig(
+                    name=name,
+                    params={
+                        "center_on_pelvis": state.coco_norm_center_on_pelvis,
+                        "normalize_scale": state.coco_norm_normalize_scale,
+                        "align_rotation": state.coco_norm_align_rotation,
+                        "min_scale": state.coco_norm_min_scale,
+                    },
+                )
+            )
         else:
             configs.append(PluginConfig(name=name))
     return tuple(configs)
@@ -819,6 +991,18 @@ def _build_analyzer_configs(
             configs.append(PluginConfig(name=name, params={"barriers": barriers}))
         elif name in TRACKING_ANALYZERS:
             configs.append(PluginConfig(name=name, params={"config": {"use_timestamps": True}}))
+        elif name == "coco_pose_stream":
+            configs.append(
+                PluginConfig(
+                    name=name,
+                    params={
+                        "config": {
+                            "retain_frames": state.coco_pose_retain_frames,
+                            "include_normalized_skeleton": state.coco_pose_include_normalized_skeleton,
+                        }
+                    },
+                )
+            )
         else:
             configs.append(PluginConfig(name=name))
     return tuple(configs)
@@ -831,10 +1015,17 @@ def _build_visualizer_configs(state: BuilderStateSnapshot) -> tuple[VisualizerCo
             continue
         raw_indices = str(state.visualizer_targets.get(name, "")).strip()
         indices = parse_indices(raw_indices) if raw_indices else suggested_visualizer_target_indices(name, state.analyzers)
+        config: dict[str, Any] = {"show": False}
+        if name in YOLO_POSE_VISUALIZERS or name in STREAMLIT_REALTIME_VISUALIZERS:
+            config = {
+                "draw_source_frame": state.yolo_draw_source_frame,
+                "keypoint_threshold": state.yolo_keypoint_threshold,
+                "min_publish_interval_ms": 40,
+            }
         visualizers.append(
             VisualizerConfig(
                 name=name,
-                params={"config": {"show": False}},
+                params={"config": config},
                 result_indices=indices,
             )
         )

@@ -14,8 +14,6 @@ from typing import Any, Iterable
 
 from library.core.events.Event import Event
 from library.core.events.PipelineEvent import PipelineEvent
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
 from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from ui.components.pipeline_canvas_models import (
@@ -30,6 +28,7 @@ from ui.components.pipeline_canvas_models import (
     PortDataType,
     PortDirection,
 )
+from ui.services.execution_plan_service import build_execution_plan_preview
 from ui.state.canvas import layout as canvas_layout
 from ui.state.canvas import viewport as canvas_viewport
 
@@ -587,15 +586,15 @@ def _execution_summary_by_stage(
     registry: PluginRegistry,
 ) -> dict[str, dict[str, Any]]:
     """Build grouped execution-plan details for the visual canvas."""
-    try:
-        context = ConfigPipelineBuilder(registry).build_context(config)
-        plan = PipelineExecutionPlanner().build(context)
-    except Exception as exc:
-        return {"frame_extractor": {"plan_error": str(exc)}}
+    preview = build_execution_plan_preview(config, registry)
+    if preview.error:
+        return {"frame_extractor": {"plan_error": preview.error}}
+    if preview.plan is None:
+        return {"frame_extractor": {"plan_error": "Execution plan non disponibile."}}
 
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for stage in plan.stages:
-        grouped[stage.stage_group].append(stage.as_dict())
+    for stage in preview.plan.get("stages", []) or []:
+        grouped[str(stage.get("stage_group", "unknown"))].append(dict(stage))
 
     return {
         group: {

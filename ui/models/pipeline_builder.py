@@ -150,8 +150,22 @@ class BuilderStateSnapshot:
     max_frames_enabled: bool
     max_frames: int
     webcam_index: int
+    webcam_mirror: bool
+    webcam_width: int
+    webcam_height: int
+    webcam_fps: int
     tracker: str
     show_windows: bool
+    yolo_model_name: str
+    yolo_include_frame_image: bool
+    yolo_draw_source_frame: bool
+    yolo_keypoint_threshold: float
+    coco_pose_retain_frames: bool
+    coco_pose_include_normalized_skeleton: bool
+    coco_norm_center_on_pelvis: bool
+    coco_norm_normalize_scale: bool
+    coco_norm_align_rotation: bool
+    coco_norm_min_scale: float
     moving_average_window: int
     outlier_threshold: float
     outlier_mode: str
