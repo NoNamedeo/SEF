@@ -5,7 +5,6 @@ import logging
 import sys
 from pathlib import Path
 
-from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.visualizers.OpenCVCOCOTennisPoseRealtimeVisualizer import OpenCVCOCOTennisPoseRealtimeVisualizer
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

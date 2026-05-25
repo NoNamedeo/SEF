@@ -36,58 +36,58 @@ class PipelineCodeExporter:
         config_literal = pformat(dict(export_config), width=100, sort_dicts=False)
         return f'''from __future__ import annotations
 
-from typing import Any
+                from typing import Any
 
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.pipeline.Pipeline import Pipeline
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-from library.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
-
-
-PIPELINE_EXPORT: dict[str, Any] = {config_literal}
-PIPELINE_CONFIG: dict[str, Any] = {{"pipeline": PIPELINE_EXPORT["pipeline"]}}
+                from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+                from library.core.pipeline.Pipeline import Pipeline
+                from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+                from library.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
 
 
-def build_registry() -> PluginRegistry:
-    """
-    Build the registry used by this pipeline.
-
-    Register project-specific plugins here before calling build_context when the
-    export contains custom registered component names.
-    """
-    return create_builtin_registry()
+                PIPELINE_EXPORT: dict[str, Any] = {config_literal}
+                PIPELINE_CONFIG: dict[str, Any] = {{"pipeline": PIPELINE_EXPORT["pipeline"]}}
 
 
-def build_context(registry: PluginRegistry | None = None):
-    """Rebuild the exported PipelineContext from its declarative config."""
-    resolved_registry = registry or build_registry()
-    return ConfigPipelineBuilder(resolved_registry).build_context(PIPELINE_CONFIG)
+                def build_registry() -> PluginRegistry:
+                    """
+                    Build the registry used by this pipeline.
+
+                    Register project-specific plugins here before calling build_context when the
+                    export contains custom registered component names.
+                    """
+                    return create_builtin_registry()
 
 
-def build_pipeline(
-    registry: PluginRegistry | None = None,
-    pipeline_id: str | None = None,
-    execution_metadata: dict[str, Any] | None = None,
-) -> Pipeline:
-    """Create a Pipeline instance from the rebuilt context."""
-    return Pipeline(
-        build_context(registry),
-        pipeline_id=pipeline_id,
-        execution_metadata=execution_metadata,
-    )
+                def build_context(registry: PluginRegistry | None = None):
+                    """Rebuild the exported PipelineContext from its declarative config."""
+                    resolved_registry = registry or build_registry()
+                    return ConfigPipelineBuilder(resolved_registry).build_context(PIPELINE_CONFIG)
 
 
-def run_pipeline(registry: PluginRegistry | None = None):
-    """Execute the rebuilt pipeline through the public orchestrator facade."""
-    execution = PIPELINE_EXPORT.get("execution", {{}})
-    return PipelineOrchestrator().run(
-        build_context(registry),
-        pipeline_id=execution.get("pipeline_id"),
-        execution_metadata=execution.get("metadata", {{}}),
-    )
+                def build_pipeline(
+                    registry: PluginRegistry | None = None,
+                    pipeline_id: str | None = None,
+                    execution_metadata: dict[str, Any] | None = None,
+                ) -> Pipeline:
+                    """Create a Pipeline instance from the rebuilt context."""
+                    return Pipeline(
+                        build_context(registry),
+                        pipeline_id=pipeline_id,
+                        execution_metadata=execution_metadata,
+                    )
 
 
-if __name__ == "__main__":
-    outputs = run_pipeline()
-    print(f"{{len(outputs.results)}} result(s), {{outputs.artifact_count}} artifact(s)")
-'''
+                def run_pipeline(registry: PluginRegistry | None = None):
+                    """Execute the rebuilt pipeline through the public orchestrator facade."""
+                    execution = PIPELINE_EXPORT.get("execution", {{}})
+                    return PipelineOrchestrator().run(
+                        build_context(registry),
+                        pipeline_id=execution.get("pipeline_id"),
+                        execution_metadata=execution.get("metadata", {{}}),
+                    )
+
+
+                if __name__ == "__main__":
+                    outputs = run_pipeline()
+                    print(f"{{len(outputs.results)}} result(s), {{outputs.artifact_count}} artifact(s)")
+                '''
