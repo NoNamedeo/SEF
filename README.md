@@ -1,4 +1,5 @@
 # SEF
+
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 ![Status](https://img.shields.io/badge/status-experimental-orange)
 [![Docs](https://img.shields.io/badge/docs-MkDocs-brightgreen)](docs/index.md)
@@ -9,6 +10,7 @@
 signal-extraction pipelines.**
 
 
+![SEF Studio](docs/assets/sef-studio-hero.png)
 
 It separates video acquisition, frame processing, signal extraction, cleaning,
 analysis, visualization, runtime monitoring, and UI composition into explicit
@@ -16,22 +18,7 @@ contracts. The project is architecture-focused and currently pre-1.0: public
 APIs are being hardened and may still evolve before a stable release.
 
 
-![SEF Studio](docs/assets/sef-studio-hero.png)
-
-
-<p align="center">
-
-  <img 
-
-    src="docs/assets/sef-studio-demo.gif"
-
-    alt="SEF Studio Demo"
-
-    width="100%"
-
-  />
-
-</p>
+![SEF Studio Demo](docs/assets/sef-studio-demo.gif)
 
 ## Why SEF
 
