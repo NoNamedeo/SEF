@@ -17,9 +17,6 @@ analysis, visualization, runtime monitoring, and UI composition into explicit
 contracts. The project is architecture-focused and currently pre-1.0: public
 APIs are being hardened and may still evolve before a stable release.
 
-## SEF Studio Demo
-
-![SEF Studio Demo](docs/assets/sef-studio-demo.gif)
 
 ## Processing Example
 
@@ -137,8 +134,9 @@ outputs. The repository should eventually include real captures from the current
 pipeline and SEF Studio workflows.
 
 ### Tracking Playback
-
-<!-- PLACEHOLDER: Add before/after tracking playback GIF using a real repository video; purpose: show how tracked objects become annotated playback artifacts; ideal placement: first item in Visual Results. -->
+| Pre-processed video | Processed video |
+|---|---|
+| ![SEF tracking playback roi](docs/assets/tracking-playback.png) | ![SEF tracking playback](docs/assets/tracking-playback.gif) |
 
 ### Annotated Playback
 
@@ -166,9 +164,12 @@ pipeline and SEF Studio workflows.
 
 ## SEF Studio
 
+
 `SEF Studio` is the Streamlit application built on top of the core framework.
 It is not a separate engine: it uses the same registry, config builder,
 pipeline runtime, monitors, outputs, and artifacts exposed by the library.
+
+![SEF Studio Demo](docs/assets/cursorful-video.gif)
 
 Current UI goals:
 
