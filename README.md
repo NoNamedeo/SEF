@@ -17,9 +17,17 @@ analysis, visualization, runtime monitoring, and UI composition into explicit
 contracts. The project is architecture-focused and currently pre-1.0: public
 APIs are being hardened and may still evolve before a stable release.
 
+## SEF Studio Demo
 
 ![SEF Studio Demo](docs/assets/sef-studio-demo.gif)
 
+## Processing Example
+
+The same sequence before and after the SEF processing pipeline.
+
+| Pre-processed video | Processed video |
+|---|---|
+| ![SEF Studio Demo pre-processed](docs/assets/sef-studio-demo-pre-processed.gif) | ![SEF Studio Demo processed](docs/assets/sef-studio-demo-processed.gif) |
 ## Why SEF
 
 SEF is designed for research, experimentation, and framework-oriented computer
