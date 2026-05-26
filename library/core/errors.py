@@ -1,3 +1,12 @@
+"""Typed public error model for SEF integrations.
+
+The error hierarchy gives applications stable exception families for
+configuration, plugin resolution, stage execution, registry failures, and
+streaming runtime failures. UI and service adapters should inspect typed fields
+such as `path`, `metadata`, and `StageErrorContext` instead of parsing human
+messages.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -27,6 +36,15 @@ class PipelineConfigurationError(PipelineError, ValueError):
 
     Builders should raise this family for invalid schemas, unknown plugins,
     invalid plugin parameters, or context invariant violations.
+
+    Attributes
+    ----------
+    path:
+        Optional dotted config path associated with the failure.
+    cause:
+        Original exception, when this error wraps a lower-level failure.
+    metadata:
+        JSON-like diagnostic metadata for UIs, APIs, and tests.
     """
 
     def __init__(
@@ -164,7 +182,13 @@ class LatencyPolicyError(PipelineConfigurationError):
 
 @dataclass(frozen=True, slots=True)
 class StageErrorContext:
-    """Structured metadata identifying the stage that failed."""
+    """
+    Structured metadata identifying a failed stage.
+
+    The context is safe for monitors and UIs to serialize through `as_dict()`.
+    Stage execution errors carry this object so consumers do not need to parse
+    human-readable exception messages.
+    """
 
     stage_id: str
     stage_group: str | None = None

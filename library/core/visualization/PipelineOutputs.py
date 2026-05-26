@@ -10,7 +10,26 @@ from library.core.visualization.VisualArtifact import VisualArtifact
 
 @dataclass(frozen=True, slots=True)
 class PipelineOutputs:
-    """Immutable aggregate of analytical results, final artifacts, and debug artifacts."""
+    """
+    Immutable aggregate returned by completed pipeline runs.
+
+    `PipelineOutputs` is the handoff value for UI, API, notebook, and exporter
+    adapters. It keeps analytical results separate from final artifacts and
+    debug artifacts so presentation layers can decide what to show by default.
+
+    Attributes
+    ----------
+    results:
+        Final analyzer results in analyzer order.
+    final_artifacts:
+        Primary artifacts intended for normal users.
+    debug_artifacts:
+        Diagnostic artifacts intended for inspection or troubleshooting.
+    metadata:
+        Execution metadata, plan, and reproducibility details.
+    intermediate_frames:
+        Optional bounded intermediate-frame debug collection.
+    """
 
     results: tuple[IData, ...]
     final_artifacts: tuple[VisualArtifact, ...]

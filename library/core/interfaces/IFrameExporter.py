@@ -11,7 +11,18 @@ from library.core.visualization.VisualArtifact import VisualArtifact
 
 @dataclass(frozen=True, slots=True)
 class FrameExportContext:
-    """Runtime metadata passed to frame-buffer exporters."""
+    """
+    Runtime metadata passed to frame-buffer exporters.
+
+    Attributes
+    ----------
+    pipeline_id:
+        Optional run id.
+    exporter_name:
+        Human-readable exporter component name.
+    execution_metadata:
+        Metadata supplied by the caller and propagated through the run.
+    """
 
     pipeline_id: str | None
     exporter_name: str
@@ -20,7 +31,12 @@ class FrameExportContext:
 
 @dataclass(frozen=True, slots=True)
 class FrameExportResult:
-    """Result of an exporter that preserves the frame stream for downstream stages."""
+    """
+    Exporter result that preserves frames for downstream stages.
+
+    Exporters may create artifacts but must also return a frame buffer so signal
+    extraction can continue after export.
+    """
 
     buffer: FrameBuffer
     artifacts: tuple[VisualArtifact, ...]
@@ -38,4 +54,18 @@ class IFrameExporter(ABC):
 
     @abstractmethod
     def export(self, buffer: FrameBuffer, context: FrameExportContext) -> FrameExportResult:
-        """Persist or build artifacts from the frame stream and return the next buffer."""
+        """
+        Persist or build artifacts from the frame stream.
+
+        Parameters
+        ----------
+        buffer:
+            Processed frame stream.
+        context:
+            Runtime metadata for artifact naming and reproducibility.
+
+        Returns
+        -------
+        FrameExportResult
+            Forwarded frame buffer plus generated artifacts.
+        """

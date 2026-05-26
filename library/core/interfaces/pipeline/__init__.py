@@ -1,3 +1,14 @@
+"""Public orchestration ports used by pipeline application services.
+
+The interfaces in this package allow applications to replace monitoring,
+output storage, runner execution, event buses, retry policy, validation, and
+pipeline factories without depending on concrete infrastructure classes.
+
+These contracts sit at the application boundary: implementations may use
+threads, databases, web frameworks, or queues, but callers should interact only
+through these ports.
+"""
+
 from __future__ import annotations
 
 from importlib import import_module

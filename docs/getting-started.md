@@ -41,7 +41,8 @@ print(outputs.results[0].y)
 print(outputs.final_artifacts[0].content)
 ```
 
-The complete runnable file is [examples/minimal_pipeline.py](../examples/minimal_pipeline.py).
+The complete runnable file is available in the repository at
+`examples/minimal_pipeline.py`.
 
 ## Expected Output
 

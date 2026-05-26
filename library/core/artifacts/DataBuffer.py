@@ -12,7 +12,11 @@ _SENTINEL = object()
 
 class DataBuffer:
     """
-    Multi-consumer streaming buffer with reference counting.
+    Multi-consumer streaming buffer for progressive analyzer data.
+
+    Streaming analyzers publish `IData` values here so visualizers can consume
+    progressive updates without forcing a full analyzer result to materialize.
+    Items are retained until all configured subscribers have consumed them.
     """
 
     def __init__(
@@ -37,6 +41,12 @@ class DataBuffer:
                 self.put(d)
 
     def put(self, item: IData) -> None:
+        """
+        Publish one data item and block when the bounded buffer is full.
+
+        The item is ignored after closure or when the configured consumer count
+        is zero.
+        """
         with self._cond:
             if self._closed or self._consumers_default <= 0:
                 return
@@ -57,6 +67,7 @@ class DataBuffer:
             return self._closed
 
     def close(self) -> None:
+        """Mark the stream complete and wake all subscribers."""
         with self._cond:
             self._closed = True
             if self._consumers_default <= 0:
@@ -84,6 +95,7 @@ class DataBuffer:
             self._consumers_default = consumers
 
     def subscribe(self, consumer_id: int) -> IBufferSubscription[IData]:
+        """Create a subscriber cursor for a configured consumer id."""
         with self._cond:
             self._subscribers[consumer_id] = 0
             return DataSubscription(self, consumer_id)
@@ -123,14 +135,18 @@ class DataBuffer:
 
 
 class DataSubscription:
+    """Iterator returned by `DataBuffer.subscribe`."""
+
     def __init__(self, buffer: DataBuffer, consumer_id: int):
         self._buffer = buffer
         self._id = consumer_id
 
     def __iter__(self):
+        """Return this subscription as its own iterator."""
         return self
 
     def __next__(self) -> IData:
+        """Return the next data item for this subscriber."""
         return self._buffer._get_for(self._id)
 
     def abort(self) -> None:

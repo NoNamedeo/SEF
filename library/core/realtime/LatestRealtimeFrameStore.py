@@ -10,7 +10,12 @@ from library.core.realtime.RealtimeFrame import RealtimeFrame
 
 @dataclass(frozen=True, slots=True)
 class RealtimeFrameSnapshot:
-    """Point-in-time view of a realtime frame store."""
+    """
+    Point-in-time view of a realtime frame store.
+
+    Snapshots are safe for UI polling. The contained frame, when present, is a
+    copy made by `LatestRealtimeFrameStore.snapshot()`.
+    """
 
     frame: RealtimeFrame | None
     version: int
@@ -38,6 +43,13 @@ class LatestRealtimeFrameStore(IRealtimeFrameSink):
         self._updated_at: datetime | None = None
 
     def publish(self, frame: RealtimeFrame) -> None:
+        """
+        Store a copy of the newest accepted realtime frame.
+
+        Lower-priority raw frames do not replace higher-priority annotated
+        previews. This keeps live viewers from flickering between unmatched raw
+        and rendered layers.
+        """
         with self._lock:
             if self._should_keep_current_frame(frame):
                 return
@@ -56,6 +68,7 @@ class LatestRealtimeFrameStore(IRealtimeFrameSink):
             self._updated_at = datetime.now(timezone.utc)
 
     def close(self) -> None:
+        """Mark the store inactive while keeping the latest frame available."""
         with self._lock:
             self._active = False
             self._updated_at = datetime.now(timezone.utc)

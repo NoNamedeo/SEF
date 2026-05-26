@@ -26,13 +26,30 @@ class IEventBus(ABC):
     WILDCARD = "*"
 
     @abstractmethod
-    def subscribe(self, event_type: str, handler: EventHandler) -> None: ...
+    def subscribe(self, event_type: str, handler: EventHandler) -> None:
+        """
+        Register a handler for one event type.
+
+        Use `IEventBus.WILDCARD` to observe every event.
+        """
+        ...
 
     @abstractmethod
-    def unsubscribe(self, event_type: str, handler: EventHandler) -> None: ...
+    def unsubscribe(self, event_type: str, handler: EventHandler) -> None:
+        """Remove a previously registered handler when present."""
+        ...
 
     @abstractmethod
-    def dispatch(self, event: Event) -> None: ...
+    def dispatch(self, event: Event) -> None:
+        """
+        Publish an event synchronously.
+
+        Implementations should isolate handler failures so one subscriber does
+        not prevent remaining subscribers from receiving the event.
+        """
+        ...
 
     @abstractmethod
-    async def publish(self, event: Event) -> None: ...
+    async def publish(self, event: Event) -> None:
+        """Publish an event from an async caller."""
+        ...

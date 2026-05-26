@@ -26,6 +26,24 @@ class PipelineConfigMigration:
     migrate: Callable[[Mapping[str, Any]], Mapping[str, Any]]
 
     def apply(self, config: Mapping[str, Any]) -> dict[str, Any]:
+        """
+        Apply the migration to a config mapping.
+
+        Parameters
+        ----------
+        config:
+            Source config in `source_version` schema.
+
+        Returns
+        -------
+        dict[str, Any]
+            Migrated config with `schema_version` set to `target_version`.
+
+        Raises
+        ------
+        ConfigVersionError
+            If the migration function does not return a mapping.
+        """
         migrated = self.migrate(config)
         if not isinstance(migrated, Mapping):
             raise ConfigVersionError(
@@ -41,7 +59,22 @@ class PipelineConfigMigration:
 
 @dataclass(frozen=True, slots=True)
 class VersionedPipelineConfig:
-    """Normalized pipeline configuration plus schema-version metadata."""
+    """
+    Normalized pipeline configuration plus schema-version metadata.
+
+    Attributes
+    ----------
+    root:
+        Canonical top-level config mapping after migration.
+    pipeline:
+        Canonical `pipeline` section consumed by `ConfigPipelineBuilder`.
+    schema_version:
+        Resolved public schema version.
+    explicit_version:
+        Whether the user supplied `schema_version`.
+    applied_migrations:
+        Ordered migration labels applied during normalization.
+    """
 
     root: Mapping[str, Any]
     pipeline: Mapping[str, Any]
@@ -50,7 +83,7 @@ class VersionedPipelineConfig:
     applied_migrations: tuple[str, ...] = ()
 
     def source_config(self) -> dict[str, Any]:
-        """Return a compact source config safe to store in PipelineContext."""
+        """Return a compact source config safe to store in `PipelineContext`."""
         return {
             PIPELINE_CONFIG_VERSION_KEY: self.schema_version,
             "pipeline": dict(self.pipeline),
@@ -72,6 +105,26 @@ class PipelineConfigVersionManager:
     migrations: tuple[PipelineConfigMigration, ...] = field(default_factory=tuple)
 
     def normalize(self, config: Mapping[str, Any]) -> VersionedPipelineConfig:
+        """
+        Validate, migrate, and canonicalize a pipeline config.
+
+        Parameters
+        ----------
+        config:
+            User-provided top-level configuration mapping.
+
+        Returns
+        -------
+        VersionedPipelineConfig
+            Canonical config plus version metadata.
+
+        Raises
+        ------
+        ConfigSchemaError
+            If the root or `pipeline` section has an invalid shape.
+        ConfigVersionError
+            If the explicit schema version is malformed or unsupported.
+        """
         if not isinstance(config, Mapping):
             raise ConfigSchemaError("'config' must be a mapping.", path="config")
 
@@ -135,7 +188,12 @@ DEFAULT_PIPELINE_CONFIG_VERSION_MANAGER = PipelineConfigVersionManager()
 
 
 def normalize_pipeline_config(config: Mapping[str, Any]) -> VersionedPipelineConfig:
-    """Normalize a user config using the default public schema-version policy."""
+    """
+    Normalize a user config using the default public schema-version policy.
+
+    This helper is the public convenience entry point used by
+    `ConfigPipelineBuilder`.
+    """
     return DEFAULT_PIPELINE_CONFIG_VERSION_MANAGER.normalize(config)
 
 

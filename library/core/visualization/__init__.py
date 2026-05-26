@@ -1,3 +1,11 @@
+"""UI-agnostic visualization contracts and pipeline output values.
+
+Visualizers should return `VisualArtifact` instances instead of manipulating a
+specific UI toolkit. This lets Streamlit, notebooks, web APIs, CLIs, and file
+exporters render the same completed pipeline output without coupling the core
+runtime to presentation infrastructure.
+"""
+
 from __future__ import annotations
 
 from importlib import import_module

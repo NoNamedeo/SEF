@@ -5,7 +5,12 @@ from library.core.realtime.RealtimeFrame import RealtimeFrame
 
 
 class NullRealtimeFrameSink(IRealtimeFrameSink):
-    """Sink used when realtime rendering is configured without an external consumer."""
+    """
+    No-op realtime sink.
+
+    Use this sink when a component accepts realtime publication but the current
+    application has no viewer attached.
+    """
 
     def publish(self, frame: RealtimeFrame) -> None:
         return

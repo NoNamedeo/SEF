@@ -23,6 +23,7 @@ class ArucoMarkerObservation:
 
     @property
     def center(self) -> Point2D | None:
+        """Return the marker center as `(x, y)` when both coordinates exist."""
         if self.center_x is None or self.center_y is None:
             return None
         return self.center_x, self.center_y
@@ -41,6 +42,7 @@ class ArucoMarkerSignalSample(ISignalSample):
         self.markers = list(self.markers)
 
     def marker_by_id(self, marker_id: int) -> ArucoMarkerObservation | None:
+        """Return the first observation for `marker_id`, if present."""
         for marker in self.markers:
             if marker.marker_id == marker_id:
                 return marker

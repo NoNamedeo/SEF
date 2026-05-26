@@ -43,3 +43,7 @@ datasets/
 __pycache__/
 *.pyc
 .venv/
+sef.egg-info/
+.ruff_cache/
+.pytest_cache/
+site/

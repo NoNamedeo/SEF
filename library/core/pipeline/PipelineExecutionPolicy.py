@@ -8,7 +8,7 @@ from library.core.pipeline.PipelineContext import PipelineContext
 
 
 class PipelineExecutionMode(str, Enum):
-    """Supported execution modes for one pipeline stage."""
+    """Execution modes that can be selected for one pipeline stage."""
 
     BATCH = "batch"
     STREAMING = "streaming"
@@ -118,13 +118,28 @@ class PipelineExecutionPolicy(Protocol):
     """
 
     def decide_source(self, context: PipelineStagePolicyContext) -> PipelineExecutionDecision:
-        """Choose how a source stage should produce its output."""
+        """
+        Choose how a source stage should produce its output.
+
+        Implementations must return batch mode when `context.stage_streamable`
+        is `False`.
+        """
 
     def decide_stage(self, context: PipelineStagePolicyContext) -> PipelineExecutionDecision:
-        """Choose how a normal transformation/export stage should run."""
+        """
+        Choose how a transformation, cleaner, exporter, or processor should run.
+
+        The decision should preserve an active stream when possible and should
+        avoid opening a stream when downstream stages cannot consume it.
+        """
 
     def decide_analyzer(self, context: PipelineStagePolicyContext) -> PipelineExecutionDecision:
-        """Choose how an analyzer should consume signal input."""
+        """
+        Choose how an analyzer should consume signal input.
+
+        Streaming analyzer decisions affect whether progressive visualizers can
+        receive intermediate data during a run.
+        """
 
 
 class DefaultPipelineExecutionPolicy:
@@ -138,6 +153,15 @@ class DefaultPipelineExecutionPolicy:
     """
 
     def decide_source(self, context: PipelineStagePolicyContext) -> PipelineExecutionDecision:
+        """
+        Select source execution mode from source capability and downstream demand.
+
+        Returns
+        -------
+        PipelineExecutionDecision
+            Batch when no progressive consumer benefits from a stream;
+            streaming when a downstream stage can consume frames progressively.
+        """
         if not context.stage_streamable:
             return self._batch("source exposes only a batch contract")
         if not self._has_streaming_demand(context):
@@ -145,6 +169,13 @@ class DefaultPipelineExecutionPolicy:
         return self._stream("source opens a streaming segment for downstream demand")
 
     def decide_stage(self, context: PipelineStagePolicyContext) -> PipelineExecutionDecision:
+        """
+        Select execution mode for non-analyzer processing stages.
+
+        The default policy keeps an active stream whenever the stage can process
+        it and uses memory estimates to prefer bounded queues over full
+        materialization when both estimates are available.
+        """
         if not context.stage_streamable:
             return self._batch("stage requires a complete input sequence")
         if context.input_is_streaming:
@@ -158,6 +189,12 @@ class DefaultPipelineExecutionPolicy:
         return self._stream("opens streaming segment for downstream streamable stage")
 
     def decide_analyzer(self, context: PipelineStagePolicyContext) -> PipelineExecutionDecision:
+        """
+        Select analyzer execution mode.
+
+        Streaming is selected when the analyzer can consume an active stream or
+        when a progressive visualizer creates demand for analyzer updates.
+        """
         if not context.stage_streamable:
             return self._batch("analyzer requires a complete signal")
         if context.input_is_streaming:

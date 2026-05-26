@@ -63,8 +63,28 @@ class PluginDefinition:
     """
     Immutable descriptor for a registered plugin.
 
-    frozen=True  prevents accidental mutation after registration.
-    slots=True   reduces memory overhead for registries with many plugins.
+    The descriptor is intentionally serializable except for `factory`.
+    `as_dict()` exposes `factory_path` instead of the callable so diagnostics
+    and UIs can render plugin catalogs without leaking implementation objects.
+
+    Attributes
+    ----------
+    category:
+        Canonical plugin category.
+    name:
+        Canonical plugin name used in configs.
+    factory:
+        Callable used by `PluginRegistry.create`.
+    description:
+        Human-readable summary for docs and UI catalogs.
+    version:
+        Plugin implementation version. This is independent from pipeline config
+        schema versioning.
+    aliases:
+        Backwards-compatible names accepted by lookup and config builders.
+    metadata:
+        Immutable mapping for UI tags, ownership, expected inputs, hardware
+        requirements, or adapter-specific catalog data.
     """
 
     category: str
@@ -153,6 +173,29 @@ class PluginRegistry:
         """
         Register a new plugin.
 
+        Parameters
+        ----------
+        category:
+            Public plugin category, usually a `PluginCategory` member.
+        name:
+            Stable canonical name used in declarative configs.
+        factory:
+            Callable used to instantiate the component.
+        description:
+            Optional human-readable description for diagnostics and catalogs.
+        version:
+            Plugin implementation version.
+        aliases:
+            Alternative lookup names for backwards compatibility.
+        metadata:
+            Optional immutable metadata exposed through `describe()` and
+            `snapshot()`.
+
+        Returns
+        -------
+        PluginDefinition
+            Immutable descriptor stored by the registry.
+
         Raises
         ------
         InvalidPluginRegistrationError
@@ -186,7 +229,12 @@ class PluginRegistry:
         return definition
 
     def register_definition(self, definition: PluginDefinition) -> PluginDefinition:
-        """Register an already-built PluginDefinition."""
+        """
+        Register an already-built plugin definition.
+
+        This method applies the same validation and duplicate checks as
+        `register()`; it does not bypass registry invariants.
+        """
         return self.register(
             definition.category,
             definition.name,
@@ -211,7 +259,15 @@ class PluginRegistry:
     # ── Lookup ───────────────────────────────────────────────────────────────
 
     def get(self, category: str | PluginCategory, name: str) -> PluginDefinition:
-        """Return the PluginDefinition for (category, name)."""
+        """
+        Return the plugin definition for a category and name or alias.
+
+        Raises
+        ------
+        KeyError
+            If the category/name pair cannot be resolved. Builders wrap this
+            into `PluginResolutionError` so config errors include a path.
+        """
         try:
             category_name = _normalize_identifier(str(category), "category")
             plugin_name = _normalize_identifier(name, "name")
@@ -228,11 +284,19 @@ class PluginRegistry:
         raise KeyError(f"Plugin '{plugin_name}' not found in category '{category_name}'. Available: {available}")
 
     def create(self, category: str | PluginCategory, name: str, *args, **kwargs) -> Any:
-        """Instantiate the plugin identified by (category, name)."""
+        """
+        Instantiate the plugin identified by category and name or alias.
+
+        Side Effects
+        ------------
+        Calls the registered factory with the provided positional and keyword
+        arguments. Factory exceptions are intentionally not swallowed here so
+        builders can attach configuration context.
+        """
         return self.get(category, name).factory(*args, **kwargs)
 
     def list(self, category: str | PluginCategory | None = None) -> list[PluginDefinition]:
-        """Return all registered plugins, optionally filtered by category."""
+        """Return canonical plugin definitions, optionally filtered by category."""
         with self._lock:
             if category is None:
                 return [definition for cat_map in self._definitions.values() for definition in cat_map.values()]
@@ -252,7 +316,12 @@ class PluginRegistry:
         *,
         include_aliases: bool = False,
     ) -> tuple[str, ...]:
-        """Return registered names for a category, sorted for deterministic diagnostics."""
+        """
+        Return registered names for a category.
+
+        Names are sorted to keep diagnostics, docs, and UI catalogs
+        deterministic.
+        """
         category_name = _normalize_identifier(str(category), "category")
         with self._lock:
             names = set(self._definitions.get(category_name, {}).keys())
@@ -266,7 +335,12 @@ class PluginRegistry:
             return tuple(sorted(self._definitions))
 
     def snapshot(self) -> Mapping[str, Mapping[str, PluginDefinition]]:
-        """Return an immutable category/name snapshot of canonical plugin definitions."""
+        """
+        Return an immutable category/name snapshot.
+
+        The snapshot contains canonical plugin definitions only; aliases remain
+        lookup concerns and are visible through each definition.
+        """
         with self._lock:
             return MappingProxyType(
                 {

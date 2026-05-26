@@ -21,44 +21,62 @@ from library.core.pipeline.VisualizerBinding import VisualizerBinding
 @dataclass(frozen=True)
 class PipelineContext:
     """
-    Pure dependency holder for the pipeline execution unit.
+    Immutable dependency graph for one pipeline execution unit.
 
     Design rationale
     ----------------
-    PipelineContext owns construction invariants, not execution logic. It is
-    an immutable bag of collaborators resolved by a builder/factory before
-    execution. This keeps Pipeline itself completely stateless with respect to
-    construction decisions, and makes each context safely reusable and testable
-    in isolation.
+    `PipelineContext` owns construction invariants, not execution logic. It is
+    a frozen value assembled by builders or factories before execution starts.
+    `Pipeline` can therefore remain a thin facade over planning and runtime
+    collaborators, while tests and application services can inspect a complete
+    pipeline topology without running it.
 
-    Field ordering follows the dataclass rule: fields WITH defaults must
-    come after fields WITHOUT defaults.
+    Lifecycle
+    ---------
+    A context is normally built once per submitted run. It may be reused when
+    all contained component instances are themselves safe to reuse; components
+    with per-run mutable state should be instantiated per run by the builder or
+    registry factory.
 
-    Required fields
-    ---------------
-    frame_extractor  : entry-point of the pipeline; must always be present.
-    signal_extractor : converts processed frames into a trackable signal.
-    analyzers        : at least one analyzer must be provided.
+    Thread safety
+    -------------
+    The context normalizes component collections to tuples and deep-copies
+    `source_config`. It does not make contained component objects immutable or
+    thread-safe.
 
-    Optional fields (default to empty collections)
-    -----------------------------------------------
-    frame_processors : zero or more buffer-level frame preprocessing steps.
-    frame_exporters  : zero or more file-backed final-output exporters that
-                       consume processed frames and return a replayable buffer.
-    signal_cleaners  : zero or more smoothing / filtering steps on signals.
-    visualizers      : zero or more rendering steps executed after analysis.
-    visualizer_bindings
-                     : optional selective visualizer-to-result mappings.
-    intermediate_frame_capture
-                     : optional bounded capture settings for frame processing
-                       debug snapshots.
-    intermediate_frame_visualizers
-                     : optional visualizers that render the captured debug
-                     collection, never normal analysis results.
-    stream_runtime   : bounded-buffer and latency policy settings used by the
-                       adaptive execution runtime.
-    source_config    : optional construction metadata used by exporters to
-                       recreate the original registry-driven configuration.
+    Attributes
+    ----------
+    frame_extractor:
+        Required source component that produces frames.
+    signal_extractor:
+        Required component that turns processed frames into signal samples.
+    analyzers:
+        Non-empty analyzer sequence.
+    frame_processors:
+        Optional buffer-level preprocessing steps.
+    frame_exporters:
+        Optional final-output exporters that consume processed frames and
+        return artifacts while preserving replayable frames.
+    signal_cleaners:
+        Optional signal smoothing, filtering, or normalization steps.
+    visualizers:
+        Visualizers applied to all analyzer results.
+    visualizer_bindings:
+        Selective visualizer-to-result bindings.
+    intermediate_frame_capture:
+        Bounded capture policy for frame-processing debug snapshots.
+    intermediate_frame_visualizers:
+        Visualizers dedicated to intermediate frame collections.
+    stream_runtime:
+        Bounded-buffer and latency-policy settings used by adaptive streaming.
+    source_config:
+        Compact construction metadata for reproducibility exports.
+
+    Raises
+    ------
+    PipelineContextError
+        If required components are missing, required sequences are empty, or a
+        typed field receives an invalid object.
     """
 
     # ── Required (no default) ───────────────────────────────────────────────

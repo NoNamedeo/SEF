@@ -25,19 +25,22 @@ log = logging.getLogger(__name__)
 
 class ThreadedPipelineRunner(IPipelineRunner):
     """
-    Executes pipelines on a ThreadPoolExecutor with retry and lifecycle events.
+    Execute pipelines on a `ThreadPoolExecutor`.
 
-    ``run`` and ``submit`` share the same active-id tracking: the same
-    pipeline id cannot be executed concurrently through either entry point.
-    ``submit`` returns the underlying Future so callers can observe async
-    results or failures.
+    `run()` and `submit()` share active-id tracking: the same pipeline id cannot
+    be executed concurrently through either entry point. `submit()` returns the
+    underlying `Future` so callers can observe asynchronous results or failures.
 
-    ``cancel`` is best-effort: it can cancel queued work that has not started,
+    `cancel()` is best-effort: it can cancel queued work that has not started,
     but it cannot interrupt a pipeline that is already running.
 
-    Lifecycle events (BEFORE_RUN, AFTER_RUN, ON_ERROR, ON_RETRY) are
-    dispatched synchronously to the provided IEventBus from within the
-    worker thread.
+    Lifecycle events are dispatched synchronously to the configured `IEventBus`
+    from within the worker thread.
+
+    Thread safety
+    -------------
+    Runner bookkeeping is protected by a lock. Component instances inside a
+    submitted `Pipeline` remain responsible for their own thread-safety.
     """
 
     def __init__(
@@ -61,11 +64,44 @@ class ThreadedPipelineRunner(IPipelineRunner):
         self._reserved_ids: set[str] = set()
 
     def run(self, pipeline_id: str, pipeline: Pipeline) -> PipelineOutputs:
-        """Execute a pipeline synchronously through the same retry/lifecycle path."""
+        """
+        Execute a pipeline synchronously through the retry/lifecycle path.
+
+        Raises
+        ------
+        PipelineRunAlreadyActiveError
+            If another run with the same id is active or queued.
+        PipelineExecutionError
+            If execution fails and retry policy declines another attempt.
+        """
         self._begin_sync(pipeline_id)
         return self._execute(pipeline_id, pipeline)
 
     def submit(self, pipeline_id: str, pipeline: Pipeline) -> Future[PipelineOutputs]:
+        """
+        Submit a pipeline for background execution.
+
+        Parameters
+        ----------
+        pipeline_id:
+            Stable run identifier used by monitor, output store, and lifecycle
+            events.
+        pipeline:
+            Already-built pipeline facade.
+
+        Returns
+        -------
+        Future[PipelineOutputs]
+            Future that resolves to completed pipeline outputs or raises the
+            execution failure.
+
+        Raises
+        ------
+        PipelineRunAlreadyActiveError
+            If another run with the same id is active or queued.
+        Exception
+            Any monitor or executor failure raised while reserving the run id.
+        """
         rejected_error: PipelineRunAlreadyActiveError | None = None
         submit_failed_error: Exception | None = None
         future: Future[PipelineOutputs] | None = None
@@ -103,6 +139,15 @@ class ThreadedPipelineRunner(IPipelineRunner):
         return future
 
     def cancel(self, pipeline_id: str) -> bool:
+        """
+        Cancel queued work for a pipeline id when possible.
+
+        Returns
+        -------
+        bool
+            `True` only when the underlying `Future` accepted cancellation.
+            Already-running pipelines cannot be interrupted through this method.
+        """
         with self._lock:
             future = self._futures.get(pipeline_id)
             if future is None:

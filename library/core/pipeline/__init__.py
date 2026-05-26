@@ -1,3 +1,18 @@
+"""Public pipeline construction, planning, and execution contracts.
+
+The package exposes the stable runtime API used by applications, services, and
+UIs: `Pipeline`, `PipelineContext`, builders, execution policies, latency
+policies, config-version helpers, runner snapshots, and asynchronous execution
+facades.
+
+Boundary
+--------
+Public users should depend on these exports instead of importing executor
+collaborators directly. Executors and segment materializers are implementation
+details; custom behavior should normally be introduced through component
+interfaces, `PipelineExecutionPolicy`, `PluginRegistry`, or orchestration ports.
+"""
+
 from __future__ import annotations
 
 from importlib import import_module

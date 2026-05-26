@@ -1,37 +1,31 @@
 # Reference: Generated API
 
-This page is intended for generated API documentation through `mkdocstrings`.
-Install the optional docs dependencies before building:
+This section is generated with `mkdocstrings` from the public contracts exported
+by SEF package initializers.
+
+Build locally with:
 
 ```bash
 pip install -e ".[docs]"
 mkdocs serve
 ```
 
-## Core Facade
+Generated pages are split by public package so readers can navigate by
+integration concern instead of internal file layout.
 
-::: library.core
+- [Core Package](api-core.md)
+- [Pipeline Package](api-pipeline.md)
+- [Interfaces Package](api-interfaces.md)
+- [Artifacts Package](api-artifacts.md)
+- [Plugins Package](api-plugins.md)
+- [Visualization Package](api-visualization.md)
+- [Events Package](api-events.md)
+- [Realtime Package](api-realtime.md)
 
-## Pipeline Package
+Public imports should use package-level exports, for example:
 
-::: library.core.pipeline
-
-## Plugin Registry
-
-::: library.core.plugins.PluginRegistry
-
-## Public Errors
-
-::: library.core.errors
-
-## Component Interfaces
-
-::: library.core.interfaces
-
-## Artifacts
-
-::: library.core.artifacts
-
-## Visualization
-
-::: library.core.visualization
+```python
+from library.core import ConfigPipelineBuilder, Pipeline
+from library.core.interfaces import IAnalyzer, IStreamingAnalyzer
+from library.core.plugins import PluginCategory, PluginRegistry
+```

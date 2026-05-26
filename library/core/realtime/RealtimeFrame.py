@@ -17,6 +17,26 @@ class RealtimeFrame:
 
     The frame carries pixels plus enough metadata for UI adapters to render it
     without depending on pipeline-specific data classes.
+
+    Mutability
+    ----------
+    The image array is validated but not copied at construction time. Sinks that
+    cross thread boundaries should copy pixels before storing or sharing them.
+
+    Attributes
+    ----------
+    image:
+        Source image array.
+    color_space:
+        Color interpretation of `image`.
+    frame_index:
+        Optional source frame index.
+    timestamp_seconds:
+        Optional source timestamp.
+    produced_at:
+        UTC timestamp for when the realtime frame value was created.
+    metadata:
+        Adapter-specific metadata such as preview stage and priority.
     """
 
     image: np.ndarray
@@ -36,7 +56,14 @@ class RealtimeFrame:
         object.__setattr__(self, "metadata", dict(self.metadata))
 
     def as_rgb(self) -> np.ndarray:
-        """Return an RGB copy suitable for browser-oriented renderers."""
+        """
+        Return an RGB copy suitable for browser-oriented renderers.
+
+        Raises
+        ------
+        ValueError
+            If `color_space` is not one of the supported values.
+        """
         if self.color_space == "RGB":
             return self.image.copy()
         if self.color_space == "BGR":

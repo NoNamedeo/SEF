@@ -12,7 +12,16 @@ _SENTINEL = object()
 
 class SignalBuffer:
     """
-    Multi-consumer streaming buffer with reference counting.
+    Multi-consumer streaming buffer for signal samples.
+
+    The buffer retains each sample until all configured subscribers have
+    consumed it. This supports fan-out from one streaming signal stage to
+    multiple downstream consumers without forcing materialization.
+
+    Lifecycle
+    ---------
+    Configure the consumer count before producing samples. Producers call
+    `close()` after normal completion or `abort()` after failure.
     """
 
     def __init__(
@@ -41,6 +50,12 @@ class SignalBuffer:
     # PRODUCER
     # -------------------------
     def put(self, sample: ISignalSample) -> None:
+        """
+        Publish one sample and block when the bounded buffer is full.
+
+        The sample is ignored when the buffer is already closed or when the
+        configured consumer count is zero.
+        """
         with self._cond:
             if self._closed or self._consumers_default <= 0:
                 return
@@ -61,6 +76,7 @@ class SignalBuffer:
             return self._closed
 
     def close(self) -> None:
+        """Mark the stream complete and wake all subscribers."""
         with self._cond:
             self._closed = True
             if self._consumers_default <= 0:
@@ -91,6 +107,7 @@ class SignalBuffer:
     # SUBSCRIPTION
     # -------------------------
     def subscribe(self, consumer_id: int) -> IBufferSubscription[ISignalSample]:
+        """Create a subscriber cursor for a configured consumer id."""
         with self._cond:
             self._subscribers[consumer_id] = 0
             return SignalSubscription(self, consumer_id)
@@ -136,14 +153,18 @@ class SignalBuffer:
 
 
 class SignalSubscription:
+    """Iterator returned by `SignalBuffer.subscribe`."""
+
     def __init__(self, buffer: SignalBuffer, consumer_id: int):
         self._buffer = buffer
         self._id = consumer_id
 
     def __iter__(self):
+        """Return this subscription as its own iterator."""
         return self
 
     def __next__(self) -> ISignalSample:
+        """Return the next sample for this subscriber."""
         return self._buffer._get_for(self._id)
 
     def abort(self) -> None:

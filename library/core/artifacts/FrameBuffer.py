@@ -11,7 +11,20 @@ _SENTINEL = object()
 
 class FrameBuffer:
     """
-    Thread-safe streaming buffer based on Queue.
+    Thread-safe frame buffer for batch and streaming execution.
+
+    `FrameBuffer` exposes a public capacity for frame items and reserves one
+    internal queue slot for the end-of-stream sentinel. Iteration blocks until
+    frames are available or the buffer is closed.
+
+    Ordering
+    --------
+    Frames are yielded in the order accepted by `put()` or `try_put()`.
+
+    Thread safety
+    -------------
+    The queue operations are thread-safe. The `Frame` objects themselves are
+    not copied; producers and consumers remain responsible for pixel mutability.
     """
 
     def __init__(
@@ -30,6 +43,11 @@ class FrameBuffer:
                 self.put(f)
 
     def put(self, frame: Frame) -> None:
+        """
+        Publish a frame, blocking while the public queue is full.
+
+        The method returns silently when the buffer has already been closed.
+        """
         while not self.closed:
             try:
                 self._queue.put(frame, timeout=0.05)
@@ -61,10 +79,16 @@ class FrameBuffer:
         return item
 
     def get(self) -> Frame:
+        """
+        Return the next frame or raise `StopIteration` when closed.
+
+        The end-of-stream sentinel is reinserted so repeated consumers observe
+        completion consistently.
+        """
         item = self._queue.get()
 
         if item is _SENTINEL:
-            # ripubblica sentinel per altri consumer
+            # Reinsert the sentinel so other consumers also observe completion.
             self._queue.put(_SENTINEL)
             self.closed = True
             raise StopIteration
@@ -72,6 +96,7 @@ class FrameBuffer:
         return item
 
     def close(self) -> None:
+        """Close the buffer and wake consumers waiting for more frames."""
         self.closed = True
         while True:
             try:
@@ -97,9 +122,11 @@ class FrameBuffer:
                     continue
 
     def is_empty(self) -> bool:
+        """Return whether no frame or sentinel item is currently queued."""
         return self._queue.empty()
 
     def size(self) -> int:
+        """Return current queue size, including a sentinel if present."""
         return self._queue.qsize()
 
     def fill_ratio(self) -> float:
@@ -109,9 +136,11 @@ class FrameBuffer:
         return min(1.0, max(0.0, self.size() / self.capacity))
 
     def clone_empty(self) -> "FrameBuffer":
+        """Return an empty buffer with the same public capacity."""
         return FrameBuffer(buffer_size=self.capacity)
 
     def __iter__(self) -> Iterator[Frame]:
+        """Iterate frames until the buffer closes."""
         while True:
             try:
                 yield self.get()

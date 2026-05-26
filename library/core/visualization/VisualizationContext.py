@@ -7,7 +7,13 @@ from typing import Any, Mapping
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class VisualizationContext:
-    """Execution context passed to visualizers during artifact generation."""
+    """
+    Execution context passed to visualizers during artifact generation.
+
+    The context carries run metadata and render hints without coupling
+    visualizers to a specific UI framework. Values are copied to dictionaries at
+    construction time so visualizers receive a stable snapshot.
+    """
 
     pipeline_id: str | None = None
     analyzer_name: str | None = None

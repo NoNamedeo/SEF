@@ -9,7 +9,13 @@ from library.core.pipeline.PipelineContext import PipelineContext
 
 
 class IPipelineFactory(ABC):
-    """Creates executable Pipeline instances from validated contexts."""
+    """
+    Factory port that creates executable `Pipeline` instances.
+
+    Applications can replace this port to inject custom execution policy,
+    event buses, metadata propagation, or pipeline subclasses without changing
+    the orchestrator.
+    """
 
     @abstractmethod
     def create(
@@ -18,4 +24,13 @@ class IPipelineFactory(ABC):
         event_bus: IEventBus | None = None,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
-    ) -> Pipeline: ...
+    ) -> Pipeline:
+        """
+        Create a pipeline facade for a validated context.
+
+        Returns
+        -------
+        Pipeline
+            Executable pipeline instance ready for a runner.
+        """
+        ...

@@ -1,3 +1,17 @@
+"""Stable component and buffer interfaces for SEF plugins.
+
+This package is the main authoring surface for plugin developers. It separates
+batch contracts from streaming contracts, keeps component APIs independent from
+UI frameworks, and exposes capability metadata used by the pipeline planner.
+
+Design contract
+---------------
+Implementations should declare conservative `StageCapabilities`, preserve input
+ordering unless explicitly documented otherwise, and keep runtime side effects
+behind the appropriate output contracts rather than leaking framework-specific
+objects into core values.
+"""
+
 from __future__ import annotations
 
 from importlib import import_module

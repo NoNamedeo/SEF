@@ -15,7 +15,11 @@ MAX_VIDEO_ARTIFACT_BYTES = 25 * 1024 * 1024
 
 
 class ArtifactRole(StrEnum):
-    """Semantic role used by UIs and exporters to place artifacts correctly."""
+    """
+    Semantic role used by UIs and exporters to place artifacts correctly.
+
+    Roles are presentation hints. They do not change artifact data semantics.
+    """
 
     FINAL_OUTPUT = "final_output"
     ANALYSIS = "analysis"
@@ -26,7 +30,29 @@ class ArtifactRole(StrEnum):
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class VisualArtifact(ABC):
-    """Base contract for UI-agnostic presentation artifacts."""
+    """
+    Base contract for UI-agnostic presentation artifacts.
+
+    Visual artifacts are immutable values returned by visualizers and exporters.
+    They describe what should be rendered or persisted without assuming a
+    specific UI framework.
+
+    Attributes
+    ----------
+    artifact_id:
+        Stable id for UI diffing, downloads, and materialization caching.
+    kind:
+        Artifact kind string such as `image`, `video`, `table`, `json`, or
+        `text`.
+    role:
+        Semantic placement hint for adapters.
+    title:
+        Optional display title.
+    description:
+        Optional explanatory text.
+    metadata:
+        JSON-like metadata for adapters and diagnostics.
+    """
 
     artifact_id: str = field(default_factory=lambda: uuid4().hex)
     kind: str
@@ -44,7 +70,12 @@ class VisualArtifact(ABC):
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ImageArtifact(VisualArtifact):
-    """Binary image artifact ready for rendering or persistence."""
+    """
+    In-memory image artifact ready for rendering or persistence.
+
+    Use this for small images. Large images should generally be written through
+    a file-backed or deferred artifact strategy.
+    """
 
     mime_type: str
     data: bytes
@@ -63,7 +94,12 @@ class ImageArtifact(VisualArtifact):
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class VideoArtifact(VisualArtifact):
-    """Binary video artifact ready for UI playback or persistence."""
+    """
+    In-memory video artifact ready for UI playback or persistence.
+
+    This value enforces a hard byte limit to protect UI and API adapters from
+    accidentally carrying large encoded videos in memory.
+    """
 
     mime_type: str
     data: bytes
@@ -83,7 +119,11 @@ class VideoArtifact(VisualArtifact):
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class VideoFileArtifact(VisualArtifact):
-    """File-backed video artifact that avoids keeping encoded bytes in memory."""
+    """
+    File-backed video artifact that avoids keeping encoded bytes in memory.
+
+    The path must exist at construction time and point to a non-empty file.
+    """
 
     mime_type: str
     path: Path | str
@@ -127,6 +167,18 @@ class DeferredVideoArtifact(VisualArtifact):
         """
         Render the video if needed and return the resulting file path.
 
+        Parameters
+        ----------
+        output_dir:
+            Optional directory where the rendered video should be created.
+
+        Returns
+        -------
+        Path
+            Path to the rendered video file.
+
+        Notes
+        -----
         Repeated calls reuse the same file when it is still present. The lock
         prevents two UI refreshes from rendering the same expensive video at
         the same time.
@@ -162,7 +214,12 @@ VIDEO_ARTIFACT_TYPES = (VideoArtifact, VideoFileArtifact, DeferredVideoArtifact)
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class TableArtifact(VisualArtifact):
-    """Tabular artifact represented as simple records."""
+    """
+    Tabular artifact represented as column names and row mappings.
+
+    Rows are copied to dictionaries during construction so adapters can render a
+    stable snapshot.
+    """
 
     columns: tuple[str, ...]
     rows: tuple[Mapping[str, Any], ...]
@@ -186,7 +243,12 @@ class JsonArtifact(VisualArtifact):
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class TextArtifact(VisualArtifact):
-    """Textual artifact with an explicit content type."""
+    """
+    Textual artifact with an explicit content type.
+
+    Markdown is the default content type because it renders well in docs,
+    notebooks, and Streamlit-like adapters.
+    """
 
     content: str
     content_type: str = "text/markdown"

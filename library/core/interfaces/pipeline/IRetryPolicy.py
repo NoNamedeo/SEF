@@ -5,20 +5,20 @@ from abc import ABC, abstractmethod
 
 class IRetryPolicy(ABC):
     """
-    Strategy interface that governs retry behaviour for the orchestrator.
+    Strategy interface that governs retry behavior for runners.
 
     Design rationale
     ----------------
     Extracting the retry decision into its own object follows the
-    Open/Closed Principle: new strategies (backoff, jitter, circuit-breaker…)
-    are added by creating a new class, never by editing the orchestrator.
-    The orchestrator calls only two methods:
+    Open/Closed Principle: new strategies such as backoff, jitter, or circuit
+    breakers are added by creating a new class, never by editing the runner.
+    The runner calls only two methods:
 
-    • ``should_retry`` – binary gate: keep trying or give up?
-    • ``wait_seconds``  – optional pause before the next attempt (default 0).
+    - `should_retry`: binary gate deciding whether to keep trying.
+    - `wait_seconds`: optional pause before the next attempt.
 
-    Both receive the 1-based *attempt number that just failed*, so policies
-    can implement attempt-dependent logic (e.g. exponential backoff).
+    Both receive the 1-based attempt number that just failed, so policies
+    can implement attempt-dependent logic such as exponential backoff.
     """
 
     @abstractmethod
@@ -36,8 +36,8 @@ class IRetryPolicy(ABC):
         Returns
         -------
         bool
-            ``True``  → the orchestrator should make another attempt.
-            ``False`` → the orchestrator should stop and re-raise *error*.
+            `True` when the runner should make another attempt. `False` when
+            the runner should stop and re-raise `error`.
         """
 
     def wait_seconds(self, attempt: int) -> float:

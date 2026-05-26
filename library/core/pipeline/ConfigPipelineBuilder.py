@@ -21,50 +21,53 @@ from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 
 class ConfigPipelineBuilder:
     """
-    Declarative pipeline builder driven by a configuration dictionary.
+    Build a validated `PipelineContext` from a declarative configuration.
 
     Design rationale
     ----------------
-    ConfigPipelineBuilder exists alongside FluentPipelineBuilder to
-    support deployment scenarios where the pipeline topology is defined
-    externally (YAML, JSON, UI form) rather than in Python code.
+    `ConfigPipelineBuilder` exists for deployment scenarios where the pipeline
+    topology is owned by YAML, JSON, an API payload, or a UI editor rather than
+    by Python construction code.
 
-    The builder delegates ALL instantiation to the PluginRegistry so that
-    it never imports concrete implementations directly — it only knows
-    about categories and names defined in PluginCategory.
+    The builder delegates all component construction to `PluginRegistry`. It
+    knows category names and schema structure, but it does not import concrete
+    frame extractors, processors, analyzers, or visualizers. This keeps the
+    core configuration layer independent from infrastructure adapters.
 
     Configuration schema
     --------------------
+    ```yaml
+    schema_version: "1.0"
     pipeline:
-      frame_extractor:                  # required
+      frame_extractor:
         name: opencv_buffered
         params:
-          source: "/path/to/video.mp4"
+          path: /path/to/video.mp4
 
       frame_processors:
-        - name: opencv_gray             # default processor_type: single_frame
+        - name: opencv_gray
           processor_type: single_frame
         - name: motion_magnification
           processor_type: frame_buffer
 
-      signal_extractor:                 # required
+      signal_extractor:
         name: opencv_tracker
         params:
           roi: [100, 200, 50, 80]
 
-      signal_cleaners:                  # optional list
+      signal_cleaners:
         - name: moving_average
           params:
             window: 5
 
-      analyzers:                        # required list (min 1)
+      analyzers:
         - name: vertical_position
 
-      visualizers:                      # optional list
+      visualizers:
         - name: matplotlib
-          result_indices: [0]            # optional; omit to visualize all results
+          result_indices: [0]
 
-      intermediate_frames:              # optional frame-processing debug stream
+      intermediate_frames:
         enabled: true
         sampling_interval: 10
         max_stored_frames: 20
@@ -73,13 +76,25 @@ class ConfigPipelineBuilder:
         visualizers:
           - name: intermediate_frames_grid
 
-      runtime:                          # optional streaming runtime policy
+      runtime:
         frame_buffer_size: 8
         signal_buffer_size: 8
         data_buffer_size: 8
         latency_policy:
-          name: blocking                # blocking | drop_newest | drop_oldest | adaptive_sampling
+          name: blocking
           params: {}
+    ```
+
+    Versioning
+    ----------
+    Configs are normalized through `normalize_pipeline_config`. Unversioned
+    configs are accepted as the current public schema for compatibility, while
+    unsupported explicit versions raise `ConfigVersionError`.
+
+    Mutability
+    ----------
+    The input mapping is read and copied into a new `PipelineContext`; callers
+    should not rely on later mutations to the original mapping.
 
     Raises
     ------
@@ -95,6 +110,36 @@ class ConfigPipelineBuilder:
     # ── Public API ───────────────────────────────────────────────────────────
 
     def build_context(self, config: Mapping[str, Any]) -> PipelineContext:
+        """
+        Resolve a versioned config into an immutable `PipelineContext`.
+
+        Parameters
+        ----------
+        config:
+            Mapping containing a top-level `pipeline` section and, optionally,
+            a `schema_version` string.
+
+        Returns
+        -------
+        PipelineContext
+            Validated context containing constructed component instances,
+            runtime settings, visualizer bindings, intermediate-frame capture
+            configuration, and a compact reproducibility copy of the source
+            config.
+
+        Raises
+        ------
+        ConfigSchemaError
+            If required sections are missing or have the wrong shape.
+        ConfigVersionError
+            If `schema_version` is explicit and unsupported.
+        PluginResolutionError
+            If the registry cannot resolve a configured component name.
+        PluginConstructionError
+            If a plugin factory raises or receives invalid parameters.
+        PipelineConfigurationError
+            If context validation fails after plugin construction.
+        """
         try:
             versioned_config = normalize_pipeline_config(config)
             cfg = dict(versioned_config.pipeline)
@@ -201,10 +246,11 @@ class ConfigPipelineBuilder:
         return [self._create(category, self._ensure_mapping(item, f"{path}[{index}]"), f"{path}[{index}]") for index, item in enumerate(cfgs)]
 
     def _unbound_visualizers(self, cfg: dict[str, Any]) -> list[dict[str, Any]]:
+        visualizers = self._optional_list(cfg, "visualizers", "pipeline.visualizers")
         return [
-            item
-            for item in self._optional_list(cfg, "visualizers", "pipeline.visualizers")
-            if "result_indices" not in item
+            self._ensure_mapping(item, f"pipeline.visualizers[{index}]")
+            for index, item in enumerate(visualizers)
+            if "result_indices" not in self._ensure_mapping(item, f"pipeline.visualizers[{index}]")
         ]
 
     def _visualizer_bindings(self, cfg: dict[str, Any]) -> list[VisualizerBinding]:

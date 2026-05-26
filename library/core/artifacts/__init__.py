@@ -1,3 +1,15 @@
+"""Public data values exchanged by SEF pipeline stages.
+
+Artifacts are intentionally framework-neutral. They model frames, signals,
+sample values, analysis results, tracking playback, pose data, mask debug
+outputs, and bounded stream buffers without importing UI or infrastructure
+adapters.
+
+Plugin authors should return these values, or project-specific subclasses of
+the public interfaces, so downstream analyzers and visualizers can compose
+without knowing which concrete extractor or processor produced the data.
+"""
+
 from __future__ import annotations
 
 from importlib import import_module

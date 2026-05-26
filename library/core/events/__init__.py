@@ -1,3 +1,11 @@
+"""Public event contracts for pipeline triggers and lifecycle notifications.
+
+The events package defines a small immutable event object, a thread-safe event
+bus, and helper contracts for triggering pipeline execution or observing runner
+lifecycle transitions. Event payloads should remain explicit and serializable
+where possible so service, UI, and test adapters can inspect them safely.
+"""
+
 from __future__ import annotations
 
 from importlib import import_module

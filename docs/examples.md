@@ -4,7 +4,7 @@ Examples live in the repository-level `examples/` directory.
 
 ## Minimal Pipeline
 
-File: [examples/minimal_pipeline.py](../examples/minimal_pipeline.py)
+Repository file: `examples/minimal_pipeline.py`
 
 Run:
 

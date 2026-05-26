@@ -34,10 +34,12 @@ class EventBus(IEventBus):
         self._handlers: dict[str, list[EventHandler]] = {}
 
     def subscribe(self, event_type: str, handler: EventHandler) -> None:
+        """Register a handler for one event type or wildcard events."""
         with self._lock:
             self._handlers.setdefault(event_type, []).append(handler)
 
     def unsubscribe(self, event_type: str, handler: EventHandler) -> None:
+        """Remove a handler if it is registered for the event type."""
         with self._lock:
             handlers = self._handlers.get(event_type, [])
             try:
@@ -46,6 +48,11 @@ class EventBus(IEventBus):
                 pass
 
     def dispatch(self, event: Event) -> None:
+        """
+        Dispatch an event synchronously to matching handlers.
+
+        Handler failures are logged and ignored so publication remains isolated.
+        """
         event_type = event.event_type
 
         with self._lock:
@@ -64,12 +71,15 @@ class EventBus(IEventBus):
                 )
 
     async def publish(self, event: Event) -> None:
+        """Async-compatible wrapper around `dispatch()`."""
         self.dispatch(event)
 
     def clear(self) -> None:
+        """Remove all registered handlers."""
         with self._lock:
             self._handlers.clear()
 
     def has_subscribers(self, event_type: str) -> bool:
+        """Return whether a type-specific or wildcard handler is registered."""
         with self._lock:
             return bool(self._handlers.get(event_type)) or bool(self._handlers.get(self.WILDCARD))

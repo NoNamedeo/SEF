@@ -1,3 +1,25 @@
+"""Stable public contracts for the SEF core package.
+
+`library.core` is the preferred import surface for framework users who need the
+standard pipeline facade, declarative builder, typed errors, registry contracts,
+selected artifacts, visualization outputs, and realtime preview handoff values.
+
+The package intentionally re-exports only contracts that are stable enough for
+external integrations. Execution collaborators, planner internals, and concrete
+OpenCV/YOLO/Streamlit adapters live behind narrower package exports or outside
+the core layer.
+
+Examples
+--------
+```python
+from library.core import ConfigPipelineBuilder, Pipeline, PluginRegistry
+
+registry = PluginRegistry()
+context = ConfigPipelineBuilder(registry).build_context(config)
+outputs = Pipeline(context).run()
+```
+"""
+
 from __future__ import annotations
 
 from importlib import import_module

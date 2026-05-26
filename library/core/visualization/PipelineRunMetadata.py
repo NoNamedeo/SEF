@@ -7,7 +7,13 @@ from typing import Any, Mapping
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class PipelineRunMetadata:
-    """Execution metadata attached to completed pipeline outputs."""
+    """
+    Execution metadata attached to completed pipeline outputs.
+
+    Metadata is intended for reproducibility, UI summaries, and integration
+    diagnostics. Mappings are copied to dictionaries so consumers can inspect a
+    stable snapshot of the completed run.
+    """
 
     pipeline_id: str
     generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))

@@ -11,13 +11,47 @@ from library.core.pipeline.PipelineErrors import LatencyPolicyError
 
 @dataclass(frozen=True, slots=True)
 class LatencyPolicyConfig:
-    """Serializable runtime configuration for frame-stream latency handling."""
+    """
+    Serializable selector for frame-stream latency behavior.
+
+    The config is stored in pipeline configs and run metadata. Calling
+    `create()` returns a fresh policy instance because concrete policies keep
+    per-run counters and, for adaptive sampling, per-run control state.
+
+    Attributes
+    ----------
+    name:
+        One of `blocking`, `drop_newest`, `drop_oldest`, or
+        `adaptive_sampling`.
+    params:
+        Policy-specific parameters. Only adaptive sampling currently consumes
+        parameters.
+    """
 
     name: str = "blocking"
     params: Mapping[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any] | None) -> LatencyPolicyConfig:
+        """
+        Parse a latency policy mapping from declarative config.
+
+        Parameters
+        ----------
+        value:
+            Mapping from `pipeline.runtime.latency_policy`, or `None` to select
+            the default blocking policy.
+
+        Returns
+        -------
+        LatencyPolicyConfig
+            Normalized, lower-case policy selector.
+
+        Raises
+        ------
+        LatencyPolicyError
+            If the mapping shape, policy name, or params section is invalid.
+        """
         if value is None:
             return cls()
         if not isinstance(value, Mapping):
@@ -34,7 +68,19 @@ class LatencyPolicyConfig:
         return cls(name=name, params=dict(params))
 
     def create(self) -> FrameLatencyPolicy:
-        """Create a fresh stateful policy instance for one pipeline run."""
+        """
+        Create a fresh stateful policy instance for one pipeline run.
+
+        Returns
+        -------
+        FrameLatencyPolicy
+            Runtime strategy used by streaming frame extractors.
+
+        Raises
+        ------
+        LatencyPolicyError
+            If `name` is not supported or policy-specific params are invalid.
+        """
         if self.name == "blocking":
             return BlockingFrameLatencyPolicy()
         if self.name == "drop_newest":
@@ -50,15 +96,37 @@ class LatencyPolicyConfig:
         )
 
     def as_dict(self) -> dict[str, Any]:
+        """Return a JSON-safe representation for configs and run metadata."""
         return {"name": self.name, "params": dict(self.params)}
 
 
 class FrameLatencyPolicy(ABC):
-    """Strategy used by live/streaming extractors when the frame queue is under pressure."""
+    """
+    Strategy used by streaming frame extractors under queue pressure.
+
+    Implementations decide whether an incoming frame should be published,
+    dropped, or used to replace an older queued frame. Instances may keep
+    counters, so they are per-run runtime objects rather than reusable config
+    values.
+    """
 
     @abstractmethod
     def publish(self, frame: Frame, output_buffer: IFrameBuffer) -> bool:
-        """Publish ``frame`` to ``output_buffer`` or drop it. Return True when accepted."""
+        """
+        Publish `frame` to `output_buffer` or drop it.
+
+        Parameters
+        ----------
+        frame:
+            Incoming frame from a streaming source.
+        output_buffer:
+            Bounded frame queue feeding downstream stages.
+
+        Returns
+        -------
+        bool
+            `True` when the frame was accepted by the output buffer.
+        """
 
     def metrics(self) -> dict[str, Any]:
         """Return runtime counters for observability."""
@@ -66,7 +134,13 @@ class FrameLatencyPolicy(ABC):
 
 
 class BlockingFrameLatencyPolicy(FrameLatencyPolicy):
-    """Preserve every frame and let upstream block when the bounded queue is full."""
+    """
+    Preserve every frame by blocking upstream when the queue is full.
+
+    Use this policy for offline reproducibility and deterministic frame
+    coverage. It can increase latency in realtime pipelines when downstream
+    inference or visualization is slower than the source.
+    """
 
     def __init__(self) -> None:
         self.accepted_frames = 0
@@ -81,7 +155,13 @@ class BlockingFrameLatencyPolicy(FrameLatencyPolicy):
 
 
 class DropNewestFrameLatencyPolicy(FrameLatencyPolicy):
-    """Drop the incoming frame when the downstream queue is full."""
+    """
+    Drop the incoming frame when the downstream queue is full.
+
+    This policy protects downstream stages from backlog growth while preserving
+    already queued frames. It is useful when continuity of accepted frames is
+    more important than visual freshness.
+    """
 
     def __init__(self) -> None:
         self.accepted_frames = 0
@@ -99,7 +179,13 @@ class DropNewestFrameLatencyPolicy(FrameLatencyPolicy):
 
 
 class DropOldestFrameLatencyPolicy(FrameLatencyPolicy):
-    """Keep latency low by discarding the oldest queued frame when needed."""
+    """
+    Keep preview latency low by replacing stale queued frames.
+
+    This policy favors the most recent source frame and is usually the best
+    default for realtime camera previews where freshness is more important than
+    processing every frame.
+    """
 
     def __init__(self) -> None:
         self.accepted_frames = 0
@@ -165,6 +251,20 @@ class AdaptiveSamplingFrameLatencyPolicy(FrameLatencyPolicy):
 
     @classmethod
     def from_mapping(cls, params: Mapping[str, Any]) -> AdaptiveSamplingFrameLatencyPolicy:
+        """
+        Build an adaptive policy from config params.
+
+        Parameters
+        ----------
+        params:
+            Mapping with optional `min_interval`, `max_interval`,
+            `high_watermark`, and `low_watermark` values.
+
+        Raises
+        ------
+        LatencyPolicyError
+            If numeric params cannot be coerced or violate invariants.
+        """
         return cls(
             min_interval=_coerce_int(
                 params.get("min_interval", 1),

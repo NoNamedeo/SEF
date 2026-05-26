@@ -30,9 +30,15 @@ class PipelineOrchestrator:
     Application-facing pipeline execution facade.
 
     The orchestrator is the single public access point for execution:
-    synchronous runs go through ``run(context)``, background runs go through
-    ``submit(context)``, and event-driven integrations are optional adapters
+    synchronous runs go through `run(context)`, background runs go through
+    `submit(context)`, and event-driven integrations are optional adapters
     around the same submit path.
+
+    Boundary
+    --------
+    The orchestrator coordinates application ports. It does not validate
+    component schemas or execute stage logic directly; those responsibilities
+    belong to builders, contexts, runners, and pipeline execution collaborators.
     """
 
     def __init__(
@@ -64,6 +70,21 @@ class PipelineOrchestrator:
 
         This path does not require an EventBus. If a domain bus was configured,
         it is injected into event-emitting components before execution.
+
+        Parameters
+        ----------
+        context:
+            Validated pipeline context.
+        pipeline_id:
+            Optional run id. A unique id is generated when omitted.
+        execution_metadata:
+            Optional metadata propagated into pipeline events, visualizer
+            contexts, output metadata, and reproducibility data.
+
+        Returns
+        -------
+        PipelineOutputs
+            Completed outputs for the run.
         """
         resolved_pipeline_id = pipeline_id or self._new_pipeline_id()
         pipeline = self._build_pipeline(context, resolved_pipeline_id, execution_metadata=execution_metadata)
@@ -76,7 +97,14 @@ class PipelineOrchestrator:
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
     ) -> Future[PipelineOutputs]:
-        """Submit a pipeline for background execution and return its id."""
+        """
+        Submit a pipeline for background execution.
+
+        Returns
+        -------
+        Future[PipelineOutputs]
+            Future owned by the configured runner.
+        """
         resolved_pipeline_id = pipeline_id or self._new_pipeline_id()
         pipeline = self._build_pipeline(context, resolved_pipeline_id, execution_metadata=execution_metadata)
 
@@ -86,38 +114,40 @@ class PipelineOrchestrator:
         """
         Best-effort cancellation for a queued async pipeline.
 
-        Returns True only when the underlying runner cancelled work that had
-        not started yet. Already-running pipelines are not interrupted.
+        Parameters
+        ----------
+        pipeline_id:
+            Run identifier returned or supplied at submission time.
 
-        :param pipeline_id: the unique identifier of the pipeline to cancel
-        :type pipeline_id: str
+        Returns
+        -------
+        bool
+            `True` only when the underlying runner cancelled queued work that
+            had not started yet. Already-running pipelines are not interrupted.
         """
         return self._runner.cancel(pipeline_id)
 
     def active_ids(self) -> list[str]:
         """
-        Returns a list of currently active pipeline ids.
+        Return a snapshot of currently active pipeline ids.
 
         This list is a snapshot of the pipelines currently being executed.
         It does not imply that the pipelines are still running at the time of
-        calling this method.
-
-        :return: list of active pipeline ids
-        :rtype: list[str]
+        calling this method because async runs may complete immediately after
+        the snapshot is read.
         """
         return self._runner.active_ids()
 
     def shutdown(self, wait: bool = True) -> None:
         """
-        Shutdown the PipelineOrchestrator.
+        Shut down the underlying runner.
 
-        This method shuts down the underlying pipeline runner and its executor pool.
-        If wait is True, this method blocks until all currently running pipelines
-        have finished execution. If wait is False, this method does not block and
-        returns immediately.
-
-        :param wait: whether to wait for all currently running pipelines to finish
-        :type wait: bool
+        Parameters
+        ----------
+        wait:
+            When `True`, block until running pipelines finish. When `False`,
+            ask the runner to cancel pending work and return without waiting for
+            already-running pipelines.
         """
         self._runner.shutdown(wait=wait)
 

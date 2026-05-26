@@ -4,13 +4,18 @@ from dataclasses import dataclass
 from typing import Any, Mapping
 
 from library.core.events.Event import Event
-from library.core.pipeline.PipelineErrors import InvalidPipelineTriggerEventError
 from library.core.pipeline.PipelineContext import PipelineContext
+from library.core.pipeline.PipelineErrors import InvalidPipelineTriggerEventError
 
 
 @dataclass(frozen=True, slots=True)
 class PipelineTrigger:
-    """Typed representation of a pipeline trigger event payload."""
+    """
+    Typed representation of a pipeline trigger event payload.
+
+    This value is returned by `PipelineEvent.parse()` after validating the
+    generic event payload.
+    """
 
     pipeline_id: str
     context: PipelineContext
@@ -35,6 +40,22 @@ class PipelineEvent:
         correlation_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
     ) -> Event:
+        """
+        Create a generic event that requests pipeline execution.
+
+        Parameters
+        ----------
+        pipeline_id:
+            Desired run id.
+        context:
+            Validated context to execute.
+        source:
+            Event producer identifier.
+        correlation_id:
+            Optional correlation id. Defaults to `pipeline_id`.
+        execution_metadata:
+            Optional metadata propagated into execution.
+        """
         return Event(
             event_type=PipelineEvent.event_type,
             source=source,
