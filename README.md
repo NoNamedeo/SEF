@@ -1,442 +1,114 @@
 # SEF
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
+![Status](https://img.shields.io/badge/status-experimental-orange)
+[![Docs](https://img.shields.io/badge/docs-MkDocs-brightgreen)](docs/index.md)
+![Architecture](https://img.shields.io/badge/architecture-modular-informational)
+[![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-orange)](LICENSE)
 
-SEF is currently under active development.
-Public APIs may evolve before the first stable release.
+**SEF is an experimental Python framework for building modular computer-vision
+signal-extraction pipelines.**
 
-SEF è un framework Python per l'estrazione e l'analisi di segnali da video e sequenze di immagini tramite componenti componibili di computer vision. Il progetto è costruito intorno a un `core` stabile, estendibile e relativamente agnostico rispetto agli algoritmi concreti: il motore esegue pipeline, mentre i moduli OpenCV, gli analyzer, i visualizer e la UI si innestano sopra tale nucleo.
 
-## Core Authors
 
-- Matteo Vittori
+It separates video acquisition, frame processing, signal extraction, cleaning,
+analysis, visualization, runtime monitoring, and UI composition into explicit
+contracts. The project is architecture-focused and currently pre-1.0: public
+APIs are being hardened and may still evolve before a stable release.
 
-- Alejandro Innocenzi
 
-## Public Documentation
+![SEF Studio](docs/assets/sef-studio-hero.png)
 
-The public English documentation starts at [docs/index.md](docs/index.md). It includes overview, quickstart, API contracts, config versioning, registry guarantees, plugin authoring, streaming runtime, error handling, versioning policy, reference pages, and runnable examples.
 
-Nel repository convivono due facce complementari del sistema:
+<p align="center">
 
-- una libreria modulare per costruire ed eseguire pipeline video;
-- un'applicazione Streamlit, `SEF Studio`, che usa il core per comporre pipeline, configurarle, lanciarle e osservare risultati ed eventi.
+  <img 
 
-## Obiettivi del progetto
+    src="docs/assets/sef-studio-demo.gif"
 
-- separare la definizione della pipeline dalla sua esecuzione;
-- rendere sostituibili gli algoritmi tramite interfacce e registry;
-- supportare sia uso programmatico sia uso dichiarativo via configurazione;
-- permettere esecuzione sincrona, asincrona ed event-driven;
-- produrre non solo dati analitici, ma anche artefatti visuali riutilizzabili dalla UI;
-- offrire una base per casi d'uso diversi: tracking singolo, tracking multi-oggetto, optical flow, conteggi su barriere, playback annotato.
+    alt="SEF Studio Demo"
 
-## Architettura in breve
+    width="100%"
 
-### Struttura principale
+  />
 
-```text
-SEF/
-├── library/
-│   ├── core/
-│   │   ├── artifacts/         # modelli dati di base: Frame, Signal, samples, graph data
-│   │   ├── events/            # Event, EventBus, eventi di pipeline
-│   │   ├── interfaces/        # contratti astratti dei componenti
-│   │   ├── pipeline/          # builder, orchestrator, runner, monitor, contesto
-│   │   ├── plugins/           # PluginRegistry e factory dei plugin built-in
-│   │   ├── utils/             # utility OpenCV per selezioni geometriche
-│   │   └── visualization/     # PipelineOutputs, metadata, VisualArtifact
-│   ├── frame_extractors/      # acquisizione frame da video
-│   ├── frame_processors/        # preprocessing dei frame
-│   ├── signal_extractors/     # estrazione/tracking dei segnali
-│   ├── signal_cleaners/       # smoothing, widening, outlier rejection
-│   ├── analyzers/             # trasformazione del segnale in dati analitici
-│   ├── visualizers/           # trasformazione dei dati in artefatti visuali
-│   ├── retry_policies/        # politiche di retry per il runner
-│   └── branching_rules/       # regole di branching event-driven
-├── ui/
-│   ├── components/            # componenti Streamlit
-│   ├── services/              # orchestration applicativa lato UI
-│   ├── models/                # modelli di supporto alla UI
-│   └── state/                 # stato di sessione/canvas
-├── tests/                     # test di core, registry, branching, builder
-├── pipeline.yaml              # esempio di pipeline dichiarativa
-├── requirements.txt           # dipendenze complete per libreria + UI
-└── pyproject.toml             # packaging del pacchetto Python
-```
+</p>
 
-### Livelli architetturali
+## Why SEF
 
-Il progetto segue, in forma pragmatica, una struttura vicina alla Clean Architecture:
+SEF is designed for research, experimentation, and framework-oriented computer
+vision workflows where the pipeline matters as much as the individual model.
 
-- `library/core/interfaces`: contratti astratti dei componenti;
-- `library/core/artifacts` e `library/core/visualization`: modelli dati e output del dominio tecnico;
-- `library/core/pipeline`: orchestrazione, esecuzione, monitoraggio, retry, contesto;
-- `library/*` fuori da `core`: implementazioni concrete OpenCV/Matplotlib;
-- `ui/*`: presentazione e composizione visuale.
+Use it when you want to:
 
-La dipendenza va dal concreto verso l'astratto: la pipeline conosce le interfacce, non le implementazioni specifiche.
+- compose video-analysis pipelines from small interchangeable stages;
+- switch between programmatic and config-driven pipeline construction;
+- run batch and streaming-compatible stages through a shared runtime;
+- expose analyzer output as UI-agnostic visual artifacts;
+- build custom plugins without editing the execution engine;
+- inspect execution plans, runtime state, logs, outputs, and artifacts from a UI.
 
-## Come funziona il sistema
+## Key Features
 
-### Flusso di esecuzione
+- **Modular pipeline architecture** for extractors, processors, cleaners,
+  analyzers, visualizers, exporters, and branching rules.
+- **Streaming runtime** with bounded buffers and latency policies.
+- **Runtime execution planner** that records batch/streaming decisions.
+- **Plugin registry** with categories, aliases, descriptors, and config-driven
+  construction.
+- **Visual artifacts** decoupled from UI frameworks.
+- **Sync and async execution** through pipeline runners and monitors.
+- **Event-driven branching** for secondary pipelines triggered by domain events.
+- **SEF Studio** Streamlit UI for composing, running, and monitoring pipelines.
+- **Versioned configuration** for evolving declarative pipeline schemas.
 
-Il cuore del sistema è la classe `Pipeline`, che esegue i passi nell'ordine seguente:
+## Architecture Overview
+
+SEF keeps the framework core independent from concrete OpenCV, YOLO, Matplotlib,
+and Streamlit adapters. The core owns contracts, planning, runtime execution,
+events, typed errors, buffers, artifacts, and plugin resolution.
 
 ```mermaid
 flowchart LR
-    A[Frame Extractor] --> B[Frame Processors]
-    B --> C[Signal Extractor]
-    C --> D[Signal Cleaners]
-    D --> E[Analyzers]
-    E --> F[Visualizers]
-    F --> G[PipelineOutputs]
+    Config["Config / Python Builder"] --> Registry["Plugin Registry"]
+    Registry --> Context["PipelineContext"]
+    Context --> Planner["Execution Planner"]
+    Planner --> Runtime["Pipeline Runtime"]
+
+    Runtime --> Frames["Frame Extraction"]
+    Frames --> Processing["Frame Processing"]
+    Processing --> Signals["Signal Extraction"]
+    Signals --> Cleaning["Signal Cleaning"]
+    Cleaning --> Analysis["Analysis"]
+    Analysis --> Visuals["Visual Artifacts"]
+    Runtime --> Events["Events / Branching"]
+    Visuals --> UI["SEF Studio / APIs / Notebooks"]
 ```
 
-In termini di responsabilità:
+<!-- PLACEHOLDER: Add high-level architecture image matching the Mermaid flow; purpose: provide a polished visual for readers who do not inspect diagrams; ideal placement: directly after the Architecture Overview paragraph. -->
 
-- il `FrameExtractor` produce un `FrameBuffer`;
-- gli `ISingleFrameProcessor` trasformano un singolo `Frame`;
-- gli `IFrameBufferProcessor` trasformano l'intero `FrameBuffer`;
-- il `SignalExtractor` converte i frame in un `Signal`;
-- i `SignalCleaner` raffinano il segnale;
-- gli `Analyzer` producono dati strutturati (`IData`);
-- i `Visualizer` producono `VisualArtifact` indipendenti dalla UI.
+<!-- PLACEHOLDER: Add execution/runtime flow diagram showing batch vs streaming decisions, buffers, and latency policy; purpose: clarify the adaptive runtime at a glance; ideal placement: after the Mermaid diagram. -->
 
-### Il ruolo di `PipelineContext`
+The detailed architecture, public contracts, and extension rules live in the
+[MkDocs documentation](docs/index.md).
 
-`PipelineContext` è il contenitore immutabile dei collaboratori necessari all'esecuzione. Impone alcune invarianti:
+## Quick Example
 
-- `frame_extractor` obbligatorio;
-- `signal_extractor` obbligatorio;
-- almeno un `analyzer` obbligatorio;
-- processor, cleaner di segnale, visualizer e binding visuali opzionali;
-- nessun campo può contenere `None`.
-
-Questa scelta è importante perché la pipeline non decide nulla: riceve un contesto valido e lo esegue.
-
-### Il ruolo di `Pipeline`
-
-`library/core/pipeline/Pipeline.py` è il motore di esecuzione puro. Non conosce:
-
-- come i componenti siano stati costruiti;
-- da quale configurazione provengano;
-- se siano stati caricati da codice, YAML o UI;
-- quale significato di business abbiano i dati prodotti.
-
-La classe si occupa solo di:
-
-- eseguire gli step nell'ordine corretto;
-- iniettare l'`EventBus` nei componenti che implementano `IEventEmitter`;
-- creare l'oggetto finale `PipelineOutputs`;
-- avvolgere gli errori di stage in `PipelineExecutionError`.
-
-### Il ruolo di `PipelineOutputs`
-
-L'output finale di una run è un `PipelineOutputs`, che contiene:
-
-- `results`: i risultati analitici degli analyzer;
-- `artifacts`: gli artefatti visuali generati dai visualizer;
-- `metadata`: informazioni di esecuzione, inclusi `pipeline_id`, timestamp e metadati runtime.
-
-Questo rende il core adatto sia a script Python sia a UI o servizi che vogliano persistere o visualizzare i risultati.
-
-## Esecuzione: sync, async ed eventi
-
-### Facciata pubblica: `PipelineOrchestrator`
-
-L'interfaccia applicativa consigliata è `PipelineOrchestrator`. Espone:
-
-- `run(context, ...)` per esecuzione sincrona;
-- `submit(context, ...)` per esecuzione asincrona;
-- `terminate(pipeline_id)` per cancellazione best-effort;
-- `active_ids()` per ispezionare le pipeline attive;
-- `shutdown()` per chiudere il runner sottostante.
-
-### Esecuzione asincrona: `ThreadedPipelineRunner`
-
-L'implementazione di default del runner è `ThreadedPipelineRunner`, basata su `ThreadPoolExecutor`. Gestisce:
-
-- deduplicazione degli `id` attivi;
-- snapshot di stato tramite `IPipelineMonitor`;
-- retry policy configurabili;
-- lifecycle events della pipeline;
-- output store opzionale.
-
-Gli stati osservabili dal monitor sono, di fatto:
-
-- `QUEUED`;
-- `RUNNING`;
-- `SUCCEEDED`;
-- `FAILED`;
-- `CANCELLED`.
-
-I lifecycle event emessi sono:
-
-- `pipeline.before_run`;
-- `pipeline.after_run`;
-- `pipeline.error`;
-- `pipeline.retry`;
-- `pipeline.cancelled`;
-- `pipeline.rejected`;
-- `pipeline.submit_failed`.
-
-### Event bus e branching
-
-Il sistema supporta componenti che emettono eventi di dominio tramite `IEventEmitter`. L'implementazione base è `EventBus`, thread-safe e sincrona nel dispatch.
-
-Su questa base si innesta `BranchingCoordinator`, che:
-
-- ascolta gli eventi di dominio;
-- valuta una o più `IBranchingRule`;
-- costruisce nuove `PipelineContext` secondarie;
-- dispatcha un `PipelineEvent` che l'orchestrator usa per sottomettere nuove pipeline.
-
-Un esempio concreto già presente è `NewTrackBranchingRule`, che reagisce all'evento `track_created` generato dal tracker multi-oggetto e avvia una pipeline secondaria focalizzata sul nuovo seed track.
-
-## Il sistema di plugin
-
-### `PluginRegistry`
-
-`PluginRegistry` è il catalogo centrale delle implementazioni disponibili. Ogni plugin è registrato tramite:
-
-- categoria;
-- nome;
-- factory;
-- descrizione.
-
-Le categorie canoniche sono:
-
-- `frame_extractor`
-- `single_frame_processor`
-- `signal_extractor`
-- `signal_cleaner`
-- `analyzer`
-- `visualizer`
-- `branching_rule`
-
-### Due livelli di registry
-
-Nel repository esistono due punti di ingresso principali:
-
-- `create_builtin_registry()` in `library/core/plugins/PluginRegistry.py`
-  registra un set minimo e stabile di componenti built-in;
-- `ui/services/registry_bootstrap.py`
-  costruisce il registry esteso usato da `SEF Studio`, includendo più processor, cleaner di segnale, analyzer, visualizer e signal extractor.
-
-### Perché è importante
-
-Questo disaccoppiamento consente di:
-
-- definire pipeline via nome e parametri;
-- collegare facilmente una UI a un catalogo di componenti;
-- aggiungere nuovi moduli senza toccare il motore di esecuzione;
-- testare builder e registry separatamente.
-
-## Builder disponibili
-
-### `FluentPipelineBuilder`
-
-È il builder programmatico. Serve quando la pipeline viene definita direttamente in Python e permette di comporre il contesto passo dopo passo.
-
-### `ConfigPipelineBuilder`
-
-È il builder dichiarativo. Serve quando la pipeline nasce da una configurazione esterna, ad esempio JSON, YAML o da un editor UI. Il builder:
-
-- legge la configurazione;
-- valida struttura minima e tipi attesi;
-- usa il `PluginRegistry` per istanziare i componenti;
-- restituisce un `PipelineContext`.
-
-Un esempio di configurazione reale è presente in [pipeline.yaml](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/pipeline.yaml).
-
-## Componenti concreti presenti nel progetto
-
-Di seguito i gruppi principali già implementati nel repository.
-
-### Frame extractors
-
-- `OpenCVBufferedFrameExtractor`
-  legge un video con OpenCV e produce un `FrameBuffer`, con supporto a `resize`, `stride` e `max_frames`.
-
-### Frame processors
-
-- `OpenCVGrayFrameProcessor`
-- `SmoothingFrameProcessor`
-- `OpenCVResizeFrameProcessor`
-- `OpenCVBackgroundSubtractionFrameProcessor`
-- `OpenCVHistogramEqualizationFrameProcessor`
-
-Questi moduli servono a normalizzare o evidenziare il segnale utile prima dell'estrazione.
-
-### Signal extractors
-
-- `OpenCVBufferedSignalExtractor`
-  tracking singolo oggetto a partire da una ROI iniziale;
-- `OpenCVMultiObjectSignalExtractor`
-  tracking multi-oggetto con seed ROI, template expansion e eventi `track_created` / `track_lost`;
-- `OpenCVDenseOpticalFlowSignalExtractor`
-  estrazione di optical flow denso.
-
-### Signal cleaners
-
-- `MovingAverageCleaner`
-- `OutlierRejectionCleaner`
-- `SignalWidenerCleaner`
-- `OpticalFlowOutlierCleaner`
-
-### Analyzers
-
-- posizione verticale e orizzontale;
-- velocità verticale e orizzontale;
-- frequenza verticale e orizzontale;
-- conteggio attraversamenti barriere (`MultiObjectBarrierCountingAnalyzer`);
-- trasformazione del tracking in playback video-ready (`TrackingPlaybackAnalyzer`);
-- conversione del dense optical flow in campo vettoriale (`DenseOpticalFlowVectorFieldAnalyzer`).
-
-### Visualizers
-
-- grafici Matplotlib per funzioni, istogrammi, traiettorie, heatmap, vector field;
-- `TrackingVideoVisualizer` per produrre un video annotato con bounding box e centroidi.
-
-### Retry policies
-
-- `NoRetryPolicy`
-- `FixedRetryPolicy`
-- `ExponentialBackoffRetryPolicy`
-
-## Artefatti dati e visualizzazione
-
-Il progetto distingue bene tra dati analitici e presentazione:
-
-- `library/core/artifacts/*` contiene i modelli dati di passaggio tra gli step;
-- `library/core/visualization/*` contiene output e artefatti pronti alla UI.
-
-Tra gli oggetti più importanti:
-
-- `Frame`, `FrameBuffer`
-- `Signal`, `BoxSignalSample`, `MultiObjectSignalSample`, `DenseOpticalFlowSignalSample`
-- `TwoDimGraphData`, `VectorFieldGraphData`, `TrajectoryData`, `CategoryData`, `TrackingPlaybackData`
-- `ImageArtifact`, `VideoArtifact`, `TableArtifact`, `JsonArtifact`, `TextArtifact`
-
-Questa separazione evita che la UI dipenda dalla struttura interna degli analyzer.
-
-## SEF Studio
-
-`SEF Studio` è la superficie applicativa del progetto, avviabile con Streamlit. La UI:
-
-- carica il registry condiviso;
-- offre preset per tracking singolo, multi-oggetto e dense optical flow;
-- permette di selezionare ROI, geometrie e barriere;
-- compone la pipeline via canvas interattivo;
-- mostra editor JSON della configurazione;
-- avvia run sincrone o asincrone;
-- visualizza snapshot, eventi, output e artefatti.
-
-In altre parole, `ui/` non replica la logica del core: la orchestra e la rende ispezionabile.
-
-## Installazione
-
-### Requisiti
-
-- Python `>= 3.11`
-- OpenCV contrib
-- NumPy
-- Matplotlib
-- Streamlit
-
-### Installazione minima della libreria
-
-```bash
-pip install -e .
-```
-
-### Installazione completa per libreria + UI
-
-```bash
-pip install -r requirements.txt
-```
-
-## Avvio
-
-### Avviare la UI
-
-```bash
-streamlit run ui/app.py
-```
-
-### Eseguire i test
-
-```bash
-python -m unittest discover -s tests -v
-```
-
-## Esempi d'uso
-
-### 1. Pipeline programmatica con builder fluente
+SEF pipelines can be built from configuration and resolved through the plugin
+registry:
 
 ```python
-from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
-from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
-from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
-from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-
-context = (
-    FluentPipelineBuilder()
-    .with_frame_extractor(
-        OpenCVBufferedFrameExtractor(
-            path="videos/Baloons.mp4",
-            config={"stride": 1, "max_frames": 120},
-        )
-    )
-    .add_frame_processor(SingleFrameProcessorAdapter(OpenCVGrayFrameProcessor()))
-    .with_signal_extractor(
-        OpenCVBufferedSignalExtractor(
-            tracker_type="CSRT",
-            start_box=(100, 200, 50, 80),
-            config={"show": False},
-        )
-    )
-    .add_signal_cleaner(MovingAverageCleaner(window_size=5))
-    .add_analyzer(VerticalPositionAnalyzer())
-    .build_context()
-)
-
-outputs = PipelineOrchestrator().run(context)
-series = outputs.results[0]
-
-print(series.title)
-print(series.x[:5])
-print(series.y[:5])
-```
-
-Quando usare questo approccio:
-
-- script Python;
-- test;
-- notebook;
-- servizi backend che costruiscono la pipeline via codice.
-
-### 2. Pipeline dichiarativa da configurazione
-
-```python
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-from library.core.plugins.PluginRegistry import create_builtin_registry
+from library.core import ConfigPipelineBuilder, Pipeline
+from library.core.plugins import create_builtin_registry
 
 registry = create_builtin_registry()
 
 config = {
+    "schema_version": "1.0",
     "pipeline": {
         "frame_extractor": {
             "name": "opencv_buffered",
             "params": {"path": "videos/Baloons.mp4"},
         },
-        "frame_processors": [
-            {"name": "opencv_gray"},
-        ],
         "signal_extractor": {
             "name": "opencv_tracker",
             "params": {"start_box": [100, 200, 50, 80]},
@@ -450,106 +122,141 @@ config = {
         "visualizers": [
             {"name": "matplotlib"},
         ],
-    }
+    },
 }
 
 context = ConfigPipelineBuilder(registry).build_context(config)
-outputs = PipelineOrchestrator().run(context)
+outputs = Pipeline(context, pipeline_id="demo-run").run()
+
+print(outputs.results)
+print(outputs.final_artifacts)
 ```
 
-Quando usare questo approccio:
+For a minimal runnable example without OpenCV or UI dependencies, see
+[`examples/minimal_pipeline.py`](examples/minimal_pipeline.py).
 
-- editor visuale;
-- JSON/YAML configurabili;
-- integrazione con strumenti no-code o configuratori.
+## Visual Results
 
-### 3. Esecuzione asincrona con monitoraggio
+SEF is built around visual inspection, replayable artifacts, and UI-friendly
+outputs. The repository should eventually include real captures from the current
+pipeline and SEF Studio workflows.
 
-```python
-from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
+### Tracking Playback
 
-monitor = InMemoryPipelineMonitor()
-runner = ThreadedPipelineRunner(monitor=monitor)
-orchestrator = PipelineOrchestrator(runner=runner)
+<!-- PLACEHOLDER: Add before/after tracking playback GIF using a real repository video; purpose: show how tracked objects become annotated playback artifacts; ideal placement: first item in Visual Results. -->
 
-pipeline_id = orchestrator.submit(context)
+### Annotated Playback
 
-print("Active ids:", orchestrator.active_ids())
-print("Snapshot:", runner.snapshot(pipeline_id))
+<!-- PLACEHOLDER: Add annotated playback clip with bounding boxes, trajectories, and frame metadata; purpose: demonstrate visual artifact output quality; ideal placement: after Tracking Playback. -->
+
+### Optical Flow
+
+<!-- PLACEHOLDER: Add dense optical flow visualization from an actual SEF run; purpose: show motion-field analysis output; ideal placement: Optical Flow subsection. -->
+
+### Signal Graphs
+
+<!-- PLACEHOLDER: Add signal graph screenshot for vertical/horizontal position or velocity; purpose: show analyzer-to-visualizer data flow; ideal placement: Signal Graphs subsection. -->
+
+### Barrier Counting
+
+<!-- PLACEHOLDER: Add barrier counting screenshot or GIF with counted crossings; purpose: demonstrate geometric event analysis; ideal placement: Barrier Counting subsection. -->
+
+### Pose Tracking
+
+<!-- PLACEHOLDER: Add COCO/YOLO pose tracking GIF from a real pipeline run; purpose: show realtime or playback skeleton analysis; ideal placement: Pose Tracking subsection. -->
+
+### Motion Analysis
+
+<!-- PLACEHOLDER: Add motion-analysis comparison panel with source, processed frame, and output artifact; purpose: show intermediate artifacts and inspection workflow; ideal placement: Motion Analysis subsection. -->
+
+## SEF Studio
+
+`SEF Studio` is the Streamlit application built on top of the core framework.
+It is not a separate engine: it uses the same registry, config builder,
+pipeline runtime, monitors, outputs, and artifacts exposed by the library.
+
+Current UI goals:
+
+- compose pipeline stages visually;
+- edit and submit config-driven runs;
+- inspect execution plan and runtime status;
+- monitor logs by level;
+- preview realtime outputs when supported;
+- browse generated artifacts and analyzer results.
+
+```bash
+streamlit run ui/app.py
 ```
 
-Quando usare questo approccio:
+<!-- PLACEHOLDER: Add screenshot of SEF Studio pipeline composer canvas; purpose: show visual pipeline construction; ideal placement: start of SEF Studio section. -->
 
-- UI interattive;
-- code di esecuzione;
-- flussi in background;
-- orchestrazione concorrente.
+<!-- PLACEHOLDER: Add screenshot of Run & Monitor tab with live preview, status, logs, and plan view; purpose: show runtime observability; ideal placement: after the SEF Studio feature list. -->
 
-### 4. Branching event-driven
+<!-- PLACEHOLDER: Add screenshot of artifacts/results panel; purpose: show final outputs and visual artifacts; ideal placement: end of SEF Studio section. -->
 
-Schema concettuale del flusso:
+## Documentation
 
-1. una pipeline primaria esegue un `OpenCVMultiObjectSignalExtractor`;
-2. l'estrattore emette `track_created` quando nasce un seed track;
-3. `BranchingCoordinator` intercetta l'evento;
-4. una `IBranchingRule` costruisce un nuovo `PipelineContext`;
-5. `PipelineOrchestrator` sottomette la pipeline secondaria.
+The README is intentionally concise. Use the MkDocs documentation for technical
+details, contracts, and extension guidance:
 
-Questo approccio è utile quando l'analisi deve ramificarsi dinamicamente a partire da eventi osservati durante l'esecuzione.
+- [Overview](docs/overview.md)
+- [Getting Started](docs/getting-started.md)
+- [Public API](docs/public-api.md)
+- [Configuration](docs/configuration.md)
+- [Plugin Authoring](docs/plugin-authoring.md)
+- [Streaming Runtime](docs/streaming-runtime.md)
+- [Error Handling](docs/error-handling.md)
+- [Versioning](docs/versioning.md)
+- [Generated API](docs/reference/generated-api.md)
 
-## Casi d'uso supportati oggi
+Build the docs locally:
 
-- tracking di un singolo oggetto a partire da ROI iniziale;
-- tracking multi-oggetto con seed manuale e rilevazione di oggetti simili;
-- analisi di traiettorie verticali e orizzontali;
-- estrazione di velocità e frequenze del movimento;
-- conteggio di attraversamenti rispetto a barriere geometriche;
-- generazione di playback video annotato;
-- ispezione visuale di dense optical flow;
-- prototipazione rapida di pipeline CV tramite interfaccia Streamlit.
+```bash
+pip install -e ".[docs]"
+mkdocs serve
+```
 
-## Cosa rende il progetto interessante
+## Installation
 
-Dal punto di vista ingegneristico, il valore del progetto non sta solo nei singoli algoritmi, ma nella combinazione di alcune scelte solide:
+SEF currently targets Python 3.11+.
 
-- il core è disaccoppiato dagli algoritmi concreti;
-- il contesto di pipeline è immutabile e validato;
-- builder, orchestrator e runner hanno responsabilità nettamente separate;
-- il sistema di eventi rende possibile il branching senza accoppiare i componenti;
-- la UI riusa il core invece di duplicarne la logica;
-- i test coprono i punti architetturalmente più critici: pipeline, branching, registry, builder, event bus.
+```bash
+pip install -e .
+```
 
-## Possibilità di sviluppo future
+For the full local development environment, including UI and computer-vision
+dependencies:
 
-Le direzioni più coerenti con l'architettura attuale sono:
+```bash
+pip install -r requirements.txt
+```
 
-- introdurre uno schema di configurazione tipizzato e versionato;
-- unificare o rendere autodiscoverable il sistema di plugin;
-- aggiungere output store persistenti per risultati e artefatti;
-- esporre meglio i contratti pubblici come API documentate;
-- introdurre metriche, logging strutturato e telemetria di pipeline;
-- parallelizzare selettivamente analyzer o visualizer indipendenti;
-- supportare bus/event sink esterni oltre all'`EventBus` in-memory;
-- costruire una CLI ufficiale per esecuzione batch da config;
-- rafforzare i casi d'uso multi-pipeline e i workflow di branching.
+## Project Status
 
-## A chi serve SEF
+SEF is experimental and evolving.
 
-SEF è adatto quando serve un'infrastruttura componibile per computer vision sperimentale o applicativa, in particolare se si vuole:
+- The project is pre-1.0.
+- Public APIs are being documented and hardened.
+- Configuration schemas are versioned, but compatibility policy is still
+  maturing.
+- The current implementation is suitable for experimentation, research,
+  demos, and architecture exploration.
+- It should not yet be presented as production-stable infrastructure.
 
-- cambiare facilmente estrattori, analyzer e visualizer;
-- mantenere separati motore, configurazione e presentazione;
-- passare dallo scripting alla UI senza riscrivere la pipeline;
-- evolvere il sistema verso scenari event-driven o più orchestrati.
+No benchmark, adoption, or production-readiness claims are made here.
 
-## Riferimenti rapidi
+## Repository Map
 
-- entry point UI: [ui/app.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/ui/app.py)
-- motore di esecuzione: [library/core/pipeline/Pipeline.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/library/core/pipeline/Pipeline.py)
-- facciata applicativa: [library/core/pipeline/PipelineOrchestrator.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/library/core/pipeline/PipelineOrchestrator.py)
-- builder dichiarativo: [library/core/pipeline/ConfigPipelineBuilder.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/library/core/pipeline/ConfigPipelineBuilder.py)
-- builder fluente: [library/core/pipeline/FluentPipelineBuilder.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/library/core/pipeline/FluentPipelineBuilder.py)
-- registry: [library/core/plugins/PluginRegistry.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/library/core/plugins/PluginRegistry.py)
-- bootstrap UI del registry: [ui/services/registry_bootstrap.py](/Users/matteo/Documents/UNICAM/3°anno/STAGE/SEF/ui/services/registry_bootstrap.py)
+```text
+library/core/        Public contracts, runtime, registry, artifacts, events
+library/*            Concrete computer-vision components and visualizers
+ui/                  Streamlit application built on the core framework
+docs/                MkDocs public documentation
+examples/            Minimal runnable examples
+tests/               Core, registry, builder, streaming, and UI service tests
+```
+
+## Core Authors
+
+- Matteo Vittori
+- Alejandro Innocenzi
