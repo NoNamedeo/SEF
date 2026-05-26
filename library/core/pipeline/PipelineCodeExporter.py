@@ -48,7 +48,10 @@ class PipelineCodeExporter:
 
 
                 PIPELINE_EXPORT: dict[str, Any] = __PIPELINE_EXPORT__
-                PIPELINE_CONFIG: dict[str, Any] = {"pipeline": PIPELINE_EXPORT["pipeline"]}
+                PIPELINE_CONFIG: dict[str, Any] = {
+                    "schema_version": PIPELINE_EXPORT.get("schema_version", "1.0"),
+                    "pipeline": PIPELINE_EXPORT["pipeline"],
+                }
 
 
                 def build_registry() -> PluginRegistry:

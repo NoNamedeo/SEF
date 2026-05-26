@@ -6,7 +6,10 @@ stable bridge for existing pipeline imports.
 
 from library.core.errors import (
     ConfigSchemaError,
+    ConfigVersionError,
+    DuplicatePluginRegistrationError,
     InvalidPipelineTriggerEventError,
+    InvalidPluginRegistrationError,
     LatencyPolicyError,
     PipelineConfigurationError,
     PipelineContextError,
@@ -14,6 +17,7 @@ from library.core.errors import (
     PipelineExecutionError,
     PipelineRunAlreadyActiveError,
     PluginConstructionError,
+    PluginRegistryError,
     PluginResolutionError,
     SEFError,
     StageErrorContext,
@@ -24,7 +28,10 @@ from library.core.errors import (
 
 __all__ = [
     "ConfigSchemaError",
+    "ConfigVersionError",
+    "DuplicatePluginRegistrationError",
     "InvalidPipelineTriggerEventError",
+    "InvalidPluginRegistrationError",
     "LatencyPolicyError",
     "PipelineConfigurationError",
     "PipelineContextError",
@@ -32,6 +39,7 @@ __all__ = [
     "PipelineExecutionError",
     "PipelineRunAlreadyActiveError",
     "PluginConstructionError",
+    "PluginRegistryError",
     "PluginResolutionError",
     "SEFError",
     "StageErrorContext",

@@ -47,8 +47,43 @@ class ConfigSchemaError(PipelineConfigurationError):
     """Raised when a declarative pipeline config violates the supported schema."""
 
 
+class ConfigVersionError(PipelineConfigurationError):
+    """Raised when a declarative pipeline config uses an unsupported schema version."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        version: str | None = None,
+        supported_versions: tuple[str, ...] = (),
+        path: str | None = None,
+    ) -> None:
+        super().__init__(
+            message,
+            path=path,
+            metadata={
+                "version": version,
+                "supported_versions": list(supported_versions),
+            },
+        )
+        self.version = version
+        self.supported_versions = supported_versions
+
+
 class PipelineContextError(PipelineConfigurationError):
     """Raised when a PipelineContext violates construction invariants."""
+
+
+class PluginRegistryError(SEFError):
+    """Base class for plugin registry failures."""
+
+
+class InvalidPluginRegistrationError(PluginRegistryError, ValueError):
+    """Raised when a plugin definition is incomplete or malformed."""
+
+
+class DuplicatePluginRegistrationError(InvalidPluginRegistrationError):
+    """Raised when a plugin name or alias is already registered."""
 
 
 class PluginResolutionError(PipelineConfigurationError):
@@ -196,7 +231,10 @@ def _infer_stage_group(stage_id: str) -> str:
 
 __all__ = [
     "ConfigSchemaError",
+    "ConfigVersionError",
+    "DuplicatePluginRegistrationError",
     "InvalidPipelineTriggerEventError",
+    "InvalidPluginRegistrationError",
     "LatencyPolicyError",
     "PipelineConfigurationError",
     "PipelineContextError",
@@ -204,6 +242,7 @@ __all__ = [
     "PipelineExecutionError",
     "PipelineRunAlreadyActiveError",
     "PluginConstructionError",
+    "PluginRegistryError",
     "PluginResolutionError",
     "SEFError",
     "StageErrorContext",

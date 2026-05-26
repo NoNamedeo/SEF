@@ -7,6 +7,11 @@ _EXPORTS = {
     "BlockingFrameLatencyPolicy": ("library.core.pipeline.LatencyPolicy", "BlockingFrameLatencyPolicy"),
     "ConfigPipelineBuilder": ("library.core.pipeline.ConfigPipelineBuilder", "ConfigPipelineBuilder"),
     "ConfigSchemaError": ("library.core.errors", "ConfigSchemaError"),
+    "ConfigVersionError": ("library.core.errors", "ConfigVersionError"),
+    "CURRENT_PIPELINE_CONFIG_VERSION": (
+        "library.core.pipeline.PipelineConfigVersioning",
+        "CURRENT_PIPELINE_CONFIG_VERSION",
+    ),
     "DefaultPipelineExecutionPolicy": ("library.core.pipeline.PipelineExecutionPolicy", "DefaultPipelineExecutionPolicy"),
     "DropNewestFrameLatencyPolicy": ("library.core.pipeline.LatencyPolicy", "DropNewestFrameLatencyPolicy"),
     "DropOldestFrameLatencyPolicy": ("library.core.pipeline.LatencyPolicy", "DropOldestFrameLatencyPolicy"),
@@ -14,7 +19,16 @@ _EXPORTS = {
     "FluentPipelineBuilder": ("library.core.pipeline.FluentPipelineBuilder", "FluentPipelineBuilder"),
     "FrameLatencyPolicy": ("library.core.pipeline.LatencyPolicy", "FrameLatencyPolicy"),
     "LatencyPolicyConfig": ("library.core.pipeline.LatencyPolicy", "LatencyPolicyConfig"),
+    "PIPELINE_CONFIG_VERSION_KEY": (
+        "library.core.pipeline.PipelineConfigVersioning",
+        "PIPELINE_CONFIG_VERSION_KEY",
+    ),
     "Pipeline": ("library.core.pipeline.Pipeline", "Pipeline"),
+    "PipelineConfigMigration": ("library.core.pipeline.PipelineConfigVersioning", "PipelineConfigMigration"),
+    "PipelineConfigVersionManager": (
+        "library.core.pipeline.PipelineConfigVersioning",
+        "PipelineConfigVersionManager",
+    ),
     "PipelineConfigurationError": ("library.core.errors", "PipelineConfigurationError"),
     "PipelineContext": ("library.core.pipeline.PipelineContext", "PipelineContext"),
     "PipelineContextError": ("library.core.errors", "PipelineContextError"),
@@ -36,7 +50,12 @@ _EXPORTS = {
     "StreamRuntimeError": ("library.core.errors", "StreamRuntimeError"),
     "StreamRuntimeConfig": ("library.core.pipeline.StreamRuntimeConfig", "StreamRuntimeConfig"),
     "ThreadedPipelineRunner": ("library.core.pipeline.ThreadedPipelineRunner", "ThreadedPipelineRunner"),
+    "VersionedPipelineConfig": ("library.core.pipeline.PipelineConfigVersioning", "VersionedPipelineConfig"),
     "VisualizerBinding": ("library.core.pipeline.VisualizerBinding", "VisualizerBinding"),
+    "normalize_pipeline_config": (
+        "library.core.pipeline.PipelineConfigVersioning",
+        "normalize_pipeline_config",
+    ),
 }
 
 __all__ = list(_EXPORTS)
@@ -63,6 +82,8 @@ _EAGER_EXPORTS = (
     "BlockingFrameLatencyPolicy",
     "ConfigPipelineBuilder",
     "ConfigSchemaError",
+    "ConfigVersionError",
+    "CURRENT_PIPELINE_CONFIG_VERSION",
     "DefaultPipelineExecutionPolicy",
     "DropNewestFrameLatencyPolicy",
     "DropOldestFrameLatencyPolicy",
@@ -70,7 +91,10 @@ _EAGER_EXPORTS = (
     "FluentPipelineBuilder",
     "FrameLatencyPolicy",
     "LatencyPolicyConfig",
+    "PIPELINE_CONFIG_VERSION_KEY",
     "Pipeline",
+    "PipelineConfigMigration",
+    "PipelineConfigVersionManager",
     "PipelineConfigurationError",
     "PipelineContext",
     "PipelineContextError",
@@ -91,7 +115,9 @@ _EAGER_EXPORTS = (
     "StreamRuntimeConfig",
     "StreamRuntimeError",
     "ThreadedPipelineRunner",
+    "VersionedPipelineConfig",
     "VisualizerBinding",
+    "normalize_pipeline_config",
 )
 
 for _name in _EAGER_EXPORTS:

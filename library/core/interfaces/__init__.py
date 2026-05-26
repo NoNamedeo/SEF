@@ -75,6 +75,19 @@ def __dir__() -> list[str]:
     return sorted(__all__)
 
 
-for _name in ("ISignalSample", "StageCapabilities"):
+for _name in (
+    "IAnalyzer",
+    "IData",
+    "IFrameBufferProcessor",
+    "IFrameExporter",
+    "IFrameExtractor",
+    "ISignal",
+    "ISignalCleaner",
+    "ISignalExtractor",
+    "ISignalSample",
+    "ISingleFrameProcessor",
+    "IVisualizer",
+    "StageCapabilities",
+):
     __getattr__(_name)
 del _name

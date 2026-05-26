@@ -25,6 +25,7 @@ from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
+from library.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_VERSION
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from library.core.visualization.VisualArtifact import TextArtifact, VisualArtifact
@@ -239,6 +240,7 @@ class PipelineExportTests(unittest.TestCase):
         self.assertIn("python_builder_code", reproducibility)
 
         exported_config = reproducibility["config"]
+        self.assertEqual(exported_config["schema_version"], CURRENT_PIPELINE_CONFIG_VERSION)
         self.assertEqual(exported_config["pipeline"]["frame_extractor"]["name"], "export_frame_extractor")
         self.assertEqual(exported_config["pipeline"]["signal_cleaners"][0]["params"]["delta"], 3.0)
         self.assertEqual(exported_config["pipeline"]["visualizers"][0]["result_indices"], [0])
@@ -258,6 +260,7 @@ class PipelineExportTests(unittest.TestCase):
 
         namespace: dict[str, Any] = {}
         exec(reproducibility["python_builder_code"], namespace)
+        self.assertEqual(namespace["PIPELINE_CONFIG"]["schema_version"], CURRENT_PIPELINE_CONFIG_VERSION)
         code_context = namespace["build_context"](registry)
         self.assertEqual(context_signature(code_context), context_signature(original_context))
 

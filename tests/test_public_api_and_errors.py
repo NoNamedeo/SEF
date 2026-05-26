@@ -3,8 +3,10 @@ from __future__ import annotations
 import pytest
 
 from library.core import (
+    CURRENT_PIPELINE_CONFIG_VERSION,
     ConfigPipelineBuilder,
     ConfigSchemaError,
+    ConfigVersionError,
     Frame,
     FrameBuffer,
     PipelineConfigurationError,
@@ -48,6 +50,8 @@ def test_pipeline_error_exports_are_identity_stable() -> None:
     assert TopLevelPipelineExecutionError is PipelineExecutionError
     assert issubclass(PipelineExecutionError, StageExecutionError)
     assert issubclass(PipelineConfigurationError, SEFError)
+    assert issubclass(ConfigVersionError, PipelineConfigurationError)
+    assert CURRENT_PIPELINE_CONFIG_VERSION == "1.0"
 
 
 def test_unknown_plugin_raises_typed_resolution_error() -> None:

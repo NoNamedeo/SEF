@@ -1,0 +1,31 @@
+site_name: SEF Core Documentation
+site_description: Public contracts and integration guides for the SEF core library.
+docs_dir: docs
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_root_heading: true
+            docstring_style: sphinx
+nav:
+  - Home: index.md
+  - Overview: overview.md
+  - Getting Started: getting-started.md
+  - Public API: public-api.md
+  - Configuration: configuration.md
+  - Registry: registry.md
+  - Plugin Authoring: plugin-authoring.md
+  - Streaming Runtime: streaming-runtime.md
+  - Error Handling: error-handling.md
+  - Versioning: versioning.md
+  - Examples: examples.md
+  - Reference:
+      - Component Contracts: reference/component-contracts.md
+      - Data and Artifacts: reference/data-and-artifacts.md
+      - Pipeline Runtime: reference/pipeline-runtime.md
+      - Error Model: reference/errors.md
+      - Generated API: reference/generated-api.md
+  - Single-Page Contracts: public-contracts.md

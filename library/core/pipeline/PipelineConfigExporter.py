@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
+from library.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_VERSION
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineExportUtils import (
     dotted_path,
@@ -28,7 +29,7 @@ class PipelineConfigExporter:
     and completed PipelineOutputs for execution/artifact metadata.
     """
 
-    SCHEMA_VERSION = "1.0"
+    SCHEMA_VERSION = CURRENT_PIPELINE_CONFIG_VERSION
     _PIPELINE_STAGE_KEYS = {
         "frame_extractor",
         "frame_processors",

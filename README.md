@@ -2,6 +2,10 @@
 
 SEF è un framework Python per l'estrazione e l'analisi di segnali da video e sequenze di immagini tramite componenti componibili di computer vision. Il progetto è costruito intorno a un `core` stabile, estendibile e relativamente agnostico rispetto agli algoritmi concreti: il motore esegue pipeline, mentre i moduli OpenCV, gli analyzer, i visualizer e la UI si innestano sopra tale nucleo.
 
+## Public Documentation
+
+The public English documentation starts at [docs/index.md](docs/index.md). It includes overview, quickstart, API contracts, config versioning, registry guarantees, plugin authoring, streaming runtime, error handling, versioning policy, reference pages, and runnable examples.
+
 Nel repository convivono due facce complementari del sistema:
 
 - una libreria modulare per costruire ed eseguire pipeline video;

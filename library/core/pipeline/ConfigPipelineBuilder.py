@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from copy import deepcopy
 from typing import Any
 
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
+from library.core.pipeline.PipelineConfigVersioning import normalize_pipeline_config
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineErrors import (
     ConfigSchemaError,
@@ -96,8 +96,8 @@ class ConfigPipelineBuilder:
 
     def build_context(self, config: Mapping[str, Any]) -> PipelineContext:
         try:
-            root = self._ensure_mapping(config, "config")
-            cfg = self._required_mapping(root, "pipeline")
+            versioned_config = normalize_pipeline_config(config)
+            cfg = dict(versioned_config.pipeline)
             return PipelineContext(
                 frame_extractor=self._create(
                     PluginCategory.FRAME_EXTRACTOR,
@@ -133,7 +133,7 @@ class ConfigPipelineBuilder:
                     "pipeline.intermediate_frames.visualizers",
                 ),
                 stream_runtime=self._stream_runtime(cfg),
-                source_config={"pipeline": deepcopy(cfg)},
+                source_config=versioned_config.source_config(),
             )
         except PipelineConfigurationError:
             raise
@@ -150,7 +150,7 @@ class ConfigPipelineBuilder:
         try:
             return self._registry.create(category, name, **params)
         except KeyError as exc:
-            available = [definition.name for definition in self._registry.list(category)]
+            available = self._registry.available_names(category, include_aliases=True)
             raise PluginResolutionError(
                 category=str(category),
                 name=name,
