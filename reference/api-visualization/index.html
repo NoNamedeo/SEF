@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="canonical" href="https://NoNamedeo.github.io/SEF/reference/api-visualization/">
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Visualization Package - SEF Core Documentation</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../../css/brands.min.css" rel="stylesheet">
+        <link href="../../css/solid.min.css" rel="stylesheet">
+        <link href="../../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../..">SEF Core Documentation</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href="../.." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../overview/" class="nav-link">Overview</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../getting-started/" class="nav-link">Getting Started</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-api/" class="nav-link">Public API</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../configuration/" class="nav-link">Configuration</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../registry/" class="nav-link">Registry</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../plugin-authoring/" class="nav-link">Plugin Authoring</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../streaming-runtime/" class="nav-link">Streaming Runtime</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../error-handling/" class="nav-link">Error Handling</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../versioning/" class="nav-link">Versioning</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../examples/" class="nav-link">Examples</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Reference</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../component-contracts/" class="dropdown-item">Component Contracts</a>
+</li>
+                                    
+<li>
+    <a href="../data-and-artifacts/" class="dropdown-item">Data and Artifacts</a>
+</li>
+                                    
+<li>
+    <a href="../pipeline-runtime/" class="dropdown-item">Pipeline Runtime</a>
+</li>
+                                    
+<li>
+    <a href="../errors/" class="dropdown-item">Error Model</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Generated API</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../generated-api/" class="dropdown-item">Overview</a>
+</li>
+            
+<li>
+    <a href="../api-core/" class="dropdown-item">Core Package</a>
+</li>
+            
+<li>
+    <a href="../api-pipeline/" class="dropdown-item">Pipeline Package</a>
+</li>
+            
+<li>
+    <a href="../api-interfaces/" class="dropdown-item">Interfaces Package</a>
+</li>
+            
+<li>
+    <a href="../api-artifacts/" class="dropdown-item">Artifacts Package</a>
+</li>
+            
+<li>
+    <a href="../api-plugins/" class="dropdown-item">Plugins Package</a>
+</li>
+            
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Visualization Package</a>
+</li>
+            
+<li>
+    <a href="../api-events/" class="dropdown-item">Events Package</a>
+</li>
+            
+<li>
+    <a href="../api-realtime/" class="dropdown-item">Realtime Package</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-contracts/" class="nav-link">Single-Page Contracts</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../api-plugins/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../api-events/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#api-visualization-package" class="nav-link">API: Visualization Package</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualArtifact.ArtifactRole" class="nav-link">ArtifactRole</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualArtifact.VisualArtifact" class="nav-link">VisualArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualArtifact.ImageArtifact" class="nav-link">ImageArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualArtifact.VideoArtifact" class="nav-link">VideoArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualArtifact.VideoFileArtifact" class="nav-link">VideoFileArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualArtifact.DeferredVideoArtifact" class="nav-link">DeferredVideoArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualArtifact.TableArtifact" class="nav-link">TableArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualArtifact.JsonArtifact" class="nav-link">JsonArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualArtifact.TextArtifact" class="nav-link">TextArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.VisualizationContext.VisualizationContext" class="nav-link">VisualizationContext</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.PipelineRunMetadata.PipelineRunMetadata" class="nav-link">PipelineRunMetadata</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.visualization.PipelineOutputs.PipelineOutputs" class="nav-link">PipelineOutputs</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="api-visualization-package">API: Visualization Package</h1>
+<p>Visualization contracts represent UI-agnostic output artifacts and metadata.
+Adapters can render them in Streamlit, notebooks, CLIs, services, or files.</p>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualArtifact.ArtifactRole" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArtifactRole</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="enum.StrEnum">StrEnum</span></code></p>
+
+
+
+        <p>Semantic role used by UIs and exporters to place artifacts correctly.</p>
+<p>Roles are presentation hints. They do not change artifact data semantics.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualArtifact.VisualArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">VisualArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Base contract for UI-agnostic presentation artifacts.</p>
+<p>Visual artifacts are immutable values returned by visualizers and exporters.
+They describe what should be rendered or persisted without assuming a
+specific UI framework.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.VisualArtifact.VisualArtifact.artifact_id">artifact_id</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Stable id for UI diffing, downloads, and materialization caching.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.VisualArtifact.VisualArtifact.kind">kind</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Artifact kind string such as <code>image</code>, <code>video</code>, <code>table</code>, <code>json</code>, or
+<code>text</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.VisualArtifact.VisualArtifact.role">role</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ArtifactRole (library.core.visualization.VisualArtifact.ArtifactRole)" href="#library.core.visualization.VisualArtifact.ArtifactRole">ArtifactRole</a> | <span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Semantic placement hint for adapters.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.VisualArtifact.VisualArtifact.title">title</span></code></td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional display title.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.VisualArtifact.VisualArtifact.description">description</span></code></td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional explanatory text.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.VisualArtifact.VisualArtifact.metadata">metadata</span></code></td>
+            <td>
+                  <code><span title="typing.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>JSON-like metadata for adapters and diagnostics.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualArtifact.ImageArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ImageArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a></code></p>
+
+
+
+        <p>In-memory image artifact ready for rendering or persistence.</p>
+<p>Use this for small images. Large images should generally be written through
+a file-backed or deferred artifact strategy.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualArtifact.VideoArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">VideoArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a></code></p>
+
+
+
+        <p>In-memory video artifact ready for UI playback or persistence.</p>
+<p>This value enforces a hard byte limit to protect UI and API adapters from
+accidentally carrying large encoded videos in memory.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualArtifact.VideoFileArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">VideoFileArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a></code></p>
+
+
+
+        <p>File-backed video artifact that avoids keeping encoded bytes in memory.</p>
+<p>The path must exist at construction time and point to a non-empty file.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualArtifact.DeferredVideoArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">DeferredVideoArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a></code></p>
+
+
+
+        <p>Lazy video artifact that renders to disk only when a consumer materializes it.</p>
+<p>The render callback receives the target output path and must write a complete
+video file there. This keeps expensive annotated-video generation outside the
+main pipeline execution path and avoids in-memory MP4 buffering.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.visualization.VisualArtifact.DeferredVideoArtifact.materialize" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">materialize</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">materialize</span><span class="p">(</span><span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Render the video if needed and return the resulting file path.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>output_dir</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span> | <span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional directory where the rendered video should be created.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the rendered video file.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Repeated calls reuse the same file when it is still present. The lock
+prevents two UI refreshes from rendering the same expensive video at
+the same time.</p>
+</details>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualArtifact.TableArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TableArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a></code></p>
+
+
+
+        <p>Tabular artifact represented as column names and row mappings.</p>
+<p>Rows are copied to dictionaries during construction so adapters can render a
+stable snapshot.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualArtifact.JsonArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">JsonArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a></code></p>
+
+
+
+        <p>Structured artifact for JSON-like payloads.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualArtifact.TextArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TextArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a></code></p>
+
+
+
+        <p>Textual artifact with an explicit content type.</p>
+<p>Markdown is the default content type because it renders well in docs,
+notebooks, and Streamlit-like adapters.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.VisualizationContext.VisualizationContext" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">VisualizationContext</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Execution context passed to visualizers during artifact generation.</p>
+<p>The context carries run metadata and render hints without coupling
+visualizers to a specific UI framework. Values are copied to dictionaries at
+construction time so visualizers receive a stable snapshot.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.PipelineRunMetadata.PipelineRunMetadata" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineRunMetadata</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Execution metadata attached to completed pipeline outputs.</p>
+<p>Metadata is intended for reproducibility, UI summaries, and integration
+diagnostics. Mappings are copied to dictionaries so consumers can inspect a
+stable snapshot of the completed run.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.visualization.PipelineOutputs.PipelineOutputs" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineOutputs</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Immutable aggregate returned by completed pipeline runs.</p>
+<p><code>PipelineOutputs</code> is the handoff value for UI, API, notebook, and exporter
+adapters. It keeps analytical results separate from final artifacts and
+debug artifacts so presentation layers can decide what to show by default.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.PipelineOutputs.PipelineOutputs.results">results</span></code></td>
+            <td>
+                  <code><span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a>, ...]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Final analyzer results in analyzer order.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.PipelineOutputs.PipelineOutputs.final_artifacts">final_artifacts</span></code></td>
+            <td>
+                  <code><span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a>, ...]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Primary artifacts intended for normal users.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.PipelineOutputs.PipelineOutputs.debug_artifacts">debug_artifacts</span></code></td>
+            <td>
+                  <code><span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a>, ...]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Diagnostic artifacts intended for inspection or troubleshooting.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.PipelineOutputs.PipelineOutputs.metadata">metadata</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="PipelineRunMetadata
+
+
+  
+      dataclass
+   (library.core.visualization.PipelineRunMetadata.PipelineRunMetadata)" href="#library.core.visualization.PipelineRunMetadata.PipelineRunMetadata">PipelineRunMetadata</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Execution metadata, plan, and reproducibility details.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.visualization.PipelineOutputs.PipelineOutputs.intermediate_frames">intermediate_frames</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntermediateFrameArtifactCollection
+
+
+  
+      dataclass
+   (library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection)" href="../api-artifacts/#library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection">IntermediateFrameArtifactCollection</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional bounded intermediate-frame debug collection.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.visualization.PipelineOutputs.PipelineOutputs.artifact_count" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">artifact_count</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">artifact_count</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return final plus debug artifact count for monitoring summaries.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js"></script>
+        <script src="../../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

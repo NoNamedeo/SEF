@@ -1,0 +1,4755 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="canonical" href="https://NoNamedeo.github.io/SEF/reference/api-interfaces/">
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Interfaces Package - SEF Core Documentation</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../../css/brands.min.css" rel="stylesheet">
+        <link href="../../css/solid.min.css" rel="stylesheet">
+        <link href="../../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../..">SEF Core Documentation</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href="../.." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../overview/" class="nav-link">Overview</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../getting-started/" class="nav-link">Getting Started</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-api/" class="nav-link">Public API</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../configuration/" class="nav-link">Configuration</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../registry/" class="nav-link">Registry</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../plugin-authoring/" class="nav-link">Plugin Authoring</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../streaming-runtime/" class="nav-link">Streaming Runtime</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../error-handling/" class="nav-link">Error Handling</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../versioning/" class="nav-link">Versioning</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../examples/" class="nav-link">Examples</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Reference</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../component-contracts/" class="dropdown-item">Component Contracts</a>
+</li>
+                                    
+<li>
+    <a href="../data-and-artifacts/" class="dropdown-item">Data and Artifacts</a>
+</li>
+                                    
+<li>
+    <a href="../pipeline-runtime/" class="dropdown-item">Pipeline Runtime</a>
+</li>
+                                    
+<li>
+    <a href="../errors/" class="dropdown-item">Error Model</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Generated API</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../generated-api/" class="dropdown-item">Overview</a>
+</li>
+            
+<li>
+    <a href="../api-core/" class="dropdown-item">Core Package</a>
+</li>
+            
+<li>
+    <a href="../api-pipeline/" class="dropdown-item">Pipeline Package</a>
+</li>
+            
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Interfaces Package</a>
+</li>
+            
+<li>
+    <a href="../api-artifacts/" class="dropdown-item">Artifacts Package</a>
+</li>
+            
+<li>
+    <a href="../api-plugins/" class="dropdown-item">Plugins Package</a>
+</li>
+            
+<li>
+    <a href="../api-visualization/" class="dropdown-item">Visualization Package</a>
+</li>
+            
+<li>
+    <a href="../api-events/" class="dropdown-item">Events Package</a>
+</li>
+            
+<li>
+    <a href="../api-realtime/" class="dropdown-item">Realtime Package</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-contracts/" class="nav-link">Single-Page Contracts</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../api-pipeline/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../api-artifacts/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#api-interfaces-package" class="nav-link">API: Interfaces Package</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#stage-capabilities" class="nav-link">Stage Capabilities</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.StageCapabilities.StageCapabilities" class="nav-link">StageCapabilities</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#batch-component-contracts" class="nav-link">Batch Component Contracts</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.IFrameExtractor.IFrameExtractor" class="nav-link">IFrameExtractor</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.ISingleFrameProcessor.ISingleFrameProcessor" class="nav-link">ISingleFrameProcessor</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor" class="nav-link">IFrameBufferProcessor</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.IFrameExporter.FrameExportContext" class="nav-link">FrameExportContext</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.IFrameExporter.FrameExportResult" class="nav-link">FrameExportResult</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.IFrameExporter.IFrameExporter" class="nav-link">IFrameExporter</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.ISignalExtractor.ISignalExtractor" class="nav-link">ISignalExtractor</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.ISignalCleaner.ISignalCleaner" class="nav-link">ISignalCleaner</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.IAnalyzer.IAnalyzer" class="nav-link">IAnalyzer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.IVisualizer.IVisualizer" class="nav-link">IVisualizer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#data-contracts" class="nav-link">Data Contracts</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.IData.IData" class="nav-link">IData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.ISignal.ISignal" class="nav-link">ISignal</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.ISignalSample.ISignalSample" class="nav-link">ISignalSample</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#streaming-contracts" class="nav-link">Streaming Contracts</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.BufferContracts.IBuffer" class="nav-link">IBuffer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.BufferContracts.IAbortableBuffer" class="nav-link">IAbortableBuffer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.BufferContracts.IBufferSubscription" class="nav-link">IBufferSubscription</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.BufferContracts.ISubscribableBuffer" class="nav-link">ISubscribableBuffer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.BufferContracts.IFrameBuffer" class="nav-link">IFrameBuffer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.StreamingContracts.IStreamingFrameExtractor" class="nav-link">IStreamingFrameExtractor</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.StreamingContracts.IStreamingFrameBufferProcessor" class="nav-link">IStreamingFrameBufferProcessor</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.StreamingContracts.IStreamingFrameExporter" class="nav-link">IStreamingFrameExporter</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.StreamingContracts.IStreamingSignalExtractor" class="nav-link">IStreamingSignalExtractor</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.StreamingContracts.IStreamingSignalCleaner" class="nav-link">IStreamingSignalCleaner</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.StreamingContracts.IStreamingAnalyzer" class="nav-link">IStreamingAnalyzer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.StreamingContracts.IStreamingVisualizer" class="nav-link">IStreamingVisualizer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#orchestration-ports" class="nav-link">Orchestration Ports</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.pipeline.IPipelineFactory.IPipelineFactory" class="nav-link">IPipelineFactory</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner" class="nav-link">IPipelineRunner</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor" class="nav-link">IPipelineMonitor</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.pipeline.IPipelineOutputStore.IPipelineOutputStore" class="nav-link">IPipelineOutputStore</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.pipeline.IPipelineValidator.IPipelineValidator" class="nav-link">IPipelineValidator</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.pipeline.IEventBus.IEventBus" class="nav-link">IEventBus</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.pipeline.IRetryPolicy.IRetryPolicy" class="nav-link">IRetryPolicy</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.interfaces.pipeline.IBranchingRule.IBranchingRule" class="nav-link">IBranchingRule</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="api-interfaces-package">API: Interfaces Package</h1>
+<p>The interfaces package defines ports implemented by extractors, processors,
+cleaners, analyzers, visualizers, buffers, and orchestration adapters.</p>
+<h2 id="stage-capabilities">Stage Capabilities</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.StageCapabilities.StageCapabilities" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">StageCapabilities</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Stable execution contract declared by every pipeline stage.</p>
+<p>The pipeline runtime uses these flags to build an execution plan without
+relying on implementation details such as ad-hoc attributes. Concrete
+stages should be conservative: declare streaming only when they can produce
+output progressively without requiring the full upstream sequence.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StageCapabilities.StageCapabilities.batch" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">batch</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">batch</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">stateful</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">preserves_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">supports_frame_parallelism</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">realtime_safe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StageCapabilities</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return capabilities for stages that require a complete input sequence.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StageCapabilities.StageCapabilities.streaming" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">streaming</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">streaming</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">stateful</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">preserves_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">supports_frame_parallelism</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">realtime_safe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StageCapabilities</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return capabilities for stages that can process input progressively.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StageCapabilities.StageCapabilities.as_dict" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_dict</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_dict</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a JSON-safe representation used by execution plans and UI.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="batch-component-contracts">Batch Component Contracts</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.IFrameExtractor.IFrameExtractor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IFrameExtractor</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Batch source contract for frame-producing plugins.</p>
+<p>A frame extractor is the pipeline entry point. Batch extractors return a
+closed <code>FrameBuffer</code>; streaming extractors should additionally implement
+<code>IStreamingFrameExtractor</code> so the planner can avoid materializing source
+frames.</p>
+
+
+<details class="extension-guidance" open>
+  <summary>Extension guidance</summary>
+  <p>Implementations should keep constructor configuration explicit and should
+encode frame order through <code>Frame.index</code> when available.</p>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.IFrameExtractor.IFrameExtractor.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Store optional extractor configuration.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>config</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Plugin-specific configuration mapping. The core does not interpret
+this mapping after construction.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.IFrameExtractor.IFrameExtractor.extract" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">extract</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">extract</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">FrameBuffer</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Extract raw frames and return them in a closed buffer.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FrameBuffer (library.core.artifacts.FrameBuffer.FrameBuffer)" href="../api-artifacts/#library.core.artifacts.FrameBuffer.FrameBuffer">FrameBuffer</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Buffer containing frames in source order.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.ISingleFrameProcessor.ISingleFrameProcessor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ISingleFrameProcessor</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Contract for stateless or local frame transformations.</p>
+<p>Single-frame processors are adapted into the frame-buffer pipeline by the
+core runtime. Use this contract when processing one frame does not require
+future or past frames.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISingleFrameProcessor.ISingleFrameProcessor.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Store plugin-specific processor configuration.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISingleFrameProcessor.ISingleFrameProcessor.process" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">process</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Frame</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Transform one frame.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>frame</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Frame
+
+
+  
+      dataclass
+   (library.core.artifacts.Frame.Frame)" href="../api-artifacts/#library.core.artifacts.Frame.Frame">Frame</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input frame.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Frame
+
+
+  
+      dataclass
+   (library.core.artifacts.Frame.Frame)" href="../api-artifacts/#library.core.artifacts.Frame.Frame">Frame</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Processed frame. Implementations may preserve metadata or add
+metadata needed by later stages.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IFrameBufferProcessor</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Buffer-level frame processing contract.</p>
+<p>Implementations receive the whole frame sequence so both stateless
+per-frame operations and temporal algorithms can participate in the same
+frame processing pipeline.</p>
+<p>Streaming implementations should also implement
+<code>IStreamingFrameBufferProcessor</code> when they can publish processed frames
+progressively without requiring the complete sequence first.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Store plugin-specific processor configuration.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor.process" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">process</span><span class="p">(</span><span class="n">buffer</span><span class="p">:</span> <span class="n">FrameBuffer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrameBuffer</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a processed frame buffer.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>buffer</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FrameBuffer (library.core.artifacts.FrameBuffer.FrameBuffer)" href="../api-artifacts/#library.core.artifacts.FrameBuffer.FrameBuffer">FrameBuffer</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input frames in pipeline order.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FrameBuffer (library.core.artifacts.FrameBuffer.FrameBuffer)" href="../api-artifacts/#library.core.artifacts.FrameBuffer.FrameBuffer">FrameBuffer</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Processed frames. Implementations should preserve order unless
+documented otherwise.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.IFrameExporter.FrameExportContext" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">FrameExportContext</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Runtime metadata passed to frame-buffer exporters.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.interfaces.IFrameExporter.FrameExportContext.pipeline_id">pipeline_id</span></code></td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional run id.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.interfaces.IFrameExporter.FrameExportContext.exporter_name">exporter_name</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Human-readable exporter component name.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.interfaces.IFrameExporter.FrameExportContext.execution_metadata">execution_metadata</span></code></td>
+            <td>
+                  <code><span title="typing.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Metadata supplied by the caller and propagated through the run.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.IFrameExporter.FrameExportResult" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">FrameExportResult</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Exporter result that preserves frames for downstream stages.</p>
+<p>Exporters may create artifacts but must also return a frame buffer so signal
+extraction can continue after export.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.IFrameExporter.IFrameExporter" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IFrameExporter</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Export final artifacts from processed frames without being a frame processor.</p>
+<p>Exporters may write file-backed artifacts and must return a buffer that can
+still be consumed by signal extractors.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.IFrameExporter.IFrameExporter.export" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">export</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">export</span><span class="p">(</span>
+    <span class="n">buffer</span><span class="p">:</span> <span class="n">FrameBuffer</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">FrameExportContext</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrameExportResult</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Persist or build artifacts from the frame stream.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>buffer</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FrameBuffer (library.core.artifacts.FrameBuffer.FrameBuffer)" href="../api-artifacts/#library.core.artifacts.FrameBuffer.FrameBuffer">FrameBuffer</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Processed frame stream.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>context</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FrameExportContext
+
+
+  
+      dataclass
+   (library.core.interfaces.IFrameExporter.FrameExportContext)" href="#library.core.interfaces.IFrameExporter.FrameExportContext">FrameExportContext</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Runtime metadata for artifact naming and reproducibility.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FrameExportResult
+
+
+  
+      dataclass
+   (library.core.interfaces.IFrameExporter.FrameExportResult)" href="#library.core.interfaces.IFrameExporter.FrameExportResult">FrameExportResult</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Forwarded frame buffer plus generated artifacts.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.ISignalExtractor.ISignalExtractor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ISignalExtractor</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Batch contract for converting frames into signal samples.</p>
+<p>Signal extractors consume processed frames and produce an <code>ISignal</code> that
+analyzers can consume. Streaming implementations should also implement
+<code>IStreamingSignalExtractor</code> and declare streaming capabilities.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISignalExtractor.ISignalExtractor.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Store plugin-specific extractor configuration.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISignalExtractor.ISignalExtractor.extract" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">extract</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">extract</span><span class="p">(</span><span class="n">buffer</span><span class="p">:</span> <span class="n">FrameBuffer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ISignal</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Extract a signal from a frame buffer.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>buffer</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FrameBuffer (library.core.artifacts.FrameBuffer.FrameBuffer)" href="../api-artifacts/#library.core.artifacts.FrameBuffer.FrameBuffer">FrameBuffer</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Processed frames in pipeline order.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ISignal (library.core.interfaces.ISignal.ISignal)" href="#library.core.interfaces.ISignal.ISignal">ISignal</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Iterable signal samples preserving frame-time semantics when
+available.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.ISignalCleaner.ISignalCleaner" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ISignalCleaner</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Batch contract for transforming signal samples before analysis.</p>
+<p>Cleaners should preserve signal semantics unless their documentation states
+otherwise. Typical implementations smooth, normalize, filter, or repair
+samples produced by a signal extractor.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISignalCleaner.ISignalCleaner.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Store plugin-specific cleaner configuration.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISignalCleaner.ISignalCleaner.clean" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">clean</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clean</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">ISignal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ISignal</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a cleaned signal.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>signal</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ISignal (library.core.interfaces.ISignal.ISignal)" href="#library.core.interfaces.ISignal.ISignal">ISignal</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input signal from the previous extraction or cleaning stage.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ISignal (library.core.interfaces.ISignal.ISignal)" href="#library.core.interfaces.ISignal.ISignal">ISignal</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Cleaned signal for the next cleaner or analyzer.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.IAnalyzer.IAnalyzer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IAnalyzer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Batch contract for turning a signal into analytical data.</p>
+<p>An analyzer is the boundary between signal processing and visualization.
+Streaming analyzers should also implement <code>IStreamingAnalyzer</code> to publish
+progressive <code>IData</code> values while still returning a final result.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.IAnalyzer.IAnalyzer.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Store plugin-specific analyzer configuration.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.IAnalyzer.IAnalyzer.analyze" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">analyze</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">analyze</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">ISignal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IData</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Analyze a complete signal.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>signal</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ISignal (library.core.interfaces.ISignal.ISignal)" href="#library.core.interfaces.ISignal.ISignal">ISignal</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Signal after all configured cleaners have run.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="#library.core.interfaces.IData.IData">IData</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>UI-agnostic analytical result.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.IVisualizer.IVisualizer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IVisualizer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Batch contract for converting analytical data into visual artifacts.</p>
+<p>Visualizers must return UI-agnostic <code>VisualArtifact</code> values. They should not
+require Streamlit containers, OpenCV windows, notebook globals, or web
+framework state unless they are explicitly adapter implementations outside
+the core package.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.IVisualizer.IVisualizer.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Store plugin-specific visualizer configuration.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.IVisualizer.IVisualizer.render" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">render</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">render</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">IData</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">VisualizationContext</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">VisualArtifact</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build visual artifacts from analytical data.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>data</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="#library.core.interfaces.IData.IData">IData</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Analyzer result to render.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>context</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="VisualizationContext
+
+
+  
+      dataclass
+   (library.core.visualization.VisualizationContext.VisualizationContext)" href="../api-visualization/#library.core.visualization.VisualizationContext.VisualizationContext">VisualizationContext</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional run metadata, result index, and rendering hints.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="VisualArtifact
+
+
+  
+      dataclass
+   (library.core.visualization.VisualArtifact.VisualArtifact)" href="../api-visualization/#library.core.visualization.VisualArtifact.VisualArtifact">VisualArtifact</a>, ...]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Final or debug artifacts for UI and exporter adapters.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="data-contracts">Data Contracts</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.IData.IData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IData</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Marker base class for chart-ready analytical data.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.ISignal.ISignal" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ISignal</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Base contract for ordered signal samples.</p>
+<p>Signals are analyzer input values. Batch signal extractors return this
+complete collection, while streaming extractors publish <code>ISignalSample</code>
+values progressively into a buffer.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.interfaces.ISignal.ISignal.signal" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">signal</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">signal</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ISignalSample</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Backward-compatible alias for <code>samples</code>.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISignal.ISignal.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ISignalSample</span><span class="p">],</span>
+    <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create a signal from ordered samples.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>samples</code>
+            </td>
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="ISignalSample (library.core.interfaces.ISignalSample.ISignalSample)" href="#library.core.interfaces.ISignalSample.ISignalSample">ISignalSample</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Signal samples in analysis order.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>config</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional plugin-specific metadata retained for compatibility.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISignal.ISignal.__iter__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__iter__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__iter__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">ISignalSample</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Iterate samples in analysis order.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISignal.ISignal.__len__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__len__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__len__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of samples in the signal.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.ISignalSample.ISignalSample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ISignalSample</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Base contract for one time-indexed signal sample.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.interfaces.ISignalSample.ISignalSample.frame_index">frame_index</span></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Source frame index associated with the sample.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.interfaces.ISignalSample.ISignalSample.timestamp_seconds">timestamp_seconds</span></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional source timestamp in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.interfaces.ISignalSample.ISignalSample.metadata">metadata</span></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Plugin-specific sample metadata.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.ISignalSample.ISignalSample.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span>
+    <span class="n">frame_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">timestamp_seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create a signal sample value.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="streaming-contracts">Streaming Contracts</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.BufferContracts.IBuffer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IBuffer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.Protocol">Protocol</span>[<span title="library.core.interfaces.BufferContracts.T">T</span>]</code></p>
+
+
+
+        <p>Minimal producer-side contract shared by pipeline buffers.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.interfaces.BufferContracts.IBuffer.closed" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">closed</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">closed</span><span class="p">:</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return True when the buffer no longer accepts new items.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.BufferContracts.IBuffer.put" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">put</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">put</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Publish one item into the buffer.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.BufferContracts.IBuffer.close" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">close</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Mark the stream as complete and wake consumers.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.BufferContracts.IAbortableBuffer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IAbortableBuffer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IBuffer (library.core.interfaces.BufferContracts.IBuffer)" href="#library.core.interfaces.BufferContracts.IBuffer">IBuffer</a>[<span title="library.core.interfaces.BufferContracts.T">T</span>]</code>, <code><span title="typing.Protocol">Protocol</span>[<span title="library.core.interfaces.BufferContracts.T">T</span>]</code></p>
+
+
+
+        <p>Buffer that can interrupt a stream immediately.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.BufferContracts.IAbortableBuffer.abort" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">abort</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">abort</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Cancel the stream and unblock waiting producers or consumers.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.BufferContracts.IBufferSubscription" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IBufferSubscription</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="collections.abc.Iterator">Iterator</span>[<span title="library.core.interfaces.BufferContracts.T">T</span>]</code>, <code><span title="typing.Protocol">Protocol</span>[<span title="library.core.interfaces.BufferContracts.T">T</span>]</code></p>
+
+
+
+        <p>Consumer-side stream cursor that can cancel its upstream buffer.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.BufferContracts.IBufferSubscription.abort" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">abort</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">abort</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Cancel the source buffer for cooperative downstream shutdown.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.BufferContracts.ISubscribableBuffer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ISubscribableBuffer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IAbortableBuffer (library.core.interfaces.BufferContracts.IAbortableBuffer)" href="#library.core.interfaces.BufferContracts.IAbortableBuffer">IAbortableBuffer</a>[<span title="library.core.interfaces.BufferContracts.T">T</span>]</code>, <code><span title="typing.Protocol">Protocol</span>[<span title="library.core.interfaces.BufferContracts.T">T</span>]</code></p>
+
+
+
+        <p>Multi-consumer buffer with explicit fan-out configuration.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.BufferContracts.ISubscribableBuffer.set_consumer_count" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">set_consumer_count</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_consumer_count</span><span class="p">(</span><span class="n">consumers</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Declare how many consumers must observe each future item.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.BufferContracts.ISubscribableBuffer.subscribe" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">subscribe</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">subscribe</span><span class="p">(</span><span class="n">consumer_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IBufferSubscription</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a consumer cursor for the configured stream.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.BufferContracts.IFrameBuffer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IFrameBuffer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IAbortableBuffer (library.core.interfaces.BufferContracts.IAbortableBuffer)" href="#library.core.interfaces.BufferContracts.IAbortableBuffer">IAbortableBuffer</a>[<a class="autorefs autorefs-internal" title="Frame
+
+
+  
+      dataclass
+   (library.core.artifacts.Frame.Frame)" href="../api-artifacts/#library.core.artifacts.Frame.Frame">Frame</a>]</code>, <code><span title="collections.abc.Iterable">Iterable</span>[<a class="autorefs autorefs-internal" title="Frame
+
+
+  
+      dataclass
+   (library.core.artifacts.Frame.Frame)" href="../api-artifacts/#library.core.artifacts.Frame.Frame">Frame</a>]</code>, <code><span title="typing.Protocol">Protocol</span></code></p>
+
+
+
+        <p>Frame stream contract required by realtime latency policies.</p>
+<p>This intentionally lives outside <code>IBuffer</code> because capacity and dropping
+are frame-queue concerns, not universal buffer responsibilities.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.interfaces.BufferContracts.IFrameBuffer.capacity" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">capacity</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">capacity</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Maximum number of frame items retained by the public queue.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.BufferContracts.IFrameBuffer.try_put" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">try_put</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">try_put</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Publish without blocking. Return False when the frame is rejected.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.BufferContracts.IFrameBuffer.drop_oldest" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">drop_oldest</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">drop_oldest</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Frame</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Drop and return the oldest queued frame item, when available.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.BufferContracts.IFrameBuffer.fill_ratio" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">fill_ratio</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">fill_ratio</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return public queue occupancy in the [0, 1] range.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.StreamingContracts.IStreamingFrameExtractor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IStreamingFrameExtractor</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IFrameExtractor (library.core.interfaces.IFrameExtractor.IFrameExtractor)" href="#library.core.interfaces.IFrameExtractor.IFrameExtractor">IFrameExtractor</a></code></p>
+
+
+
+        <p>Frame extractor that can publish frames into a bounded output stream.</p>
+<p>Implementations must close <code>output_buffer</code> on normal completion and should
+cooperate with the supplied latency policy instead of writing directly with
+unbounded buffering.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StreamingContracts.IStreamingFrameExtractor.extract_into" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">extract_into</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">extract_into</span><span class="p">(</span>
+    <span class="n">output_buffer</span><span class="p">:</span> <span class="n">IFrameBuffer</span><span class="p">,</span>
+    <span class="n">latency_policy</span><span class="p">:</span> <span class="n">FrameLatencyPolicy</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Read frames and publish accepted frames into <code>output_buffer</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>output_buffer</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IFrameBuffer (library.core.interfaces.BufferContracts.IFrameBuffer)" href="#library.core.interfaces.BufferContracts.IFrameBuffer">IFrameBuffer</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Bounded frame queue owned by the runtime.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>latency_policy</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FrameLatencyPolicy (library.core.pipeline.LatencyPolicy.FrameLatencyPolicy)" href="../api-pipeline/#library.core.pipeline.LatencyPolicy.FrameLatencyPolicy">FrameLatencyPolicy</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Per-run policy deciding whether each frame is accepted or dropped.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.StreamingContracts.IStreamingFrameBufferProcessor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IStreamingFrameBufferProcessor</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IFrameBufferProcessor (library.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor)" href="#library.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor">IFrameBufferProcessor</a></code></p>
+
+
+
+        <p>Frame processor that can transform a stream without materializing it.</p>
+<p>Implementations should publish outputs progressively and preserve ordering
+unless their plugin documentation explicitly states otherwise.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StreamingContracts.IStreamingFrameBufferProcessor.process_into" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process_into</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">process_into</span><span class="p">(</span>
+    <span class="n">input_buffer</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Frame</span><span class="p">],</span>
+    <span class="n">output_buffer</span><span class="p">:</span> <span class="n">IBuffer</span><span class="p">[</span><span class="n">Frame</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">processor_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">intermediate_store</span><span class="p">:</span> <span class="n">IntermediateFrameArtifactStore</span>
+    <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Consume <code>input_buffer</code> and publish processed frames.</p>
+<p>Implementations must close <code>output_buffer</code> when finished and should
+abort cooperatively when downstream consumers abort.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.StreamingContracts.IStreamingFrameExporter" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IStreamingFrameExporter</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IFrameExporter (library.core.interfaces.IFrameExporter.IFrameExporter)" href="#library.core.interfaces.IFrameExporter.IFrameExporter">IFrameExporter</a></code></p>
+
+
+
+        <p>Frame exporter that writes artifacts while forwarding the frame stream.</p>
+<p>This contract lets exporters produce file-backed artifacts without forcing
+the frame stream to be fully materialized before signal extraction.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StreamingContracts.IStreamingFrameExporter.export_into" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">export_into</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">export_into</span><span class="p">(</span>
+    <span class="n">frames</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Frame</span><span class="p">],</span>
+    <span class="n">output_buffer</span><span class="p">:</span> <span class="n">IBuffer</span><span class="p">[</span><span class="n">Frame</span><span class="p">],</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">FrameExportContext</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">VisualArtifact</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Export frames and forward each original frame to <code>output_buffer</code>.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.StreamingContracts.IStreamingSignalExtractor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IStreamingSignalExtractor</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignalExtractor (library.core.interfaces.ISignalExtractor.ISignalExtractor)" href="#library.core.interfaces.ISignalExtractor.ISignalExtractor">ISignalExtractor</a></code></p>
+
+
+
+        <p>Signal extractor that emits samples progressively from frame input.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StreamingContracts.IStreamingSignalExtractor.extract_into" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">extract_into</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">extract_into</span><span class="p">(</span>
+    <span class="n">frames</span><span class="p">:</span> <span class="n">IFrameBuffer</span><span class="p">,</span>
+    <span class="n">output_buffer</span><span class="p">:</span> <span class="n">IBuffer</span><span class="p">[</span><span class="n">ISignalSample</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Consume frames and publish signal samples to <code>output_buffer</code>.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.StreamingContracts.IStreamingSignalCleaner" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IStreamingSignalCleaner</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignalCleaner (library.core.interfaces.ISignalCleaner.ISignalCleaner)" href="#library.core.interfaces.ISignalCleaner.ISignalCleaner">ISignalCleaner</a></code></p>
+
+
+
+        <p>Signal cleaner that can transform samples progressively.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StreamingContracts.IStreamingSignalCleaner.clean_into" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">clean_into</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clean_into</span><span class="p">(</span>
+    <span class="n">input_signal</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ISignalSample</span><span class="p">],</span>
+    <span class="n">output_buffer</span><span class="p">:</span> <span class="n">IBuffer</span><span class="p">[</span><span class="n">ISignalSample</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Consume signal samples and publish cleaned samples to <code>output_buffer</code>.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.StreamingContracts.IStreamingAnalyzer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IStreamingAnalyzer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IAnalyzer (library.core.interfaces.IAnalyzer.IAnalyzer)" href="#library.core.interfaces.IAnalyzer.IAnalyzer">IAnalyzer</a></code></p>
+
+
+
+        <p>Analyzer that can publish progressive data and still return a final result.</p>
+<p>Progressive values feed streaming visualizers during execution. The returned
+final <code>IData</code> remains the authoritative analyzer result included in
+<code>PipelineOutputs</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StreamingContracts.IStreamingAnalyzer.analyze_into" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">analyze_into</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">analyze_into</span><span class="p">(</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ISignalSample</span><span class="p">],</span>
+    <span class="n">output_buffer</span><span class="p">:</span> <span class="n">IBuffer</span><span class="p">[</span><span class="n">IData</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IData</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Consume signal samples, publish progressive data, and return final data.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.StreamingContracts.IStreamingVisualizer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IStreamingVisualizer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IVisualizer (library.core.interfaces.IVisualizer.IVisualizer)" href="#library.core.interfaces.IVisualizer.IVisualizer">IVisualizer</a></code></p>
+
+
+
+        <p>Visualizer that can consume progressive analyzer data.</p>
+<p>Streaming visualizers should avoid toolkit-specific blocking calls in core
+execution paths. For live UI updates, publish through adapter-safe contracts
+such as realtime sinks or return final artifacts after the stream closes.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.StreamingContracts.IStreamingVisualizer.render_stream" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">render_stream</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">render_stream</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">IData</span><span class="p">],</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">VisualizationContext</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">VisualArtifact</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Render from a data stream subscription.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="orchestration-ports">Orchestration Ports</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.pipeline.IPipelineFactory.IPipelineFactory" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IPipelineFactory</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Factory port that creates executable <code>Pipeline</code> instances.</p>
+<p>Applications can replace this port to inject custom execution policy,
+event buses, metadata propagation, or pipeline subclasses without changing
+the orchestrator.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineFactory.IPipelineFactory.create" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">create</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineContext</span><span class="p">,</span>
+    <span class="n">event_bus</span><span class="p">:</span> <span class="n">IEventBus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">execution_metadata</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pipeline</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create a pipeline facade for a validated context.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Pipeline (library.core.pipeline.Pipeline.Pipeline)" href="../api-pipeline/#library.core.pipeline.Pipeline.Pipeline">Pipeline</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Executable pipeline instance ready for a runner.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IPipelineRunner</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Executes Pipeline instances synchronously or asynchronously.</p>
+<p>Implementations own execution concerns such as active-run tracking,
+retry, lifecycle events, and monitor registration/completion.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner.run" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">run</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">(</span>
+    <span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">:</span> <span class="n">Pipeline</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineOutputs</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Execute a pipeline synchronously and return completed outputs.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner.submit" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">submit</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">submit</span><span class="p">(</span>
+    <span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">:</span> <span class="n">Pipeline</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Future</span><span class="p">[</span><span class="n">PipelineOutputs</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Submit a pipeline for asynchronous execution.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner.cancel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">cancel</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cancel</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Cancel queued work for a run id when supported.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner.active_ids" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">active_ids</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">active_ids</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a snapshot of active run ids.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner.snapshot" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">snapshot</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">snapshot</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineRunSnapshot</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the latest snapshot for a run id, if known.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner.snapshots" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">snapshots</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">snapshots</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">PipelineRunSnapshot</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return latest snapshots for all tracked runs.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner.shutdown" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">shutdown</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Release runner resources and optionally wait for active work.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IPipelineMonitor</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Port for observable pipeline execution state.</p>
+<p>Monitors are read by UIs, APIs, and operators. Implementations should keep
+state transitions deterministic and should not expose mutable internal
+storage through snapshots.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor.register" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">register</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">register</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Record a newly queued pipeline run.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor.mark_running" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">mark_running</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">mark_running</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attempt</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Mark a run attempt as actively executing.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor.complete" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">complete</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">complete</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Mark a run as successfully completed.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor.fail" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">fail</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">fail</span><span class="p">(</span>
+    <span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="ne">Exception</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attempt</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Mark a run as failed with an observable error message.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor.terminate" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">terminate</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">terminate</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Mark a run as cancelled or terminated.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor.active_ids" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">active_ids</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">active_ids</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a snapshot of queued or running pipeline ids.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor.snapshot" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">snapshot</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">snapshot</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineRunSnapshot</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the latest snapshot for a run id, if known.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor.snapshots" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">snapshots</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">snapshots</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">PipelineRunSnapshot</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return latest snapshots for all tracked runs.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.pipeline.IPipelineOutputStore.IPipelineOutputStore" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IPipelineOutputStore</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Persistence port for completed pipeline outputs.</p>
+<p>Stores may be in-memory, filesystem-backed, database-backed, or service
+backed. Implementations should treat <code>PipelineOutputs</code> as immutable values.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineOutputStore.IPipelineOutputStore.save" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">save</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">save</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">PipelineOutputs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Persist outputs for a completed run id.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineOutputStore.IPipelineOutputStore.get" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineOutputs</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return stored outputs for a run id, if available.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineOutputStore.IPipelineOutputStore.delete" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">delete</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">delete</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Remove stored outputs for a run id.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.pipeline.IPipelineValidator.IPipelineValidator" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IPipelineValidator</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Validation port for executable pipeline instances.</p>
+<p>Validators are application-level checks. They should not mutate the
+pipeline and should raise typed configuration or validation errors when a
+run cannot be accepted.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IPipelineValidator.IPipelineValidator.validate" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">validate</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">validate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">:</span> <span class="s1">&#39;Pipeline&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Validate a pipeline before execution.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.pipeline.IEventBus.IEventBus" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IEventBus</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Typed async-first pub/sub interface.</p>
+
+
+<details class="two-publication-paths" open>
+  <summary>Two publication paths</summary>
+  <ul>
+<li><code>dispatch</code> — synchronous, for use within pipeline execution threads
+  where no event loop is running.</li>
+<li><code>publish</code>  — async, for external callers operating in an asyncio
+  context.</li>
+</ul>
+<p>Per-listener error isolation: a failing handler must never prevent other
+handlers from receiving the same event.</p>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IEventBus.IEventBus.subscribe" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">subscribe</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">subscribe</span><span class="p">(</span><span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">EventHandler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Register a handler for one event type.</p>
+<p>Use <code>IEventBus.WILDCARD</code> to observe every event.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IEventBus.IEventBus.unsubscribe" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">unsubscribe</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">unsubscribe</span><span class="p">(</span><span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">EventHandler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Remove a previously registered handler when present.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IEventBus.IEventBus.dispatch" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dispatch</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">dispatch</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Publish an event synchronously.</p>
+<p>Implementations should isolate handler failures so one subscriber does
+not prevent remaining subscribers from receiving the event.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IEventBus.IEventBus.publish" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">publish</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">publish</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Publish an event from an async caller.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.pipeline.IRetryPolicy.IRetryPolicy" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IRetryPolicy</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Strategy interface that governs retry behavior for runners.</p>
+
+
+<details class="design-rationale" open>
+  <summary>Design rationale</summary>
+  <p>Extracting the retry decision into its own object follows the
+Open/Closed Principle: new strategies such as backoff, jitter, or circuit
+breakers are added by creating a new class, never by editing the runner.
+The runner calls only two methods:</p>
+<ul>
+<li><code>should_retry</code>: binary gate deciding whether to keep trying.</li>
+<li><code>wait_seconds</code>: optional pause before the next attempt.</li>
+</ul>
+<p>Both receive the 1-based attempt number that just failed, so policies
+can implement attempt-dependent logic such as exponential backoff.</p>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IRetryPolicy.IRetryPolicy.should_retry" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">should_retry</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">should_retry</span><span class="p">(</span><span class="n">attempt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decide whether execution should be retried.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>attempt</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The 1-based number of the attempt that <em>just failed</em>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>error</code>
+            </td>
+            <td>
+                  <code><span title="Exception">Exception</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The exception that caused the failure.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>True</code> when the runner should make another attempt. <code>False</code> when
+the runner should stop and re-raise <code>error</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IRetryPolicy.IRetryPolicy.wait_seconds" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">wait_seconds</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait_seconds</span><span class="p">(</span><span class="n">attempt</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Seconds to pause <em>before</em> the next attempt.</p>
+<p>Override in subclasses that implement backoff strategies.
+The base implementation returns <code>0.0</code> (no wait).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>attempt</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The 1-based number of the attempt that <em>just failed</em>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.interfaces.pipeline.IBranchingRule.IBranchingRule" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IBranchingRule</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Strategy that decides IF and HOW to create a secondary pipeline
+in response to a domain event.</p>
+
+
+<details class="design-rationale" open>
+  <summary>Design rationale</summary>
+  <p>The Orchestrator holds a list of IBranchingRules.  When a domain
+event arrives on the EventBus, <strong>each</strong> rule is evaluated in order:</p>
+<ol>
+<li><code>matches(event)</code> — should this event trigger a secondary pipeline?</li>
+<li><code>build_context(event)</code> — build the PipelineContext for the new pipeline.</li>
+</ol>
+<p>This is the <strong>Strategy pattern</strong>: users define their own branching
+logic by subclassing IBranchingRule, without touching the Orchestrator.</p>
+</details>
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>class TrackingLostBranch(IBranchingRule):
+...     def matches(self, event: Event) -&gt; bool:
+...         return event.event_type == "tracking_lost"
+...
+...     def build_context(self, event: Event) -&gt; PipelineContext:
+...         return PipelineContext(
+...             frame_extractor=...,
+...             signal_extractor=...,
+...             analyzers=[...],
+...         )</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IBranchingRule.IBranchingRule.matches" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">matches</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">matches</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return <code>True</code> if <em>event</em> should trigger a secondary pipeline.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>event</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Event
+
+
+  
+      dataclass
+   (library.core.events.Event.Event)" href="../api-events/#library.core.events.Event.Event">Event</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The domain event published on the EventBus.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>True</code>  -&gt; <code>build_context()</code> will be called next.
+<code>False</code> -&gt; this rule is skipped for this event.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.interfaces.pipeline.IBranchingRule.IBranchingRule.build_context" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">build_context</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_context</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineContext</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build the PipelineContext for the secondary pipeline.</p>
+<p>Called only when <code>matches(event)</code> returned <code>True</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>event</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Event
+
+
+  
+      dataclass
+   (library.core.events.Event.Event)" href="../api-events/#library.core.events.Event.Event">Event</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The same domain event that matched.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="PipelineContext
+
+
+  
+      dataclass
+   (library.core.pipeline.PipelineContext.PipelineContext)" href="../api-pipeline/#library.core.pipeline.PipelineContext.PipelineContext">PipelineContext</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A fully configured, immutable context ready for execution
+by a secondary Pipeline.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js"></script>
+        <script src="../../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

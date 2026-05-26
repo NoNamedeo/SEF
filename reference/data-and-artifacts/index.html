@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="canonical" href="https://NoNamedeo.github.io/SEF/reference/data-and-artifacts/">
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Data and Artifacts - SEF Core Documentation</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../../css/brands.min.css" rel="stylesheet">
+        <link href="../../css/solid.min.css" rel="stylesheet">
+        <link href="../../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../..">SEF Core Documentation</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href="../.." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../overview/" class="nav-link">Overview</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../getting-started/" class="nav-link">Getting Started</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-api/" class="nav-link">Public API</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../configuration/" class="nav-link">Configuration</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../registry/" class="nav-link">Registry</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../plugin-authoring/" class="nav-link">Plugin Authoring</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../streaming-runtime/" class="nav-link">Streaming Runtime</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../error-handling/" class="nav-link">Error Handling</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../versioning/" class="nav-link">Versioning</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../examples/" class="nav-link">Examples</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Reference</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../component-contracts/" class="dropdown-item">Component Contracts</a>
+</li>
+                                    
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Data and Artifacts</a>
+</li>
+                                    
+<li>
+    <a href="../pipeline-runtime/" class="dropdown-item">Pipeline Runtime</a>
+</li>
+                                    
+<li>
+    <a href="../errors/" class="dropdown-item">Error Model</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Generated API</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../generated-api/" class="dropdown-item">Overview</a>
+</li>
+            
+<li>
+    <a href="../api-core/" class="dropdown-item">Core Package</a>
+</li>
+            
+<li>
+    <a href="../api-pipeline/" class="dropdown-item">Pipeline Package</a>
+</li>
+            
+<li>
+    <a href="../api-interfaces/" class="dropdown-item">Interfaces Package</a>
+</li>
+            
+<li>
+    <a href="../api-artifacts/" class="dropdown-item">Artifacts Package</a>
+</li>
+            
+<li>
+    <a href="../api-plugins/" class="dropdown-item">Plugins Package</a>
+</li>
+            
+<li>
+    <a href="../api-visualization/" class="dropdown-item">Visualization Package</a>
+</li>
+            
+<li>
+    <a href="../api-events/" class="dropdown-item">Events Package</a>
+</li>
+            
+<li>
+    <a href="../api-realtime/" class="dropdown-item">Realtime Package</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-contracts/" class="nav-link">Single-Page Contracts</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../component-contracts/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../pipeline-runtime/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#reference-data-and-artifacts" class="nav-link">Reference: Data and Artifacts</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#frame" class="nav-link">Frame</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#framebuffer" class="nav-link">FrameBuffer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#isignal-and-isignalsample" class="nav-link">ISignal and ISignalSample</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#idata" class="nav-link">IData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#visualartifact" class="nav-link">VisualArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#pipelineoutputs" class="nav-link">PipelineOutputs</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="reference-data-and-artifacts">Reference: Data and Artifacts</h1>
+<h2 id="frame">Frame</h2>
+<p>Official import: <code>from library.core.artifacts import Frame</code></p>
+<p>Fields:</p>
+<ul>
+<li><code>image</code></li>
+<li><code>index</code></li>
+<li><code>timestamp_seconds</code></li>
+<li><code>metadata</code></li>
+</ul>
+<p><code>frame.frame</code> is a compatibility alias for <code>frame.image</code>.</p>
+<h2 id="framebuffer">FrameBuffer</h2>
+<p>Official import: <code>from library.core.artifacts import FrameBuffer</code></p>
+<p>Core methods:</p>
+<ul>
+<li><code>put(frame)</code></li>
+<li><code>try_put(frame)</code></li>
+<li><code>drop_oldest()</code></li>
+<li><code>close()</code></li>
+<li><code>abort()</code></li>
+<li><code>fill_ratio()</code></li>
+<li>iteration over frames</li>
+</ul>
+<h2 id="isignal-and-isignalsample">ISignal and ISignalSample</h2>
+<p>Official import:</p>
+<pre><code class="language-python">from library.core.interfaces import ISignal, ISignalSample
+</code></pre>
+<p>Signals are iterable collections of samples. Samples expose frame index,
+optional timestamp, and metadata.</p>
+<h2 id="idata">IData</h2>
+<p>Official import: <code>from library.core.interfaces import IData</code></p>
+<p>Analyzer outputs should implement <code>IData</code>. Built-in data values include graph
+data, point data, trajectory data, pose data, tracking data, mask artifacts, and
+domain-specific analysis records.</p>
+<h2 id="visualartifact">VisualArtifact</h2>
+<p>Official import: <code>from library.core.visualization import VisualArtifact</code></p>
+<p>Common fields:</p>
+<ul>
+<li><code>artifact_id</code></li>
+<li><code>kind</code></li>
+<li><code>role</code></li>
+<li><code>title</code></li>
+<li><code>description</code></li>
+<li><code>metadata</code></li>
+</ul>
+<p>Concrete artifact types:</p>
+<ul>
+<li><code>ImageArtifact</code></li>
+<li><code>VideoArtifact</code></li>
+<li><code>VideoFileArtifact</code></li>
+<li><code>DeferredVideoArtifact</code></li>
+<li><code>TableArtifact</code></li>
+<li><code>JsonArtifact</code></li>
+<li><code>TextArtifact</code></li>
+</ul>
+<h2 id="pipelineoutputs">PipelineOutputs</h2>
+<p>Official import: <code>from library.core.visualization import PipelineOutputs</code></p>
+<p>Fields:</p>
+<ul>
+<li><code>results</code></li>
+<li><code>final_artifacts</code></li>
+<li><code>debug_artifacts</code></li>
+<li><code>metadata</code></li>
+<li><code>intermediate_frames</code></li>
+</ul>
+<p><code>artifact_count</code> returns final plus debug artifact count.</p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js"></script>
+        <script src="../../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

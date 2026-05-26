@@ -1,0 +1,4997 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="canonical" href="https://NoNamedeo.github.io/SEF/reference/api-pipeline/">
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Pipeline Package - SEF Core Documentation</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../../css/brands.min.css" rel="stylesheet">
+        <link href="../../css/solid.min.css" rel="stylesheet">
+        <link href="../../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../..">SEF Core Documentation</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href="../.." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../overview/" class="nav-link">Overview</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../getting-started/" class="nav-link">Getting Started</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-api/" class="nav-link">Public API</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../configuration/" class="nav-link">Configuration</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../registry/" class="nav-link">Registry</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../plugin-authoring/" class="nav-link">Plugin Authoring</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../streaming-runtime/" class="nav-link">Streaming Runtime</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../error-handling/" class="nav-link">Error Handling</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../versioning/" class="nav-link">Versioning</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../examples/" class="nav-link">Examples</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Reference</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../component-contracts/" class="dropdown-item">Component Contracts</a>
+</li>
+                                    
+<li>
+    <a href="../data-and-artifacts/" class="dropdown-item">Data and Artifacts</a>
+</li>
+                                    
+<li>
+    <a href="../pipeline-runtime/" class="dropdown-item">Pipeline Runtime</a>
+</li>
+                                    
+<li>
+    <a href="../errors/" class="dropdown-item">Error Model</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Generated API</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../generated-api/" class="dropdown-item">Overview</a>
+</li>
+            
+<li>
+    <a href="../api-core/" class="dropdown-item">Core Package</a>
+</li>
+            
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Pipeline Package</a>
+</li>
+            
+<li>
+    <a href="../api-interfaces/" class="dropdown-item">Interfaces Package</a>
+</li>
+            
+<li>
+    <a href="../api-artifacts/" class="dropdown-item">Artifacts Package</a>
+</li>
+            
+<li>
+    <a href="../api-plugins/" class="dropdown-item">Plugins Package</a>
+</li>
+            
+<li>
+    <a href="../api-visualization/" class="dropdown-item">Visualization Package</a>
+</li>
+            
+<li>
+    <a href="../api-events/" class="dropdown-item">Events Package</a>
+</li>
+            
+<li>
+    <a href="../api-realtime/" class="dropdown-item">Realtime Package</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-contracts/" class="nav-link">Single-Page Contracts</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../api-core/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../api-interfaces/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#api-pipeline-package" class="nav-link">API: Pipeline Package</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#execution-facades" class="nav-link">Execution Facades</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.Pipeline.Pipeline" class="nav-link">Pipeline</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineOrchestrator.PipelineOrchestrator" class="nav-link">PipelineOrchestrator</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner" class="nav-link">ThreadedPipelineRunner</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#context-and-builders" class="nav-link">Context and Builders</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineContext.PipelineContext" class="nav-link">PipelineContext</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder" class="nav-link">FluentPipelineBuilder</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.ConfigPipelineBuilder.ConfigPipelineBuilder" class="nav-link">ConfigPipelineBuilder</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.VisualizerBinding.VisualizerBinding" class="nav-link">VisualizerBinding</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#planning-and-runtime-policy" class="nav-link">Planning and Runtime Policy</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage" class="nav-link">ExecutionPlanStage</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineExecutionPlan.PipelineExecutionPlan" class="nav-link">PipelineExecutionPlan</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionMode" class="nav-link">PipelineExecutionMode</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionDecision" class="nav-link">PipelineExecutionDecision</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineExecutionPolicy.PipelineStagePolicyContext" class="nav-link">PipelineStagePolicyContext</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionPolicy" class="nav-link">PipelineExecutionPolicy</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineExecutionPolicy.DefaultPipelineExecutionPolicy" class="nav-link">DefaultPipelineExecutionPolicy</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig" class="nav-link">StreamRuntimeConfig</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.LatencyPolicy.LatencyPolicyConfig" class="nav-link">LatencyPolicyConfig</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.LatencyPolicy.FrameLatencyPolicy" class="nav-link">FrameLatencyPolicy</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.LatencyPolicy.BlockingFrameLatencyPolicy" class="nav-link">BlockingFrameLatencyPolicy</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.LatencyPolicy.DropNewestFrameLatencyPolicy" class="nav-link">DropNewestFrameLatencyPolicy</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.LatencyPolicy.DropOldestFrameLatencyPolicy" class="nav-link">DropOldestFrameLatencyPolicy</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.LatencyPolicy.AdaptiveSamplingFrameLatencyPolicy" class="nav-link">AdaptiveSamplingFrameLatencyPolicy</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#configuration-versioning" class="nav-link">Configuration Versioning</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineConfigVersioning.PipelineConfigMigration" class="nav-link">PipelineConfigMigration</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig" class="nav-link">VersionedPipelineConfig</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineConfigVersioning.PipelineConfigVersionManager" class="nav-link">PipelineConfigVersionManager</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineConfigVersioning.normalize_pipeline_config" class="nav-link">normalize_pipeline_config</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#run-snapshots" class="nav-link">Run Snapshots</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineRunSnapshot.PipelineRunState" class="nav-link">PipelineRunState</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.pipeline.PipelineRunSnapshot.PipelineRunSnapshot" class="nav-link">PipelineRunSnapshot</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="api-pipeline-package">API: Pipeline Package</h1>
+<p>The pipeline package exposes construction, planning, execution, runtime policy,
+configuration versioning, and asynchronous runner contracts.</p>
+<h2 id="execution-facades">Execution Facades</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.Pipeline.Pipeline" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">Pipeline</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Public execution facade for a single pipeline run.</p>
+<p><code>Pipeline</code> intentionally coordinates collaborators instead of owning the
+workflow details. Frame execution, signal analysis, visualization, event
+injection, and output assembly are delegated to focused collaborators in
+this package. This keeps the public API stable while avoiding a god object.</p>
+
+
+<details class="responsibilities" open>
+  <summary>Responsibilities</summary>
+  <ul>
+<li>Validate no business rule directly; validation belongs to
+  <code>PipelineContext</code> and the concrete components.</li>
+<li>Build a stable execution plan before the run starts.</li>
+<li>Keep execution-mode decisions behind <code>PipelineExecutionPolicy</code>.</li>
+<li>Inject runtime event metadata into event-aware components.</li>
+<li>Delegate execution to <code>SegmentedPipelineExecutor</code>.</li>
+<li>Convert the internal execution result into public <code>PipelineOutputs</code>.</li>
+</ul>
+</details>
+
+<details class="extension-notes" open>
+  <summary>Extension notes</summary>
+  <p>New execution behavior should normally be introduced through a custom
+<code>PipelineExecutionPolicy</code> or through segmented runtime collaborators
+rather than by adding stage logic here. This class should remain thin so
+callers can treat it as a stable facade.</p>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.Pipeline.Pipeline.__init__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__init__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__init__</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineContext</span><span class="p">,</span>
+    <span class="n">event_bus</span><span class="p">:</span> <span class="n">IEventBus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">execution_metadata</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">execution_policy</span><span class="p">:</span> <span class="n">PipelineExecutionPolicy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create a pipeline facade for an already-built context.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>context</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="PipelineContext
+
+
+  
+      dataclass
+   (library.core.pipeline.PipelineContext.PipelineContext)" href="#library.core.pipeline.PipelineContext.PipelineContext">PipelineContext</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Immutable set of pipeline components and runtime configuration.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>event_bus</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IEventBus (library.core.interfaces.pipeline.IEventBus.IEventBus)" href="../api-interfaces/#library.core.interfaces.pipeline.IEventBus.IEventBus">IEventBus</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional domain event bus injected into components implementing
+<code>IEventEmitter</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional stable identifier propagated into metadata and artifacts.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_metadata</code>
+            </td>
+            <td>
+                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional metadata copied into event contexts, visualizer contexts,
+exporter contexts, and final run metadata.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_policy</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="PipelineExecutionPolicy (library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionPolicy)" href="#library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionPolicy">PipelineExecutionPolicy</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional strategy used by planner and runtime to choose batch or
+streaming execution for each stage.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.Pipeline.Pipeline.run" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">run</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">PipelineOutputs</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Execute the pipeline and return analyzer results plus artifacts.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="PipelineOutputs
+
+
+  
+      dataclass
+   (library.core.visualization.PipelineOutputs.PipelineOutputs)" href="../api-visualization/#library.core.visualization.PipelineOutputs.PipelineOutputs">PipelineOutputs</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Final analyzer results, visual artifacts, debug artifacts,
+execution metadata, execution plan, and reproducibility exports.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.PipelineExecutionError">PipelineExecutionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If any stage delegated to a component fails.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.Pipeline.Pipeline.execution_plan" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">execution_plan</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">execution_plan</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">PipelineExecutionPlan</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the adaptive execution plan that will be used by <code>run</code>.</p>
+<p>The plan is computed once during construction so callers can inspect
+streaming decisions and materialization boundaries before execution.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineOrchestrator.PipelineOrchestrator" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineOrchestrator</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Application-facing pipeline execution facade.</p>
+<p>The orchestrator is the single public access point for execution:
+synchronous runs go through <code>run(context)</code>, background runs go through
+<code>submit(context)</code>, and event-driven integrations are optional adapters
+around the same submit path.</p>
+
+
+<details class="boundary" open>
+  <summary>Boundary</summary>
+  <p>The orchestrator coordinates application ports. It does not validate
+component schemas or execute stage logic directly; those responsibilities
+belong to builders, contexts, runners, and pipeline execution collaborators.</p>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineOrchestrator.PipelineOrchestrator.run" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">run</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineContext</span><span class="p">,</span>
+    <span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">execution_metadata</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineOutputs</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Execute a pipeline synchronously and return analyzer results.</p>
+<p>This path does not require an EventBus. If a domain bus was configured,
+it is injected into event-emitting components before execution.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>context</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="PipelineContext
+
+
+  
+      dataclass
+   (library.core.pipeline.PipelineContext.PipelineContext)" href="#library.core.pipeline.PipelineContext.PipelineContext">PipelineContext</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Validated pipeline context.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional run id. A unique id is generated when omitted.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_metadata</code>
+            </td>
+            <td>
+                  <code><span title="typing.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional metadata propagated into pipeline events, visualizer
+contexts, output metadata, and reproducibility data.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="PipelineOutputs
+
+
+  
+      dataclass
+   (library.core.visualization.PipelineOutputs.PipelineOutputs)" href="../api-visualization/#library.core.visualization.PipelineOutputs.PipelineOutputs">PipelineOutputs</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Completed outputs for the run.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineOrchestrator.PipelineOrchestrator.submit" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">submit</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">submit</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineContext</span><span class="p">,</span>
+    <span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">execution_metadata</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Future</span><span class="p">[</span><span class="n">PipelineOutputs</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Submit a pipeline for background execution.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="concurrent.futures.Future">Future</span>[<a class="autorefs autorefs-internal" title="PipelineOutputs
+
+
+  
+      dataclass
+   (library.core.visualization.PipelineOutputs.PipelineOutputs)" href="../api-visualization/#library.core.visualization.PipelineOutputs.PipelineOutputs">PipelineOutputs</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Future owned by the configured runner.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineOrchestrator.PipelineOrchestrator.terminate" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">terminate</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">terminate</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Best-effort cancellation for a queued async pipeline.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Run identifier returned or supplied at submission time.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>True</code> only when the underlying runner cancelled queued work that
+had not started yet. Already-running pipelines are not interrupted.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineOrchestrator.PipelineOrchestrator.active_ids" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">active_ids</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">active_ids</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a snapshot of currently active pipeline ids.</p>
+<p>This list is a snapshot of the pipelines currently being executed.
+It does not imply that the pipelines are still running at the time of
+calling this method because async runs may complete immediately after
+the snapshot is read.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineOrchestrator.PipelineOrchestrator.shutdown" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">shutdown</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Shut down the underlying runner.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>wait</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>When <code>True</code>, block until running pipelines finish. When <code>False</code>,
+ask the runner to cancel pending work and return without waiting for
+already-running pipelines.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ThreadedPipelineRunner</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IPipelineRunner (library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner)" href="../api-interfaces/#library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner">IPipelineRunner</a></code></p>
+
+
+
+        <p>Execute pipelines on a <code>ThreadPoolExecutor</code>.</p>
+<p><code>run()</code> and <code>submit()</code> share active-id tracking: the same pipeline id cannot
+be executed concurrently through either entry point. <code>submit()</code> returns the
+underlying <code>Future</code> so callers can observe asynchronous results or failures.</p>
+<p><code>cancel()</code> is best-effort: it can cancel queued work that has not started,
+but it cannot interrupt a pipeline that is already running.</p>
+<p>Lifecycle events are dispatched synchronously to the configured <code>IEventBus</code>
+from within the worker thread.</p>
+
+
+<details class="thread-safety" open>
+  <summary>Thread safety</summary>
+  <p>Runner bookkeeping is protected by a lock. Component instances inside a
+submitted <code>Pipeline</code> remain responsible for their own thread-safety.</p>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner.run" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">run</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">run</span><span class="p">(</span>
+    <span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">:</span> <span class="n">Pipeline</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineOutputs</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Execute a pipeline synchronously through the retry/lifecycle path.</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.PipelineRunAlreadyActiveError">PipelineRunAlreadyActiveError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If another run with the same id is active or queued.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.Pipeline.PipelineExecutionError">PipelineExecutionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If execution fails and retry policy declines another attempt.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner.submit" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">submit</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">submit</span><span class="p">(</span>
+    <span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">:</span> <span class="n">Pipeline</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Future</span><span class="p">[</span><span class="n">PipelineOutputs</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Submit a pipeline for background execution.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Stable run identifier used by monitor, output store, and lifecycle
+events.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Pipeline (library.core.pipeline.Pipeline.Pipeline)" href="#library.core.pipeline.Pipeline.Pipeline">Pipeline</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Already-built pipeline facade.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="concurrent.futures.Future">Future</span>[<a class="autorefs autorefs-internal" title="PipelineOutputs
+
+
+  
+      dataclass
+   (library.core.visualization.PipelineOutputs.PipelineOutputs)" href="../api-visualization/#library.core.visualization.PipelineOutputs.PipelineOutputs">PipelineOutputs</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Future that resolves to completed pipeline outputs or raises the
+execution failure.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.PipelineRunAlreadyActiveError">PipelineRunAlreadyActiveError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If another run with the same id is active or queued.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="Exception">Exception</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Any monitor or executor failure raised while reserving the run id.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner.cancel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">cancel</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cancel</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Cancel queued work for a pipeline id when possible.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>True</code> only when the underlying <code>Future</code> accepted cancellation.
+Already-running pipelines cannot be interrupted through this method.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner.active_ids" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">active_ids</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">active_ids</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the monitor-backed snapshot of active pipeline ids.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner.snapshot" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">snapshot</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">snapshot</span><span class="p">(</span><span class="n">pipeline_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineRunSnapshot</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the latest known state for a pipeline id.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner.snapshots" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">snapshots</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">snapshots</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">PipelineRunSnapshot</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return latest known state for all tracked pipeline ids.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner.shutdown" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">shutdown</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Shut down the executor.</p>
+<p>With <code>wait=False</code> pending tasks are cancelled best-effort. Running
+pipelines are not interrupted and clean themselves up through _finish.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="context-and-builders">Context and Builders</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineContext.PipelineContext" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineContext</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Immutable dependency graph for one pipeline execution unit.</p>
+
+
+<details class="design-rationale" open>
+  <summary>Design rationale</summary>
+  <p><code>PipelineContext</code> owns construction invariants, not execution logic. It is
+a frozen value assembled by builders or factories before execution starts.
+<code>Pipeline</code> can therefore remain a thin facade over planning and runtime
+collaborators, while tests and application services can inspect a complete
+pipeline topology without running it.</p>
+</details>
+
+<details class="lifecycle" open>
+  <summary>Lifecycle</summary>
+  <p>A context is normally built once per submitted run. It may be reused when
+all contained component instances are themselves safe to reuse; components
+with per-run mutable state should be instantiated per run by the builder or
+registry factory.</p>
+</details>
+
+<details class="thread-safety" open>
+  <summary>Thread safety</summary>
+  <p>The context normalizes component collections to tuples and deep-copies
+<code>source_config</code>. It does not make contained component objects immutable or
+thread-safe.</p>
+</details>
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.frame_extractor">frame_extractor</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IFrameExtractor (library.core.interfaces.IFrameExtractor.IFrameExtractor)" href="../api-interfaces/#library.core.interfaces.IFrameExtractor.IFrameExtractor">IFrameExtractor</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Required source component that produces frames.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.signal_extractor">signal_extractor</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ISignalExtractor (library.core.interfaces.ISignalExtractor.ISignalExtractor)" href="../api-interfaces/#library.core.interfaces.ISignalExtractor.ISignalExtractor">ISignalExtractor</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Required component that turns processed frames into signal samples.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.analyzers">analyzers</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="IAnalyzer (library.core.interfaces.IAnalyzer.IAnalyzer)" href="../api-interfaces/#library.core.interfaces.IAnalyzer.IAnalyzer">IAnalyzer</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Non-empty analyzer sequence.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.frame_processors">frame_processors</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="IFrameBufferProcessor (library.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor)" href="../api-interfaces/#library.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor">IFrameBufferProcessor</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional buffer-level preprocessing steps.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.frame_exporters">frame_exporters</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="IFrameExporter (library.core.interfaces.IFrameExporter.IFrameExporter)" href="../api-interfaces/#library.core.interfaces.IFrameExporter.IFrameExporter">IFrameExporter</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional final-output exporters that consume processed frames and
+return artifacts while preserving replayable frames.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.signal_cleaners">signal_cleaners</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="ISignalCleaner (library.core.interfaces.ISignalCleaner.ISignalCleaner)" href="../api-interfaces/#library.core.interfaces.ISignalCleaner.ISignalCleaner">ISignalCleaner</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional signal smoothing, filtering, or normalization steps.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.visualizers">visualizers</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="IVisualizer (library.core.interfaces.IVisualizer.IVisualizer)" href="../api-interfaces/#library.core.interfaces.IVisualizer.IVisualizer">IVisualizer</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Visualizers applied to all analyzer results.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.visualizer_bindings">visualizer_bindings</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="VisualizerBinding
+
+
+  
+      dataclass
+   (library.core.pipeline.VisualizerBinding.VisualizerBinding)" href="#library.core.pipeline.VisualizerBinding.VisualizerBinding">VisualizerBinding</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Selective visualizer-to-result bindings.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.intermediate_frame_capture">intermediate_frame_capture</span></code></td>
+            <td>
+                  <code><span title="library.core.pipeline.IntermediateFrameCapture.IntermediateFrameCaptureConfig">IntermediateFrameCaptureConfig</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Bounded capture policy for frame-processing debug snapshots.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.intermediate_frame_visualizers">intermediate_frame_visualizers</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<a class="autorefs autorefs-internal" title="IVisualizer (library.core.interfaces.IVisualizer.IVisualizer)" href="../api-interfaces/#library.core.interfaces.IVisualizer.IVisualizer">IVisualizer</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Visualizers dedicated to intermediate frame collections.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.stream_runtime">stream_runtime</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="StreamRuntimeConfig
+
+
+  
+      dataclass
+   (library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig)" href="#library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig">StreamRuntimeConfig</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Bounded-buffer and latency-policy settings used by adaptive streaming.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineContext.PipelineContext.source_config">source_config</span></code></td>
+            <td>
+                  <code><span title="typing.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Compact construction metadata for reproducibility exports.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.PipelineContextError">PipelineContextError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If required components are missing, required sequences are empty, or a
+typed field receives an invalid object.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">FluentPipelineBuilder</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Programmatic builder for <code>PipelineContext</code>.</p>
+<p>The builder only collects pipeline components and creates a validated
+context. Execution belongs to <code>Pipeline</code>, <code>PipelineOrchestrator</code>, or a
+custom runner.</p>
+
+
+<details class="mutability" open>
+  <summary>Mutability</summary>
+  <p>The builder is mutable and intended for single-threaded setup code. Calling
+<code>build_context()</code> returns an immutable <code>PipelineContext</code>.</p>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_frame_extractor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_frame_extractor</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_frame_extractor</span><span class="p">(</span>
+    <span class="n">extractor</span><span class="p">:</span> <span class="n">IFrameExtractor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace the required frame extractor and return this builder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_signal_extractor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_signal_extractor</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_signal_extractor</span><span class="p">(</span>
+    <span class="n">extractor</span><span class="p">:</span> <span class="n">ISignalExtractor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace the required signal extractor and return this builder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_frame_processors" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_frame_processors</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_frame_processors</span><span class="p">(</span>
+    <span class="n">processors</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">IFrameBufferProcessor</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace buffer-level frame processors and return this builder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.add_frame_processor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">add_frame_processor</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add_frame_processor</span><span class="p">(</span>
+    <span class="n">processor</span><span class="p">:</span> <span class="n">IFrameBufferProcessor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Append one buffer-level frame processor and return this builder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_frame_exporters" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_frame_exporters</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_frame_exporters</span><span class="p">(</span>
+    <span class="n">exporters</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">IFrameExporter</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace file-backed exporters that run after frame processing.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.add_frame_exporter" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">add_frame_exporter</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add_frame_exporter</span><span class="p">(</span>
+    <span class="n">exporter</span><span class="p">:</span> <span class="n">IFrameExporter</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Add a final-output exporter for processed frames.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_signal_cleaners" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_signal_cleaners</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_signal_cleaners</span><span class="p">(</span>
+    <span class="n">cleaners</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ISignalCleaner</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace signal cleaners and return this builder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.add_signal_cleaner" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">add_signal_cleaner</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add_signal_cleaner</span><span class="p">(</span>
+    <span class="n">cleaner</span><span class="p">:</span> <span class="n">ISignalCleaner</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Append one signal cleaner and return this builder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_analyzers" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_analyzers</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_analyzers</span><span class="p">(</span>
+    <span class="n">analyzers</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">IAnalyzer</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace analyzers and return this builder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.add_analyzer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">add_analyzer</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add_analyzer</span><span class="p">(</span><span class="n">analyzer</span><span class="p">:</span> <span class="n">IAnalyzer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Append one analyzer and return this builder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_visualizers" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_visualizers</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_visualizers</span><span class="p">(</span>
+    <span class="n">visualizers</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">IVisualizer</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace visualizers applied to all analyzer results.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.add_visualizer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">add_visualizer</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add_visualizer</span><span class="p">(</span>
+    <span class="n">visualizer</span><span class="p">:</span> <span class="n">IVisualizer</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Append one visualizer applied to all analyzer results.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_visualizer_bindings" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_visualizer_bindings</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_visualizer_bindings</span><span class="p">(</span>
+    <span class="n">bindings</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">VisualizerBinding</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace selective visualizer bindings and return this builder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.add_visualizer_for_results" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">add_visualizer_for_results</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add_visualizer_for_results</span><span class="p">(</span>
+    <span class="n">visualizer</span><span class="p">:</span> <span class="n">IVisualizer</span><span class="p">,</span> <span class="n">result_indices</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Bind one visualizer to selected analyzer result indexes.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_intermediate_frame_capture" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_intermediate_frame_capture</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_intermediate_frame_capture</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">IntermediateFrameCaptureConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Enable or disable bounded intermediate frame capture.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_intermediate_frame_visualizers" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_intermediate_frame_visualizers</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_intermediate_frame_visualizers</span><span class="p">(</span>
+    <span class="n">visualizers</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">IVisualizer</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Replace visualizers dedicated to intermediate frame collections.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.add_intermediate_frame_visualizer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">add_intermediate_frame_visualizer</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add_intermediate_frame_visualizer</span><span class="p">(</span>
+    <span class="n">visualizer</span><span class="p">:</span> <span class="n">IVisualizer</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Add a visualizer dedicated to intermediate frame collections.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.with_stream_runtime" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">with_stream_runtime</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">with_stream_runtime</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">StreamRuntimeConfig</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FluentPipelineBuilder</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Configure bounded buffers and latency policy for adaptive streaming.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder.build_context" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">build_context</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_context</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">PipelineContext</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build and return the PipelineContext from the configured components.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.ConfigPipelineBuilder.ConfigPipelineBuilder" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ConfigPipelineBuilder</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Build a validated <code>PipelineContext</code> from a declarative configuration.</p>
+
+
+<details class="design-rationale" open>
+  <summary>Design rationale</summary>
+  <p><code>ConfigPipelineBuilder</code> exists for deployment scenarios where the pipeline
+topology is owned by YAML, JSON, an API payload, or a UI editor rather than
+by Python construction code.</p>
+<p>The builder delegates all component construction to <code>PluginRegistry</code>. It
+knows category names and schema structure, but it does not import concrete
+frame extractors, processors, analyzers, or visualizers. This keeps the
+core configuration layer independent from infrastructure adapters.</p>
+</details>
+
+<details class="configuration-schema" open>
+  <summary>Configuration schema</summary>
+  <pre><code class="language-yaml">schema_version: &quot;1.0&quot;
+pipeline:
+  frame_extractor:
+    name: opencv_buffered
+    params:
+      path: /path/to/video.mp4
+
+  frame_processors:
+    - name: opencv_gray
+      processor_type: single_frame
+    - name: motion_magnification
+      processor_type: frame_buffer
+
+  signal_extractor:
+    name: opencv_tracker
+    params:
+      roi: [100, 200, 50, 80]
+
+  signal_cleaners:
+    - name: moving_average
+      params:
+        window: 5
+
+  analyzers:
+    - name: vertical_position
+
+  visualizers:
+    - name: matplotlib
+      result_indices: [0]
+
+  intermediate_frames:
+    enabled: true
+    sampling_interval: 10
+    max_stored_frames: 20
+    export_directory: artifacts/debug
+    lazy_saving: true
+    visualizers:
+      - name: intermediate_frames_grid
+
+  runtime:
+    frame_buffer_size: 8
+    signal_buffer_size: 8
+    data_buffer_size: 8
+    latency_policy:
+      name: blocking
+      params: {}
+</code></pre>
+</details>
+
+<details class="versioning" open>
+  <summary>Versioning</summary>
+  <p>Configs are normalized through <code>normalize_pipeline_config</code>. Unversioned
+configs are accepted as the current public schema for compatibility, while
+unsupported explicit versions raise <code>ConfigVersionError</code>.</p>
+</details>
+
+<details class="mutability" open>
+  <summary>Mutability</summary>
+  <p>The input mapping is read and copied into a new <code>PipelineContext</code>; callers
+should not rely on later mutations to the original mapping.</p>
+</details>
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.PipelineConfigurationError">PipelineConfigurationError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If a required section is missing, a plugin entry is malformed, a plugin
+cannot be found, plugin construction fails, or the resulting context
+violates PipelineContext invariants.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.ConfigPipelineBuilder.ConfigPipelineBuilder.build_context" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">build_context</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_context</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">PipelineContext</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Resolve a versioned config into an immutable <code>PipelineContext</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>config</code>
+            </td>
+            <td>
+                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mapping containing a top-level <code>pipeline</code> section and, optionally,
+a <code>schema_version</code> string.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="PipelineContext
+
+
+  
+      dataclass
+   (library.core.pipeline.PipelineContext.PipelineContext)" href="#library.core.pipeline.PipelineContext.PipelineContext">PipelineContext</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Validated context containing constructed component instances,
+runtime settings, visualizer bindings, intermediate-frame capture
+configuration, and a compact reproducibility copy of the source
+config.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.ConfigSchemaError">ConfigSchemaError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If required sections are missing or have the wrong shape.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ConfigVersionError">ConfigVersionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>schema_version</code> is explicit and unsupported.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.PluginResolutionError">PluginResolutionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the registry cannot resolve a configured component name.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.PluginConstructionError">PluginConstructionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If a plugin factory raises or receives invalid parameters.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.PipelineConfigurationError">PipelineConfigurationError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If context validation fails after plugin construction.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.VisualizerBinding.VisualizerBinding" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">VisualizerBinding</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Binds a visualizer to selected analyzer result indexes.</p>
+<p><code>result_indices=None</code> preserves the default behaviour: the visualizer is
+applied to every analyzer result. Providing indexes makes the binding
+selective without changing the visualizer contract.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.VisualizerBinding.VisualizerBinding.target_indexes" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">target_indexes</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">target_indexes</span><span class="p">(</span><span class="n">result_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Resolve this binding against the available analyzer result indexes.</p>
+<p>The method belongs to the value object because index validation is part
+of the binding contract, not a concern of planner or renderer code.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="planning-and-runtime-policy">Planning and Runtime Policy</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ExecutionPlanStage</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Public description of one stage in an execution plan.</p>
+<p>The value is generated before execution starts and is safe to display in
+UIs, logs, or diagnostics. It contains decisions and rationale, not runtime
+executor objects.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage.stage_id">stage_id</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Stable stage identifier used in logs and errors.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage.stage_group">stage_group</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Logical stage group, such as <code>frame_extraction</code>, <code>analysis</code>, or
+<code>visualisation</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage.component_name">component_name</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Human-readable component class name.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage.execution_mode">execution_mode</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Selected mode, usually <code>batch</code> or <code>streaming</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage.capabilities">capabilities</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="StageCapabilities
+
+
+  
+      dataclass
+   (library.core.interfaces.StageCapabilities.StageCapabilities)" href="../api-interfaces/#library.core.interfaces.StageCapabilities.StageCapabilities">StageCapabilities</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Capabilities declared by the component.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage.materializes_input">materializes_input</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether the stage creates a materialization boundary.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage.reason">reason</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Policy explanation for the selected execution mode.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage.streams" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">streams</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">streams</span><span class="p">:</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return <code>True</code> when this stage is planned for streaming execution.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage.as_dict" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_dict</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_dict</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a JSON-safe stage descriptor for APIs, UIs, and logs.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineExecutionPlan.PipelineExecutionPlan" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineExecutionPlan</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Public execution plan generated before a pipeline run starts.</p>
+<p>The plan is an observability contract. It explains which stages are
+streamable, where the runtime will materialize data, and why each decision
+was selected by the execution policy.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPlan.PipelineExecutionPlan.streamable_end_to_end" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">streamable_end_to_end</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">streamable_end_to_end</span><span class="p">:</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return whether all stages preserve streaming without materialization.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPlan.PipelineExecutionPlan.materialization_boundaries" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">materialization_boundaries</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">materialization_boundaries</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ExecutionPlanStage</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return stages that explicitly materialize an upstream stream.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPlan.PipelineExecutionPlan.by_group" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">by_group</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">by_group</span><span class="p">(</span><span class="n">group</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ExecutionPlanStage</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return stages belonging to a logical group.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>group</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Stage group identifier.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPlan.PipelineExecutionPlan.as_dict" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_dict</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_dict</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a JSON-safe execution plan for metadata and API responses.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPlan.PipelineExecutionPlan.as_text" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_text</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_text</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a stable, human-readable execution plan summary.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionMode" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineExecutionMode</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="str">str</span></code>, <code><span title="enum.Enum">Enum</span></code></p>
+
+
+
+        <p>Execution modes that can be selected for one pipeline stage.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionDecision" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineExecutionDecision</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Policy decision for one stage.</p>
+<p>The decision carries both the selected mode and the reason that will appear
+in execution plans. Keeping the explanation in the policy prevents planner
+and runtime from inventing separate narratives for the same choice.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionDecision.streams" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">streams</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">streams</span><span class="p">:</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return True when this decision selects streaming execution.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineExecutionPolicy.PipelineStagePolicyContext" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineStagePolicyContext</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Inputs available to execution-mode policies for one stage.</p>
+<p>The context contains facts, not decisions: capabilities, current stream
+state, downstream demand and optional cost estimates. This keeps policies
+replaceable and testable without depending on executor internals.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionPolicy" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineExecutionPolicy</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.Protocol">Protocol</span></code></p>
+
+
+
+        <p>Strategy interface for batch/streaming execution decisions.</p>
+<p>Custom policies can implement latency-first, memory-first, observability or
+domain-specific rules without changing the execution planner or runtime.
+Implementations must never select streaming when <code>stage_streamable</code> is
+false.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionPolicy.decide_source" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">decide_source</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">decide_source</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineStagePolicyContext</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineExecutionDecision</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Choose how a source stage should produce its output.</p>
+<p>Implementations must return batch mode when <code>context.stage_streamable</code>
+is <code>False</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionPolicy.decide_stage" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">decide_stage</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">decide_stage</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineStagePolicyContext</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineExecutionDecision</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Choose how a transformation, cleaner, exporter, or processor should run.</p>
+<p>The decision should preserve an active stream when possible and should
+avoid opening a stream when downstream stages cannot consume it.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionPolicy.decide_analyzer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">decide_analyzer</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">decide_analyzer</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineStagePolicyContext</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineExecutionDecision</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Choose how an analyzer should consume signal input.</p>
+<p>Streaming analyzer decisions affect whether progressive visualizers can
+receive intermediate data during a run.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineExecutionPolicy.DefaultPipelineExecutionPolicy" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">DefaultPipelineExecutionPolicy</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Default cost-aware streaming policy.</p>
+<p>The policy keeps streaming when it avoids materializing an active stream,
+starts new streaming segments only when there is downstream demand, and uses
+available size estimates to prefer bounded queues over full materialization
+when that is clearly cheaper.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPolicy.DefaultPipelineExecutionPolicy.decide_source" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">decide_source</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">decide_source</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineStagePolicyContext</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineExecutionDecision</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Select source execution mode from source capability and downstream demand.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="PipelineExecutionDecision
+
+
+  
+      dataclass
+   (library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionDecision)" href="#library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionDecision">PipelineExecutionDecision</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Batch when no progressive consumer benefits from a stream;
+streaming when a downstream stage can consume frames progressively.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPolicy.DefaultPipelineExecutionPolicy.decide_stage" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">decide_stage</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">decide_stage</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineStagePolicyContext</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineExecutionDecision</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Select execution mode for non-analyzer processing stages.</p>
+<p>The default policy keeps an active stream whenever the stage can process
+it and uses memory estimates to prefer bounded queues over full
+materialization when both estimates are available.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineExecutionPolicy.DefaultPipelineExecutionPolicy.decide_analyzer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">decide_analyzer</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">decide_analyzer</span><span class="p">(</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">PipelineStagePolicyContext</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineExecutionDecision</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Select analyzer execution mode.</p>
+<p>Streaming is selected when the analyzer can consume an active stream or
+when a progressive visualizer creates demand for analyzer updates.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">StreamRuntimeConfig</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Bounded-buffer and latency settings for adaptive streaming execution.</p>
+<p>The config controls queue capacities between streaming stages and selects
+the frame latency policy used by streaming frame extractors. It is immutable
+and safe to store in <code>PipelineContext</code> or reproducibility metadata.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig.frame_buffer_size">frame_buffer_size</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Public frame queue capacity between frame source and downstream stages.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig.signal_buffer_size">signal_buffer_size</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Public signal queue capacity between signal stages and analyzers.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig.data_buffer_size">data_buffer_size</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Public data queue capacity between streaming analyzers and visualizers.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig.latency_policy">latency_policy</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="LatencyPolicyConfig
+
+
+  
+      dataclass
+   (library.core.pipeline.LatencyPolicy.LatencyPolicyConfig)" href="#library.core.pipeline.LatencyPolicy.LatencyPolicyConfig">LatencyPolicyConfig</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Serializable latency-policy selector.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig.from_mapping" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">from_mapping</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_mapping</span><span class="p">(</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamRuntimeConfig</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Parse runtime settings from a declarative config mapping.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>value</code>
+            </td>
+            <td>
+                  <code><span title="typing.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mapping from <code>pipeline.runtime</code>, or <code>None</code> for defaults.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="StreamRuntimeConfig
+
+
+  
+      dataclass
+   (library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig)" href="#library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig">StreamRuntimeConfig</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Validated runtime config.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.ConfigSchemaError">ConfigSchemaError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>pipeline.runtime</code> or a buffer size has an invalid shape.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="LatencyPolicyError">LatencyPolicyError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the nested latency-policy config is invalid.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig.validate" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">validate</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">validate</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Validate buffer-size invariants.</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.ConfigSchemaError">ConfigSchemaError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If any public buffer capacity is less than one.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig.as_dict" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_dict</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_dict</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a JSON-safe representation for exported configs and plans.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.LatencyPolicy.LatencyPolicyConfig" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">LatencyPolicyConfig</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Serializable selector for frame-stream latency behavior.</p>
+<p>The config is stored in pipeline configs and run metadata. Calling
+<code>create()</code> returns a fresh policy instance because concrete policies keep
+per-run counters and, for adaptive sampling, per-run control state.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.LatencyPolicy.LatencyPolicyConfig.name">name</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>One of <code>blocking</code>, <code>drop_newest</code>, <code>drop_oldest</code>, or
+<code>adaptive_sampling</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.LatencyPolicy.LatencyPolicyConfig.params">params</span></code></td>
+            <td>
+                  <code><span title="typing.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Policy-specific parameters. Only adaptive sampling currently consumes
+parameters.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.LatencyPolicy.LatencyPolicyConfig.from_mapping" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">from_mapping</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_mapping</span><span class="p">(</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LatencyPolicyConfig</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Parse a latency policy mapping from declarative config.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>value</code>
+            </td>
+            <td>
+                  <code><span title="typing.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mapping from <code>pipeline.runtime.latency_policy</code>, or <code>None</code> to select
+the default blocking policy.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="LatencyPolicyConfig
+
+
+  
+      dataclass
+   (library.core.pipeline.LatencyPolicy.LatencyPolicyConfig)" href="#library.core.pipeline.LatencyPolicy.LatencyPolicyConfig">LatencyPolicyConfig</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Normalized, lower-case policy selector.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.LatencyPolicyError">LatencyPolicyError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the mapping shape, policy name, or params section is invalid.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.LatencyPolicy.LatencyPolicyConfig.create" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">create</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">create</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">FrameLatencyPolicy</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create a fresh stateful policy instance for one pipeline run.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="FrameLatencyPolicy (library.core.pipeline.LatencyPolicy.FrameLatencyPolicy)" href="#library.core.pipeline.LatencyPolicy.FrameLatencyPolicy">FrameLatencyPolicy</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Runtime strategy used by streaming frame extractors.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.LatencyPolicyError">LatencyPolicyError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>name</code> is not supported or policy-specific params are invalid.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.LatencyPolicy.LatencyPolicyConfig.as_dict" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_dict</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_dict</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a JSON-safe representation for configs and run metadata.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.LatencyPolicy.FrameLatencyPolicy" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">FrameLatencyPolicy</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Strategy used by streaming frame extractors under queue pressure.</p>
+<p>Implementations decide whether an incoming frame should be published,
+dropped, or used to replace an older queued frame. Instances may keep
+counters, so they are per-run runtime objects rather than reusable config
+values.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.LatencyPolicy.FrameLatencyPolicy.publish" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">publish</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">publish</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">,</span> <span class="n">output_buffer</span><span class="p">:</span> <span class="n">IFrameBuffer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Publish <code>frame</code> to <code>output_buffer</code> or drop it.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>frame</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Frame
+
+
+  
+      dataclass
+   (library.core.artifacts.Frame.Frame)" href="../api-artifacts/#library.core.artifacts.Frame.Frame">Frame</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Incoming frame from a streaming source.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>output_buffer</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IFrameBuffer (library.core.interfaces.BufferContracts.IFrameBuffer)" href="../api-interfaces/#library.core.interfaces.BufferContracts.IFrameBuffer">IFrameBuffer</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Bounded frame queue feeding downstream stages.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>True</code> when the frame was accepted by the output buffer.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.LatencyPolicy.FrameLatencyPolicy.metrics" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">metrics</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">metrics</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return runtime counters for observability.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.LatencyPolicy.BlockingFrameLatencyPolicy" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">BlockingFrameLatencyPolicy</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="FrameLatencyPolicy (library.core.pipeline.LatencyPolicy.FrameLatencyPolicy)" href="#library.core.pipeline.LatencyPolicy.FrameLatencyPolicy">FrameLatencyPolicy</a></code></p>
+
+
+
+        <p>Preserve every frame by blocking upstream when the queue is full.</p>
+<p>Use this policy for offline reproducibility and deterministic frame
+coverage. It can increase latency in realtime pipelines when downstream
+inference or visualization is slower than the source.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.LatencyPolicy.DropNewestFrameLatencyPolicy" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">DropNewestFrameLatencyPolicy</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="FrameLatencyPolicy (library.core.pipeline.LatencyPolicy.FrameLatencyPolicy)" href="#library.core.pipeline.LatencyPolicy.FrameLatencyPolicy">FrameLatencyPolicy</a></code></p>
+
+
+
+        <p>Drop the incoming frame when the downstream queue is full.</p>
+<p>This policy protects downstream stages from backlog growth while preserving
+already queued frames. It is useful when continuity of accepted frames is
+more important than visual freshness.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.LatencyPolicy.DropOldestFrameLatencyPolicy" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">DropOldestFrameLatencyPolicy</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="FrameLatencyPolicy (library.core.pipeline.LatencyPolicy.FrameLatencyPolicy)" href="#library.core.pipeline.LatencyPolicy.FrameLatencyPolicy">FrameLatencyPolicy</a></code></p>
+
+
+
+        <p>Keep preview latency low by replacing stale queued frames.</p>
+<p>This policy favors the most recent source frame and is usually the best
+default for realtime camera previews where freshness is more important than
+processing every frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.LatencyPolicy.AdaptiveSamplingFrameLatencyPolicy" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">AdaptiveSamplingFrameLatencyPolicy</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="FrameLatencyPolicy (library.core.pipeline.LatencyPolicy.FrameLatencyPolicy)" href="#library.core.pipeline.LatencyPolicy.FrameLatencyPolicy">FrameLatencyPolicy</a></code></p>
+
+
+
+        <p>Reduce processed FPS by increasing the sampling interval under queue pressure.</p>
+<p>The policy is intentionally simple and deterministic: it observes the target
+queue fill ratio before each publish and adjusts the sampling interval within
+configured bounds. This stabilizes live preview latency without adding worker
+coordination complexity.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.LatencyPolicy.AdaptiveSamplingFrameLatencyPolicy.from_mapping" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">from_mapping</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_mapping</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdaptiveSamplingFrameLatencyPolicy</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build an adaptive policy from config params.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>params</code>
+            </td>
+            <td>
+                  <code><span title="typing.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mapping with optional <code>min_interval</code>, <code>max_interval</code>,
+<code>high_watermark</code>, and <code>low_watermark</code> values.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.LatencyPolicyError">LatencyPolicyError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If numeric params cannot be coerced or violate invariants.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="configuration-versioning">Configuration Versioning</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineConfigVersioning.PipelineConfigMigration" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineConfigMigration</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Declarative migration step between two config schema versions.</p>
+<p>Migrations are intentionally pure: they receive a mapping and return a new
+mapping. This keeps future schema evolution testable and prevents builders
+from mutating user-provided configuration objects.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineConfigVersioning.PipelineConfigMigration.apply" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">apply</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">apply</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Apply the migration to a config mapping.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>config</code>
+            </td>
+            <td>
+                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Source config in <code>source_version</code> schema.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Migrated config with <code>schema_version</code> set to <code>target_version</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.ConfigVersionError">ConfigVersionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the migration function does not return a mapping.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">VersionedPipelineConfig</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Normalized pipeline configuration plus schema-version metadata.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig.root">root</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Canonical top-level config mapping after migration.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig.pipeline">pipeline</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Canonical <code>pipeline</code> section consumed by <code>ConfigPipelineBuilder</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig.schema_version">schema_version</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Resolved public schema version.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig.explicit_version">explicit_version</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether the user supplied <code>schema_version</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig.applied_migrations">applied_migrations</span></code></td>
+            <td>
+                  <code><span title="tuple">tuple</span>[<span title="str">str</span>, ...]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Ordered migration labels applied during normalization.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig.source_config" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">source_config</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">source_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a compact source config safe to store in <code>PipelineContext</code>.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineConfigVersioning.PipelineConfigVersionManager" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineConfigVersionManager</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Validate and normalize declarative pipeline config versions.</p>
+<p>The current implementation supports the first public schema, <code>1.0</code>.
+The migration list is an explicit extension point for future schema changes
+without pushing version conditionals into ConfigPipelineBuilder.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.pipeline.PipelineConfigVersioning.PipelineConfigVersionManager.normalize" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">normalize</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">normalize</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VersionedPipelineConfig</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Validate, migrate, and canonicalize a pipeline config.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>config</code>
+            </td>
+            <td>
+                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>User-provided top-level configuration mapping.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="VersionedPipelineConfig
+
+
+  
+      dataclass
+   (library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig)" href="#library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig">VersionedPipelineConfig</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Canonical config plus version metadata.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.ConfigSchemaError">ConfigSchemaError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the root or <code>pipeline</code> section has an invalid shape.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="library.core.pipeline.PipelineErrors.ConfigVersionError">ConfigVersionError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the explicit schema version is malformed or unsupported.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="library.core.pipeline.PipelineConfigVersioning.normalize_pipeline_config" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">normalize_pipeline_config</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">normalize_pipeline_config</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VersionedPipelineConfig</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+
+        <p>Normalize a user config using the default public schema-version policy.</p>
+<p>This helper is the public convenience entry point used by
+<code>ConfigPipelineBuilder</code>.</p>
+
+
+    </div>
+
+</div><h2 id="run-snapshots">Run Snapshots</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineRunSnapshot.PipelineRunState" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineRunState</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="enum.StrEnum">StrEnum</span></code></p>
+
+
+
+        <p>Observable lifecycle states for a pipeline run.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.pipeline.PipelineRunSnapshot.PipelineRunSnapshot" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PipelineRunSnapshot</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Immutable snapshot of a pipeline run.</p>
+<p>Timestamps use <code>time.time()</code> seconds to stay consistent with the existing
+event timestamp model.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js"></script>
+        <script src="../../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

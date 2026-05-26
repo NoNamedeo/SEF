@@ -1,0 +1,4407 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="canonical" href="https://NoNamedeo.github.io/SEF/reference/api-artifacts/">
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Artifacts Package - SEF Core Documentation</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../../css/brands.min.css" rel="stylesheet">
+        <link href="../../css/solid.min.css" rel="stylesheet">
+        <link href="../../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../..">SEF Core Documentation</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href="../.." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../overview/" class="nav-link">Overview</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../getting-started/" class="nav-link">Getting Started</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-api/" class="nav-link">Public API</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../configuration/" class="nav-link">Configuration</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../registry/" class="nav-link">Registry</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../plugin-authoring/" class="nav-link">Plugin Authoring</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../streaming-runtime/" class="nav-link">Streaming Runtime</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../error-handling/" class="nav-link">Error Handling</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../versioning/" class="nav-link">Versioning</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../examples/" class="nav-link">Examples</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Reference</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../component-contracts/" class="dropdown-item">Component Contracts</a>
+</li>
+                                    
+<li>
+    <a href="../data-and-artifacts/" class="dropdown-item">Data and Artifacts</a>
+</li>
+                                    
+<li>
+    <a href="../pipeline-runtime/" class="dropdown-item">Pipeline Runtime</a>
+</li>
+                                    
+<li>
+    <a href="../errors/" class="dropdown-item">Error Model</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Generated API</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../generated-api/" class="dropdown-item">Overview</a>
+</li>
+            
+<li>
+    <a href="../api-core/" class="dropdown-item">Core Package</a>
+</li>
+            
+<li>
+    <a href="../api-pipeline/" class="dropdown-item">Pipeline Package</a>
+</li>
+            
+<li>
+    <a href="../api-interfaces/" class="dropdown-item">Interfaces Package</a>
+</li>
+            
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Artifacts Package</a>
+</li>
+            
+<li>
+    <a href="../api-plugins/" class="dropdown-item">Plugins Package</a>
+</li>
+            
+<li>
+    <a href="../api-visualization/" class="dropdown-item">Visualization Package</a>
+</li>
+            
+<li>
+    <a href="../api-events/" class="dropdown-item">Events Package</a>
+</li>
+            
+<li>
+    <a href="../api-realtime/" class="dropdown-item">Realtime Package</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../../public-contracts/" class="nav-link">Single-Page Contracts</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../api-interfaces/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../api-plugins/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#api-artifacts-package" class="nav-link">API: Artifacts Package</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#frames-and-buffers" class="nav-link">Frames and Buffers</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.Frame.Frame" class="nav-link">Frame</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.FrameBuffer.FrameBuffer" class="nav-link">FrameBuffer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.SignalBuffer.SignalBuffer" class="nav-link">SignalBuffer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.SignalBuffer.SignalSubscription" class="nav-link">SignalSubscription</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.DataBuffer.DataBuffer" class="nav-link">DataBuffer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.DataBuffer.DataSubscription" class="nav-link">DataSubscription</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#signals-and-generic-data" class="nav-link">Signals and Generic Data</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.Signal.Signal" class="nav-link">Signal</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.NoData.NoData" class="nav-link">NoData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.CategoryData.CategoryData" class="nav-link">CategoryData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.TwoDimPointData.TwoDimPointData" class="nav-link">TwoDimPointData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.TwoDimGraphData.TwoDimGraphData" class="nav-link">TwoDimGraphData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.VectorFieldGraphData.VectorFieldGraphData" class="nav-link">VectorFieldGraphData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.TrajectoryData.TrajectoryData" class="nav-link">TrajectoryData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#motion-and-tracking-samples" class="nav-link">Motion and Tracking Samples</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.BoxSignalSample.BoxSignalSample" class="nav-link">BoxSignalSample</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MultiManualSignalSample.MultiManualSignalSample" class="nav-link">MultiManualSignalSample</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MultiObjectSignalSample.MultiObjectTrack" class="nav-link">MultiObjectTrack</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MultiObjectSignalSample.MultiObjectSignalSample" class="nav-link">MultiObjectSignalSample</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.SparseOpticalFlowSignalSample.SparseOpticalFlowSignalSample" class="nav-link">SparseOpticalFlowSignalSample</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.DenseOpticalFlowSignalSample.DenseOpticalFlowSignalSample" class="nav-link">DenseOpticalFlowSignalSample</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.TrackingPlaybackData.TrackingPlaybackTrack" class="nav-link">TrackingPlaybackTrack</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.TrackingPlaybackData.TrackingPlaybackFrame" class="nav-link">TrackingPlaybackFrame</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.TrackingPlaybackData.TrackingPlaybackData" class="nav-link">TrackingPlaybackData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#aruco-data" class="nav-link">ArUco Data</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.ArucoMarkerSignalSample.ArucoMarkerObservation" class="nav-link">ArucoMarkerObservation</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.ArucoMarkerSignalSample.ArucoMarkerSignalSample" class="nav-link">ArucoMarkerSignalSample</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementObservation" class="nav-link">ArucoMarkerDisplacementObservation</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementSeries" class="nav-link">ArucoMarkerDisplacementSeries</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementFrameData" class="nav-link">ArucoMarkerDisplacementFrameData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementData" class="nav-link">ArucoMarkerDisplacementData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.ArucoRelativeMotionData.ArucoMarkerRelativeMotionSeries" class="nav-link">ArucoMarkerRelativeMotionSeries</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.ArucoRelativeMotionData.ArucoMarkerRelativeMotionData" class="nav-link">ArucoMarkerRelativeMotionData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#coco-pose-data" class="nav-link">COCO Pose Data</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.COCOSkeletonSignalSample.COCOSkeletonSignalSample" class="nav-link">COCOSkeletonSignalSample</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.COCOPoseFrameData.COCOPoseFrameData" class="nav-link">COCOPoseFrameData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.COCOPoseFrameData.COCOPoseSequenceData" class="nav-link">COCOPoseSequenceData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.COCOPoseTennisFrameData.COCOPoseTennisFrameData" class="nav-link">COCOPoseTennisFrameData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.COCOPoseTennisFrameData.COCOPoseTennisSequenceData" class="nav-link">COCOPoseTennisSequenceData</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#intermediate-frame-artifacts" class="nav-link">Intermediate Frame Artifacts</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection" class="nav-link">IntermediateFrameArtifactCollection</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.IntermediateFrameComposition.FrameComparisonPanel" class="nav-link">FrameComparisonPanel</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MaskArtifacts.MaskArtifact" class="nav-link">MaskArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MaskArtifacts.MotionMaskArtifact" class="nav-link">MotionMaskArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MaskArtifacts.TargetMaskArtifact" class="nav-link">TargetMaskArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MaskArtifacts.ProtectedRegionArtifact" class="nav-link">ProtectedRegionArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MaskArtifacts.FrameMaskArtifact" class="nav-link">FrameMaskArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact" class="nav-link">IntermediateFrameArtifact</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#library.core.artifacts.MaskArtifacts.IntermediateFrameOverlay" class="nav-link">IntermediateFrameOverlay</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="api-artifacts-package">API: Artifacts Package</h1>
+<p>Artifacts are typed values exchanged between stages and returned to adapters.
+They are intentionally framework-neutral.</p>
+<h2 id="frames-and-buffers">Frames and Buffers</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.Frame.Frame" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">Frame</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Video frame plus timeline and plugin metadata.</p>
+<p>The <code>image</code> array is intentionally not copied by the value object. Producers
+and consumers should document whether they mutate frame pixels in place or
+return new arrays.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.artifacts.Frame.Frame.image">image</span></code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pixel array, typically an OpenCV-compatible NumPy image.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.artifacts.Frame.Frame.index">index</span></code></td>
+            <td>
+                  <code><span title="int">int</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional source-order index.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.artifacts.Frame.Frame.timestamp_seconds">timestamp_seconds</span></code></td>
+            <td>
+                  <code><span title="float">float</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional source timestamp in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="library.core.artifacts.Frame.Frame.metadata">metadata</span></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mutable metadata dictionary for plugin-specific annotations.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.Frame.Frame.frame" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">frame</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">frame</span><span class="p">:</span> <span class="n">ndarray</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Backward-compatible alias for <code>image</code> used by existing OpenCV code.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.FrameBuffer.FrameBuffer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">FrameBuffer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Thread-safe frame buffer for batch and streaming execution.</p>
+<p><code>FrameBuffer</code> exposes a public capacity for frame items and reserves one
+internal queue slot for the end-of-stream sentinel. Iteration blocks until
+frames are available or the buffer is closed.</p>
+
+
+<details class="ordering" open>
+  <summary>Ordering</summary>
+  <p>Frames are yielded in the order accepted by <code>put()</code> or <code>try_put()</code>.</p>
+</details>
+
+<details class="thread-safety" open>
+  <summary>Thread safety</summary>
+  <p>The queue operations are thread-safe. The <code>Frame</code> objects themselves are
+not copied; producers and consumers remain responsible for pixel mutability.</p>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.put" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">put</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">put</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Publish a frame, blocking while the public queue is full.</p>
+<p>The method returns silently when the buffer has already been closed.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.try_put" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">try_put</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">try_put</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Publish a frame without blocking. Return False when the queue is full.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.drop_oldest" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">drop_oldest</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">drop_oldest</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Frame</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Drop and return the oldest queued frame item, if one is available.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.get" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Frame</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the next frame or raise <code>StopIteration</code> when closed.</p>
+<p>The end-of-stream sentinel is reinserted so repeated consumers observe
+completion consistently.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.close" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">close</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Close the buffer and wake consumers waiting for more frames.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.abort" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">abort</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">abort</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Close the buffer without blocking, dropping queued frames if needed.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.is_empty" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">is_empty</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_empty</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return whether no frame or sentinel item is currently queued.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.size" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">size</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">size</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return current queue size, including a sentinel if present.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.fill_ratio" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">fill_ratio</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">fill_ratio</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return current public queue occupancy in the [0, 1] range.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.clone_empty" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">clone_empty</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clone_empty</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="s1">&#39;FrameBuffer&#39;</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return an empty buffer with the same public capacity.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.FrameBuffer.FrameBuffer.__iter__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__iter__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__iter__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Frame</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Iterate frames until the buffer closes.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.SignalBuffer.SignalBuffer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">SignalBuffer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Multi-consumer streaming buffer for signal samples.</p>
+<p>The buffer retains each sample until all configured subscribers have
+consumed it. This supports fan-out from one streaming signal stage to
+multiple downstream consumers without forcing materialization.</p>
+
+
+<details class="lifecycle" open>
+  <summary>Lifecycle</summary>
+  <p>Configure the consumer count before producing samples. Producers call
+<code>close()</code> after normal completion or <code>abort()</code> after failure.</p>
+</details>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.SignalBuffer.SignalBuffer.closed" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">closed</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">closed</span><span class="p">:</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return True when the buffer has been closed or aborted.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.SignalBuffer.SignalBuffer.put" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">put</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">put</span><span class="p">(</span><span class="n">sample</span><span class="p">:</span> <span class="n">ISignalSample</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Publish one sample and block when the bounded buffer is full.</p>
+<p>The sample is ignored when the buffer is already closed or when the
+configured consumer count is zero.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.SignalBuffer.SignalBuffer.close" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">close</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Mark the stream complete and wake all subscribers.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.SignalBuffer.SignalBuffer.abort" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">abort</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">abort</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Wake all consumers and discard buffered samples after an upstream failure.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.SignalBuffer.SignalBuffer.set_consumer_count" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">set_consumer_count</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_consumer_count</span><span class="p">(</span><span class="n">consumers</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Declare how many subscribers must consume each future sample.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.SignalBuffer.SignalBuffer.subscribe" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">subscribe</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">subscribe</span><span class="p">(</span>
+    <span class="n">consumer_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IBufferSubscription</span><span class="p">[</span><span class="n">ISignalSample</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create a subscriber cursor for a configured consumer id.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.SignalBuffer.SignalSubscription" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">SignalSubscription</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Iterator returned by <code>SignalBuffer.subscribe</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.SignalBuffer.SignalSubscription.__iter__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__iter__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__iter__</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return this subscription as its own iterator.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.SignalBuffer.SignalSubscription.__next__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__next__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__next__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ISignalSample</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the next sample for this subscriber.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.SignalBuffer.SignalSubscription.abort" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">abort</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">abort</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Abort the source buffer for cooperative downstream cancellation.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.DataBuffer.DataBuffer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">DataBuffer</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Multi-consumer streaming buffer for progressive analyzer data.</p>
+<p>Streaming analyzers publish <code>IData</code> values here so visualizers can consume
+progressive updates without forcing a full analyzer result to materialize.
+Items are retained until all configured subscribers have consumed them.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.DataBuffer.DataBuffer.closed" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">closed</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">closed</span><span class="p">:</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return True when the buffer has been closed or aborted.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.DataBuffer.DataBuffer.put" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">put</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">put</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">IData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Publish one data item and block when the bounded buffer is full.</p>
+<p>The item is ignored after closure or when the configured consumer count
+is zero.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.DataBuffer.DataBuffer.close" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">close</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">close</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Mark the stream complete and wake all subscribers.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.DataBuffer.DataBuffer.abort" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">abort</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">abort</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Wake all consumers and discard buffered data after an upstream failure.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.DataBuffer.DataBuffer.set_consumer_count" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">set_consumer_count</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_consumer_count</span><span class="p">(</span><span class="n">consumers</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Declare how many subscribers must consume each future item.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.DataBuffer.DataBuffer.subscribe" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">subscribe</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">subscribe</span><span class="p">(</span><span class="n">consumer_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IBufferSubscription</span><span class="p">[</span><span class="n">IData</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create a subscriber cursor for a configured consumer id.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.DataBuffer.DataSubscription" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">DataSubscription</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Iterator returned by <code>DataBuffer.subscribe</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.DataBuffer.DataSubscription.__iter__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__iter__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__iter__</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return this subscription as its own iterator.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.DataBuffer.DataSubscription.__next__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__next__</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__next__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">IData</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the next data item for this subscriber.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.DataBuffer.DataSubscription.abort" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">abort</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">abort</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Abort the source buffer for cooperative downstream cancellation.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="signals-and-generic-data">Signals and Generic Data</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.Signal.Signal" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">Signal</span>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignal (library.core.interfaces.ISignal.ISignal)" href="../api-interfaces/#library.core.interfaces.ISignal.ISignal">ISignal</a></code></p>
+
+
+
+        <p>Concrete signal container used across the library.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.NoData.NoData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">NoData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>No Data.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.CategoryData.CategoryData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">CategoryData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Generic data container for categories.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.TwoDimPointData.TwoDimPointData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TwoDimPointData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Chart-ready series returned by analyzers.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.TwoDimGraphData.TwoDimGraphData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TwoDimGraphData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Chart-ready series returned by analyzers.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.VectorFieldGraphData.VectorFieldGraphData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">VectorFieldGraphData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Data container for vector field (quiver) visualization.
+(x, y) define the position of each vector
+(u, v) define the vector components</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.TrajectoryData.TrajectoryData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TrajectoryData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Represents trajectories of multiple tracked points over time.</p>
+<p>Each trajectory is a sequence of (x, y) positions.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="motion-and-tracking-samples">Motion and Tracking Samples</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.BoxSignalSample.BoxSignalSample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">BoxSignalSample</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignalSample (library.core.interfaces.ISignalSample.ISignalSample)" href="../api-interfaces/#library.core.interfaces.ISignalSample.ISignalSample">ISignalSample</a></code></p>
+
+
+
+        <p>Single signal observation extracted from one frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MultiManualSignalSample.MultiManualSignalSample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">MultiManualSignalSample</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignalSample (library.core.interfaces.ISignalSample.ISignalSample)" href="../api-interfaces/#library.core.interfaces.ISignalSample.ISignalSample">ISignalSample</a></code></p>
+
+
+
+        <p>multiple signal observation extracted from one frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MultiObjectSignalSample.MultiObjectTrack" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">MultiObjectTrack</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Represents a single tracked object inside a frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MultiObjectSignalSample.MultiObjectSignalSample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">MultiObjectSignalSample</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignalSample (library.core.interfaces.ISignalSample.ISignalSample)" href="../api-interfaces/#library.core.interfaces.ISignalSample.ISignalSample">ISignalSample</a></code></p>
+
+
+
+        <p>A signal sample that contains multiple tracked objects per frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.SparseOpticalFlowSignalSample.SparseOpticalFlowSignalSample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">SparseOpticalFlowSignalSample</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignalSample (library.core.interfaces.ISignalSample.ISignalSample)" href="../api-interfaces/#library.core.interfaces.ISignalSample.ISignalSample">ISignalSample</a></code></p>
+
+
+
+        <p>Enhanced signal sample for optical-flow-based extraction.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.DenseOpticalFlowSignalSample.DenseOpticalFlowSignalSample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">DenseOpticalFlowSignalSample</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignalSample (library.core.interfaces.ISignalSample.ISignalSample)" href="../api-interfaces/#library.core.interfaces.ISignalSample.ISignalSample">ISignalSample</a></code></p>
+
+
+
+        <p>Represents a dense optical flow frame aggregated into a grid.
+Each cell contains a motion vector (dx, dy).</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.TrackingPlaybackData.TrackingPlaybackTrack" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TrackingPlaybackTrack</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Serializable tracking observation used to rebuild annotated video frames.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.TrackingPlaybackData.TrackingPlaybackFrame" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TrackingPlaybackFrame</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Tracked objects associated with a single frame index.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.TrackingPlaybackData.TrackingPlaybackData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TrackingPlaybackData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Playback-ready tracking data consumed by video visualizers.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="aruco-data">ArUco Data</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.ArucoMarkerSignalSample.ArucoMarkerObservation" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArucoMarkerObservation</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>A single ArUco marker observation inside one frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.ArucoMarkerSignalSample.ArucoMarkerObservation.center" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">center</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">center</span><span class="p">:</span> <span class="n">Point2D</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the marker center as <code>(x, y)</code> when both coordinates exist.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.ArucoMarkerSignalSample.ArucoMarkerSignalSample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArucoMarkerSignalSample</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignalSample (library.core.interfaces.ISignalSample.ISignalSample)" href="../api-interfaces/#library.core.interfaces.ISignalSample.ISignalSample">ISignalSample</a></code></p>
+
+
+
+        <p>Frame-level collection of ArUco marker observations.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.ArucoMarkerSignalSample.ArucoMarkerSignalSample.marker_by_id" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">marker_by_id</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">marker_by_id</span><span class="p">(</span>
+    <span class="n">marker_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArucoMarkerObservation</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the first observation for <code>marker_id</code>, if present.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementObservation" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArucoMarkerDisplacementObservation</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Progressive displacement value for one marker in one frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementSeries" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArucoMarkerDisplacementSeries</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Displacement timeline for a single marker.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementFrameData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArucoMarkerDisplacementFrameData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Streaming displacement payload emitted once per ArUco signal sample.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArucoMarkerDisplacementData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Playback-ready displacement analysis for multiple ArUco markers.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementData.from_progressive_frames" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">from_progressive_frames</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_progressive_frames</span><span class="p">(</span>
+    <span class="n">frames</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ArucoMarkerDisplacementFrameData</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ArUco Marker Displacement&quot;</span><span class="p">,</span>
+    <span class="n">use_timestamps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArucoMarkerDisplacementData</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build the final displacement result from progressive frame payloads.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementData.from_stream_items" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">from_stream_items</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_stream_items</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">IData</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_timestamps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArucoMarkerDisplacementData</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Normalize progressive analyzer output into the final displacement model.</p>
+<p>Streaming visualizers receive per-frame payloads. Batch visualizers receive
+the final aggregate directly. Keeping this conversion here prevents each
+visualizer from duplicating stream reconstruction rules.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.ArucoRelativeMotionData.ArucoMarkerRelativeMotionSeries" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArucoMarkerRelativeMotionSeries</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Distance variation timeline between two markers.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.ArucoRelativeMotionData.ArucoMarkerRelativeMotionData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ArucoMarkerRelativeMotionData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Relative motion analysis across one or more marker pairs.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="coco-pose-data">COCO Pose Data</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.COCOSkeletonSignalSample.COCOSkeletonSignalSample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">COCOSkeletonSignalSample</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ISignalSample (library.core.interfaces.ISignalSample.ISignalSample)" href="../api-interfaces/#library.core.interfaces.ISignalSample.ISignalSample">ISignalSample</a></code></p>
+
+
+
+        <p>Single COCO pose observation extracted from one frame.</p>
+<p>Expected format:
+    skeleton: [17, 2] (x, y coordinates)
+    confidence: [17] (per-joint confidence)</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.COCOPoseFrameData.COCOPoseFrameData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">COCOPoseFrameData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Visualization-ready COCO pose observation for one frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.COCOPoseFrameData.COCOPoseSequenceData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">COCOPoseSequenceData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Batch container returned after consuming a COCO pose stream.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.COCOPoseTennisFrameData.COCOPoseTennisFrameData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">COCOPoseTennisFrameData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Visualization-ready COCO pose observation for one frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.COCOPoseTennisFrameData.COCOPoseTennisSequenceData" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">COCOPoseTennisSequenceData</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Batch container returned after consuming a COCO pose stream.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="intermediate-frame-artifacts">Intermediate Frame Artifacts</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IntermediateFrameArtifactCollection</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Immutable debug stream produced by frame processing stages.</p>
+<p>The collection is deliberately separate from analysis results so existing
+visualizers keep receiving only the result types they already support.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection.count" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">count</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">count</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of stored intermediate snapshots.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection.is_empty" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">is_empty</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_empty</span><span class="p">:</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return whether no intermediate snapshots were captured.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection.stage_names" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">stage_names</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stage_names</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return stage names in first-seen order.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection.frame_indices" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">frame_indices</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">frame_indices</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return frame indexes in first-seen order.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection.empty" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">empty</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">empty</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">IntermediateFrameArtifactCollection</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return an empty collection for pipelines without debug capture.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection.by_stage_name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">by_stage_name</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">by_stage_name</span><span class="p">(</span>
+    <span class="n">stage_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">IntermediateFrameArtifact</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return snapshots captured for a specific stage.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection.by_frame_index" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">by_frame_index</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">by_frame_index</span><span class="p">(</span>
+    <span class="n">frame_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">IntermediateFrameArtifact</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return snapshots captured for a specific frame index.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection.export" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">export</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">export</span><span class="p">(</span>
+    <span class="n">output_directory</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Persist stored frames to PNG files and return all paths written.</p>
+<p>If <em>output_directory</em> is omitted, the collection must have an
+<code>export_directory</code> entry in metadata. This supports deferred saving:
+the pipeline can capture bounded snapshots now, while developers decide
+later whether to write them to disk.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.IntermediateFrameComposition.FrameComparisonPanel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">FrameComparisonPanel</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>A normalized image panel used by comparison and grid composers.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MaskArtifacts.MaskArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">MaskArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Immutable base for binary mask artifacts.</p>
+<p>The stored mask is always a read-only boolean copy. This keeps downstream
+preprocessing and debugging artifacts deterministic even when the source
+array is later reused or mutated by OpenCV code.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.shape" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">shape</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the mask shape as <code>(height, width)</code>.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.height" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">height</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">height</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the mask height in pixels.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.width" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">width</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">width</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the mask width in pixels.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.active_pixel_count" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">active_pixel_count</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">active_pixel_count</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of protected, target, or active mask pixels.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.coverage_ratio" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">coverage_ratio</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">coverage_ratio</span><span class="p">:</span> <span class="nb">float</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the fraction of active pixels in the mask.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.is_empty" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">is_empty</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_empty</span><span class="p">:</span> <span class="nb">bool</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return whether the mask contains no active pixels.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.as_bool_array" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_bool_array</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_bool_array</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MaskArray</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the mask as a boolean NumPy array.</p>
+<p>By default this returns a mutable copy. Passing <code>copy=False</code> returns the
+internal read-only view for zero-copy consumers.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.as_uint8_array" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_uint8_array</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_uint8_array</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n">active_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return an OpenCV-friendly uint8 mask copy.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.ensure_compatible_with" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">ensure_compatible_with</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ensure_compatible_with</span><span class="p">(</span>
+    <span class="n">candidate</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Validate that a frame, shape, or other mask shares this mask's spatial dimensions.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.to_dict" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">to_dict</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">to_dict</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">include_mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Serialize lightweight artifact state for logs, tests, or debug UIs.</p>
+<p>The mask payload is omitted by default to avoid accidentally logging
+full-frame arrays. Set <code>include_mask=True</code> for small masks and tests.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.to_json" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">to_json</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">to_json</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">include_mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Serialize the artifact to deterministic JSON.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.MaskArtifact.debug_string" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">debug_string</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">debug_string</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a compact, array-safe debug representation.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MaskArtifacts.MotionMaskArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">MotionMaskArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="MaskArtifact
+
+
+  
+      dataclass
+   (library.core.artifacts.MaskArtifacts.MaskArtifact)" href="#library.core.artifacts.MaskArtifacts.MaskArtifact">MaskArtifact</a></code></p>
+
+
+
+        <p>Binary mask representing detected motion pixels for a frame.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MaskArtifacts.TargetMaskArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TargetMaskArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="MaskArtifact
+
+
+  
+      dataclass
+   (library.core.artifacts.MaskArtifacts.MaskArtifact)" href="#library.core.artifacts.MaskArtifacts.MaskArtifact">MaskArtifact</a></code></p>
+
+
+
+        <p>Binary mask that identifies the target subject or region for future workflows.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MaskArtifacts.ProtectedRegionArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ProtectedRegionArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="MaskArtifact
+
+
+  
+      dataclass
+   (library.core.artifacts.MaskArtifacts.MaskArtifact)" href="#library.core.artifacts.MaskArtifacts.MaskArtifact">MaskArtifact</a></code></p>
+
+
+
+        <p>Binary mask describing pixels that downstream stages should leave untouched.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MaskArtifacts.FrameMaskArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">FrameMaskArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="MaskArtifact
+
+
+  
+      dataclass
+   (library.core.artifacts.MaskArtifacts.MaskArtifact)" href="#library.core.artifacts.MaskArtifacts.MaskArtifact">MaskArtifact</a></code></p>
+
+
+
+        <p>Whole-frame binary mask produced or consumed by preprocessing stages.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IntermediateFrameArtifact</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="IData (library.core.interfaces.IData.IData)" href="../api-interfaces/#library.core.interfaces.IData.IData">IData</a></code></p>
+
+
+
+        <p>Immutable snapshot of an intermediate frame for pipeline debugging.</p>
+<p>The image is copied and marked read-only so snapshots represent the exact
+state emitted by a stage, independent of later OpenCV buffer reuse.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.frame" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">frame</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">frame</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Alias matching the existing <code>Frame.frame</code> convention.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.original_frame" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">original_frame</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">original_frame</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the optional pre-processing frame snapshot.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.processed_frame" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">processed_frame</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">processed_frame</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the processed frame snapshot, falling back to the primary image.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.shape" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">shape</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the full image shape.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.spatial_shape" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">spatial_shape</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">spatial_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the image shape as <code>(height, width)</code>.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.height" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">height</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">height</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the frame height in pixels.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.width" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">width</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">width</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the frame width in pixels.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.channels" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">channels</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">channels</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of image channels, treating grayscale frames as one-channel.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.dtype" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">dtype</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">dtype</span><span class="p">:</span> <span class="n">dtype</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the NumPy dtype of the stored snapshot.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.as_array" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_array</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_array</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the image snapshot.</p>
+<p>By default this returns a mutable copy. Passing <code>copy=False</code> returns the
+internal read-only array for zero-copy debug consumers.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.ensure_mask_compatible" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">ensure_mask_compatible</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ensure_mask_compatible</span><span class="p">(</span>
+    <span class="n">mask</span><span class="p">:</span> <span class="n">MaskArtifact</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Validate that a mask-like object can be applied to this frame snapshot.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.to_dict" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">to_dict</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">to_dict</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">include_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Serialize lightweight frame snapshot state.</p>
+<p>Pixel data is omitted by default because intermediate frames can be
+large. Set <code>include_image=True</code> only for small fixtures or local debug.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.to_json" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">to_json</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">to_json</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">include_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Serialize the snapshot to deterministic JSON.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact.debug_string" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">debug_string</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">debug_string</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a compact, pixel-safe debug representation.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="library.core.artifacts.MaskArtifacts.IntermediateFrameOverlay" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">IntermediateFrameOverlay</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Immutable rendered overlay associated with an intermediate frame snapshot.</p>
+<p>Overlays are intentionally image-based rather than UI objects. This keeps
+frame processors free to emit masks, contours, heatmaps, or other debug
+images without coupling them to a specific visualization backend.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameOverlay.shape" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">shape</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the full overlay image shape.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameOverlay.spatial_shape" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">spatial_shape</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">spatial_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the overlay shape as <code>(height, width)</code>.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="library.core.artifacts.MaskArtifacts.IntermediateFrameOverlay.as_array" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">as_array</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">as_array</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">copy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the overlay image, copying by default for caller safety.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js"></script>
+        <script src="../../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
