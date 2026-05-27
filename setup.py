@@ -5,7 +5,7 @@ setup(
     version="0.2.0",
     description="Signal extraction framework for video and image sequences",
     author="Alejandro Innocenzi, Matteo Vittori",
-    packages=find_packages(exclude=("tests", "ui")),
+    packages=find_packages(include=("library*", "sef*"), exclude=("tests", "ui")),
     install_requires=[
         "matplotlib",
         "numpy",

@@ -22,7 +22,7 @@ docs = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["library*"]
+include = ["library*", "sef*"]
 
 [tool.ruff]
 line-length = 148

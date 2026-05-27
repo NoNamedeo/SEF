@@ -7,15 +7,20 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-orange)](LICENSE)
 
 **SEF is an experimental Python framework for building modular computer-vision
-signal-extraction pipelines.**
+signal-extraction pipelines through a small Pythonic API and an extensible
+runtime core.**
 
 
 ![SEF Studio](docs/assets/sef-studio-hero.png)
 
 It separates video acquisition, frame processing, signal extraction, cleaning,
 analysis, visualization, runtime monitoring, and UI composition into explicit
-contracts. The project is architecture-focused and currently pre-1.0: public
-APIs are being hardened and may still evolve before a stable release.
+contracts. The recommended API hides that machinery behind `import sef`, while
+the lower-level core remains available for advanced registry, runtime, and
+integration use cases.
+
+The project is architecture-focused and currently pre-1.0: public APIs are
+being hardened and may still evolve before a stable release.
 
 
 ## Processing Example
@@ -61,7 +66,8 @@ events, typed errors, buffers, artifacts, and plugin resolution.
 
 ```mermaid
 flowchart LR
-    Config["Config / Python Builder"] --> Registry["Plugin Registry"]
+    API["Pythonic API / Studio / Config"] --> Config["Versioned Pipeline Config"]
+    Config --> Registry["Plugin Registry"]
     Registry --> Context["PipelineContext"]
     Context --> Planner["Execution Planner"]
     Planner --> Runtime["Pipeline Runtime"]
@@ -85,11 +91,77 @@ The detailed architecture, public contracts, and extension rules live in the
 
 ## Quick Example
 
-SEF pipelines can be built from configuration and resolved through the plugin
-registry:
+The recommended API keeps the common path short: describe the source, choose the
+stages, and run.
 
 ```python
-from library.core import ConfigPipelineBuilder, Pipeline
+import sef
+
+outputs = (
+    sef.video("videos/Baloons.mp4", max_frames=300)
+    .resize(640, 480)
+    .extract(
+        "opencv_tracker",
+        tracker_type="CSRT",
+        start_box=[100, 200, 50, 80],
+        config={"show": False},
+    )
+    .clean("moving_average", window_size=5)
+    .analyze("vertical_position")
+    .visualize("matplotlib")
+    .run(pipeline_id="demo-run")
+)
+
+print(outputs.results)
+print(outputs.final_artifacts)
+```
+
+The same facade accepts plugin names, component classes, component instances, or
+plain Python functions. This keeps simple experiments lightweight without
+removing the advanced extension model.
+
+```python
+import cv2
+import sef
+
+
+@sef.processor("grayscale")
+def grayscale(image):
+    """Convert one OpenCV frame image to grayscale."""
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+
+outputs = (
+    sef.video("videos/input.mp4")
+    .process("grayscale")
+    .extract("opencv_tracker", start_box=[100, 200, 50, 80])
+    .analyze("vertical_position")
+    .run()
+)
+```
+
+For custom classes, pass the class directly and SEF will register it in the
+pipeline-scoped registry:
+
+```python
+import sef
+
+outputs = (
+    sef.pipeline("quickstart")
+    .frames(DemoFrameExtractor, frame_count=3)
+    .signals(DemoSignalExtractor)
+    .analyze(SampleCountAnalyzer)
+    .visualize(SummaryVisualizer)
+    .run()
+)
+```
+
+Advanced users can still drop down to the versioned configuration path and core
+contracts when they need full control over registries, orchestration, or
+runtime integration:
+
+```python
+from sef.core import ConfigPipelineBuilder, Pipeline
 from library.core.plugins import create_builtin_registry
 
 registry = create_builtin_registry()
@@ -119,13 +191,24 @@ config = {
 
 context = ConfigPipelineBuilder(registry).build_context(config)
 outputs = Pipeline(context, pipeline_id="demo-run").run()
-
-print(outputs.results)
-print(outputs.final_artifacts)
 ```
 
 For a minimal runnable example without OpenCV or UI dependencies, see
 [`examples/minimal_pipeline.py`](examples/minimal_pipeline.py).
+
+
+## Intermediate Artifacts
+
+SEF can expose intermediate frame artifacts produced during the pipeline,
+including pre-processed frames, cleaned frames, masks, overlays, and final debug
+views.
+
+This makes each run easier to inspect, compare, and reproduce: users can see not
+only the final result, but also how each processing stage transformed the input.
+
+| Original / Pre-processed | Noise / Motion Mask | Motion Mask | Final Output |
+|---|---|---|---|
+| ![Pre-processed frame](docs/assets/original.png) | ![Noise mask](docs/assets/noise.png) | ![Intermediate debug frame](docs/assets/intermediate.png) | ![Final output frame](docs/assets/final.png) |
 
 ## Visual Results
 
@@ -165,9 +248,9 @@ pipeline and SEF Studio workflows.
 ## SEF Studio
 
 
-`SEF Studio` is the Streamlit application built on top of the core framework.
-It is not a separate engine: it uses the same registry, config builder,
-pipeline runtime, monitors, outputs, and artifacts exposed by the library.
+`SEF Studio` is the Streamlit application built on top of the same pipeline
+runtime. It is not a separate engine: visual composition, Python facade usage,
+and versioned config all resolve to the same core execution model.
 
 ![SEF Studio Demo](docs/assets/cursorful-video.gif)
 
@@ -244,6 +327,7 @@ No benchmark, adoption, or production-readiness claims are made here.
 ## Repository Map
 
 ```text
+sef/                 Recommended Pythonic public API
 library/core/        Public contracts, runtime, registry, artifacts, events
 library/*            Concrete computer-vision components and visualizers
 ui/                  Streamlit application built on the core framework
