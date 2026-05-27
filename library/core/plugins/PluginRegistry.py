@@ -380,6 +380,7 @@ def create_builtin_registry() -> PluginRegistry:
     from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
     from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
     from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
+    from library.frame_processors.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
     from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
     from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
     from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
@@ -425,6 +426,13 @@ def create_builtin_registry() -> PluginRegistry:
         "dynamic_object_removal",
         DynamicObjectRemovalFrameProcessor,
         "Remove transient dynamic objects using a temporal median background.",
+    )
+
+    registry.register(
+        PluginCategory.FRAME_BUFFER_PROCESSOR,
+        "motion_magnification",
+        PhaseMagnificationFrameProcessor,
+        "Magnify subtle motions by wrapping the external phase-based MATLAB pipeline.",
     )
 
     registry.register(

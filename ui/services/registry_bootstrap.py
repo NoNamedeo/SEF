@@ -145,6 +145,19 @@ def get_registry() -> PluginRegistry:
         log.warning("DynamicObjectRemovalFrameProcessor non disponibile: %s", exc)
 
     try:
+        from library.frame_processors.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
+
+        _try_register(
+            registry,
+            PluginCategory.FRAME_BUFFER_PROCESSOR,
+            "motion_magnification",
+            PhaseMagnificationFrameProcessor,
+            "Amplifica micromovimenti tramite wrapper batch della pipeline phase-based esterna.",
+        )
+    except Exception as exc:
+        log.warning("PhaseMagnificationFrameProcessor non disponibile: %s", exc)
+
+    try:
         from library.frame_processors.RealtimeFrameTapProcessor import RealtimeFrameTapProcessor
         from ui.services.realtime_preview_service import sink_for_id
 

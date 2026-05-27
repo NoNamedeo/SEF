@@ -51,7 +51,7 @@ INTERMEDIATE_FRAME_VISUALIZERS = frozenset(
     }
 )
 
-FRAME_BUFFER_PROCESSORS = frozenset({"dynamic_object_removal"})
+FRAME_BUFFER_PROCESSORS = frozenset({"dynamic_object_removal", "motion_magnification"})
 
 BUILDER_LAST_SYNCED_MODE_KEY = "sef_builder_last_synced_mode"
 
@@ -878,6 +878,13 @@ def _build_single_frame_processor_configs(state: BuilderStateSnapshot) -> tuple[
                         "max_processed_frames": state.dynamic_removal_max_processed_frames,
                         "emit_intermediate_artifacts": state.dynamic_removal_emit_intermediate,
                     },
+                )
+            )
+        elif name == "motion_magnification":
+            configs.append(
+                PluginConfig(
+                    name=name,
+                    processor_type="frame_buffer",
                 )
             )
         else:
