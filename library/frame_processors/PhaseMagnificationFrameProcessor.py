@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 import shutil
 import subprocess
 import tempfile
-from typing import TYPE_CHECKING
-from typing import Any
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np
@@ -66,9 +65,7 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
     ) -> None:
         merged_config = dict(config or {})
         resolved_release_dir = (
-            Path(release_dir)
-            if release_dir is not None
-            else Path(__file__).resolve().parents[2] / "external" / "phase_mag" / "Release"
+            Path(release_dir) if release_dir is not None else Path(__file__).resolve().parents[2] / "external" / "phase_mag" / "Release"
         )
         resolved_temp_dir = Path(temp_dir) if temp_dir is not None else None
         runtime = str(use_matlab_runtime).strip().lower()
@@ -171,9 +168,7 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
             if expected_shape is None:
                 expected_shape = tuple(int(value) for value in image.shape)
             elif tuple(image.shape) != expected_shape:
-                raise ValueError(
-                    f"All frames must share the same shape for phase magnification. Expected {expected_shape}, got {image.shape}."
-                )
+                raise ValueError(f"All frames must share the same shape for phase magnification. Expected {expected_shape}, got {image.shape}.")
             frames.append(frame)
 
         if not frames:
@@ -199,9 +194,7 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
             if deltas:
                 return 1.0 / float(np.median(deltas))
 
-        raise ValueError(
-            "Cannot infer fps for phase magnification. Provide fps explicitly or ensure frame metadata includes source_fps."
-        )
+        raise ValueError("Cannot infer fps for phase magnification. Provide fps explicitly or ensure frame metadata includes source_fps.")
 
     def _magnify_frames(self, frames: list[Frame], *, fps: float, sampling_rate: float) -> list[np.ndarray]:
         temp_root_context = (
@@ -247,9 +240,7 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
             details = stderr or stdout or str(exc)
             raise RuntimeError(f"Phase magnification command failed: {details}") from exc
         except subprocess.TimeoutExpired as exc:
-            raise RuntimeError(
-                f"Phase magnification exceeded timeout of {self.timeout_seconds:.1f} seconds."
-            ) from exc
+            raise RuntimeError(f"Phase magnification exceeded timeout of {self.timeout_seconds:.1f} seconds.") from exc
 
     def _resolve_runtime(self) -> tuple[str, str]:
         if self.executable:
@@ -331,9 +322,7 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
         capacity: int,
     ) -> FrameBuffer:
         if len(output_frames) != len(source_frames):
-            raise RuntimeError(
-                f"Phase magnification output frame count mismatch: expected {len(source_frames)}, got {len(output_frames)}."
-            )
+            raise RuntimeError(f"Phase magnification output frame count mismatch: expected {len(source_frames)}, got {len(output_frames)}.")
 
         output = FrameBuffer(buffer_size=max(len(output_frames) + 1, capacity))
         metadata = self._processor_metadata(fps=fps, sampling_rate=sampling_rate, frame_count=len(output_frames))
@@ -449,9 +438,7 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
         finally:
             capture.release()
         if len(frames) != expected_count:
-            raise RuntimeError(
-                f"Phase magnification output video frame count mismatch: expected {expected_count}, got {len(frames)}."
-            )
+            raise RuntimeError(f"Phase magnification output video frame count mismatch: expected {expected_count}, got {len(frames)}.")
         return frames
 
     @staticmethod

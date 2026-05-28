@@ -4,11 +4,11 @@ import json
 from pathlib import Path
 from typing import Tuple
 
+import joblib
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-import joblib
+from sklearn.model_selection import train_test_split
 
 
 class Trainer_class_COCOSkeletonTennis:

@@ -1,26 +1,18 @@
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
 import numpy as np
 
-if __package__ in {None, ""}:
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-from library.core import ConfigPipelineBuilder, Pipeline, PluginRegistry
+import sef
 from library.core.artifacts import BoxSignalSample, Frame, FrameBuffer, Signal, TwoDimGraphData
-from library.core.interfaces import IAnalyzer, IData, IFrameExtractor, ISignal, ISignalExtractor, IVisualizer
-from library.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
-from library.core.plugins import PluginCategory
+from library.core.interfaces import IData, ISignal
 from library.core.visualization import TextArtifact, VisualizationContext
 
 
-class DemoFrameExtractor(IFrameExtractor):
+class DemoFrameExtractor:
     """Produce deterministic in-memory frames for documentation examples."""
 
     def __init__(self, frame_count: int = 3, config: dict | None = None) -> None:
-        super().__init__(config)
+        self.config = config
         self.frame_count = int(frame_count)
 
     def extract(self) -> FrameBuffer:
@@ -37,7 +29,7 @@ class DemoFrameExtractor(IFrameExtractor):
         return buffer
 
 
-class DemoSignalExtractor(ISignalExtractor):
+class DemoSignalExtractor:
     """Convert each frame into one centroid sample."""
 
     def extract(self, buffer: FrameBuffer) -> ISignal:
@@ -54,7 +46,7 @@ class DemoSignalExtractor(ISignalExtractor):
         )
 
 
-class SampleCountAnalyzer(IAnalyzer):
+class SampleCountAnalyzer:
     """Return a one-point graph containing the number of signal samples."""
 
     def analyze(self, signal: ISignal) -> TwoDimGraphData:
@@ -67,7 +59,7 @@ class SampleCountAnalyzer(IAnalyzer):
         )
 
 
-class SummaryVisualizer(IVisualizer):
+class SummaryVisualizer:
     """Render a text summary artifact from the analyzer output."""
 
     def render(
@@ -86,58 +78,15 @@ class SummaryVisualizer(IVisualizer):
         )
 
 
-def build_registry() -> PluginRegistry:
-    registry = PluginRegistry()
-    registry.register(
-        PluginCategory.FRAME_EXTRACTOR,
-        "demo_frames",
-        DemoFrameExtractor,
-        "Produce deterministic documentation frames.",
-        version="1.0.0",
-    )
-    registry.register(
-        PluginCategory.SIGNAL_EXTRACTOR,
-        "demo_signals",
-        DemoSignalExtractor,
-        "Convert documentation frames to centroid samples.",
-        version="1.0.0",
-    )
-    registry.register(
-        PluginCategory.ANALYZER,
-        "sample_count",
-        SampleCountAnalyzer,
-        "Count signal samples.",
-        version="1.0.0",
-    )
-    registry.register(
-        PluginCategory.VISUALIZER,
-        "summary_text",
-        SummaryVisualizer,
-        "Render sample count as text.",
-        version="1.0.0",
-    )
-    return registry
-
-
-def build_config(frame_count: int = 3) -> dict:
-    return {
-        "schema_version": CURRENT_PIPELINE_CONFIG_VERSION,
-        "pipeline": {
-            "frame_extractor": {
-                "name": "demo_frames",
-                "params": {"frame_count": frame_count},
-            },
-            "signal_extractor": {"name": "demo_signals"},
-            "analyzers": [{"name": "sample_count"}],
-            "visualizers": [{"name": "summary_text", "result_indices": [0]}],
-        },
-    }
-
-
 def run_example(frame_count: int = 3):
-    registry = build_registry()
-    context = ConfigPipelineBuilder(registry).build_context(build_config(frame_count))
-    return Pipeline(context, pipeline_id="docs-minimal-pipeline").run()
+    return (
+        sef.pipeline("docs-minimal-pipeline")
+        .frames(DemoFrameExtractor, frame_count=frame_count)
+        .signals(DemoSignalExtractor)
+        .analyze(SampleCountAnalyzer)
+        .visualize(SummaryVisualizer)
+        .run()
+    )
 
 
 if __name__ == "__main__":

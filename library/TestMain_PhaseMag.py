@@ -4,24 +4,24 @@ import logging
 import sys
 from pathlib import Path
 
-from library.analyzers.NoAnalyzer import NoAnalyzer
-from library.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
-from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.signal_extractors.NoSignalExtractor import NoSignalExtractor
-
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+from library.analyzers.NoAnalyzer import NoAnalyzer
+from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
+from library.core.pipeline.PipelineContext import PipelineContext
+from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+from library.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
+from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from library.signal_extractors.NoSignalExtractor import NoSignalExtractor
+from library.frame_processors.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
 
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
 
-from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 
 def build_phase_mag_pipeline(
     video_path: Path,
@@ -33,15 +33,19 @@ def build_phase_mag_pipeline(
         .with_frame_extractor(
             OpenCVBufferedFrameExtractor(
                 video_path,
-                config={
-                    "max_frames": 300
-                },
+                config={"max_frames": 300},
+            )
+        )
+        .add_frame_processor(
+            PhaseMagnificationFrameProcessor(
+                magnification_factor=15.0,
+                low_cutoff_hz=0.4,
+                high_cutoff_hz=3.0,
+                fps=10.0,
             )
         )
         .add_frame_exporter(OpenCVFrameBufferVideoExporter(output_path, fps=10.0, max_exported_frames=300))
-        .with_signal_extractor(
-            NoSignalExtractor()
-        )
+        .with_signal_extractor(NoSignalExtractor())
         .add_analyzer(NoAnalyzer())
         .build_context()
     )
@@ -61,6 +65,7 @@ def TestMain_PhaseMag() -> None:
         print("Latency policy metrics: ", outputs.metadata.execution_metadata["latency_policy_metrics"], ".\n")
     finally:
         orchestrator.shutdown()
+
 
 if __name__ == "__main__":
     TestMain_PhaseMag()
