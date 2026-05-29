@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignalExtractor import ISignalExtractor

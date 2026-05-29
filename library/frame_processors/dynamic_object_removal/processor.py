@@ -8,15 +8,15 @@ import numpy as np
 import numpy.typing as npt
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.MaskArtifacts import (
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from library.core.artifacts.mask.MaskArtifacts import (
     FrameMaskArtifact,
     IntermediateFrameArtifact,
     IntermediateFrameOverlay,
     MotionMaskArtifact,
     ProtectedRegionArtifact,
 )
-from library.core.artifacts.MaskOperations import (
+from library.core.artifacts.mask.MaskOperations import (
     ensure_shape_compatible,
     normalize_binary_mask,
     subtract_masks,

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from library.core.artifacts.DataBuffer import DataBuffer
-from library.core.artifacts.NoData import NoData
+from library.core.artifacts.buffer.DataBuffer import DataBuffer
+from library.core.artifacts.data.NoData import NoData
 from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.ISignal import ISignal

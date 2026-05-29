@@ -601,7 +601,7 @@ class ColorStabilizationFrameProcessor(ISingleFrameProcessor):
             return ()
 
         try:
-            from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
+            from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
         except Exception:
             return ()
 

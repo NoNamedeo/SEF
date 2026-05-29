@@ -371,25 +371,25 @@ def create_builtin_registry() -> PluginRegistry:
     >>> registry.register(PluginCategory.ANALYZER, "my_analyzer", MyAnalyzer)
     >>> builder = ConfigPipelineBuilder(registry)
     """
-    from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
-    from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
-    from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+    from library.analyzers.ArUco.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
+    from library.analyzers.ArUco.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
+    from library.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
     from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
     from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
     from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor
     from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
     from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
-    from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
-    from library.frame_processors.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
-    from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
-    from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
+    from library.frame_processors.OpenCV.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
+    from library.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
+    from library.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
+    from library.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
     from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
     from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-    from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
-    from library.visualizers.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
-    from library.visualizers.IntermediateFramesVisualizer import IntermediateFramesVisualizer
-    from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
-    from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+    from library.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+    from library.visualizers.intermediate_frames.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
+    from library.visualizers.intermediate_frames.IntermediateFramesVisualizer import IntermediateFramesVisualizer
+    from library.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
+    from library.visualizers.Matplotlib.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
     registry = PluginRegistry()
 

@@ -10,11 +10,11 @@ from typing import Any
 
 import numpy as np
 
-from library.core.artifacts.BoxSignalSample import BoxSignalSample
+from library.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
+from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
 from library.core.events.Event import Event
 from library.core.events.EventBus import EventBus
 from library.core.events.PipelineEvent import PipelineEvent

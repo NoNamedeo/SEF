@@ -19,7 +19,8 @@ one job, declare capabilities accurately, and return public data contracts.
 ## Analyzer Example
 
 ```python
-from library.core.artifacts import TwoDimGraphData
+
+from library.core.artifacts.data import TwoDimGraphData
 from library.core.interfaces import IAnalyzer, ISignal
 
 

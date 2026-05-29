@@ -7,11 +7,11 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from library.analyzers.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
-from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+from library.analyzers.playback.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
+from library.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.MultiObjectSignalSample import MultiObjectSignalSample, MultiObjectTrack
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from library.core.artifacts.signal_sample.MultiObjectSignalSample import MultiObjectSignalSample, MultiObjectTrack
 from library.core.artifacts.Signal import Signal
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
@@ -22,9 +22,9 @@ from library.core.visualization.VisualArtifact import (
     VideoFileArtifact,
 )
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
+from library.frame_processors.OpenCV.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 from library.Main import build_realistic_sync_context, create_realistic_demo_video, moving_object_box
-from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
+from library.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
 from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer

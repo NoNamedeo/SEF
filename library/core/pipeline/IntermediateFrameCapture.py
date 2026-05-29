@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any, ClassVar, Protocol
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
-from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
+from library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
 from library.exporters.IntermediateFrameArtifactExporter import IntermediateFrameArtifactExporter
 
 

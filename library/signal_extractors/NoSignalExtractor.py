@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from library.core.artifacts.BoxSignalSample import BoxSignalSample
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
 from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalSample import ISignalSample

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
 from library.core.interfaces.IData import IData
 from library.core.visualization.PipelineRunMetadata import PipelineRunMetadata
 from library.core.visualization.VisualArtifact import VisualArtifact

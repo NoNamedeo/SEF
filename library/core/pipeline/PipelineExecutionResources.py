@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from threading import Lock
 from typing import Any
 
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.interfaces.BufferContracts import IAbortableBuffer
 from library.core.pipeline.PipelineBuffers import PipelineBuffers
 from library.core.visualization.VisualArtifact import VisualArtifact

@@ -4,11 +4,11 @@ import unittest
 
 import numpy as np
 
-from library.core.artifacts.COCOPoseTennisFrameData import COCOPoseTennisFrameData
+from library.core.artifacts.data.COCOPoseTennisFrameData import COCOPoseTennisFrameData
 from library.core.realtime.LatestRealtimeFrameStore import LatestRealtimeFrameStore
 from library.core.realtime.RealtimeFrame import RealtimeFrame
 from library.frame_processors.RealtimeFrameTapProcessor import RealtimeFrameTapProcessor
-from library.visualizers.RealtimeCOCOPoseFrameVisualizer import RealtimeCOCOPoseFrameVisualizer
+from library.visualizers.COCO_pose.RealtimeCOCOPoseFrameVisualizer import RealtimeCOCOPoseFrameVisualizer
 from ui.services.realtime_preview_service import with_realtime_sink_ids
 from ui.services.webcam_preflight_service import webcam_camera_index
 
@@ -143,7 +143,7 @@ def _pose_frame() -> COCOPoseTennisFrameData:
 
 def _frame_buffer_with(image: np.ndarray):
     from library.core.artifacts.Frame import Frame
-    from library.core.artifacts.FrameBuffer import FrameBuffer
+    from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 
     buffer = FrameBuffer(buffer_size=2)
     buffer.put(Frame(image=image, index=5))

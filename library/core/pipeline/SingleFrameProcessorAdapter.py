@@ -4,8 +4,8 @@ from collections.abc import Iterable
 from typing import Any
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
 from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from library.core.interfaces.StageCapabilities import StageCapabilities

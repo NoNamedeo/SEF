@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from concurrent.futures import Future, ThreadPoolExecutor
 
-from library.core.artifacts.DataBuffer import DataBuffer
+from library.core.artifacts.buffer.DataBuffer import DataBuffer
 from library.core.artifacts.Signal import Signal
 from library.core.interfaces.BufferContracts import ISubscribableBuffer
 from library.core.interfaces.IData import IData

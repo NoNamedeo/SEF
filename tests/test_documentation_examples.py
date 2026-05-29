@@ -5,7 +5,7 @@ import sys
 
 from examples.minimal_pipeline import run_example
 from library.core import ConfigPipelineBuilder, Pipeline, PluginRegistry
-from library.core.artifacts import TwoDimGraphData
+from library.core.artifacts.data import TwoDimGraphData
 from library.core.interfaces import IAnalyzer, ISignal
 from library.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
 from library.core.plugins import PluginCategory

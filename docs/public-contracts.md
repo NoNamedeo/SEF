@@ -556,7 +556,8 @@ Before publishing a new plugin:
 ## Minimal Plugin Example
 
 ```python
-from library.core.artifacts import TwoDimGraphData
+
+from library.core.artifacts.data import TwoDimGraphData
 from library.core.interfaces import IAnalyzer, ISignal
 from library.core.plugins import PluginCategory, PluginRegistry
 

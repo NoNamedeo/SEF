@@ -105,9 +105,9 @@ def _build_analysis_result_output(result: Any, idx: int, warnings: list[str]) ->
     type_name = type(result).__name__
 
     try:
-        from library.core.artifacts.CategoryData import CategoryData
-        from library.core.artifacts.TrackingPlaybackData import TrackingPlaybackData
-        from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
+        from library.core.artifacts.data.CategoryData import CategoryData
+        from library.core.artifacts.data.TrackingPlaybackData import TrackingPlaybackData
+        from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
     except Exception:
         CategoryData = None
         TrackingPlaybackData = None
@@ -202,7 +202,7 @@ def _build_tracking_video_outputs(
 ) -> tuple[tuple[ReconstructedVideoOutput, ...], tuple[ArtifactOutput, ...], tuple[str, ...]]:
     """Generate explicit reconstructed videos from tracking playback data if needed."""
     try:
-        from library.core.artifacts.TrackingPlaybackData import TrackingPlaybackData
+        from library.core.artifacts.data.TrackingPlaybackData import TrackingPlaybackData
     except Exception:
         return (), (), ()
 
@@ -265,21 +265,21 @@ def _safe_render_preview(
 
 
 def _render_function_preview(result: Any):
-    from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+    from library.visualizers.Matplotlib.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
     return MatplotlibFunctionVisualizer(config={"show": False, "show_scatter": True}).render(result)
 
 
 def _render_category_preview(result: Any):
-    from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
+    from library.visualizers.Matplotlib.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
 
     return MatplotlibHistogramVisualizer(config={"show": False}).render(result)
 
 
 def _maybe_render_trajectory_preview(result: Any, warnings: list[str]):
     try:
-        from library.core.artifacts.TrajectoryData import TrajectoryData
-        from library.visualizers.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
+        from library.core.artifacts.data.TrajectoryData import TrajectoryData
+        from library.visualizers.Matplotlib.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
     except Exception:
         return None
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
 from library.core.interfaces.IData import IData
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineStageExecutor import PipelineStageExecutor

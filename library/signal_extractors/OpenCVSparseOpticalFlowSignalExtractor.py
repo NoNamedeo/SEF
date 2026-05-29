@@ -7,9 +7,9 @@ import numpy as np
 
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.SparseOpticalFlowSignalSample import (
+from library.core.artifacts.signal_sample.SparseOpticalFlowSignalSample import (
     SparseOpticalFlowSignalSample,
     BoundingBox,
 )

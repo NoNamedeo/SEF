@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from library.core.artifacts.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
 from library.core.visualization.VisualArtifact import VisualArtifact
 
 

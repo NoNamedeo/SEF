@@ -5,7 +5,7 @@ from typing import Protocol
 import numpy as np
 import numpy.typing as npt
 
-from library.core.artifacts.MaskOperations import ensure_shape_compatible, normalize_binary_mask
+from library.core.artifacts.mask.MaskOperations import ensure_shape_compatible, normalize_binary_mask
 
 
 class RegionReconstructor(Protocol):

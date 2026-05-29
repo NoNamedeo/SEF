@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from library.core.artifacts.MaskOperations import normalize_binary_mask
+from library.core.artifacts.mask.MaskOperations import normalize_binary_mask
 from library.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig
 
 

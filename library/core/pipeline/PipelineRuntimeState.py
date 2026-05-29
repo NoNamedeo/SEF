@@ -5,7 +5,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.interfaces.BufferContracts import IAbortableBuffer, ISubscribableBuffer
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalSample import ISignalSample

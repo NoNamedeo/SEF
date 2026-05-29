@@ -7,14 +7,14 @@ from pathlib import Path
 import numpy as np
 
 from library.analyzers.NoAnalyzer import NoAnalyzer
-from library.core.artifacts.BoxSignalSample import BoxSignalSample
-from library.core.artifacts.DataBuffer import DataBuffer
+from library.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from library.core.artifacts.buffer.DataBuffer import DataBuffer
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.SignalBuffer import SignalBuffer
-from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
-from library.core.artifacts.TwoDimPointData import TwoDimPointData
+from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
+from library.core.artifacts.data.TwoDimPointData import TwoDimPointData
 from library.core.interfaces.BufferContracts import (
     IBuffer,
     IBufferSubscription,

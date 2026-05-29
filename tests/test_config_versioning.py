@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
+from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IFrameExtractor import IFrameExtractor

@@ -3,7 +3,10 @@ from __future__ import annotations
 import numpy as np
 
 import sef
-from library.core.artifacts import BoxSignalSample, Frame, FrameBuffer, Signal, TwoDimGraphData
+from library.core.artifacts import Frame, Signal
+from library.core.artifacts.signal_sample import BoxSignalSample
+from library.core.artifacts.buffer import FrameBuffer
+from library.core.artifacts.data import TwoDimGraphData
 from library.core.interfaces import IData, ISignal
 from library.core.visualization import TextArtifact, VisualizationContext
 

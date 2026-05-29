@@ -3,14 +3,14 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+from library.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 from library.core.events.Event import Event
 from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
-from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
+from library.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
 from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 
 log = logging.getLogger(__name__)

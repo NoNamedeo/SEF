@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
 from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalSample import ISignalSample

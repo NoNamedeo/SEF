@@ -10,7 +10,10 @@ from examples.minimal_pipeline import (
     SummaryVisualizer,
     build_registry,
 )
-from library.core.artifacts import BoxSignalSample, Frame, FrameBuffer, Signal, TwoDimGraphData
+from library.core.artifacts import Frame, Signal
+from library.core.artifacts.signal_sample import BoxSignalSample
+from library.core.artifacts.buffer import FrameBuffer
+from library.core.artifacts.data import TwoDimGraphData
 from library.core.visualization import TextArtifact
 
 

@@ -5,7 +5,7 @@ import unittest
 from library.core.errors import DuplicatePluginRegistrationError, InvalidPluginRegistrationError
 from library.core.plugins.PluginRegistry import PluginDefinition, PluginRegistry, create_builtin_registry
 from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
-from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
+from library.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
 
 
 class RegistryPlugin:

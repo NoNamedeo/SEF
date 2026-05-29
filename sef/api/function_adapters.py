@@ -5,7 +5,7 @@ from collections.abc import Callable
 from typing import Any
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IFrameExtractor import IFrameExtractor

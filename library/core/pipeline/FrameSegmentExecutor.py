@@ -4,7 +4,7 @@ from collections.abc import Iterable, Mapping
 from typing import Any
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from library.core.interfaces.IFrameExporter import FrameExportContext
 from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext

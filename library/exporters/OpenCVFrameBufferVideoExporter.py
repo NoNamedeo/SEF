@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.interfaces.BufferContracts import IBuffer
 from library.core.interfaces.IFrameExporter import FrameExportContext, FrameExportResult
 from library.core.interfaces.StageCapabilities import StageCapabilities

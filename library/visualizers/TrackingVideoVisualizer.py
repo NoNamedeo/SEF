@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess
 import tempfile
@@ -14,7 +13,7 @@ from typing import Any, Mapping, Protocol
 import cv2
 import numpy as np
 
-from library.core.artifacts.TrackingPlaybackData import TrackingPlaybackData
+from library.core.artifacts.data.TrackingPlaybackData import TrackingPlaybackData
 from library.core.interfaces.IData import IData
 from library.core.interfaces.IVisualizer import IVisualizer
 from library.core.visualization.VisualArtifact import (

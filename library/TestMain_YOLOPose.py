@@ -5,7 +5,7 @@ import logging
 import sys
 from pathlib import Path
 
-from library.visualizers.OpenCVCOCOTennisPoseRealtimeVisualizer import OpenCVCOCOTennisPoseRealtimeVisualizer
+from library.visualizers.COCO_pose.OpenCVCOCOTennisPoseRealtimeVisualizer import OpenCVCOCOTennisPoseRealtimeVisualizer
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 
 # Script entrypoint: package imports need the project root when run as `python library/...`.
-from library.analyzers.COCOPoseStreamAnalyzer import COCOPoseStreamAnalyzer  # noqa: E402
+from library.analyzers.COCO_pose.COCOPoseStreamAnalyzer import COCOPoseStreamAnalyzer  # noqa: E402
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder  # noqa: E402
 from library.core.pipeline.PipelineContext import PipelineContext  # noqa: E402
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator  # noqa: E402
@@ -25,7 +25,6 @@ from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFram
 from library.signal_extractors.YOLOSkeletonCOCOStreamSignalExtractor import (  # noqa: E402
     YOLOSkeletonCOCOStreamSignalExtractor,
 )
-from library.visualizers.OpenCVCOCOPoseRealtimeVisualizer import OpenCVCOCOPoseRealtimeVisualizer  # noqa: E402
 
 DEFAULT_CAMERA_INDEX = 0
 DEFAULT_MAX_FRAMES = 9999

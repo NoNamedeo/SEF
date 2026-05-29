@@ -8,11 +8,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
-from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
-from library.analyzers.HoriziontalPositionAnalyzer import HorizontalPositionAnalyzer
-from library.analyzers.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
-from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+from library.analyzers.NoAnalyzer import NoAnalyzer
 from library.core.enum.FrameRotation import FrameRotation
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.PipelineContext import PipelineContext
@@ -22,17 +18,10 @@ from library.core.utils.OpenCVMaskSelector import OpenCVMaskSelector
 from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.core.visualization.VisualArtifact import ImageArtifact, VideoArtifact
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.frame_processors.OpenCVBackgroundReplacementFrameProcessor import OpenCVBackgroundReplacementFrameProcessor
-from library.frame_processors.OpenCVInpaintFrameProcessor import OpenCVInpaintFrameProcessor
-from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
-from library.frame_processors.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
-from library.live_analyzers.LiveVerticalPositionAnalyzer import LiveVerticalPositionAnalyzer
-from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
-from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
-from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
-from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
-from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
+from library.frame_processors.OpenCV.OpenCVBackgroundReplacementFrameProcessor import OpenCVBackgroundReplacementFrameProcessor
+from library.frame_processors.OpenCV.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
+from library.frame_processors.OpenCV.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
+from library.signal_extractors.NoSignalExtractor import NoSignalExtractor
 
 
 def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize, mask, BGimage) -> PipelineContext:
@@ -51,16 +40,9 @@ def build_fluent_context(video_path, zoom_box, start_box, start_boxes, resize, m
         .add_frame_processor(SingleFrameProcessorAdapter(OpenCVBackgroundReplacementFrameProcessor(BGimage, mask, resize)))
 
         .with_signal_extractor(
-                OpenCVBufferedSignalExtractor(
-                start_box=start_box,
-                live_analyzer=None,
-                config={
-                    "show": True
-                },
-            )
+                NoSignalExtractor(),
         )
-        .with_analyzers([VerticalPositionAnalyzer()])
-        .add_visualizer_for_results(MatplotlibFunctionVisualizer(), [0])
+        .with_analyzers([NoAnalyzer()])
         .build_context()
     )
 

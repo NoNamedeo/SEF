@@ -1,9 +1,7 @@
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore
 from pyqtgraph.Qt import QtWidgets
 
-from library.core.artifacts.BoxSignalSample import BoxSignalSample
-from library.core.artifacts.MultiManualSignalSample import MultiManualSignalSample
+from library.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
 from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
 
 

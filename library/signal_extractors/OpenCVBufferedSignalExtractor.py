@@ -8,9 +8,9 @@ import cv2
 from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.BoxSignalSample import BoundingBox, BoxSignalSample
+from library.core.artifacts.signal_sample.BoxSignalSample import BoundingBox, BoxSignalSample
 
 
 class OpenCVBufferedSignalExtractor(ISignalExtractor):

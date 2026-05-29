@@ -7,8 +7,8 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.MultiObjectSignalSample import (
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from library.core.artifacts.signal_sample.MultiObjectSignalSample import (
     BoundingBox,
     MultiObjectSignalSample,
     MultiObjectTrack,

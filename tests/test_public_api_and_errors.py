@@ -21,7 +21,8 @@ from library.core import (
     TextArtifact,
     VisualArtifact,
 )
-from library.core.artifacts import COCOPoseTennisFrameData, SignalBuffer
+from library.core.artifacts.buffer import SignalBuffer
+from library.core.artifacts.data import COCOPoseTennisFrameData
 from library.core.errors import LatencyPolicyError
 from library.core.pipeline import LatencyPolicyConfig, StreamRuntimeConfig
 from library.core.plugins import PluginRegistry

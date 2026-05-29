@@ -4,6 +4,10 @@ import logging
 import sys
 from pathlib import Path
 
+from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
+from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
+from library.frame_processors.OpenCV.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -15,7 +19,7 @@ from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from library.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from library.signal_extractors.NoSignalExtractor import NoSignalExtractor
-from library.frame_processors.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
+from library.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -26,6 +30,9 @@ logging.basicConfig(
 def build_phase_mag_pipeline(
     video_path: Path,
     output_path: Path,
+    background_image_path: Path,
+    mask,
+    resize,
 ) -> PipelineContext:
 
     return (
@@ -33,18 +40,26 @@ def build_phase_mag_pipeline(
         .with_frame_extractor(
             OpenCVBufferedFrameExtractor(
                 video_path,
-                config={"max_frames": 300},
+                config={"max_frames": 300}, #300 per phase_mag sembra essere il massimo che il mio pc tolleri
             )
         )
+        #.add_frame_processor(SingleFrameProcessorAdapter(OpenCVRotateFrameProcessor(rotation=FrameRotation.ROTATE_90)))
+        .add_frame_processor(SingleFrameProcessorAdapter(OpenCVResizeFrameProcessor(resize)))
+        # .add_frame_processor(SingleFrameProcessorAdapter(OpenCVBackgroundReplacementFrameProcessor(
+        #     background_image_path=str(background_image_path),
+        #     mask=mask,
+        #     resize=resize
+        # )))
+        .add_frame_processor(SingleFrameProcessorAdapter(ColorStabilizationFrameProcessor()))
         .add_frame_processor(
             PhaseMagnificationFrameProcessor(
                 magnification_factor=15.0,
                 low_cutoff_hz=0.4,
                 high_cutoff_hz=3.0,
-                fps=10.0,
+                fps=20.0,
             )
         )
-        .add_frame_exporter(OpenCVFrameBufferVideoExporter(output_path, fps=10.0, max_exported_frames=300))
+        .add_frame_exporter(OpenCVFrameBufferVideoExporter(output_path, fps=20.0, max_exported_frames=300))
         .with_signal_extractor(NoSignalExtractor())
         .add_analyzer(NoAnalyzer())
         .build_context()
@@ -53,9 +68,26 @@ def build_phase_mag_pipeline(
 
 def TestMain_PhaseMag() -> None:
 
+    video_path = PROJECT_ROOT / "videos" / "Glass.mp4"
+    output_path = PROJECT_ROOT / "output" / "phase_mag_videos" / "Glass_PhaseMag_Color.mp4"
+    background_image_path = PROJECT_ROOT / "images" / "Castle_static.png"
+
+    resize = (800, 600)
+
+    mask = None
+    # mask = OpenCVMaskSelector().select_mask(
+    #     str(video_path),
+    #     single_frame_processors=[
+    #         #OpenCVRotateFrameProcessor(rotation=FrameRotation.ROTATE_90),
+    #         OpenCVResizeFrameProcessor(resize),
+    #     ])
+
     context = build_phase_mag_pipeline(
-        video_path=PROJECT_ROOT / "videos" / "Tower.mp4",
-        output_path=PROJECT_ROOT / "output" / "phase_mag_videos" / "Tower_PhaseMag.mp4",
+        video_path=video_path,
+        output_path=output_path,
+        background_image_path=background_image_path,
+        mask=mask,
+        resize=resize
     )
 
     orchestrator = PipelineOrchestrator()

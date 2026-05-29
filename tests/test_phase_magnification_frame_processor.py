@@ -5,14 +5,14 @@ from pathlib import Path
 import numpy as np
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.interfaces.IAnalyzer import IAnalyzer
 from library.core.interfaces.IFrameExtractor import IFrameExtractor
 from library.core.interfaces.ISignalExtractor import ISignalExtractor
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry, create_builtin_registry
-from library.frame_processors.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
+from library.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
 
 
 class StaticFrameExtractor(IFrameExtractor):

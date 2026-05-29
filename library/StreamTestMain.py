@@ -6,21 +6,20 @@ from pathlib import Path
 import cv2
 from PIL import Image
 
-from library.analyzers.VerticalPositionStreamAnalyzer import VerticalPositionStreamAnalyzer
+from library.analyzers.single_tracker.VerticalPositionStreamAnalyzer import VerticalPositionStreamAnalyzer
 from library.core.enum.FrameRotation import FrameRotation
 from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from library.core.pipeline.FrameProcessingStage import FrameProcessingStage
 from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
-from library.core.utils.OpenCVMaskSelector import OpenCVMaskSelector
 from library.core.utils.OpenCVStartBoxSelector import OpenCVStartBoxSelector
 from library.core.visualization.VisualArtifact import ImageArtifact
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
-from library.frame_processors.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
+from library.frame_processors.OpenCV.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
+from library.frame_processors.OpenCV.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
 from library.signal_extractors.OpenCVStreamSignalExtractor import OpenCVStreamSignalExtractor
-from library.visualizers.MatplotlibFunctionStreamVisualizer import MatplotlibFunctionStreamVisualizer
+from library.visualizers.Matplotlib.MatplotlibFunctionStreamVisualizer import MatplotlibFunctionStreamVisualizer
 
 
 def _build_stream_context(

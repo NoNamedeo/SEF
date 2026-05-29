@@ -6,7 +6,7 @@ from typing import Any
 import cv2
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.interfaces.BufferContracts import IFrameBuffer
 from library.core.interfaces.StageCapabilities import StageCapabilities
 from library.core.interfaces.StreamingContracts import IStreamingFrameExtractor

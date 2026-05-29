@@ -5,10 +5,10 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.artifacts.DenseOpticalFlowSignalSample import (
+from library.core.artifacts.signal_sample.DenseOpticalFlowSignalSample import (
     DenseOpticalFlowSignalSample,
 )
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
 from library.core.interfaces.ISignal import ISignal
 from library.core.interfaces.ISignalExtractor import ISignalExtractor

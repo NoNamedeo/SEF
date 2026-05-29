@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from library.core.artifacts.MaskArtifacts import IntermediateFrameArtifact
+from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
 
 
 class IntermediateFrameArtifactExporter:

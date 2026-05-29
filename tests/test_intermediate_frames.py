@@ -6,9 +6,9 @@ from typing import Any
 import numpy as np
 
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.IntermediateFrameComposition import compose_side_by_side
-from library.core.artifacts.MaskArtifacts import (
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from library.core.artifacts.intermediate_frame.IntermediateFrameComposition import compose_side_by_side
+from library.core.artifacts.mask.MaskArtifacts import (
     FrameMaskArtifact,
     IntermediateFrameArtifact,
     IntermediateFrameOverlay,
@@ -27,8 +27,8 @@ from library.core.pipeline.Pipeline import Pipeline
 from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from library.core.visualization.VisualArtifact import ImageArtifact
-from library.visualizers.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
-from library.visualizers.IntermediateFramesVisualizer import IntermediateFramesVisualizer
+from library.visualizers.intermediate_frames.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
+from library.visualizers.intermediate_frames.IntermediateFramesVisualizer import IntermediateFramesVisualizer
 
 
 class DebugResult(IData):

@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
 from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
 from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from library.core.interfaces.ISignalSample import ISignalSample
 from library.core.pipeline.PipelineBoundaryMaterializer import PipelineBoundaryMaterializer

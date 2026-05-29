@@ -62,7 +62,7 @@ def get_registry() -> PluginRegistry:
 
     # ── Frame processors ────────────────────────────────────────────────────────
     try:
-        from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
+        from library.frame_processors.OpenCV.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
 
         _try_register(
             registry, PluginCategory.SINGLE_FRAME_PROCESSOR, "opencv_gray", OpenCVGrayFrameProcessor, "Converte i frame in scala di grigi."
@@ -80,7 +80,7 @@ def get_registry() -> PluginRegistry:
         log.warning("SmoothingFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
+        from library.frame_processors.OpenCV.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
 
         _try_register(
             registry,
@@ -93,7 +93,7 @@ def get_registry() -> PluginRegistry:
         log.warning("OpenCVResizeFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_processors.OpenCVBackgroundSubtractionFrameProcessor import OpenCVBackgroundSubtractionFrameProcessor
+        from library.frame_processors.OpenCV.OpenCVBackgroundSubtractionFrameProcessor import OpenCVBackgroundSubtractionFrameProcessor
 
         _try_register(
             registry,
@@ -106,7 +106,7 @@ def get_registry() -> PluginRegistry:
         log.warning("OpenCVBackgroundSubtractionFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_processors.OpenCVHistogramEqualizationFrameProcessor import OpenCVHistogramEqualizationFrameProcessor
+        from library.frame_processors.OpenCV.OpenCVHistogramEqualizationFrameProcessor import OpenCVHistogramEqualizationFrameProcessor
 
         _try_register(
             registry,
@@ -145,7 +145,7 @@ def get_registry() -> PluginRegistry:
         log.warning("DynamicObjectRemovalFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_processors.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
+        from library.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
 
         _try_register(
             registry,
@@ -175,7 +175,7 @@ def get_registry() -> PluginRegistry:
         log.warning("RealtimeFrameTapProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_processors.OpenCVInpaintFrameProcessor import OpenCVInpaintFrameProcessor
+        from library.frame_processors.OpenCV.OpenCVInpaintFrameProcessor import OpenCVInpaintFrameProcessor
 
         _try_register(
             registry,
@@ -188,7 +188,7 @@ def get_registry() -> PluginRegistry:
         log.warning("OpenCVInpaintFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_processors.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
+        from library.frame_processors.OpenCV.OpenCVRotateFrameProcessor import OpenCVRotateFrameProcessor
 
         _try_register(
             registry,
@@ -201,7 +201,7 @@ def get_registry() -> PluginRegistry:
         log.warning("OpenCVRotateFrameProcessor non disponibile: %s", exc)
 
     try:
-        from library.frame_processors.OpenCVZoomFrameProcessor import OpenCVZoomFrameProcessor
+        from library.frame_processors.OpenCV.OpenCVZoomFrameProcessor import OpenCVZoomFrameProcessor
 
         _try_register(
             registry,
@@ -290,7 +290,7 @@ def get_registry() -> PluginRegistry:
 
     # ── Signal cleaners ───────────────────────────────────────────────────────
     try:
-        from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
+        from library.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
 
         _try_register(
             registry,
@@ -303,14 +303,14 @@ def get_registry() -> PluginRegistry:
         log.warning("ArucoTemporalStabilizerCleaner non disponibile: %s", exc)
 
     try:
-        from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
+        from library.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
 
         _try_register(registry, PluginCategory.SIGNAL_CLEANER, "moving_average", MovingAverageCleaner, "Smoothing centroidi con media mobile.")
     except Exception as exc:
         log.warning("MovingAverageCleaner non disponibile: %s", exc)
 
     try:
-        from library.signal_cleaners.MovingAverageStreamSignalCleaner import MovingAverageStreamCleaner
+        from library.signal_cleaners.single_tracker.MovingAverageStreamSignalCleaner import MovingAverageStreamCleaner
 
         _try_register(
             registry,
@@ -323,14 +323,14 @@ def get_registry() -> PluginRegistry:
         log.warning("MovingAverageStreamCleaner non disponibile: %s", exc)
 
     try:
-        from library.signal_cleaners.OutlierRejectionCleaner import OutlierRejectionCleaner
+        from library.signal_cleaners.single_tracker.OutlierRejectionCleaner import OutlierRejectionCleaner
 
         _try_register(registry, PluginCategory.SIGNAL_CLEANER, "outlier_rejection", OutlierRejectionCleaner, "Rimozione outlier dal segnale.")
     except Exception as exc:
         log.warning("OutlierRejectionCleaner non disponibile: %s", exc)
 
     try:
-        from library.signal_cleaners.SignalWidenerCleaner import SignalWidenerCleaner
+        from library.signal_cleaners.single_tracker.SignalWidenerCleaner import SignalWidenerCleaner
 
         _try_register(
             registry,
@@ -343,7 +343,7 @@ def get_registry() -> PluginRegistry:
         log.warning("SignalWidenerCleaner non disponibile: %s", exc)
 
     try:
-        from library.signal_cleaners.COCOSkeletonNormalizationSignalCleaner import COCOSkeletonNormalizationSignalCleaner
+        from library.signal_cleaners.COCO_pose.COCOSkeletonNormalizationSignalCleaner import COCOSkeletonNormalizationSignalCleaner
 
         _try_register(
             registry,
@@ -357,7 +357,7 @@ def get_registry() -> PluginRegistry:
 
     # ── Analyzers ─────────────────────────────────────────────────────────────
     try:
-        from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+        from library.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
 
         _try_register(
             registry, PluginCategory.ANALYZER, "vertical_position", VerticalPositionAnalyzer, "Serie temporale della posizione verticale."
@@ -366,14 +366,14 @@ def get_registry() -> PluginRegistry:
         log.warning("VerticalPositionAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.VerticalFrequencyAnalyzer import VerticalFrequencyAnalyzer
+        from library.analyzers.single_tracker.VerticalFrequencyAnalyzer import VerticalFrequencyAnalyzer
 
         _try_register(registry, PluginCategory.ANALYZER, "vertical_frequency", VerticalFrequencyAnalyzer, "Spettro di frequenza verticale (FFT).")
     except Exception as exc:
         log.warning("VerticalFrequencyAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.HoriziontalPositionAnalyzer import HorizontalPositionAnalyzer  # noqa: N813
+        from library.analyzers.single_tracker.HoriziontalPositionAnalyzer import HorizontalPositionAnalyzer  # noqa: N813
 
         _try_register(
             registry, PluginCategory.ANALYZER, "horizontal_position", HorizontalPositionAnalyzer, "Serie temporale della posizione orizzontale."
@@ -382,14 +382,14 @@ def get_registry() -> PluginRegistry:
         log.warning("HorizontalPositionAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.VerticalVelocityAnalyzer import VerticalVelocityAnalyzer
+        from library.analyzers.single_tracker.VerticalVelocityAnalyzer import VerticalVelocityAnalyzer
 
         _try_register(registry, PluginCategory.ANALYZER, "vertical_velocity", VerticalVelocityAnalyzer, "Serie temporale della velocità verticale.")
     except Exception as exc:
         log.warning("VerticalVelocityAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.HorizontalVelocityAnalyzer import HorizontalVelocityAnalyzer
+        from library.analyzers.single_tracker.HorizontalVelocityAnalyzer import HorizontalVelocityAnalyzer
 
         _try_register(
             registry, PluginCategory.ANALYZER, "horizontal_velocity", HorizontalVelocityAnalyzer, "Serie temporale della velocità orizzontale."
@@ -398,7 +398,7 @@ def get_registry() -> PluginRegistry:
         log.warning("HorizontalVelocityAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.HorizontalFrequencyAnalyzer import HorizontalFrequencyAnalyzer
+        from library.analyzers.single_tracker.HorizontalFrequencyAnalyzer import HorizontalFrequencyAnalyzer
 
         _try_register(
             registry, PluginCategory.ANALYZER, "horizontal_frequency", HorizontalFrequencyAnalyzer, "Spettro di frequenza orizzontale (FFT)."
@@ -407,7 +407,7 @@ def get_registry() -> PluginRegistry:
         log.warning("HorizontalFrequencyAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.MultiObjectBarrierCountingAnalyzer import MultiObjectBarrierCountingAnalyzer
+        from library.analyzers.multiple_tracker.MultiObjectBarrierCountingAnalyzer import MultiObjectBarrierCountingAnalyzer
 
         _try_register(
             registry,
@@ -420,7 +420,7 @@ def get_registry() -> PluginRegistry:
         log.warning("MultiObjectBarrierCountingAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.DenseOpticalFlowVectorFieldAnalyzer import DenseOpticalFlowVectorFieldAnalyzer
+        from library.analyzers.optical_flow.DenseOpticalFlowVectorFieldAnalyzer import DenseOpticalFlowVectorFieldAnalyzer
 
         _try_register(
             registry,
@@ -433,7 +433,7 @@ def get_registry() -> PluginRegistry:
         log.warning("DenseOpticalFlowVectorFieldAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
+        from library.analyzers.playback.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
 
         _try_register(
             registry,
@@ -446,7 +446,7 @@ def get_registry() -> PluginRegistry:
         log.warning("TrackingPlaybackAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.COCOPoseStreamAnalyzer import COCOPoseStreamAnalyzer
+        from library.analyzers.COCO_pose.COCOPoseStreamAnalyzer import COCOPoseStreamAnalyzer
 
         _try_register(
             registry,
@@ -459,7 +459,7 @@ def get_registry() -> PluginRegistry:
         log.warning("COCOPoseStreamAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
+        from library.analyzers.ArUco.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
 
         _try_register(
             registry,
@@ -472,7 +472,7 @@ def get_registry() -> PluginRegistry:
         log.warning("ArucoMarkerDisplacementAnalyzer non disponibile: %s", exc)
 
     try:
-        from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
+        from library.analyzers.ArUco.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
 
         _try_register(
             registry,
@@ -486,14 +486,14 @@ def get_registry() -> PluginRegistry:
 
     # ── Visualizers ───────────────────────────────────────────────────────────
     try:
-        from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+        from library.visualizers.Matplotlib.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
         _try_register(registry, PluginCategory.VISUALIZER, "matplotlib_function", MatplotlibFunctionVisualizer, "Grafico linea/scatter Matplotlib.")
     except Exception as exc:
         log.warning("MatplotlibFunctionVisualizer non disponibile: %s", exc)
 
     try:
-        from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
+        from library.visualizers.Matplotlib.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
 
         _try_register(
             registry, PluginCategory.VISUALIZER, "matplotlib_histogram", MatplotlibHistogramVisualizer, "Istogramma/bar chart Matplotlib."
@@ -502,7 +502,7 @@ def get_registry() -> PluginRegistry:
         log.warning("MatplotlibHistogramVisualizer non disponibile: %s", exc)
 
     try:
-        from library.visualizers.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
+        from library.visualizers.Matplotlib.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
 
         _try_register(
             registry, PluginCategory.VISUALIZER, "matplotlib_trajectory", MatplotlibTrajectoryVisualizer, "Visualizzazione traiettoria Matplotlib."
@@ -511,7 +511,7 @@ def get_registry() -> PluginRegistry:
         log.warning("MatplotlibTrajectoryVisualizer non disponibile: %s", exc)
 
     try:
-        from library.visualizers.MatplotlibVectorFieldVisualizer import MatplotlibVectorFieldVisualizer
+        from library.visualizers.Matplotlib.MatplotlibVectorFieldVisualizer import MatplotlibVectorFieldVisualizer
 
         _try_register(
             registry,
@@ -537,7 +537,7 @@ def get_registry() -> PluginRegistry:
         log.warning("TrackingVideoVisualizer non disponibile: %s", exc)
 
     try:
-        from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+        from library.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
 
         _try_register(
             registry,
@@ -550,7 +550,7 @@ def get_registry() -> PluginRegistry:
         log.warning("ArucoAnnotatedVideoVisualizer non disponibile: %s", exc)
 
     try:
-        from library.visualizers.OpenCVCOCOPoseRealtimeVisualizer import OpenCVCOCOPoseRealtimeVisualizer
+        from library.visualizers.COCO_pose.OpenCVCOCOPoseRealtimeVisualizer import OpenCVCOCOPoseRealtimeVisualizer
 
         _try_register(
             registry,
@@ -563,7 +563,7 @@ def get_registry() -> PluginRegistry:
         log.warning("OpenCVCOCOPoseRealtimeVisualizer non disponibile: %s", exc)
 
     try:
-        from library.visualizers.OpenCVCOCOTennisPoseRealtimeVisualizer import OpenCVCOCOTennisPoseRealtimeVisualizer
+        from library.visualizers.COCO_pose.OpenCVCOCOTennisPoseRealtimeVisualizer import OpenCVCOCOTennisPoseRealtimeVisualizer
 
         _try_register(
             registry,
@@ -576,7 +576,7 @@ def get_registry() -> PluginRegistry:
         log.warning("OpenCVCOCOTennisPoseRealtimeVisualizer non disponibile: %s", exc)
 
     try:
-        from library.visualizers.RealtimeCOCOPoseFrameVisualizer import RealtimeCOCOPoseFrameVisualizer
+        from library.visualizers.COCO_pose.RealtimeCOCOPoseFrameVisualizer import RealtimeCOCOPoseFrameVisualizer
         from ui.services.realtime_preview_service import sink_for_id
 
         def streamlit_coco_pose_realtime_factory(config=None, sink_id=None):
@@ -593,7 +593,7 @@ def get_registry() -> PluginRegistry:
         log.warning("RealtimeCOCOPoseFrameVisualizer non disponibile: %s", exc)
 
     try:
-        from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
+        from library.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
 
         _try_register(
             registry,
@@ -607,7 +607,7 @@ def get_registry() -> PluginRegistry:
 
     # ── Intermediate Frame visualizers ────────────────────────────────────────
     try:
-        from library.visualizers.IntermediateFramesVisualizer import IntermediateFramesVisualizer
+        from library.visualizers.intermediate_frames.IntermediateFramesVisualizer import IntermediateFramesVisualizer
 
         _try_register(
             registry,
@@ -620,7 +620,7 @@ def get_registry() -> PluginRegistry:
         log.warning("IntermediateFramesVisualizer non disponibile: %s", exc)
 
     try:
-        from library.visualizers.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
+        from library.visualizers.intermediate_frames.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
 
         _try_register(
             registry,
@@ -647,7 +647,7 @@ def get_registry() -> PluginRegistry:
         log.warning("NewTrackBranchingRule non disponibile: %s", exc)
 
     try:
-        from library.visualizers.MatplotlibHeatmapVisualizer import MatplotlibHeatmapVisualizer
+        from library.visualizers.Matplotlib.MatplotlibHeatmapVisualizer import MatplotlibHeatmapVisualizer
 
         _try_register(
             registry,

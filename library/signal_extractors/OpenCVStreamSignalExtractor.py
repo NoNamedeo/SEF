@@ -5,9 +5,9 @@ from typing import Any
 
 import cv2
 
-from library.core.artifacts.BoxSignalSample import BoundingBox, BoxSignalSample
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.SignalBuffer import SignalBuffer
+from library.core.artifacts.signal_sample.BoxSignalSample import BoundingBox, BoxSignalSample
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
 from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
 from library.core.interfaces.ISignalSample import ISignalSample

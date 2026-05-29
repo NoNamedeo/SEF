@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from tempfile import gettempdir
 import subprocess
 import sys
 import time
@@ -10,16 +9,12 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.analyzers.HorizontalVelocityAnalyzer import HorizontalVelocityAnalyzer
-from library.analyzers.VerticalFrequencyAnalyzer import VerticalFrequencyAnalyzer
-from library.analyzers.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-from library.analyzers.VerticalVelocityAnalyzer import VerticalVelocityAnalyzer
-from library.core.artifacts.BoxSignalSample import BoxSignalSample
+from library.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.MultiObjectSignalSample import BoundingBox
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from library.core.artifacts.signal_sample.MultiObjectSignalSample import BoundingBox
 from library.core.artifacts.Signal import Signal
-from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
+from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
 from library.core.events.Event import Event
 from library.core.events.EventBus import EventBus
 from library.core.events.PipelineEvent import PipelineEvent
@@ -44,17 +39,9 @@ from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from library.core.visualization.PipelineOutputs import PipelineOutputs
 from library.core.visualization.VisualArtifact import TextArtifact, VisualArtifact
 from library.core.visualization.VisualizationContext import VisualizationContext
-from library.frame_processors.OpenCVBackgroundSubtractionFrameProcessor import OpenCVBackgroundSubtractionFrameProcessor
-from library.frame_processors.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
-from library.frame_processors.OpenCVResizeFrameProcessor import OpenCVResizeFrameProcessor
-from library.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
 from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.signal_cleaners.MovingAverageCleaner import MovingAverageCleaner
-from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
-from library.visualizers.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
-from library.visualizers.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
-from library.visualizers.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
+
 
 # ---------------------------------------------------------------------------
 # Minimal in-memory components used by the examples.

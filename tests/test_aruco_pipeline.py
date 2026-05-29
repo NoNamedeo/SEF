@@ -8,16 +8,16 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from library.analyzers.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
-from library.analyzers.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
-from library.core.artifacts.ArucoDisplacementData import (
+from library.analyzers.ArUco.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
+from library.analyzers.ArUco.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
+from library.core.artifacts.data.ArucoDisplacementData import (
     ArucoMarkerDisplacementData,
     ArucoMarkerDisplacementFrameData,
 )
-from library.core.artifacts.ArucoMarkerSignalSample import ArucoMarkerObservation, ArucoMarkerSignalSample
-from library.core.artifacts.DataBuffer import DataBuffer
+from library.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerObservation, ArucoMarkerSignalSample
+from library.core.artifacts.buffer.DataBuffer import DataBuffer
 from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
+from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from library.core.artifacts.Signal import Signal
 from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from library.core.pipeline.Pipeline import Pipeline
@@ -28,10 +28,10 @@ from library.core.visualization.VisualArtifact import (
     VideoArtifact,
     VideoFileArtifact,
 )
-from library.signal_cleaners.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
+from library.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
 from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
-from library.visualizers.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
-from library.visualizers.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
+from library.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+from library.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
 
 
 class ArucoPipelineTests(unittest.TestCase):
