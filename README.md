@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 ![Status](https://img.shields.io/badge/status-experimental-orange)
-[![Docs](https://img.shields.io/badge/docs-MkDocs-brightgreen)](docs/index.md)
+[![Docs](https://img.shields.io/badge/docs-MkDocs-brightgreen)](https://nonamedeo.github.io/SEF/)
 ![Architecture](https://img.shields.io/badge/architecture-modular-informational)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-orange)](LICENSE)
 
@@ -87,7 +87,7 @@ flowchart LR
 <!-- PLACEHOLDER: Add execution/runtime flow diagram showing batch vs streaming decisions, buffers, and latency policy; purpose: clarify the adaptive runtime at a glance; ideal placement: after the Mermaid diagram. -->
 
 The detailed architecture, public contracts, and extension rules live in the
-[MkDocs documentation](docs/index.md).
+[MkDocs documentation](https://nonamedeo.github.io/SEF/).
 
 ## Quick Example
 
