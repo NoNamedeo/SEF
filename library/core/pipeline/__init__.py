@@ -91,3 +91,8 @@ def __getattr__(name: str):
 def __dir__() -> list[str]:
     return sorted(__all__)
 
+
+for _name in __all__:
+    __getattr__(_name)
+del _name
+

@@ -65,7 +65,7 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
     ) -> None:
         merged_config = dict(config or {})
         resolved_release_dir = (
-            Path(release_dir) if release_dir is not None else Path(__file__).resolve().parents[2] / "external" / "phase_mag" / "Release"
+            Path(release_dir) if release_dir is not None else Path(__file__).resolve().parents[3] / "external" / "phase_mag" / "Release"
         )
         resolved_temp_dir = Path(temp_dir) if temp_dir is not None else None
         runtime = str(use_matlab_runtime).strip().lower()

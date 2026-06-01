@@ -36,7 +36,7 @@ _EXPORTS = {
     "ExecutionPlanStage": ("library.core.pipeline.PipelineExecutionPlan", "ExecutionPlanStage"),
     "FluentPipelineBuilder": ("library.core.pipeline.FluentPipelineBuilder", "FluentPipelineBuilder"),
     "Frame": ("library.core.artifacts.Frame", "Frame"),
-    "FrameBuffer": ("library.core.artifacts.FrameBuffer", "FrameBuffer"),
+    "FrameBuffer": ("library.core.artifacts.buffer", "FrameBuffer"),
     "IRealtimeFrameSink": ("library.core.realtime.IRealtimeFrameSink", "IRealtimeFrameSink"),
     "InvalidPluginRegistrationError": ("library.core.errors", "InvalidPluginRegistrationError"),
     "LatencyPolicyConfig": ("library.core.pipeline.LatencyPolicy", "LatencyPolicyConfig"),

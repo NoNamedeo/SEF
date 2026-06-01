@@ -118,7 +118,7 @@ _EXPORTS = {
         "create_builtin_registry",
     ),
     "VerticalPositionAnalyzer": (
-        "library.analyzers.VerticalPositionAnalyzer",
+        "library.analyzers.single_tracker.VerticalPositionAnalyzer",
         "VerticalPositionAnalyzer",
     ),
     "OpenCVBufferedFrameExtractor": (
@@ -130,11 +130,11 @@ _EXPORTS = {
         "OpenCVBufferedSignalExtractor",
     ),
     "MovingAverageCleaner": (
-        "library.signal_cleaners.MovingAverageCleaner",
+        "library.signal_cleaners.single_tracker.MovingAverageCleaner",
         "MovingAverageCleaner",
     ),
     "MatplotlibFunctionVisualizer": (
-        "library.visualizers.MatplotlibFunctionVisualizer",
+        "library.visualizers.Matplotlib.MatplotlibFunctionVisualizer",
         "MatplotlibFunctionVisualizer",
     ),
 }
