@@ -2,7 +2,7 @@
 
 ## Frame
 
-Official import: `from library.core.artifacts import Frame`
+Official import: `from sef.core.artifacts import Frame`
 
 Fields:
 
@@ -15,7 +15,7 @@ Fields:
 
 ## FrameBuffer
 
-Official import: `from library.core.artifacts import FrameBuffer`
+Official import: `from sef.core.artifacts import FrameBuffer`
 
 Core methods:
 
@@ -32,7 +32,7 @@ Core methods:
 Official import:
 
 ```python
-from library.core.interfaces import ISignal, ISignalSample
+from sef.core.interfaces import ISignal, ISignalSample
 ```
 
 Signals are iterable collections of samples. Samples expose frame index,
@@ -40,7 +40,7 @@ optional timestamp, and metadata.
 
 ## IData
 
-Official import: `from library.core.interfaces import IData`
+Official import: `from sef.core.interfaces import IData`
 
 Analyzer outputs should implement `IData`. Built-in data values include graph
 data, point data, trajectory data, pose data, tracking data, mask artifacts, and
@@ -48,7 +48,7 @@ domain-specific analysis records.
 
 ## VisualArtifact
 
-Official import: `from library.core.visualization import VisualArtifact`
+Official import: `from sef.core.visualization import VisualArtifact`
 
 Common fields:
 
@@ -71,7 +71,7 @@ Concrete artifact types:
 
 ## PipelineOutputs
 
-Official import: `from library.core.visualization import PipelineOutputs`
+Official import: `from sef.core.visualization import PipelineOutputs`
 
 Fields:
 

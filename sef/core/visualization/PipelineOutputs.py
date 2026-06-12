@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
-from library.core.interfaces.IData import IData
-from library.core.visualization.PipelineRunMetadata import PipelineRunMetadata
-from library.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from sef.core.interfaces.IData import IData
+from sef.core.visualization.PipelineRunMetadata import PipelineRunMetadata
+from sef.core.visualization.VisualArtifact import VisualArtifact
 
 
 @dataclass(frozen=True, slots=True)

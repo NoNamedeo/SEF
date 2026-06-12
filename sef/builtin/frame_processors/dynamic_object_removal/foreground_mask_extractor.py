@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from library.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig
+from sef.builtin.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig
 
 
 class ForegroundMaskExtractor(Protocol):

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from library.core.plugins.PluginRegistry import PluginCategory
+from sef.core.plugins.PluginRegistry import PluginCategory
 from ui.services.pipeline_builder_service import (
     STAGE_EDIT_OPTIONS,
     display_frame_processor_plugin,

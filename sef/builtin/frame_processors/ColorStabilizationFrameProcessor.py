@@ -8,8 +8,8 @@ from typing import Any, Union
 import cv2
 import numpy as np
 
-from library.core.artifacts.Frame import Frame
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from sef.core.artifacts.Frame import Frame
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 
 _MAX_CHANNEL_VALUE = 255.0
 _EPSILON = 1e-6
@@ -601,7 +601,7 @@ class ColorStabilizationFrameProcessor(ISingleFrameProcessor):
             return ()
 
         try:
-            from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
+            from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
         except Exception:
             return ()
 

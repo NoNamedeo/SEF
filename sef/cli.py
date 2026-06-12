@@ -18,19 +18,19 @@ from pathlib import Path
 from typing import Any
 
 import sef
-from library.core.errors import (
+from sef.core.errors import (
     ConfigSchemaError,
     DuplicatePluginRegistrationError,
     PipelineConfigurationError,
     PipelineError,
     PipelineExecutionError,
 )
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
-from library.core.pipeline.PipelineExportUtils import json_dumps, to_exportable_data, yaml_dumps
-from library.core.plugins import PluginCategory, PluginDefinition, PluginRegistry
-from library.core.visualization.PipelineOutputs import PipelineOutputs
-from library.core.visualization.VisualArtifact import (
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
+from sef.core.pipeline.PipelineExportUtils import json_dumps, to_exportable_data, yaml_dumps
+from sef.core.plugins import PluginCategory, PluginDefinition, PluginRegistry
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.visualization.VisualArtifact import (
     DeferredVideoArtifact,
     ImageArtifact,
     JsonArtifact,

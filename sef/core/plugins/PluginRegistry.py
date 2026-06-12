@@ -8,7 +8,7 @@ from threading import RLock
 from types import MappingProxyType
 from typing import Any, Callable
 
-from library.core.errors import DuplicatePluginRegistrationError, InvalidPluginRegistrationError
+from sef.core.errors import DuplicatePluginRegistrationError, InvalidPluginRegistrationError
 
 # ── Category enum ─────────────────────────────────────────────────────────────
 
@@ -362,25 +362,25 @@ def create_builtin_registry() -> PluginRegistry:
     >>> registry.register(PluginCategory.ANALYZER, "my_analyzer", MyAnalyzer)
     >>> builder = ConfigPipelineBuilder(registry)
     """
-    from library.analyzers.ArUco.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
-    from library.analyzers.ArUco.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
-    from library.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-    from library.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
-    from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-    from library.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor
-    from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
-    from library.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
-    from library.frame_processors.OpenCV.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
-    from library.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
-    from library.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
-    from library.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
-    from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
-    from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-    from library.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
-    from library.visualizers.intermediate_frames.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
-    from library.visualizers.intermediate_frames.IntermediateFramesVisualizer import IntermediateFramesVisualizer
-    from library.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
-    from library.visualizers.Matplotlib.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+    from sef.builtin.analyzers.ArUco.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
+    from sef.builtin.analyzers.ArUco.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
+    from sef.builtin.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+    from sef.builtin.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
+    from sef.builtin.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+    from sef.builtin.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor
+    from sef.builtin.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
+    from sef.builtin.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
+    from sef.builtin.frame_processors.OpenCV.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
+    from sef.builtin.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
+    from sef.builtin.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
+    from sef.builtin.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
+    from sef.builtin.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
+    from sef.builtin.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+    from sef.builtin.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+    from sef.builtin.visualizers.intermediate_frames.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
+    from sef.builtin.visualizers.intermediate_frames.IntermediateFramesVisualizer import IntermediateFramesVisualizer
+    from sef.builtin.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
+    from sef.builtin.visualizers.Matplotlib.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
     registry = PluginRegistry()
 

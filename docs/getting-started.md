@@ -69,7 +69,7 @@ Catch configuration errors separately from execution errors:
 
 ```python
 import sef
-from library.core import PipelineConfigurationError, PipelineExecutionError
+from sef.core import PipelineConfigurationError, PipelineExecutionError
 
 try:
     config = sef.load_config("pipeline.yaml")

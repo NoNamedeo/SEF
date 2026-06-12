@@ -12,8 +12,8 @@ from typing import Iterable
 
 import streamlit as st
 
-from library.core.events.Event import Event
-from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
+from sef.core.events.Event import Event
+from sef.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
 
 _STATE_LABELS = {
     PipelineRunState.QUEUED: "Queued",

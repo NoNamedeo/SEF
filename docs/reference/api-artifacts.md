@@ -5,101 +5,101 @@ They are intentionally framework-neutral.
 
 ## Frames and Buffers
 
-::: library.core.artifacts.Frame.Frame
+::: sef.core.artifacts.Frame.Frame
 
-::: library.core.artifacts.FrameBuffer.FrameBuffer
+::: sef.core.artifacts.buffer.FrameBuffer.FrameBuffer
 
-::: library.core.artifacts.SignalBuffer.SignalBuffer
+::: sef.core.artifacts.buffer.SignalBuffer.SignalBuffer
 
-::: library.core.artifacts.SignalBuffer.SignalSubscription
+::: sef.core.artifacts.buffer.SignalBuffer.SignalSubscription
 
-::: library.core.artifacts.DataBuffer.DataBuffer
+::: sef.core.artifacts.buffer.DataBuffer.DataBuffer
 
-::: library.core.artifacts.DataBuffer.DataSubscription
+::: sef.core.artifacts.buffer.DataBuffer.DataSubscription
 
 ## Signals and Generic Data
 
-::: library.core.artifacts.Signal.Signal
+::: sef.core.artifacts.Signal.Signal
 
-::: library.core.artifacts.NoData.NoData
+::: sef.core.artifacts.data.NoData.NoData
 
-::: library.core.artifacts.CategoryData.CategoryData
+::: sef.core.artifacts.data.CategoryData.CategoryData
 
-::: library.core.artifacts.TwoDimPointData.TwoDimPointData
+::: sef.core.artifacts.data.TwoDimPointData.TwoDimPointData
 
-::: library.core.artifacts.TwoDimGraphData.TwoDimGraphData
+::: sef.core.artifacts.data.TwoDimGraphData.TwoDimGraphData
 
-::: library.core.artifacts.VectorFieldGraphData.VectorFieldGraphData
+::: sef.core.artifacts.data.VectorFieldGraphData.VectorFieldGraphData
 
-::: library.core.artifacts.TrajectoryData.TrajectoryData
+::: sef.core.artifacts.data.TrajectoryData.TrajectoryData
 
 ## Motion and Tracking Samples
 
-::: library.core.artifacts.BoxSignalSample.BoxSignalSample
+::: sef.core.artifacts.signal_sample.BoxSignalSample.BoxSignalSample
 
-::: library.core.artifacts.MultiManualSignalSample.MultiManualSignalSample
+::: sef.core.artifacts.signal_sample.MultiManualSignalSample.MultiManualSignalSample
 
-::: library.core.artifacts.MultiObjectSignalSample.MultiObjectTrack
+::: sef.core.artifacts.signal_sample.MultiObjectSignalSample.MultiObjectTrack
 
-::: library.core.artifacts.MultiObjectSignalSample.MultiObjectSignalSample
+::: sef.core.artifacts.signal_sample.MultiObjectSignalSample.MultiObjectSignalSample
 
-::: library.core.artifacts.SparseOpticalFlowSignalSample.SparseOpticalFlowSignalSample
+::: sef.core.artifacts.signal_sample.SparseOpticalFlowSignalSample.SparseOpticalFlowSignalSample
 
-::: library.core.artifacts.DenseOpticalFlowSignalSample.DenseOpticalFlowSignalSample
+::: sef.core.artifacts.signal_sample.DenseOpticalFlowSignalSample.DenseOpticalFlowSignalSample
 
-::: library.core.artifacts.TrackingPlaybackData.TrackingPlaybackTrack
+::: sef.core.artifacts.data.TrackingPlaybackData.TrackingPlaybackTrack
 
-::: library.core.artifacts.TrackingPlaybackData.TrackingPlaybackFrame
+::: sef.core.artifacts.data.TrackingPlaybackData.TrackingPlaybackFrame
 
-::: library.core.artifacts.TrackingPlaybackData.TrackingPlaybackData
+::: sef.core.artifacts.data.TrackingPlaybackData.TrackingPlaybackData
 
 ## ArUco Data
 
-::: library.core.artifacts.ArucoMarkerSignalSample.ArucoMarkerObservation
+::: sef.core.artifacts.signal_sample.ArucoMarkerSignalSample.ArucoMarkerObservation
 
-::: library.core.artifacts.ArucoMarkerSignalSample.ArucoMarkerSignalSample
+::: sef.core.artifacts.signal_sample.ArucoMarkerSignalSample.ArucoMarkerSignalSample
 
-::: library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementObservation
+::: sef.core.artifacts.data.ArucoDisplacementData.ArucoMarkerDisplacementObservation
 
-::: library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementSeries
+::: sef.core.artifacts.data.ArucoDisplacementData.ArucoMarkerDisplacementSeries
 
-::: library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementFrameData
+::: sef.core.artifacts.data.ArucoDisplacementData.ArucoMarkerDisplacementFrameData
 
-::: library.core.artifacts.ArucoDisplacementData.ArucoMarkerDisplacementData
+::: sef.core.artifacts.data.ArucoDisplacementData.ArucoMarkerDisplacementData
 
-::: library.core.artifacts.ArucoRelativeMotionData.ArucoMarkerRelativeMotionSeries
+::: sef.core.artifacts.data.ArucoRelativeMotionData.ArucoMarkerRelativeMotionSeries
 
-::: library.core.artifacts.ArucoRelativeMotionData.ArucoMarkerRelativeMotionData
+::: sef.core.artifacts.data.ArucoRelativeMotionData.ArucoMarkerRelativeMotionData
 
 ## COCO Pose Data
 
-::: library.core.artifacts.COCOSkeletonSignalSample.COCOSkeletonSignalSample
+::: sef.core.artifacts.signal_sample.COCOSkeletonSignalSample.COCOSkeletonSignalSample
 
-::: library.core.artifacts.COCOPoseFrameData.COCOPoseFrameData
+::: sef.core.artifacts.data.COCOPoseFrameData.COCOPoseFrameData
 
-::: library.core.artifacts.COCOPoseFrameData.COCOPoseSequenceData
+::: sef.core.artifacts.data.COCOPoseFrameData.COCOPoseSequenceData
 
-::: library.core.artifacts.COCOPoseTennisFrameData.COCOPoseTennisFrameData
+::: sef.core.artifacts.data.COCOPoseTennisFrameData.COCOPoseTennisFrameData
 
-::: library.core.artifacts.COCOPoseTennisFrameData.COCOPoseTennisSequenceData
+::: sef.core.artifacts.data.COCOPoseTennisFrameData.COCOPoseTennisSequenceData
 
 ## Intermediate Frame Artifacts
 
-::: library.core.artifacts.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection
+::: sef.core.artifacts.intermediate_frame.IntermediateFrameArtifacts.IntermediateFrameArtifactCollection
 
-::: library.core.artifacts.IntermediateFrameComposition.FrameComparisonPanel
+::: sef.core.artifacts.intermediate_frame.IntermediateFrameComposition.FrameComparisonPanel
 
-::: library.core.artifacts.MaskArtifacts.MaskArtifact
+::: sef.core.artifacts.mask.MaskArtifacts.MaskArtifact
 
-::: library.core.artifacts.MaskArtifacts.MotionMaskArtifact
+::: sef.core.artifacts.mask.MaskArtifacts.MotionMaskArtifact
 
-::: library.core.artifacts.MaskArtifacts.TargetMaskArtifact
+::: sef.core.artifacts.mask.MaskArtifacts.TargetMaskArtifact
 
-::: library.core.artifacts.MaskArtifacts.ProtectedRegionArtifact
+::: sef.core.artifacts.mask.MaskArtifacts.ProtectedRegionArtifact
 
-::: library.core.artifacts.MaskArtifacts.FrameMaskArtifact
+::: sef.core.artifacts.mask.MaskArtifacts.FrameMaskArtifact
 
-::: library.core.artifacts.MaskArtifacts.IntermediateFrameArtifact
+::: sef.core.artifacts.mask.MaskArtifacts.IntermediateFrameArtifact
 
-::: library.core.artifacts.MaskArtifacts.IntermediateFrameOverlay
+::: sef.core.artifacts.mask.MaskArtifacts.IntermediateFrameOverlay
 

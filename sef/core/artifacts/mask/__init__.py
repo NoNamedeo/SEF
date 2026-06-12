@@ -4,23 +4,25 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from sef.core._lazy_exports import install_lazy_exports
+
 _EXPORTS = {
-    "FrameMaskArtifact": ("library.core.artifacts.mask.MaskArtifacts", "FrameMaskArtifact"),
-    "IntermediateFrameArtifact": ("library.core.artifacts.mask.MaskArtifacts", "IntermediateFrameArtifact"),
-    "IntermediateFrameOverlay": ("library.core.artifacts.mask.MaskArtifacts", "IntermediateFrameOverlay"),
-    "MaskArray": ("library.core.artifacts.mask.MaskOperations", "MaskArray"),
-    "MaskArtifact": ("library.core.artifacts.mask.MaskArtifacts", "MaskArtifact"),
-    "MotionMaskArtifact": ("library.core.artifacts.mask.MaskArtifacts", "MotionMaskArtifact"),
-    "ProtectedRegionArtifact": ("library.core.artifacts.mask.MaskArtifacts", "ProtectedRegionArtifact"),
-    "ShapeSource": ("library.core.artifacts.mask.MaskOperations", "ShapeSource"),
-    "TargetMaskArtifact": ("library.core.artifacts.mask.MaskArtifacts", "TargetMaskArtifact"),
-    "ensure_shape_compatible": ("library.core.artifacts.mask.MaskOperations", "ensure_shape_compatible"),
-    "intersect_masks": ("library.core.artifacts.mask.MaskOperations", "intersect_masks"),
-    "merge_masks": ("library.core.artifacts.mask.MaskOperations", "merge_masks"),
-    "normalize_binary_mask": ("library.core.artifacts.mask.MaskOperations", "normalize_binary_mask"),
-    "spatial_shape_of": ("library.core.artifacts.mask.MaskOperations", "spatial_shape_of"),
-    "subtract_masks": ("library.core.artifacts.mask.MaskOperations", "subtract_masks"),
-    "validate_binary_mask": ("library.core.artifacts.mask.MaskOperations", "validate_binary_mask"),
+    "FrameMaskArtifact": ("sef.core.artifacts.mask.MaskArtifacts", "FrameMaskArtifact"),
+    "IntermediateFrameArtifact": ("sef.core.artifacts.mask.MaskArtifacts", "IntermediateFrameArtifact"),
+    "IntermediateFrameOverlay": ("sef.core.artifacts.mask.MaskArtifacts", "IntermediateFrameOverlay"),
+    "MaskArray": ("sef.core.artifacts.mask.MaskOperations", "MaskArray"),
+    "MaskArtifact": ("sef.core.artifacts.mask.MaskArtifacts", "MaskArtifact"),
+    "MotionMaskArtifact": ("sef.core.artifacts.mask.MaskArtifacts", "MotionMaskArtifact"),
+    "ProtectedRegionArtifact": ("sef.core.artifacts.mask.MaskArtifacts", "ProtectedRegionArtifact"),
+    "ShapeSource": ("sef.core.artifacts.mask.MaskOperations", "ShapeSource"),
+    "TargetMaskArtifact": ("sef.core.artifacts.mask.MaskArtifacts", "TargetMaskArtifact"),
+    "ensure_shape_compatible": ("sef.core.artifacts.mask.MaskOperations", "ensure_shape_compatible"),
+    "intersect_masks": ("sef.core.artifacts.mask.MaskOperations", "intersect_masks"),
+    "merge_masks": ("sef.core.artifacts.mask.MaskOperations", "merge_masks"),
+    "normalize_binary_mask": ("sef.core.artifacts.mask.MaskOperations", "normalize_binary_mask"),
+    "spatial_shape_of": ("sef.core.artifacts.mask.MaskOperations", "spatial_shape_of"),
+    "subtract_masks": ("sef.core.artifacts.mask.MaskOperations", "subtract_masks"),
+    "validate_binary_mask": ("sef.core.artifacts.mask.MaskOperations", "validate_binary_mask"),
 }
 
 __all__ = list(_EXPORTS)
@@ -40,3 +42,6 @@ def __getattr__(name: str):
 
 def __dir__() -> list[str]:
     return sorted(__all__)
+
+
+install_lazy_exports(__name__)

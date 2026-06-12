@@ -3,10 +3,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from library.core.interfaces.IData import IData
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
 
 
 class IVisualizer(ABC):

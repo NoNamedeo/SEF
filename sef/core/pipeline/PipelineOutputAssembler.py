@@ -4,11 +4,11 @@ from collections.abc import Mapping
 from datetime import datetime, timezone
 from typing import Any
 
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
-from library.core.pipeline.PipelineExecutionResult import PipelineExecutionResult
-from library.core.visualization.PipelineOutputs import PipelineOutputs
-from library.core.visualization.PipelineRunMetadata import PipelineRunMetadata
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
+from sef.core.pipeline.PipelineExecutionResult import PipelineExecutionResult
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.visualization.PipelineRunMetadata import PipelineRunMetadata
 
 
 class PipelineOutputAssembler:
@@ -65,8 +65,8 @@ class PipelineOutputAssembler:
         return self._attach_reproducibility(outputs)
 
     def _attach_reproducibility(self, outputs: PipelineOutputs) -> PipelineOutputs:
-        from library.core.pipeline.PipelineCodeExporter import PipelineCodeExporter
-        from library.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
+        from sef.core.pipeline.PipelineCodeExporter import PipelineCodeExporter
+        from sef.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
 
         config_exporter = PipelineConfigExporter()
         export_config = config_exporter.export(self._context, outputs)

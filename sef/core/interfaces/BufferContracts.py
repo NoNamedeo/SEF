@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator
 from typing import Protocol, TypeVar, runtime_checkable
 
-from library.core.artifacts.Frame import Frame
+from sef.core.artifacts.Frame import Frame
 
 T = TypeVar("T")
 

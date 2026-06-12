@@ -6,14 +6,14 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignalCleaner import ISignalCleaner
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.plugins import PluginCategory, PluginRegistry
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from sef.core.interfaces.IFrameExtractor import IFrameExtractor
+from sef.core.interfaces.ISignalCleaner import ISignalCleaner
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from sef.core.interfaces.IVisualizer import IVisualizer
+from sef.core.plugins import PluginCategory, PluginRegistry
 from sef.api.function_adapters import (
     FunctionAnalyzer,
     FunctionFrameExtractor,

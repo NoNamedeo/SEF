@@ -20,8 +20,8 @@ one job, declare capabilities accurately, and return public data contracts.
 
 ```python
 
-from library.core.artifacts.data import TwoDimGraphData
-from library.core.interfaces import IAnalyzer, ISignal
+from sef.core.artifacts.data import TwoDimGraphData
+from sef.core.interfaces import IAnalyzer, ISignal
 
 
 class SampleCountAnalyzer(IAnalyzer):
@@ -33,8 +33,8 @@ class SampleCountAnalyzer(IAnalyzer):
 ## Visualizer Example
 
 ```python
-from library.core.interfaces import IData, IVisualizer
-from library.core.visualization import TextArtifact, VisualizationContext
+from sef.core.interfaces import IData, IVisualizer
+from sef.core.visualization import TextArtifact, VisualizationContext
 
 
 class SummaryVisualizer(IVisualizer):
@@ -55,7 +55,7 @@ class SummaryVisualizer(IVisualizer):
 ## Capability Declaration
 
 ```python
-from library.core.interfaces import StageCapabilities
+from sef.core.interfaces import StageCapabilities
 
 
 class RealtimeSafeProcessor:

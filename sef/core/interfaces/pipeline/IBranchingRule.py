@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from library.core.events.Event import Event
-from library.core.pipeline.PipelineContext import PipelineContext
+from sef.core.events.Event import Event
+from sef.core.pipeline.PipelineContext import PipelineContext
 
 
 class IBranchingRule(ABC):

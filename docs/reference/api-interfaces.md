@@ -5,79 +5,79 @@ cleaners, analyzers, visualizers, buffers, and orchestration adapters.
 
 ## Stage Capabilities
 
-::: library.core.interfaces.StageCapabilities.StageCapabilities
+::: sef.core.interfaces.StageCapabilities.StageCapabilities
 
 ## Batch Component Contracts
 
-::: library.core.interfaces.IFrameExtractor.IFrameExtractor
+::: sef.core.interfaces.IFrameExtractor.IFrameExtractor
 
-::: library.core.interfaces.ISingleFrameProcessor.ISingleFrameProcessor
+::: sef.core.interfaces.ISingleFrameProcessor.ISingleFrameProcessor
 
-::: library.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor
+::: sef.core.interfaces.IFrameBufferProcessor.IFrameBufferProcessor
 
-::: library.core.interfaces.IFrameExporter.FrameExportContext
+::: sef.core.interfaces.IFrameExporter.FrameExportContext
 
-::: library.core.interfaces.IFrameExporter.FrameExportResult
+::: sef.core.interfaces.IFrameExporter.FrameExportResult
 
-::: library.core.interfaces.IFrameExporter.IFrameExporter
+::: sef.core.interfaces.IFrameExporter.IFrameExporter
 
-::: library.core.interfaces.ISignalExtractor.ISignalExtractor
+::: sef.core.interfaces.ISignalExtractor.ISignalExtractor
 
-::: library.core.interfaces.ISignalCleaner.ISignalCleaner
+::: sef.core.interfaces.ISignalCleaner.ISignalCleaner
 
-::: library.core.interfaces.IAnalyzer.IAnalyzer
+::: sef.core.interfaces.IAnalyzer.IAnalyzer
 
-::: library.core.interfaces.IVisualizer.IVisualizer
+::: sef.core.interfaces.IVisualizer.IVisualizer
 
 ## Data Contracts
 
-::: library.core.interfaces.IData.IData
+::: sef.core.interfaces.IData.IData
 
-::: library.core.interfaces.ISignal.ISignal
+::: sef.core.interfaces.ISignal.ISignal
 
-::: library.core.interfaces.ISignalSample.ISignalSample
+::: sef.core.interfaces.ISignalSample.ISignalSample
 
 ## Streaming Contracts
 
-::: library.core.interfaces.BufferContracts.IBuffer
+::: sef.core.interfaces.BufferContracts.IBuffer
 
-::: library.core.interfaces.BufferContracts.IAbortableBuffer
+::: sef.core.interfaces.BufferContracts.IAbortableBuffer
 
-::: library.core.interfaces.BufferContracts.IBufferSubscription
+::: sef.core.interfaces.BufferContracts.IBufferSubscription
 
-::: library.core.interfaces.BufferContracts.ISubscribableBuffer
+::: sef.core.interfaces.BufferContracts.ISubscribableBuffer
 
-::: library.core.interfaces.BufferContracts.IFrameBuffer
+::: sef.core.interfaces.BufferContracts.IFrameBuffer
 
-::: library.core.interfaces.StreamingContracts.IStreamingFrameExtractor
+::: sef.core.interfaces.StreamingContracts.IStreamingFrameExtractor
 
-::: library.core.interfaces.StreamingContracts.IStreamingFrameBufferProcessor
+::: sef.core.interfaces.StreamingContracts.IStreamingFrameBufferProcessor
 
-::: library.core.interfaces.StreamingContracts.IStreamingFrameExporter
+::: sef.core.interfaces.StreamingContracts.IStreamingFrameExporter
 
-::: library.core.interfaces.StreamingContracts.IStreamingSignalExtractor
+::: sef.core.interfaces.StreamingContracts.IStreamingSignalExtractor
 
-::: library.core.interfaces.StreamingContracts.IStreamingSignalCleaner
+::: sef.core.interfaces.StreamingContracts.IStreamingSignalCleaner
 
-::: library.core.interfaces.StreamingContracts.IStreamingAnalyzer
+::: sef.core.interfaces.StreamingContracts.IStreamingAnalyzer
 
-::: library.core.interfaces.StreamingContracts.IStreamingVisualizer
+::: sef.core.interfaces.StreamingContracts.IStreamingVisualizer
 
 ## Orchestration Ports
 
-::: library.core.interfaces.pipeline.IPipelineFactory.IPipelineFactory
+::: sef.core.interfaces.pipeline.IPipelineFactory.IPipelineFactory
 
-::: library.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner
+::: sef.core.interfaces.pipeline.IPipelineRunner.IPipelineRunner
 
-::: library.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor
+::: sef.core.interfaces.pipeline.IPipelineMonitor.IPipelineMonitor
 
-::: library.core.interfaces.pipeline.IPipelineOutputStore.IPipelineOutputStore
+::: sef.core.interfaces.pipeline.IPipelineOutputStore.IPipelineOutputStore
 
-::: library.core.interfaces.pipeline.IPipelineValidator.IPipelineValidator
+::: sef.core.interfaces.pipeline.IPipelineValidator.IPipelineValidator
 
-::: library.core.interfaces.pipeline.IEventBus.IEventBus
+::: sef.core.interfaces.pipeline.IEventBus.IEventBus
 
-::: library.core.interfaces.pipeline.IRetryPolicy.IRetryPolicy
+::: sef.core.interfaces.pipeline.IRetryPolicy.IRetryPolicy
 
-::: library.core.interfaces.pipeline.IBranchingRule.IBranchingRule
+::: sef.core.interfaces.pipeline.IBranchingRule.IBranchingRule
 

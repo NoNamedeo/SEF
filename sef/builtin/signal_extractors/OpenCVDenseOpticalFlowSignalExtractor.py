@@ -5,13 +5,13 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.artifacts.signal_sample.DenseOpticalFlowSignalSample import (
+from sef.core.artifacts.signal_sample.DenseOpticalFlowSignalSample import (
     DenseOpticalFlowSignalSample,
 )
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
 
 
 class OpenCVDenseFarnebackSignalExtractor(ISignalExtractor):

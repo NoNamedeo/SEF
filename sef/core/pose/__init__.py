@@ -1,4 +1,4 @@
-from library.core.pose.COCOSkeletonNormalizer import (
+from sef.core.pose.COCOSkeletonNormalizer import (
     COCOSkeletonNormalizationConfig,
     COCOSkeletonNormalizationResult,
     COCOSkeletonNormalizer,

@@ -3,10 +3,10 @@ from __future__ import annotations
 import logging
 import threading
 
-from library.core.events.Event import Event
-from library.core.events.PipelineEvent import PipelineEvent
-from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
-from library.core.interfaces.pipeline.IEventBus import IEventBus
+from sef.core.events.Event import Event
+from sef.core.events.PipelineEvent import PipelineEvent
+from sef.core.interfaces.pipeline.IBranchingRule import IBranchingRule
+from sef.core.interfaces.pipeline.IEventBus import IEventBus
 
 log = logging.getLogger(__name__)
 

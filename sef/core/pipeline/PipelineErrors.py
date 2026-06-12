@@ -1,10 +1,10 @@
 """Compatibility exports for the public error model.
 
-New code should import from ``library.core.errors``. This module remains as a
+New code should import from ``sef.core.errors``. This module remains as a
 stable bridge for existing pipeline imports.
 """
 
-from library.core.errors import (
+from sef.core.errors import (
     ConfigSchemaError,
     ConfigVersionError,
     DuplicatePluginRegistrationError,

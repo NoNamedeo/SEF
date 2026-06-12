@@ -4,8 +4,8 @@ from collections.abc import Iterable
 from threading import Condition
 from typing import Dict, List
 
-from library.core.interfaces.BufferContracts import IBufferSubscription
-from library.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.BufferContracts import IBufferSubscription
+from sef.core.interfaces.ISignalSample import ISignalSample
 
 _SENTINEL = object()
 

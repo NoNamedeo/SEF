@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.StageCapabilities import StageCapabilities
 
 
 class ISignalCleaner(ABC):

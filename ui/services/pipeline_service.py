@@ -18,20 +18,20 @@ _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from library.core.events.Event import Event  # noqa: E402
-from library.core.events.EventBus import EventBus  # noqa: E402
-from library.core.events.PipelineEvent import PipelineEvent  # noqa: E402
-from library.core.pipeline.BranchingCoordinator import BranchingCoordinator  # noqa: E402
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder  # noqa: E402
-from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor  # noqa: E402
-from library.core.pipeline.InMemoryPipelineOutputStore import InMemoryPipelineOutputStore  # noqa: E402
-from library.core.pipeline.PipelineContext import PipelineContext  # noqa: E402
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator  # noqa: E402
-from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot  # noqa: E402
-from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner  # noqa: E402
-from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry  # noqa: E402
-from library.core.visualization.PipelineOutputs import PipelineOutputs  # noqa: E402
-from library.retry_policies.NoRetryPolicy import NoRetryPolicy  # noqa: E402
+from sef.core.events.Event import Event  # noqa: E402
+from sef.core.events.EventBus import EventBus  # noqa: E402
+from sef.core.events.PipelineEvent import PipelineEvent  # noqa: E402
+from sef.core.pipeline.BranchingCoordinator import BranchingCoordinator  # noqa: E402
+from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder  # noqa: E402
+from sef.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor  # noqa: E402
+from sef.core.pipeline.InMemoryPipelineOutputStore import InMemoryPipelineOutputStore  # noqa: E402
+from sef.core.pipeline.PipelineContext import PipelineContext  # noqa: E402
+from sef.core.pipeline.PipelineOrchestrator import PipelineOrchestrator  # noqa: E402
+from sef.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot  # noqa: E402
+from sef.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner  # noqa: E402
+from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry  # noqa: E402
+from sef.core.visualization.PipelineOutputs import PipelineOutputs  # noqa: E402
+from sef.builtin.retry_policies.NoRetryPolicy import NoRetryPolicy  # noqa: E402
 from sef.api.config import normalize_config  # noqa: E402
 
 log = logging.getLogger(__name__)

@@ -5,13 +5,13 @@ from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
 
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.pipeline.Pipeline import Pipeline
-from library.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_VERSION
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
-from library.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
-from library.core.plugins import PluginCategory, PluginRegistry
+from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+from sef.core.pipeline.Pipeline import Pipeline
+from sef.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_VERSION
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
+from sef.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
+from sef.core.plugins import PluginCategory, PluginRegistry
 from sef.api.config import normalize_config
 from sef.api.registry import clone_registry, default_registry
 from sef.api.stage_refs import ComponentRef, StageRegistry, StageSpec

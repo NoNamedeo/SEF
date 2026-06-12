@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from library.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
 
 
 class IPipelineOutputStore(ABC):

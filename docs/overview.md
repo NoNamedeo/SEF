@@ -1,7 +1,7 @@
 # Overview
 
 SEF is a signal extraction framework for video and image sequences. The core
-library is designed as a small orchestration engine around stable contracts:
+SEF is designed as a small orchestration engine around stable contracts:
 frames enter the pipeline, signal samples are extracted, analyzers create typed
 data, visualizers create UI-agnostic artifacts, and the runtime returns
 `PipelineOutputs`.
@@ -9,7 +9,7 @@ data, visualizers create UI-agnostic artifacts, and the runtime returns
 ## Layered Architecture
 
 ```text
-library/core/
+sef/core/
 ├── artifacts/       Data values: Frame, Signal, IData outputs, pose data
 ├── events/          Event, EventBus, pipeline lifecycle events
 ├── interfaces/      Public component and runtime ports
@@ -19,14 +19,14 @@ library/core/
 └── visualization/   VisualArtifact, PipelineOutputs, run metadata
 ```
 
-Concrete packages outside `library/core` implement adapters:
+Concrete packages outside `sef/core` implement adapters:
 
-- `library/frame_extractors`
-- `library/frame_processors`
-- `library/signal_extractors`
-- `library/signal_cleaners`
-- `library/analyzers`
-- `library/visualizers`
+- `sef/builtin/frame_extractors`
+- `sef/builtin/frame_processors`
+- `sef/builtin/signal_extractors`
+- `sef/builtin/signal_cleaners`
+- `sef/builtin/analyzers`
+- `sef/builtin/visualizers`
 - `ui`
 
 The dependency direction is inward: concrete adapters depend on core contracts;
@@ -65,7 +65,7 @@ artifacts, run metadata, and reproducibility metadata.
 
 ## Non-Goals of Core
 
-The core library does not own:
+The core package does not own:
 
 - browser or webcam permission prompts;
 - Streamlit rerun behavior;

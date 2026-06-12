@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Callable
 
-from library.core.events.Event import Event
+from sef.core.events.Event import Event
 
 EventHandler = Callable[[Event], None]
 

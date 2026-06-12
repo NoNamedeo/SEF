@@ -6,11 +6,11 @@ import cv2
 import numpy as np
 import pytest
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.IFrameExporter import FrameExportContext
-from library.core.visualization.VisualArtifact import ArtifactRole, VideoFileArtifact
-from library.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.IFrameExporter import FrameExportContext
+from sef.core.visualization.VisualArtifact import ArtifactRole, VideoFileArtifact
+from sef.builtin.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
 
 
 def test_frame_buffer_video_exporter_writes_file_artifact_and_preserves_stream(tmp_path: Path) -> None:

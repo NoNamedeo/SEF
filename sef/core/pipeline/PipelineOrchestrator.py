@@ -5,21 +5,21 @@ from concurrent.futures import Future
 from typing import Any, Mapping
 from uuid import uuid4
 
-from library.core.events.Event import Event
-from library.core.events.PipelineEvent import PipelineEvent
-from library.core.interfaces.pipeline.IEventBus import IEventBus
-from library.core.interfaces.pipeline.IPipelineFactory import IPipelineFactory
-from library.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
-from library.core.pipeline.DefaultPipelineFactory import DefaultPipelineFactory
-from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
-from library.core.pipeline.Pipeline import Pipeline
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineErrors import (
+from sef.core.events.Event import Event
+from sef.core.events.PipelineEvent import PipelineEvent
+from sef.core.interfaces.pipeline.IEventBus import IEventBus
+from sef.core.interfaces.pipeline.IPipelineFactory import IPipelineFactory
+from sef.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
+from sef.core.pipeline.DefaultPipelineFactory import DefaultPipelineFactory
+from sef.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
+from sef.core.pipeline.Pipeline import Pipeline
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineErrors import (
     InvalidPipelineTriggerEventError,
     PipelineRunAlreadyActiveError,
 )
-from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
-from library.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
 
 __all__ = ["PipelineOrchestrator"]
 log = logging.getLogger(__name__)

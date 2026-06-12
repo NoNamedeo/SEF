@@ -4,7 +4,7 @@ import logging
 from collections.abc import Callable
 from typing import TypeVar
 
-from library.core.pipeline.PipelineErrors import PipelineExecutionError
+from sef.core.pipeline.PipelineErrors import PipelineExecutionError
 
 log = logging.getLogger(__name__)
 

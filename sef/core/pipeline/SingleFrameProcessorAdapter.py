@@ -3,15 +3,15 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
-from library.core.interfaces.BufferContracts import IBuffer
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor
-from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
-from library.core.pipeline.IntermediateFrameCapture import (
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
+from sef.core.interfaces.BufferContracts import IBuffer
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor
+from sef.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
+from sef.core.pipeline.IntermediateFrameCapture import (
     IntermediateFrameArtifactStore,
     IntermediateFrameCaptureContext,
 )

@@ -4,7 +4,7 @@ from collections.abc import Iterable, Iterator
 from queue import Empty, Full, Queue
 from time import sleep
 
-from library.core.artifacts.Frame import Frame
+from sef.core.artifacts.Frame import Frame
 
 _SENTINEL = object()
 

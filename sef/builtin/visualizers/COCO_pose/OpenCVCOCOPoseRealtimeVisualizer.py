@@ -5,12 +5,12 @@ from collections.abc import Iterable, Sequence
 import cv2
 import numpy as np
 
-from library.core.artifacts.data.COCOPoseFrameData import COCOPoseFrameData, COCOPoseSequenceData
-from library.core.interfaces.IData import IData
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingVisualizer
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
+from sef.core.artifacts.data.COCOPoseFrameData import COCOPoseFrameData, COCOPoseSequenceData
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingVisualizer
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
 
 
 class OpenCVCOCOPoseRealtimeVisualizer(IStreamingVisualizer):

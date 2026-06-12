@@ -16,7 +16,7 @@ outputs = (
 ```
 
 Advanced users can still import stable lower-level contracts from
-``sef.core`` or ``library.core``.
+``sef.core`` or ``sef.core``.
 """
 
 from sef.api import (
@@ -36,9 +36,11 @@ from sef.api import (
     visualizer,
     webcam,
 )
+from sef.core import PipelineExecutionError
 
 __all__ = [
     "PipelineFacade",
+    "PipelineExecutionError",
     "analyzer",
     "cleaner",
     "default_registry",

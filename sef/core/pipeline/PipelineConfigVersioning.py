@@ -4,7 +4,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.pipeline.PipelineErrors import ConfigSchemaError, ConfigVersionError
+from sef.core.pipeline.PipelineErrors import ConfigSchemaError, ConfigVersionError
 
 PIPELINE_CONFIG_VERSION_KEY = "schema_version"
 CURRENT_PIPELINE_CONFIG_VERSION = "1.0"

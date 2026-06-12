@@ -5,7 +5,7 @@ from typing import Iterable
 
 import cv2
 
-from library.core.utils.OpenCVDisplayUtils import DisplayTransform
+from sef.core.utils.OpenCVDisplayUtils import DisplayTransform
 
 
 Barrier = tuple[tuple[int, int], tuple[int, int]]

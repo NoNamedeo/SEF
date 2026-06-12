@@ -7,8 +7,8 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from library.core.artifacts.mask.MaskOperations import normalize_binary_mask
-from library.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig
+from sef.core.artifacts.mask.MaskOperations import normalize_binary_mask
+from sef.builtin.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig
 
 
 @dataclass(frozen=True, slots=True)

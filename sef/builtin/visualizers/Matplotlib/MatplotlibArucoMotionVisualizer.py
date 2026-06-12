@@ -5,14 +5,14 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from library.core.artifacts.data.ArucoDisplacementData import ArucoMarkerDisplacementData
-from library.core.artifacts.data.ArucoRelativeMotionData import ArucoMarkerRelativeMotionData
-from library.core.interfaces.IData import IData
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingVisualizer
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
-from library.visualizers.Matplotlib.MatplotlibArtifactVisualizer import MatplotlibArtifactVisualizer
+from sef.core.artifacts.data.ArucoDisplacementData import ArucoMarkerDisplacementData
+from sef.core.artifacts.data.ArucoRelativeMotionData import ArucoMarkerRelativeMotionData
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingVisualizer
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
+from sef.builtin.visualizers.Matplotlib.MatplotlibArtifactVisualizer import MatplotlibArtifactVisualizer
 
 
 class MatplotlibArucoMotionVisualizer(MatplotlibArtifactVisualizer, IStreamingVisualizer):

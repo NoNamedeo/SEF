@@ -10,43 +10,43 @@ from typing import Any
 
 import numpy as np
 
-from library.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
-from library.core.events.Event import Event
-from library.core.events.EventBus import EventBus
-from library.core.events.PipelineEvent import PipelineEvent
-from library.core.events.PipelineLifecycleEvent import (
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
+from sef.core.events.Event import Event
+from sef.core.events.EventBus import EventBus
+from sef.core.events.PipelineEvent import PipelineEvent
+from sef.core.events.PipelineLifecycleEvent import (
     PipelineLifecycleEvent,
 )
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.IEventEmitter import IEventEmitter
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
-from library.core.interfaces.pipeline.IEventBus import IEventBus
-from library.core.interfaces.pipeline.IPipelineFactory import IPipelineFactory
-from library.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
-from library.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
-from library.core.pipeline.BranchingCoordinator import BranchingCoordinator
-from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
-from library.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
-from library.core.pipeline.Pipeline import Pipeline, PipelineExecutionError
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineErrors import PipelineRunAlreadyActiveError
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
-from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
-from library.core.pipeline.VisualizerBinding import VisualizerBinding
-from library.core.visualization.PipelineOutputs import PipelineOutputs
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
-from library.retry_policies.NoRetryPolicy import NoRetryPolicy
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.IEventEmitter import IEventEmitter
+from sef.core.interfaces.IFrameExtractor import IFrameExtractor
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.interfaces.IVisualizer import IVisualizer
+from sef.core.interfaces.pipeline.IBranchingRule import IBranchingRule
+from sef.core.interfaces.pipeline.IEventBus import IEventBus
+from sef.core.interfaces.pipeline.IPipelineFactory import IPipelineFactory
+from sef.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
+from sef.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
+from sef.core.pipeline.BranchingCoordinator import BranchingCoordinator
+from sef.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
+from sef.core.pipeline.InMemoryPipelineMonitor import InMemoryPipelineMonitor
+from sef.core.pipeline.Pipeline import Pipeline, PipelineExecutionError
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineErrors import PipelineRunAlreadyActiveError
+from sef.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+from sef.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
+from sef.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
+from sef.core.pipeline.VisualizerBinding import VisualizerBinding
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
+from sef.builtin.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 # ── Stub components ──────────────────────────────────────────────────────────
 

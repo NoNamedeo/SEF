@@ -4,10 +4,10 @@ from collections.abc import Iterable
 from threading import Lock
 from typing import Any
 
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.BufferContracts import IAbortableBuffer
-from library.core.pipeline.PipelineBuffers import PipelineBuffers
-from library.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.BufferContracts import IAbortableBuffer
+from sef.core.pipeline.PipelineBuffers import PipelineBuffers
+from sef.core.visualization.VisualArtifact import VisualArtifact
 
 
 class PipelineExecutionResources:

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
 
-from library.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineContext import PipelineContext
 
 
 class PipelineExecutionMode(str, Enum):

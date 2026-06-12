@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from library.core import (
+from sef.core import (
     CURRENT_PIPELINE_CONFIG_VERSION,
     ConfigPipelineBuilder,
     ConfigSchemaError,
@@ -21,12 +21,12 @@ from library.core import (
     TextArtifact,
     VisualArtifact,
 )
-from library.core.artifacts.buffer import SignalBuffer
-from library.core.artifacts.data import COCOPoseTennisFrameData
-from library.core.errors import LatencyPolicyError
-from library.core.pipeline import LatencyPolicyConfig, StreamRuntimeConfig
-from library.core.plugins import PluginRegistry
-from library.core.visualization import ImageArtifact, PipelineOutputs
+from sef.core.artifacts.buffer import SignalBuffer
+from sef.core.artifacts.data import COCOPoseTennisFrameData
+from sef.core.errors import LatencyPolicyError
+from sef.core.pipeline import LatencyPolicyConfig, StreamRuntimeConfig
+from sef.core.plugins import PluginRegistry
+from sef.core.visualization import ImageArtifact, PipelineOutputs
 
 
 def test_core_public_api_exports_stable_entry_points() -> None:
@@ -44,8 +44,8 @@ def test_core_public_api_exports_stable_entry_points() -> None:
 
 
 def test_pipeline_error_exports_are_identity_stable() -> None:
-    from library import PipelineExecutionError as TopLevelPipelineExecutionError
-    from library.core.pipeline import PipelineExecutionError as PipelinePackageExecutionError
+    from sef import PipelineExecutionError as TopLevelPipelineExecutionError
+    from sef.core.pipeline import PipelineExecutionError as PipelinePackageExecutionError
 
     assert PipelinePackageExecutionError is PipelineExecutionError
     assert TopLevelPipelineExecutionError is PipelineExecutionError

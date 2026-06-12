@@ -3,8 +3,8 @@ from __future__ import annotations
 import threading
 from collections import OrderedDict
 
-from library.core.interfaces.pipeline.IPipelineOutputStore import IPipelineOutputStore
-from library.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.interfaces.pipeline.IPipelineOutputStore import IPipelineOutputStore
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
 
 
 class InMemoryPipelineOutputStore(IPipelineOutputStore):

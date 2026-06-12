@@ -3,20 +3,20 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
-from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
-from library.core.pipeline.PipelineConfigVersioning import normalize_pipeline_config
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineErrors import (
+from sef.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from sef.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
+from sef.core.pipeline.PipelineConfigVersioning import normalize_pipeline_config
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineErrors import (
     ConfigSchemaError,
     PipelineConfigurationError,
     PluginConstructionError,
     PluginResolutionError,
 )
-from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
-from library.core.pipeline.StreamRuntimeConfig import StreamRuntimeConfig
-from library.core.pipeline.VisualizerBinding import VisualizerBinding
-from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
+from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
+from sef.core.pipeline.StreamRuntimeConfig import StreamRuntimeConfig
+from sef.core.pipeline.VisualizerBinding import VisualizerBinding
+from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 
 
 class ConfigPipelineBuilder:

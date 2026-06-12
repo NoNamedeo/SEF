@@ -13,33 +13,35 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from sef.core._lazy_exports import install_lazy_exports
+
 _EXPORTS = {
     "IBranchingRule": (
-        "library.core.interfaces.pipeline.IBranchingRule",
+        "sef.core.interfaces.pipeline.IBranchingRule",
         "IBranchingRule",
     ),
-    "IEventBus": ("library.core.interfaces.pipeline.IEventBus", "IEventBus"),
+    "IEventBus": ("sef.core.interfaces.pipeline.IEventBus", "IEventBus"),
     "IPipelineFactory": (
-        "library.core.interfaces.pipeline.IPipelineFactory",
+        "sef.core.interfaces.pipeline.IPipelineFactory",
         "IPipelineFactory",
     ),
     "IPipelineMonitor": (
-        "library.core.interfaces.pipeline.IPipelineMonitor",
+        "sef.core.interfaces.pipeline.IPipelineMonitor",
         "IPipelineMonitor",
     ),
     "IPipelineOutputStore": (
-        "library.core.interfaces.pipeline.IPipelineOutputStore",
+        "sef.core.interfaces.pipeline.IPipelineOutputStore",
         "IPipelineOutputStore",
     ),
     "IPipelineRunner": (
-        "library.core.interfaces.pipeline.IPipelineRunner",
+        "sef.core.interfaces.pipeline.IPipelineRunner",
         "IPipelineRunner",
     ),
     "IPipelineValidator": (
-        "library.core.interfaces.pipeline.IPipelineValidator",
+        "sef.core.interfaces.pipeline.IPipelineValidator",
         "IPipelineValidator",
     ),
-    "IRetryPolicy": ("library.core.interfaces.pipeline.IRetryPolicy", "IRetryPolicy"),
+    "IRetryPolicy": ("sef.core.interfaces.pipeline.IRetryPolicy", "IRetryPolicy"),
 }
 
 __all__ = list(_EXPORTS)
@@ -59,3 +61,6 @@ def __getattr__(name: str):
 
 def __dir__() -> list[str]:
     return sorted(__all__)
+
+
+install_lazy_exports(__name__)

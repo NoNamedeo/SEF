@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
-from library.core.interfaces.BufferContracts import IBuffer
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.pipeline.PipelineBuffers import PipelineBuffers
-from library.core.pipeline.PipelineExecutionResources import PipelineExecutionResources
-from library.core.pipeline.PipelineRuntimeState import FrameRuntimeState, SignalRuntimeState, ThreadedStageTask
-from library.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from sef.core.interfaces.BufferContracts import IBuffer
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.pipeline.PipelineBuffers import PipelineBuffers
+from sef.core.pipeline.PipelineExecutionResources import PipelineExecutionResources
+from sef.core.pipeline.PipelineRuntimeState import FrameRuntimeState, SignalRuntimeState, ThreadedStageTask
+from sef.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
 
 _SIGNAL_MATERIALIZER_CONSUMER_ID = -10_000
 

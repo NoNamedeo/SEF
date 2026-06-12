@@ -3,13 +3,13 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
-from library.core.interfaces.IData import IData
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
-from library.core.pipeline.VisualizerBinding import VisualizerBinding
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
+from sef.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from sef.core.interfaces.IData import IData
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
+from sef.core.pipeline.VisualizerBinding import VisualizerBinding
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
 
 
 class VisualizationExecutor:

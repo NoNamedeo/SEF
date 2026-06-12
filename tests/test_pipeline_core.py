@@ -7,27 +7,27 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from library.analyzers.playback.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
-from library.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.signal_sample.MultiObjectSignalSample import MultiObjectSignalSample, MultiObjectTrack
-from library.core.artifacts.Signal import Signal
-from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
-from library.core.pipeline.Pipeline import Pipeline
-from library.core.visualization.VisualArtifact import (
+from sef.builtin.analyzers.playback.TrackingPlaybackAnalyzer import TrackingPlaybackAnalyzer
+from sef.builtin.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.signal_sample.MultiObjectSignalSample import MultiObjectSignalSample, MultiObjectTrack
+from sef.core.artifacts.Signal import Signal
+from sef.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
+from sef.core.pipeline.Pipeline import Pipeline
+from sef.core.visualization.VisualArtifact import (
     VIDEO_ARTIFACT_TYPES,
     DeferredVideoArtifact,
     VideoArtifact,
     VideoFileArtifact,
 )
-from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.frame_processors.OpenCV.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
-from library.Main import build_realistic_sync_context, create_realistic_demo_video, moving_object_box
-from library.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
-from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-from library.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
-from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
+from sef.builtin.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from sef.builtin.frame_processors.OpenCV.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
+from sef.builtin.Main import build_realistic_sync_context, create_realistic_demo_video, moving_object_box
+from sef.builtin.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
+from sef.builtin.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+from sef.builtin.signal_extractors.OpenCVMultiObjectSignalExtractor import OpenCVMultiObjectSignalExtractor
+from sef.builtin.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
 
 
 class FakeTracker:

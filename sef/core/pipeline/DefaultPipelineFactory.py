@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from library.core.interfaces.pipeline.IEventBus import IEventBus
-from library.core.interfaces.pipeline.IPipelineFactory import IPipelineFactory
-from library.core.pipeline.Pipeline import Pipeline
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineExecutionPolicy import PipelineExecutionPolicy
+from sef.core.interfaces.pipeline.IEventBus import IEventBus
+from sef.core.interfaces.pipeline.IPipelineFactory import IPipelineFactory
+from sef.core.pipeline.Pipeline import Pipeline
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineExecutionPolicy import PipelineExecutionPolicy
 
 
 class DefaultPipelineFactory(IPipelineFactory):

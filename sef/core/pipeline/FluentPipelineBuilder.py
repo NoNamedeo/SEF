@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
-from library.core.interfaces.IFrameExporter import IFrameExporter
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignalCleaner import ISignalCleaner
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.StreamRuntimeConfig import StreamRuntimeConfig
-from library.core.pipeline.VisualizerBinding import VisualizerBinding
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from sef.core.interfaces.IFrameExporter import IFrameExporter
+from sef.core.interfaces.IFrameExtractor import IFrameExtractor
+from sef.core.interfaces.ISignalCleaner import ISignalCleaner
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.interfaces.IVisualizer import IVisualizer
+from sef.core.pipeline.IntermediateFrameCapture import IntermediateFrameCaptureConfig
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.StreamRuntimeConfig import StreamRuntimeConfig
+from sef.core.pipeline.VisualizerBinding import VisualizerBinding
 
 
 class FluentPipelineBuilder:

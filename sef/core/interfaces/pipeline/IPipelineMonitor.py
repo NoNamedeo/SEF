@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot
+from sef.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot
 
 
 class IPipelineMonitor(ABC):

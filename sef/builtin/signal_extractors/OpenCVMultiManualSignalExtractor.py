@@ -5,13 +5,13 @@ from typing import Any, List
 
 import cv2
 
-from library.core.artifacts.signal_sample.MultiManualSignalSample import MultiManualSignalSample
-from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.signal_sample.BoxSignalSample import BoundingBox, BoxSignalSample
+from sef.core.artifacts.signal_sample.MultiManualSignalSample import MultiManualSignalSample
+from sef.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoundingBox, BoxSignalSample
 
 
 class OpenCVMultiManualSignalExtractor(ISignalExtractor):

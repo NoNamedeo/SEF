@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from library.core.artifacts.Frame import Frame
+from sef.core.artifacts.Frame import Frame
 
 
 class ISingleFrameProcessor(ABC):

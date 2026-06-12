@@ -5,8 +5,8 @@ import unittest
 import cv2
 import numpy as np
 
-from library.core.artifacts.Frame import Frame
-from library.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
+from sef.core.artifacts.Frame import Frame
+from sef.builtin.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
 
 
 class ColorStabilizationFrameProcessorTests(unittest.TestCase):

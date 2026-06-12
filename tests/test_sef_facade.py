@@ -10,11 +10,11 @@ from examples.minimal_pipeline import (
     SummaryVisualizer,
     build_registry,
 )
-from library.core.artifacts import Frame, Signal
-from library.core.artifacts.signal_sample import BoxSignalSample
-from library.core.artifacts.buffer import FrameBuffer
-from library.core.artifacts.data import TwoDimGraphData
-from library.core.visualization import TextArtifact
+from sef.core.artifacts import Frame, Signal
+from sef.core.artifacts.signal_sample import BoxSignalSample
+from sef.core.artifacts.buffer import FrameBuffer
+from sef.core.artifacts.data import TwoDimGraphData
+from sef.core.visualization import TextArtifact
 
 
 def test_pipeline_facade_runs_registered_plugin_names() -> None:

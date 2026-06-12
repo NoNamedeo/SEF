@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.ISignalSample import ISignalSample
 
 Point2D = tuple[float, float]
 MarkerCorners = tuple[Point2D, Point2D, Point2D, Point2D]

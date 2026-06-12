@@ -5,17 +5,17 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
-from library.core.artifacts.signal_sample.ArucoMarkerSignalSample import (
+from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import (
     ArucoMarkerObservation,
     ArucoMarkerSignalSample,
     MarkerCorners,
 )
-from library.core.artifacts.Signal import Signal
-from library.core.interfaces.BufferContracts import IBuffer
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingSignalCleaner
+from sef.core.artifacts.Signal import Signal
+from sef.core.interfaces.BufferContracts import IBuffer
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingSignalCleaner
 
 Point2D = tuple[float, float]
 

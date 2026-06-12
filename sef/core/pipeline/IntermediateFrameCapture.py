@@ -6,10 +6,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, ClassVar, Protocol
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
-from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
-from library.exporters.IntermediateFrameArtifactExporter import IntermediateFrameArtifactExporter
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
+from sef.builtin.exporters.IntermediateFrameArtifactExporter import IntermediateFrameArtifactExporter
 
 
 @dataclass(frozen=True, slots=True)

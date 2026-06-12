@@ -5,65 +5,65 @@ configuration versioning, and asynchronous runner contracts.
 
 ## Execution Facades
 
-::: library.core.pipeline.Pipeline.Pipeline
+::: sef.core.pipeline.Pipeline.Pipeline
 
-::: library.core.pipeline.PipelineOrchestrator.PipelineOrchestrator
+::: sef.core.pipeline.PipelineOrchestrator.PipelineOrchestrator
 
-::: library.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner
+::: sef.core.pipeline.ThreadedPipelineRunner.ThreadedPipelineRunner
 
 ## Context and Builders
 
-::: library.core.pipeline.PipelineContext.PipelineContext
+::: sef.core.pipeline.PipelineContext.PipelineContext
 
-::: library.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder
+::: sef.core.pipeline.FluentPipelineBuilder.FluentPipelineBuilder
 
-::: library.core.pipeline.ConfigPipelineBuilder.ConfigPipelineBuilder
+::: sef.core.pipeline.ConfigPipelineBuilder.ConfigPipelineBuilder
 
-::: library.core.pipeline.VisualizerBinding.VisualizerBinding
+::: sef.core.pipeline.VisualizerBinding.VisualizerBinding
 
 ## Planning and Runtime Policy
 
-::: library.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage
+::: sef.core.pipeline.PipelineExecutionPlan.ExecutionPlanStage
 
-::: library.core.pipeline.PipelineExecutionPlan.PipelineExecutionPlan
+::: sef.core.pipeline.PipelineExecutionPlan.PipelineExecutionPlan
 
-::: library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionMode
+::: sef.core.pipeline.PipelineExecutionPolicy.PipelineExecutionMode
 
-::: library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionDecision
+::: sef.core.pipeline.PipelineExecutionPolicy.PipelineExecutionDecision
 
-::: library.core.pipeline.PipelineExecutionPolicy.PipelineStagePolicyContext
+::: sef.core.pipeline.PipelineExecutionPolicy.PipelineStagePolicyContext
 
-::: library.core.pipeline.PipelineExecutionPolicy.PipelineExecutionPolicy
+::: sef.core.pipeline.PipelineExecutionPolicy.PipelineExecutionPolicy
 
-::: library.core.pipeline.PipelineExecutionPolicy.DefaultPipelineExecutionPolicy
+::: sef.core.pipeline.PipelineExecutionPolicy.DefaultPipelineExecutionPolicy
 
-::: library.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig
+::: sef.core.pipeline.StreamRuntimeConfig.StreamRuntimeConfig
 
-::: library.core.pipeline.LatencyPolicy.LatencyPolicyConfig
+::: sef.core.pipeline.LatencyPolicy.LatencyPolicyConfig
 
-::: library.core.pipeline.LatencyPolicy.FrameLatencyPolicy
+::: sef.core.pipeline.LatencyPolicy.FrameLatencyPolicy
 
-::: library.core.pipeline.LatencyPolicy.BlockingFrameLatencyPolicy
+::: sef.core.pipeline.LatencyPolicy.BlockingFrameLatencyPolicy
 
-::: library.core.pipeline.LatencyPolicy.DropNewestFrameLatencyPolicy
+::: sef.core.pipeline.LatencyPolicy.DropNewestFrameLatencyPolicy
 
-::: library.core.pipeline.LatencyPolicy.DropOldestFrameLatencyPolicy
+::: sef.core.pipeline.LatencyPolicy.DropOldestFrameLatencyPolicy
 
-::: library.core.pipeline.LatencyPolicy.AdaptiveSamplingFrameLatencyPolicy
+::: sef.core.pipeline.LatencyPolicy.AdaptiveSamplingFrameLatencyPolicy
 
 ## Configuration Versioning
 
-::: library.core.pipeline.PipelineConfigVersioning.PipelineConfigMigration
+::: sef.core.pipeline.PipelineConfigVersioning.PipelineConfigMigration
 
-::: library.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig
+::: sef.core.pipeline.PipelineConfigVersioning.VersionedPipelineConfig
 
-::: library.core.pipeline.PipelineConfigVersioning.PipelineConfigVersionManager
+::: sef.core.pipeline.PipelineConfigVersioning.PipelineConfigVersionManager
 
-::: library.core.pipeline.PipelineConfigVersioning.normalize_pipeline_config
+::: sef.core.pipeline.PipelineConfigVersioning.normalize_pipeline_config
 
 ## Run Snapshots
 
-::: library.core.pipeline.PipelineRunSnapshot.PipelineRunState
+::: sef.core.pipeline.PipelineRunSnapshot.PipelineRunState
 
-::: library.core.pipeline.PipelineRunSnapshot.PipelineRunSnapshot
+::: sef.core.pipeline.PipelineRunSnapshot.PipelineRunSnapshot
 

@@ -1,6 +1,6 @@
 site_name: SEF Core Documentation
 site_url: https://NoNamedeo.github.io/SEF/
-site_description: Public contracts and integration guides for the SEF core library.
+site_description: Public contracts and integration guides for the SEF core package.
 docs_dir: docs
 plugins:
   - search

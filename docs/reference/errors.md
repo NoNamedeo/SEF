@@ -3,7 +3,7 @@
 Official import:
 
 ```python
-from library.core import PipelineConfigurationError, PipelineExecutionError
+from sef.core import PipelineConfigurationError, PipelineExecutionError
 ```
 
 ## Base Classes

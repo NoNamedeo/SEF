@@ -18,45 +18,45 @@ outputs = (
 )
 ```
 
-Use `library.core` or `sef.core` only when you need lower-level contracts,
+Use `sef.core` or `sef.core` only when you need lower-level contracts,
 custom registries, or runtime integration:
 
 ```python
-from library.core import (
+from sef.core import (
     ConfigPipelineBuilder,
     Pipeline,
     PipelineConfigurationError,
     PipelineExecutionError,
     PluginRegistry,
 )
-from library.core.interfaces import IAnalyzer, IFrameExtractor, StageCapabilities
-from library.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
-from library.core.plugins import PluginCategory
-from library.core.visualization import TextArtifact
+from sef.core.interfaces import IAnalyzer, IFrameExtractor, StageCapabilities
+from sef.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
+from sef.core.plugins import PluginCategory
+from sef.core.visualization import TextArtifact
 ```
 
 ## Public Packages
 
-`library` exposes high-level convenience imports.
+`sef` exposes high-level convenience imports.
 
-`library.core` exposes common core contracts and error types.
+`sef.core` exposes common core contracts and error types.
 
-`library.core.artifacts` exposes frame, signal, and analyzer data values.
+`sef.core.artifacts` exposes frame, signal, and analyzer data values.
 
-`library.core.events` exposes event contracts.
+`sef.core.events` exposes event contracts.
 
-`library.core.interfaces` exposes component interfaces.
+`sef.core.interfaces` exposes component interfaces.
 
-`library.core.interfaces.pipeline` exposes orchestration ports.
+`sef.core.interfaces.pipeline` exposes orchestration ports.
 
-`library.core.pipeline` exposes builders, runtime policies, execution plans, and
+`sef.core.pipeline` exposes builders, runtime policies, execution plans, and
 config versioning.
 
-`library.core.plugins` exposes registry contracts.
+`sef.core.plugins` exposes registry contracts.
 
-`library.core.realtime` exposes realtime preview publication contracts.
+`sef.core.realtime` exposes realtime preview publication contracts.
 
-`library.core.visualization` exposes artifact and output contracts.
+`sef.core.visualization` exposes artifact and output contracts.
 
 ## Public CLI
 
@@ -98,5 +98,5 @@ Potentially breaking changes:
 
 ## Internal Implementation Warning
 
-Direct imports such as `library.core.pipeline.SomeInternalExecutor` may work but
+Direct imports such as `sef.core.pipeline.SomeInternalExecutor` may work but
 are not automatically public. Use package exports for integration code and docs.

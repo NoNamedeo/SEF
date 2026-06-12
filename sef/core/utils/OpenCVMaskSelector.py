@@ -5,9 +5,9 @@ from typing import Any, Tuple
 import cv2
 import numpy as np
 
-from library.core.artifacts.Frame import Frame
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
-from library.core.utils.OpenCVDisplayUtils import DisplayTransform
+from sef.core.artifacts.Frame import Frame
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from sef.core.utils.OpenCVDisplayUtils import DisplayTransform
 
 
 class OpenCVMaskSelector:

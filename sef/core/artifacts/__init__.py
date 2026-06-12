@@ -14,124 +14,126 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from sef.core._lazy_exports import install_lazy_exports
+
 _EXPORTS = {
     "ArucoMarkerDisplacementData": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "ArucoMarkerDisplacementData",
     ),
     "ArucoMarkerDisplacementFrameData": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "ArucoMarkerDisplacementFrameData",
     ),
     "ArucoMarkerDisplacementObservation": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "ArucoMarkerDisplacementObservation",
     ),
     "ArucoMarkerDisplacementSeries": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "ArucoMarkerDisplacementSeries",
     ),
     "ArucoMarkerObservation": (
-        "library.core.artifacts.signal_sample",
+        "sef.core.artifacts.signal_sample",
         "ArucoMarkerObservation",
     ),
     "ArucoMarkerRelativeMotionData": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "ArucoMarkerRelativeMotionData",
     ),
     "ArucoMarkerRelativeMotionSeries": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "ArucoMarkerRelativeMotionSeries",
     ),
     "ArucoMarkerSignalSample": (
-        "library.core.artifacts.signal_sample",
+        "sef.core.artifacts.signal_sample",
         "ArucoMarkerSignalSample",
     ),
-    "BoxSignalSample": ("library.core.artifacts.signal_sample", "BoxSignalSample"),
-    "CategoryData": ("library.core.artifacts.data", "CategoryData"),
-    "COCOPoseFrameData": ("library.core.artifacts.data", "COCOPoseFrameData"),
+    "BoxSignalSample": ("sef.core.artifacts.signal_sample", "BoxSignalSample"),
+    "CategoryData": ("sef.core.artifacts.data", "CategoryData"),
+    "COCOPoseFrameData": ("sef.core.artifacts.data", "COCOPoseFrameData"),
     "COCOPoseSequenceData": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "COCOPoseSequenceData",
     ),
     "COCOPoseTennisFrameData": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "COCOPoseTennisFrameData",
     ),
     "COCOPoseTennisSequenceData": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "COCOPoseTennisSequenceData",
     ),
     "COCOSkeletonSignalSample": (
-        "library.core.artifacts.signal_sample",
+        "sef.core.artifacts.signal_sample",
         "COCOSkeletonSignalSample",
     ),
-    "DataBuffer": ("library.core.artifacts.buffer", "DataBuffer"),
-    "DataSubscription": ("library.core.artifacts.buffer", "DataSubscription"),
+    "DataBuffer": ("sef.core.artifacts.buffer", "DataBuffer"),
+    "DataSubscription": ("sef.core.artifacts.buffer", "DataSubscription"),
     "DenseOpticalFlowSignalSample": (
-        "library.core.artifacts.signal_sample",
+        "sef.core.artifacts.signal_sample",
         "DenseOpticalFlowSignalSample",
     ),
-    "Frame": ("library.core.artifacts.Frame", "Frame"),
-    "FrameBuffer": ("library.core.artifacts.buffer", "FrameBuffer"),
+    "Frame": ("sef.core.artifacts.Frame", "Frame"),
+    "FrameBuffer": ("sef.core.artifacts.buffer", "FrameBuffer"),
     "FrameComparisonPanel": (
-        "library.core.artifacts.intermediate_frame",
+        "sef.core.artifacts.intermediate_frame",
         "FrameComparisonPanel",
     ),
-    "FrameMaskArtifact": ("library.core.artifacts.mask", "FrameMaskArtifact"),
+    "FrameMaskArtifact": ("sef.core.artifacts.mask", "FrameMaskArtifact"),
     "IntermediateFrameArtifact": (
-        "library.core.artifacts.mask",
+        "sef.core.artifacts.mask",
         "IntermediateFrameArtifact",
     ),
     "IntermediateFrameArtifactCollection": (
-        "library.core.artifacts.intermediate_frame",
+        "sef.core.artifacts.intermediate_frame",
         "IntermediateFrameArtifactCollection",
     ),
     "IntermediateFrameOverlay": (
-        "library.core.artifacts.mask",
+        "sef.core.artifacts.mask",
         "IntermediateFrameOverlay",
     ),
-    "MaskArtifact": ("library.core.artifacts.mask", "MaskArtifact"),
-    "MotionMaskArtifact": ("library.core.artifacts.mask", "MotionMaskArtifact"),
+    "MaskArtifact": ("sef.core.artifacts.mask", "MaskArtifact"),
+    "MotionMaskArtifact": ("sef.core.artifacts.mask", "MotionMaskArtifact"),
     "MultiManualSignalSample": (
-        "library.core.artifacts.signal_sample",
+        "sef.core.artifacts.signal_sample",
         "MultiManualSignalSample",
     ),
     "MultiObjectSignalSample": (
-        "library.core.artifacts.signal_sample",
+        "sef.core.artifacts.signal_sample",
         "MultiObjectSignalSample",
     ),
-    "MultiObjectTrack": ("library.core.artifacts.signal_sample", "MultiObjectTrack"),
-    "NoData": ("library.core.artifacts.data", "NoData"),
+    "MultiObjectTrack": ("sef.core.artifacts.signal_sample", "MultiObjectTrack"),
+    "NoData": ("sef.core.artifacts.data", "NoData"),
     "ProtectedRegionArtifact": (
-        "library.core.artifacts.mask",
+        "sef.core.artifacts.mask",
         "ProtectedRegionArtifact",
     ),
-    "Signal": ("library.core.artifacts.Signal", "Signal"),
-    "SignalBuffer": ("library.core.artifacts.buffer", "SignalBuffer"),
-    "SignalSubscription": ("library.core.artifacts.buffer", "SignalSubscription"),
+    "Signal": ("sef.core.artifacts.Signal", "Signal"),
+    "SignalBuffer": ("sef.core.artifacts.buffer", "SignalBuffer"),
+    "SignalSubscription": ("sef.core.artifacts.buffer", "SignalSubscription"),
     "SparseOpticalFlowSignalSample": (
-        "library.core.artifacts.signal_sample",
+        "sef.core.artifacts.signal_sample",
         "SparseOpticalFlowSignalSample",
     ),
-    "TargetMaskArtifact": ("library.core.artifacts.mask", "TargetMaskArtifact"),
+    "TargetMaskArtifact": ("sef.core.artifacts.mask", "TargetMaskArtifact"),
     "TrackingPlaybackData": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "TrackingPlaybackData",
     ),
     "TrackingPlaybackFrame": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "TrackingPlaybackFrame",
     ),
     "TrackingPlaybackTrack": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "TrackingPlaybackTrack",
     ),
-    "TrajectoryData": ("library.core.artifacts.data", "TrajectoryData"),
-    "TwoDimGraphData": ("library.core.artifacts.data", "TwoDimGraphData"),
-    "TwoDimPointData": ("library.core.artifacts.data", "TwoDimPointData"),
+    "TrajectoryData": ("sef.core.artifacts.data", "TrajectoryData"),
+    "TwoDimGraphData": ("sef.core.artifacts.data", "TwoDimGraphData"),
+    "TwoDimPointData": ("sef.core.artifacts.data", "TwoDimPointData"),
     "VectorFieldGraphData": (
-        "library.core.artifacts.data",
+        "sef.core.artifacts.data",
         "VectorFieldGraphData",
     ),
 }
@@ -155,8 +157,6 @@ def __dir__() -> list[str]:
     return sorted(__all__)
 
 
-_EAGER_EXPORTS = tuple(name for name in __all__ if name != "FrameComparisonPanel")
-for _name in _EAGER_EXPORTS:
-    __getattr__(_name)
-del _name
-del _EAGER_EXPORTS
+install_lazy_exports(__name__)
+
+

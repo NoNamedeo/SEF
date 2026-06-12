@@ -3,19 +3,19 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
-from library.core.pipeline.IntermediateFrameCapture import (
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IFrameExtractor import IFrameExtractor
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+from sef.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
+from sef.core.pipeline.IntermediateFrameCapture import (
     IntermediateFrameArtifactStore,
     IntermediateFrameCaptureConfig,
 )
-from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry, create_builtin_registry
-from library.frame_processors.dynamic_object_removal import DynamicObjectRemovalFrameProcessor
+from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry, create_builtin_registry
+from sef.builtin.frame_processors.dynamic_object_removal import DynamicObjectRemovalFrameProcessor
 
 
 class StaticFrameExtractor(IFrameExtractor):

@@ -21,8 +21,8 @@ _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from library.core.events.PipelineLifecycleEvent import PipelineLifecycleEvent  # noqa: E402
-from library.core.plugins.PluginRegistry import PluginCategory  # noqa: E402
+from sef.core.events.PipelineLifecycleEvent import PipelineLifecycleEvent  # noqa: E402
+from sef.core.plugins.PluginRegistry import PluginCategory  # noqa: E402
 from ui.components.composer_geometry import render_video_and_geometry  # noqa: E402
 from ui.components.composer_stage_editor import render_stage_parameter_editor  # noqa: E402
 from ui.components.execution_plan_viewer import render_execution_plan  # noqa: E402
@@ -391,7 +391,7 @@ def render_log_terminal(*, key_prefix: str) -> None:
         st.rerun()
 
     if not show_logs:
-        st.caption("Attiva la visualizzazione per ispezionare i log Python di `library` e `ui`.")
+        st.caption("Attiva la visualizzazione per ispezionare i log Python di `sef` e `ui`.")
         return
 
     records = log_records(selected_level)

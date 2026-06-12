@@ -6,7 +6,7 @@ from collections.abc import Sequence
 
 import streamlit as st
 
-from library.core.visualization.VisualArtifact import (
+from sef.core.visualization.VisualArtifact import (
     VIDEO_ARTIFACT_TYPES,
     ImageArtifact,
     JsonArtifact,

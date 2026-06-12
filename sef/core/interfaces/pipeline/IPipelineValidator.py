@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from library.core.pipeline.Pipeline import Pipeline
+    from sef.core.pipeline.Pipeline import Pipeline
 
 
 class IPipelineValidator(ABC):

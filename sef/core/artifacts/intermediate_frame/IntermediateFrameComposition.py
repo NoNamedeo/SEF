@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact, MaskArtifact
+from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact, MaskArtifact
 
 
 ColorBGR = tuple[int, int, int]

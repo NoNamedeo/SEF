@@ -3,12 +3,12 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Iterable
 
-from library.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
-from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
-from library.core.interfaces.BufferContracts import IBuffer
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingSignalCleaner
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from sef.core.interfaces.BufferContracts import IBuffer
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingSignalCleaner
 
 
 class MovingAverageStreamCleaner(IStreamingSignalCleaner):

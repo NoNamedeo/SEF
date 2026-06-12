@@ -4,38 +4,40 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from sef.core._lazy_exports import install_lazy_exports
+
 _EXPORTS = {
     "ArucoMarkerObservation": (
-        "library.core.artifacts.signal_sample.ArucoMarkerSignalSample",
+        "sef.core.artifacts.signal_sample.ArucoMarkerSignalSample",
         "ArucoMarkerObservation",
     ),
     "ArucoMarkerSignalSample": (
-        "library.core.artifacts.signal_sample.ArucoMarkerSignalSample",
+        "sef.core.artifacts.signal_sample.ArucoMarkerSignalSample",
         "ArucoMarkerSignalSample",
     ),
-    "BoxSignalSample": ("library.core.artifacts.signal_sample.BoxSignalSample", "BoxSignalSample"),
+    "BoxSignalSample": ("sef.core.artifacts.signal_sample.BoxSignalSample", "BoxSignalSample"),
     "COCOSkeletonSignalSample": (
-        "library.core.artifacts.signal_sample.COCOSkeletonSignalSample",
+        "sef.core.artifacts.signal_sample.COCOSkeletonSignalSample",
         "COCOSkeletonSignalSample",
     ),
     "DenseOpticalFlowSignalSample": (
-        "library.core.artifacts.signal_sample.DenseOpticalFlowSignalSample",
+        "sef.core.artifacts.signal_sample.DenseOpticalFlowSignalSample",
         "DenseOpticalFlowSignalSample",
     ),
     "MultiManualSignalSample": (
-        "library.core.artifacts.signal_sample.MultiManualSignalSample",
+        "sef.core.artifacts.signal_sample.MultiManualSignalSample",
         "MultiManualSignalSample",
     ),
     "MultiObjectSignalSample": (
-        "library.core.artifacts.signal_sample.MultiObjectSignalSample",
+        "sef.core.artifacts.signal_sample.MultiObjectSignalSample",
         "MultiObjectSignalSample",
     ),
     "MultiObjectTrack": (
-        "library.core.artifacts.signal_sample.MultiObjectSignalSample",
+        "sef.core.artifacts.signal_sample.MultiObjectSignalSample",
         "MultiObjectTrack",
     ),
     "SparseOpticalFlowSignalSample": (
-        "library.core.artifacts.signal_sample.SparseOpticalFlowSignalSample",
+        "sef.core.artifacts.signal_sample.SparseOpticalFlowSignalSample",
         "SparseOpticalFlowSignalSample",
     ),
 }
@@ -59,6 +61,4 @@ def __dir__() -> list[str]:
     return sorted(__all__)
 
 
-for _name in __all__:
-    __getattr__(_name)
-del _name
+install_lazy_exports(__name__)

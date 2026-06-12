@@ -5,30 +5,30 @@ documentation entry point is now [docs/index.md](index.md), which splits the
 same contract surface into focused guides, reference pages, and runnable
 examples.
 
-This document defines the public contracts for the SEF core library. It is
+This document defines the public contracts for the SEF core package. It is
 intended for plugin authors, UI adapters, service integrations, and maintainers
 who need stable extension points without depending on implementation internals.
 
 The contracts described here cover the Python package currently exposed by
-`library.core` and its public subpackages. Concrete OpenCV, YOLO, Matplotlib,
+`sef.core` and its public subpackages. Concrete OpenCV, YOLO, Matplotlib,
 Streamlit, and UI modules are adapters built on top of these contracts.
 
 ## Stability Policy
 
 Public contracts are importable from one of these package entry points:
 
-- `library`
-- `library.core`
-- `library.core.artifacts`
-- `library.core.events`
-- `library.core.interfaces`
-- `library.core.interfaces.pipeline`
-- `library.core.pipeline`
-- `library.core.plugins`
-- `library.core.realtime`
-- `library.core.visualization`
+- `sef`
+- `sef.core`
+- `sef.core.artifacts`
+- `sef.core.events`
+- `sef.core.interfaces`
+- `sef.core.interfaces.pipeline`
+- `sef.core.pipeline`
+- `sef.core.plugins`
+- `sef.core.realtime`
+- `sef.core.visualization`
 
-Implementation modules under `library.core.pipeline` are not automatically
+Implementation modules under `sef.core.pipeline` are not automatically
 public only because they are importable by path. Prefer the package-level
 exports above when building external code. A symbol should be considered stable
 when it is exported through `__all__` from a public package initializer.
@@ -53,10 +53,10 @@ The following changes are compatible:
 Use package-level imports for application code:
 
 ```python
-from library.core import ConfigPipelineBuilder, Pipeline, PluginRegistry
-from library.core.interfaces import IAnalyzer, IFrameExtractor
-from library.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
-from library.core.visualization import TextArtifact
+from sef.core import ConfigPipelineBuilder, Pipeline, PluginRegistry
+from sef.core.interfaces import IAnalyzer, IFrameExtractor
+from sef.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
+from sef.core.visualization import TextArtifact
 ```
 
 Direct file-level imports are acceptable inside the SEF codebase and tests, but
@@ -68,7 +68,7 @@ Declarative pipeline configuration is a mapping with a top-level `pipeline`
 section and an optional top-level `schema_version`.
 
 ```python
-from library.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
+from sef.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
 
 config = {
     "schema_version": CURRENT_PIPELINE_CONFIG_VERSION,
@@ -119,7 +119,7 @@ Future schema versions should follow this process:
 Builders resolve declarative config entries by plugin category and plugin name.
 
 ```python
-from library.core.plugins import PluginCategory, PluginRegistry
+from sef.core.plugins import PluginCategory, PluginRegistry
 
 registry = PluginRegistry()
 registry.register(
@@ -312,7 +312,7 @@ def analyze(self, signal: ISignal) -> IData:
 ```
 
 Analyzers convert a signal into analytical data. Results must implement `IData`
-or use an existing data artifact class from `library.core.artifacts`.
+or use an existing data artifact class from `sef.core.artifacts`.
 
 Streaming analyzers may implement `IStreamingAnalyzer.analyze_into()`. A
 streaming analyzer may publish progressive `IData` values and must still return
@@ -367,7 +367,7 @@ Every stage may expose a `capabilities` class or instance attribute with a
 `StageCapabilities` value.
 
 ```python
-from library.core.interfaces import StageCapabilities
+from sef.core.interfaces import StageCapabilities
 
 class MyStreamingAnalyzer(IStreamingAnalyzer):
     capabilities = StageCapabilities.streaming(stateful=True, realtime_safe=True)
@@ -557,9 +557,9 @@ Before publishing a new plugin:
 
 ```python
 
-from library.core.artifacts.data import TwoDimGraphData
-from library.core.interfaces import IAnalyzer, ISignal
-from library.core.plugins import PluginCategory, PluginRegistry
+from sef.core.artifacts.data import TwoDimGraphData
+from sef.core.interfaces import IAnalyzer, ISignal
+from sef.core.plugins import PluginCategory, PluginRegistry
 
 
 class SampleCountAnalyzer(IAnalyzer):
@@ -587,7 +587,7 @@ registry.register(
 
 ## Integration Boundary
 
-The core library does not own:
+The core package does not own:
 
 - web permissions;
 - Streamlit reruns;

@@ -8,8 +8,8 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.visualization.PipelineOutputs import PipelineOutputs
-from library.core.visualization.VisualArtifact import VIDEO_ARTIFACT_TYPES
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.visualization.VisualArtifact import VIDEO_ARTIFACT_TYPES
 from ui.models.pipeline_outputs import (
     AnalysisResultOutput,
     ArtifactOutput,
@@ -105,9 +105,9 @@ def _build_analysis_result_output(result: Any, idx: int, warnings: list[str]) ->
     type_name = type(result).__name__
 
     try:
-        from library.core.artifacts.data.CategoryData import CategoryData
-        from library.core.artifacts.data.TrackingPlaybackData import TrackingPlaybackData
-        from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
+        from sef.core.artifacts.data.CategoryData import CategoryData
+        from sef.core.artifacts.data.TrackingPlaybackData import TrackingPlaybackData
+        from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
     except Exception:
         CategoryData = None
         TrackingPlaybackData = None
@@ -202,7 +202,7 @@ def _build_tracking_video_outputs(
 ) -> tuple[tuple[ReconstructedVideoOutput, ...], tuple[ArtifactOutput, ...], tuple[str, ...]]:
     """Generate explicit reconstructed videos from tracking playback data if needed."""
     try:
-        from library.core.artifacts.data.TrackingPlaybackData import TrackingPlaybackData
+        from sef.core.artifacts.data.TrackingPlaybackData import TrackingPlaybackData
     except Exception:
         return (), (), ()
 
@@ -210,7 +210,7 @@ def _build_tracking_video_outputs(
         return (), (), ()
 
     try:
-        from library.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
+        from sef.builtin.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
     except Exception as exc:
         return (), (), (f"TrackingVideoVisualizer non disponibile: {exc}",)
 
@@ -265,21 +265,21 @@ def _safe_render_preview(
 
 
 def _render_function_preview(result: Any):
-    from library.visualizers.Matplotlib.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
+    from sef.builtin.visualizers.Matplotlib.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
     return MatplotlibFunctionVisualizer(config={"show": False, "show_scatter": True}).render(result)
 
 
 def _render_category_preview(result: Any):
-    from library.visualizers.Matplotlib.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
+    from sef.builtin.visualizers.Matplotlib.MatplotlibHistogramVisualizer import MatplotlibHistogramVisualizer
 
     return MatplotlibHistogramVisualizer(config={"show": False}).render(result)
 
 
 def _maybe_render_trajectory_preview(result: Any, warnings: list[str]):
     try:
-        from library.core.artifacts.data.TrajectoryData import TrajectoryData
-        from library.visualizers.Matplotlib.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
+        from sef.core.artifacts.data.TrajectoryData import TrajectoryData
+        from sef.builtin.visualizers.Matplotlib.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
     except Exception:
         return None
 

@@ -6,52 +6,52 @@ from pathlib import Path
 
 import numpy as np
 
-from library.analyzers.NoAnalyzer import NoAnalyzer
-from library.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
-from library.core.artifacts.buffer.DataBuffer import DataBuffer
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
-from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
-from library.core.artifacts.data.TwoDimPointData import TwoDimPointData
-from library.core.interfaces.BufferContracts import (
+from sef.builtin.analyzers.NoAnalyzer import NoAnalyzer
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from sef.core.artifacts.buffer.DataBuffer import DataBuffer
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
+from sef.core.artifacts.data.TwoDimPointData import TwoDimPointData
+from sef.core.interfaces.BufferContracts import (
     IBuffer,
     IBufferSubscription,
     IFrameBuffer,
     ISubscribableBuffer,
 )
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import (
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import (
     IStreamingAnalyzer,
     IStreamingFrameExtractor,
     IStreamingSignalExtractor,
     IStreamingVisualizer,
 )
-from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
-from library.core.pipeline.LatencyPolicy import (
+from sef.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
+from sef.core.pipeline.LatencyPolicy import (
     AdaptiveSamplingFrameLatencyPolicy,
     DropNewestFrameLatencyPolicy,
     FrameLatencyPolicy,
 )
-from library.core.pipeline.Pipeline import Pipeline
-from library.core.pipeline.PipelineExecutionPolicy import (
+from sef.core.pipeline.Pipeline import Pipeline
+from sef.core.pipeline.PipelineExecutionPolicy import (
     DefaultPipelineExecutionPolicy,
     PipelineExecutionDecision,
     PipelineExecutionMode,
     PipelineStagePolicyContext,
 )
-from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
-from library.core.visualization.VisualArtifact import TextArtifact, VideoFileArtifact, VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
-from library.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
-from library.signal_extractors.NoSignalExtractor import NoSignalExtractor
+from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
+from sef.core.visualization.VisualArtifact import TextArtifact, VideoFileArtifact, VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
+from sef.builtin.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
+from sef.builtin.signal_extractors.NoSignalExtractor import NoSignalExtractor
 
 
 def test_frame_buffer_can_close_when_full() -> None:
@@ -369,7 +369,7 @@ class StreamingFrameExtractor(IStreamingFrameExtractor):
 
     def extract(self) -> FrameBuffer:
         buffer = FrameBuffer(buffer_size=self._frame_count + 1)
-        from library.core.pipeline.LatencyPolicy import BlockingFrameLatencyPolicy
+        from sef.core.pipeline.LatencyPolicy import BlockingFrameLatencyPolicy
 
         self.extract_into(buffer, BlockingFrameLatencyPolicy())
         return buffer

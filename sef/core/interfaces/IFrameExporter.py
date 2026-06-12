@@ -4,9 +4,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.visualization.VisualArtifact import VisualArtifact
 
 
 @dataclass(frozen=True, slots=True)

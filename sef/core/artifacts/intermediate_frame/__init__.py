@@ -4,41 +4,43 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from sef.core._lazy_exports import install_lazy_exports
+
 _EXPORTS = {
     "FrameComparisonPanel": (
-        "library.core.artifacts.intermediate_frame.IntermediateFrameComposition",
+        "sef.core.artifacts.intermediate_frame.IntermediateFrameComposition",
         "FrameComparisonPanel",
     ),
     "IntermediateFrameArtifactCollection": (
-        "library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts",
+        "sef.core.artifacts.intermediate_frame.IntermediateFrameArtifacts",
         "IntermediateFrameArtifactCollection",
     ),
     "apply_mask_overlay": (
-        "library.core.artifacts.intermediate_frame.IntermediateFrameComposition",
+        "sef.core.artifacts.intermediate_frame.IntermediateFrameComposition",
         "apply_mask_overlay",
     ),
     "blend_overlay": (
-        "library.core.artifacts.intermediate_frame.IntermediateFrameComposition",
+        "sef.core.artifacts.intermediate_frame.IntermediateFrameComposition",
         "blend_overlay",
     ),
     "compose_image_grid": (
-        "library.core.artifacts.intermediate_frame.IntermediateFrameComposition",
+        "sef.core.artifacts.intermediate_frame.IntermediateFrameComposition",
         "compose_image_grid",
     ),
     "compose_intermediate_frame_comparison": (
-        "library.core.artifacts.intermediate_frame.IntermediateFrameComposition",
+        "sef.core.artifacts.intermediate_frame.IntermediateFrameComposition",
         "compose_intermediate_frame_comparison",
     ),
     "compose_side_by_side": (
-        "library.core.artifacts.intermediate_frame.IntermediateFrameComposition",
+        "sef.core.artifacts.intermediate_frame.IntermediateFrameComposition",
         "compose_side_by_side",
     ),
     "encode_png": (
-        "library.core.artifacts.intermediate_frame.IntermediateFrameComposition",
+        "sef.core.artifacts.intermediate_frame.IntermediateFrameComposition",
         "encode_png",
     ),
     "to_display_bgr": (
-        "library.core.artifacts.intermediate_frame.IntermediateFrameComposition",
+        "sef.core.artifacts.intermediate_frame.IntermediateFrameComposition",
         "to_display_bgr",
     ),
 }
@@ -60,3 +62,6 @@ def __getattr__(name: str):
 
 def __dir__() -> list[str]:
     return sorted(__all__)
+
+
+install_lazy_exports(__name__)

@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from library.core.interfaces.IData import IData
+from sef.core.interfaces.IData import IData
 
 
 @dataclass(slots=True)

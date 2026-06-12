@@ -5,10 +5,10 @@ import math
 
 import numpy as np
 
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalCleaner import ISignalCleaner
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.signal_sample.SparseOpticalFlowSignalSample import SparseOpticalFlowSignalSample
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalCleaner import ISignalCleaner
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.SparseOpticalFlowSignalSample import SparseOpticalFlowSignalSample
 
 
 class OpticalFlowOutlierFilter(ISignalCleaner):

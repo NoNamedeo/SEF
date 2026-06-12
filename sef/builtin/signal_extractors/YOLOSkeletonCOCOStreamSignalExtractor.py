@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from library.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
-from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
-from library.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
+from sef.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from sef.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
+from sef.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingSignalExtractor
 
 if TYPE_CHECKING:
     from ultralytics import YOLO

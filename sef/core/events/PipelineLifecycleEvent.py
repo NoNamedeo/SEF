@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from library.core.events.Event import Event
+from sef.core.events.Event import Event
 
 
 class PipelineLifecycleEvent(StrEnum):

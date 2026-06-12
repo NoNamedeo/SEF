@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from library.core.artifacts.data.CategoryData import CategoryData
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.ISignal import ISignal
+from sef.core.artifacts.data.CategoryData import CategoryData
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.ISignal import ISignal
 
 
 class MultiObjectBarrierCountingAnalyzer(IAnalyzer):

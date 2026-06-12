@@ -25,7 +25,7 @@ integration concern instead of internal file layout.
 Public imports should use package-level exports, for example:
 
 ```python
-from library.core import ConfigPipelineBuilder, Pipeline
-from library.core.interfaces import IAnalyzer, IStreamingAnalyzer
-from library.core.plugins import PluginCategory, PluginRegistry
+from sef.core import ConfigPipelineBuilder, Pipeline
+from sef.core.interfaces import IAnalyzer, IStreamingAnalyzer
+from sef.core.plugins import PluginCategory, PluginRegistry
 ```

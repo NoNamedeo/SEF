@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from library.core.plugins import PluginCategory, PluginRegistry
+from sef.core.plugins import PluginCategory, PluginRegistry
 from sef.api.function_adapters import (
     FunctionAnalyzer,
     FunctionFrameExtractor,

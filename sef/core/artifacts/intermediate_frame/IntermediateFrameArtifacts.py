@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
-from library.core.interfaces.IData import IData
+from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
+from sef.core.interfaces.IData import IData
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +74,6 @@ class IntermediateFrameArtifactCollection(IData):
         target = output_directory or self.metadata.get("export_directory")
         if target is None:
             raise ValueError("Intermediate frame export requires an output directory.")
-        from library.exporters.IntermediateFrameArtifactExporter import IntermediateFrameArtifactExporter
+        from sef.builtin.exporters.IntermediateFrameArtifactExporter import IntermediateFrameArtifactExporter
 
         return IntermediateFrameArtifactExporter(Path(target)).export_many(self.artifacts)

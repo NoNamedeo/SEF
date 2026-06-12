@@ -5,14 +5,14 @@ from collections.abc import Sequence
 from itertools import combinations
 from typing import Any
 
-from library.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerSignalSample
-from library.core.artifacts.data.ArucoRelativeMotionData import (
+from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerSignalSample
+from sef.core.artifacts.data.ArucoRelativeMotionData import (
     ArucoMarkerRelativeMotionData,
     ArucoMarkerRelativeMotionSeries,
     MarkerPair,
 )
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.ISignal import ISignal
 
 
 class ArucoMarkerRelativeMotionAnalyzer(IAnalyzer):

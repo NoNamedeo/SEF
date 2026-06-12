@@ -4,7 +4,7 @@ SEF has multiple version axes. They should not be mixed.
 
 ## Library Version
 
-The Python package version describes installable library compatibility.
+The Python package version describes installable SEF compatibility.
 
 Use semantic versioning:
 

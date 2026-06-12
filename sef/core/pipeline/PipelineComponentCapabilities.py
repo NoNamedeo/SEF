@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from library.core.interfaces.StreamingContracts import (
+from sef.core.interfaces.StreamingContracts import (
     IStreamingAnalyzer,
     IStreamingFrameBufferProcessor,
     IStreamingFrameExporter,
@@ -11,7 +11,7 @@ from library.core.interfaces.StreamingContracts import (
     IStreamingSignalExtractor,
     IStreamingVisualizer,
 )
-from library.core.pipeline.PipelineExecutionPlan import capabilities_of
+from sef.core.pipeline.PipelineExecutionPlan import capabilities_of
 
 
 class PipelineComponentCapabilities:

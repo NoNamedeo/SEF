@@ -4,12 +4,12 @@ import subprocess
 import sys
 
 from examples.minimal_pipeline import run_example
-from library.core import ConfigPipelineBuilder, Pipeline, PluginRegistry
-from library.core.artifacts.data import TwoDimGraphData
-from library.core.interfaces import IAnalyzer, ISignal
-from library.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
-from library.core.plugins import PluginCategory
-from library.core.visualization import TextArtifact
+from sef.core import ConfigPipelineBuilder, Pipeline, PluginRegistry
+from sef.core.artifacts.data import TwoDimGraphData
+from sef.core.interfaces import IAnalyzer, ISignal
+from sef.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
+from sef.core.plugins import PluginCategory
+from sef.core.visualization import TextArtifact
 
 
 def test_documented_public_imports_resolve_to_contract_objects() -> None:

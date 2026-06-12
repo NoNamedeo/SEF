@@ -4,9 +4,9 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
-from library.core.interfaces.IEventEmitter import IEventEmitter
-from library.core.interfaces.pipeline.IEventBus import IEventBus
-from library.core.pipeline.PipelineContext import PipelineContext
+from sef.core.interfaces.IEventEmitter import IEventEmitter
+from sef.core.interfaces.pipeline.IEventBus import IEventBus
+from sef.core.pipeline.PipelineContext import PipelineContext
 
 log = logging.getLogger(__name__)
 

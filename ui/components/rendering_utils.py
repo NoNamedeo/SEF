@@ -9,7 +9,7 @@ from typing import Any
 
 import streamlit as st
 
-from library.core.visualization.VisualArtifact import (
+from sef.core.visualization.VisualArtifact import (
     DeferredVideoArtifact,
     VideoArtifact,
     VideoFileArtifact,

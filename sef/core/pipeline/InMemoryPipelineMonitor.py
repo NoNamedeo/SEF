@@ -4,8 +4,8 @@ import threading
 import time
 from dataclasses import replace
 
-from library.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
-from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
+from sef.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
+from sef.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
 
 
 class InMemoryPipelineMonitor(IPipelineMonitor):

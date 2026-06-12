@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 import math
 from typing import Any
 
-from library.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerSignalSample, Point2D
-from library.core.interfaces.IData import IData
+from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerSignalSample, Point2D
+from sef.core.interfaces.IData import IData
 
 
 @dataclass(slots=True)

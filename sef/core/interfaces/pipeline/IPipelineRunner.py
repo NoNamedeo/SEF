@@ -3,9 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from concurrent.futures import Future
 
-from library.core.pipeline.Pipeline import Pipeline
-from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot
-from library.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.pipeline.Pipeline import Pipeline
+from sef.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
 
 
 class IPipelineRunner(ABC):

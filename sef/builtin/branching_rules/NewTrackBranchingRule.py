@@ -3,15 +3,15 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from library.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-from library.core.events.Event import Event
-from library.core.interfaces.pipeline.IBranchingRule import IBranchingRule
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
-from library.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from library.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
-from library.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
-from library.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+from sef.builtin.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
+from sef.core.events.Event import Event
+from sef.core.interfaces.pipeline.IBranchingRule import IBranchingRule
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
+from sef.builtin.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
+from sef.builtin.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
+from sef.builtin.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
+from sef.builtin.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 
 log = logging.getLogger(__name__)
 

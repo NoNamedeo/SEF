@@ -4,8 +4,8 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
-from library.core.events.Event import Event
-from library.core.interfaces.pipeline.IEventBus import IEventBus
+from sef.core.events.Event import Event
+from sef.core.interfaces.pipeline.IEventBus import IEventBus
 
 log = logging.getLogger(__name__)
 

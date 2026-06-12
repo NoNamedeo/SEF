@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-from library.core.pipeline.LatencyPolicy import LatencyPolicyConfig
-from library.core.pipeline.PipelineErrors import ConfigSchemaError
+from sef.core.pipeline.LatencyPolicy import LatencyPolicyConfig
+from sef.core.pipeline.PipelineErrors import ConfigSchemaError
 
 
 @dataclass(frozen=True, slots=True)

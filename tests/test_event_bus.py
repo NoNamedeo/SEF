@@ -5,8 +5,8 @@ from __future__ import annotations
 import threading
 import unittest
 
-from library.core.events.Event import Event
-from library.core.events.EventBus import EventBus
+from sef.core.events.Event import Event
+from sef.core.events.EventBus import EventBus
 
 
 class EventTests(unittest.TestCase):

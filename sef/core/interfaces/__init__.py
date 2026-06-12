@@ -16,58 +16,60 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from sef.core._lazy_exports import install_lazy_exports
+
 _EXPORTS = {
-    "IAnalyzer": ("library.core.interfaces.IAnalyzer", "IAnalyzer"),
-    "IAbortableBuffer": ("library.core.interfaces.BufferContracts", "IAbortableBuffer"),
-    "IBranchingRule": ("library.core.interfaces.pipeline.IBranchingRule", "IBranchingRule"),
-    "IBuffer": ("library.core.interfaces.BufferContracts", "IBuffer"),
-    "IBufferSubscription": ("library.core.interfaces.BufferContracts", "IBufferSubscription"),
-    "IData": ("library.core.interfaces.IData", "IData"),
-    "IEventEmitter": ("library.core.interfaces.IEventEmitter", "IEventEmitter"),
-    "IEventBus": ("library.core.interfaces.pipeline.IEventBus", "IEventBus"),
-    "IFrameBuffer": ("library.core.interfaces.BufferContracts", "IFrameBuffer"),
-    "ILiveAnalyzer": ("library.core.interfaces.ILiveAnalyzer", "ILiveAnalyzer"),
-    "ISingleFrameProcessor": ("library.core.interfaces.ISingleFrameProcessor", "ISingleFrameProcessor"),
-    "IFrameExtractor": ("library.core.interfaces.IFrameExtractor", "IFrameExtractor"),
-    "IFrameBufferProcessor": ("library.core.interfaces.IFrameBufferProcessor", "IFrameBufferProcessor"),
-    "IFrameExporter": ("library.core.interfaces.IFrameExporter", "IFrameExporter"),
-    "FrameExportContext": ("library.core.interfaces.IFrameExporter", "FrameExportContext"),
-    "FrameExportResult": ("library.core.interfaces.IFrameExporter", "FrameExportResult"),
-    "StageCapabilities": ("library.core.interfaces.StageCapabilities", "StageCapabilities"),
-    "IStreamingFrameExtractor": ("library.core.interfaces.StreamingContracts", "IStreamingFrameExtractor"),
-    "IStreamingFrameBufferProcessor": ("library.core.interfaces.StreamingContracts", "IStreamingFrameBufferProcessor"),
-    "IStreamingFrameExporter": ("library.core.interfaces.StreamingContracts", "IStreamingFrameExporter"),
-    "IStreamingSignalExtractor": ("library.core.interfaces.StreamingContracts", "IStreamingSignalExtractor"),
-    "IStreamingSignalCleaner": ("library.core.interfaces.StreamingContracts", "IStreamingSignalCleaner"),
-    "IStreamingAnalyzer": ("library.core.interfaces.StreamingContracts", "IStreamingAnalyzer"),
-    "IStreamingVisualizer": ("library.core.interfaces.StreamingContracts", "IStreamingVisualizer"),
+    "IAnalyzer": ("sef.core.interfaces.IAnalyzer", "IAnalyzer"),
+    "IAbortableBuffer": ("sef.core.interfaces.BufferContracts", "IAbortableBuffer"),
+    "IBranchingRule": ("sef.core.interfaces.pipeline.IBranchingRule", "IBranchingRule"),
+    "IBuffer": ("sef.core.interfaces.BufferContracts", "IBuffer"),
+    "IBufferSubscription": ("sef.core.interfaces.BufferContracts", "IBufferSubscription"),
+    "IData": ("sef.core.interfaces.IData", "IData"),
+    "IEventEmitter": ("sef.core.interfaces.IEventEmitter", "IEventEmitter"),
+    "IEventBus": ("sef.core.interfaces.pipeline.IEventBus", "IEventBus"),
+    "IFrameBuffer": ("sef.core.interfaces.BufferContracts", "IFrameBuffer"),
+    "ILiveAnalyzer": ("sef.core.interfaces.ILiveAnalyzer", "ILiveAnalyzer"),
+    "ISingleFrameProcessor": ("sef.core.interfaces.ISingleFrameProcessor", "ISingleFrameProcessor"),
+    "IFrameExtractor": ("sef.core.interfaces.IFrameExtractor", "IFrameExtractor"),
+    "IFrameBufferProcessor": ("sef.core.interfaces.IFrameBufferProcessor", "IFrameBufferProcessor"),
+    "IFrameExporter": ("sef.core.interfaces.IFrameExporter", "IFrameExporter"),
+    "FrameExportContext": ("sef.core.interfaces.IFrameExporter", "FrameExportContext"),
+    "FrameExportResult": ("sef.core.interfaces.IFrameExporter", "FrameExportResult"),
+    "StageCapabilities": ("sef.core.interfaces.StageCapabilities", "StageCapabilities"),
+    "IStreamingFrameExtractor": ("sef.core.interfaces.StreamingContracts", "IStreamingFrameExtractor"),
+    "IStreamingFrameBufferProcessor": ("sef.core.interfaces.StreamingContracts", "IStreamingFrameBufferProcessor"),
+    "IStreamingFrameExporter": ("sef.core.interfaces.StreamingContracts", "IStreamingFrameExporter"),
+    "IStreamingSignalExtractor": ("sef.core.interfaces.StreamingContracts", "IStreamingSignalExtractor"),
+    "IStreamingSignalCleaner": ("sef.core.interfaces.StreamingContracts", "IStreamingSignalCleaner"),
+    "IStreamingAnalyzer": ("sef.core.interfaces.StreamingContracts", "IStreamingAnalyzer"),
+    "IStreamingVisualizer": ("sef.core.interfaces.StreamingContracts", "IStreamingVisualizer"),
     "IPipelineMonitor": (
-        "library.core.interfaces.pipeline.IPipelineMonitor",
+        "sef.core.interfaces.pipeline.IPipelineMonitor",
         "IPipelineMonitor",
     ),
     "IPipelineOutputStore": (
-        "library.core.interfaces.pipeline.IPipelineOutputStore",
+        "sef.core.interfaces.pipeline.IPipelineOutputStore",
         "IPipelineOutputStore",
     ),
     "IPipelineFactory": (
-        "library.core.interfaces.pipeline.IPipelineFactory",
+        "sef.core.interfaces.pipeline.IPipelineFactory",
         "IPipelineFactory",
     ),
     "IPipelineRunner": (
-        "library.core.interfaces.pipeline.IPipelineRunner",
+        "sef.core.interfaces.pipeline.IPipelineRunner",
         "IPipelineRunner",
     ),
     "IPipelineValidator": (
-        "library.core.interfaces.pipeline.IPipelineValidator",
+        "sef.core.interfaces.pipeline.IPipelineValidator",
         "IPipelineValidator",
     ),
-    "IRetryPolicy": ("library.core.interfaces.pipeline.IRetryPolicy", "IRetryPolicy"),
-    "ISignal": ("library.core.interfaces.ISignal", "ISignal"),
-    "ISignalCleaner": ("library.core.interfaces.ISignalCleaner", "ISignalCleaner"),
-    "ISignalExtractor": ("library.core.interfaces.ISignalExtractor", "ISignalExtractor"),
-    "ISignalSample": ("library.core.interfaces.ISignalSample", "ISignalSample"),
-    "ISubscribableBuffer": ("library.core.interfaces.BufferContracts", "ISubscribableBuffer"),
-    "IVisualizer": ("library.core.interfaces.IVisualizer", "IVisualizer"),
+    "IRetryPolicy": ("sef.core.interfaces.pipeline.IRetryPolicy", "IRetryPolicy"),
+    "ISignal": ("sef.core.interfaces.ISignal", "ISignal"),
+    "ISignalCleaner": ("sef.core.interfaces.ISignalCleaner", "ISignalCleaner"),
+    "ISignalExtractor": ("sef.core.interfaces.ISignalExtractor", "ISignalExtractor"),
+    "ISignalSample": ("sef.core.interfaces.ISignalSample", "ISignalSample"),
+    "ISubscribableBuffer": ("sef.core.interfaces.BufferContracts", "ISubscribableBuffer"),
+    "IVisualizer": ("sef.core.interfaces.IVisualizer", "IVisualizer"),
 }
 
 __all__ = list(_EXPORTS)
@@ -89,19 +91,6 @@ def __dir__() -> list[str]:
     return sorted(__all__)
 
 
-for _name in (
-    "IAnalyzer",
-    "IData",
-    "IFrameBufferProcessor",
-    "IFrameExporter",
-    "IFrameExtractor",
-    "ISignal",
-    "ISignalCleaner",
-    "ISignalExtractor",
-    "ISignalSample",
-    "ISingleFrameProcessor",
-    "IVisualizer",
-    "StageCapabilities",
-):
-    __getattr__(_name)
-del _name
+install_lazy_exports(__name__)
+
+

@@ -6,25 +6,25 @@ import unittest
 
 import numpy as np
 
-from library.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineErrors import PipelineConfigurationError
-from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.IFrameExtractor import IFrameExtractor
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.interfaces.IVisualizer import IVisualizer
+from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+from sef.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineErrors import PipelineConfigurationError
+from sef.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
 
 # ── Stub components ──────────────────────────────────────────────────────────
 

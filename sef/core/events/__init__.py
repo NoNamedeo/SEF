@@ -10,17 +10,19 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from sef.core._lazy_exports import install_lazy_exports
+
 _EXPORTS = {
-    "Event": ("library.core.events.Event", "Event"),
-    "EventBus": ("library.core.events.EventBus", "EventBus"),
-    "EventHandler": ("library.core.events.EventBus", "EventHandler"),
-    "PipelineEvent": ("library.core.events.PipelineEvent", "PipelineEvent"),
+    "Event": ("sef.core.events.Event", "Event"),
+    "EventBus": ("sef.core.events.EventBus", "EventBus"),
+    "EventHandler": ("sef.core.events.EventBus", "EventHandler"),
+    "PipelineEvent": ("sef.core.events.PipelineEvent", "PipelineEvent"),
     "PipelineLifecycleEvent": (
-        "library.core.events.PipelineLifecycleEvent",
+        "sef.core.events.PipelineLifecycleEvent",
         "PipelineLifecycleEvent",
     ),
     "create_pipeline_lifecycle_event": (
-        "library.core.events.PipelineLifecycleEvent",
+        "sef.core.events.PipelineLifecycleEvent",
         "create_pipeline_lifecycle_event",
     ),
 }
@@ -42,3 +44,6 @@ def __getattr__(name: str):
 
 def __dir__() -> list[str]:
     return sorted(__all__)
+
+
+install_lazy_exports(__name__)

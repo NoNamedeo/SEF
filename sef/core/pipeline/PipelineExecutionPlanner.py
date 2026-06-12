@@ -2,21 +2,21 @@ from __future__ import annotations
 
 from typing import Any
 
-from library.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineExecutionLookahead import PipelineExecutionLookahead
-from library.core.pipeline.PipelineExecutionPolicy import (
+from sef.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineExecutionLookahead import PipelineExecutionLookahead
+from sef.core.pipeline.PipelineExecutionPolicy import (
     DefaultPipelineExecutionPolicy,
     PipelineExecutionEstimates,
     PipelineExecutionPolicy,
     PipelineStagePolicyContext,
 )
-from library.core.pipeline.PipelineExecutionPlan import (
+from sef.core.pipeline.PipelineExecutionPlan import (
     ExecutionPlanStage,
     PipelineExecutionPlan,
     capabilities_of,
 )
-from library.core.pipeline.VisualizerBinding import VisualizerBinding
+from sef.core.pipeline.VisualizerBinding import VisualizerBinding
 
 
 class PipelineExecutionPlanner:

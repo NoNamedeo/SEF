@@ -13,15 +13,15 @@ from typing import Any, Mapping, Protocol
 import cv2
 import numpy as np
 
-from library.core.artifacts.data.TrackingPlaybackData import TrackingPlaybackData
-from library.core.interfaces.IData import IData
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.visualization.VisualArtifact import (
+from sef.core.artifacts.data.TrackingPlaybackData import TrackingPlaybackData
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.IVisualizer import IVisualizer
+from sef.core.visualization.VisualArtifact import (
     DeferredVideoArtifact,
     VideoFileArtifact,
     VideoLikeArtifact,
 )
-from library.core.visualization.VisualizationContext import VisualizationContext
+from sef.core.visualization.VisualizationContext import VisualizationContext
 
 
 class _VideoFrameWriter(Protocol):

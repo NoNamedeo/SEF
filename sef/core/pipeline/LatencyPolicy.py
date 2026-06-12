@@ -4,9 +4,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-from library.core.artifacts.Frame import Frame
-from library.core.interfaces.BufferContracts import IFrameBuffer
-from library.core.pipeline.PipelineErrors import LatencyPolicyError
+from sef.core.artifacts.Frame import Frame
+from sef.core.interfaces.BufferContracts import IFrameBuffer
+from sef.core.pipeline.PipelineErrors import LatencyPolicyError
 
 
 @dataclass(frozen=True, slots=True)

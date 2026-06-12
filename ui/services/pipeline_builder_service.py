@@ -7,7 +7,7 @@ from typing import Any
 
 import streamlit as st
 
-from library.core.plugins.PluginRegistry import PluginCategory
+from sef.core.plugins.PluginRegistry import PluginCategory
 from ui.models.pipeline_builder import (
     STAGE_LABELS,
     AnalysisStageKey,
@@ -652,7 +652,7 @@ def validate_runtime_requirements(config: dict[str, Any]) -> list[str]:
         visualizers = {str(item.get("name", "")) for item in pipeline.get("visualizers", [])}
         cleaners = {str(item.get("name", "")) for item in pipeline.get("signal_cleaners", [])}
         model_name = str(signal_extractor_params.get("model_name", "yolo11s-pose.pt"))
-        model_path = Path(__file__).resolve().parents[2] / "library" / "YOLOPoseModels" / model_name
+        model_path = Path(__file__).resolve().parents[2] / "sef" / "builtin" / "YOLOPoseModels" / model_name
         if not model_path.exists():
             issues.append(f"Modello YOLO non trovato: {model_path}.")
         if "coco_pose_stream" not in selected_analyzers:

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from library.core.artifacts.signal_sample.DenseOpticalFlowSignalSample import (
+from sef.core.artifacts.signal_sample.DenseOpticalFlowSignalSample import (
     DenseOpticalFlowSignalSample,
 )
-from library.core.artifacts.data.VectorFieldGraphData import VectorFieldGraphData
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.ISignal import ISignal
+from sef.core.artifacts.data.VectorFieldGraphData import VectorFieldGraphData
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.ISignal import ISignal
 
 
 class DenseOpticalFlowVectorFieldAnalyzer(IAnalyzer):

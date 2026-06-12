@@ -4,8 +4,8 @@ from typing import Any
 
 import numpy as np
 
-from library.core.artifacts.Frame import Frame
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from sef.core.artifacts.Frame import Frame
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 
 
 class SmoothingFrameProcessor(ISingleFrameProcessor):

@@ -16,9 +16,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
-from library.core.plugins.PluginRegistry import PluginRegistry
+from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+from sef.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
+from sef.core.plugins.PluginRegistry import PluginRegistry
 
 _MAX_PLAN_CACHE_ITEMS = 12
 _cache_lock = threading.Lock()
@@ -166,7 +166,7 @@ def _preflight_plan_side_effects(config: dict[str, Any]) -> str | None:
         return None
     params = dict(signal_extractor.get("params", {}) or {})
     model_name = str(params.get("model_name", "yolo11s-pose.pt"))
-    model_path = Path(__file__).resolve().parents[2] / "library" / "YOLOPoseModels" / model_name
+    model_path = Path(__file__).resolve().parents[2] / "sef" / "builtin" / "YOLOPoseModels" / model_name
     if model_path.exists():
         return None
     return (

@@ -3,9 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.StageCapabilities import StageCapabilities
 
 
 class ISignalExtractor(ABC):

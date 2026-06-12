@@ -4,12 +4,12 @@ from typing import Any
 
 import cv2
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.BufferContracts import IFrameBuffer
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingFrameExtractor
-from library.core.pipeline.LatencyPolicy import BlockingFrameLatencyPolicy, FrameLatencyPolicy
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.BufferContracts import IFrameBuffer
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingFrameExtractor
+from sef.core.pipeline.LatencyPolicy import BlockingFrameLatencyPolicy, FrameLatencyPolicy
 
 
 class OpenCVWebcamFrameExtractor(IStreamingFrameExtractor):

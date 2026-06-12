@@ -3,21 +3,21 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from library.core.artifacts.buffer.SignalBuffer import SignalBuffer
-from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.pipeline.PipelineBoundaryMaterializer import PipelineBoundaryMaterializer
-from library.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineExecutionLookahead import PipelineExecutionLookahead
-from library.core.pipeline.PipelineExecutionPolicy import (
+from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from sef.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.pipeline.PipelineBoundaryMaterializer import PipelineBoundaryMaterializer
+from sef.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineExecutionLookahead import PipelineExecutionLookahead
+from sef.core.pipeline.PipelineExecutionPolicy import (
     PipelineExecutionEstimates,
     PipelineExecutionPolicy,
     PipelineStagePolicyContext,
 )
-from library.core.pipeline.PipelineExecutionResources import PipelineExecutionResources
-from library.core.pipeline.PipelineRuntimeState import FrameRuntimeState, SignalRuntimeState, ThreadedStageTask
-from library.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
+from sef.core.pipeline.PipelineExecutionResources import PipelineExecutionResources
+from sef.core.pipeline.PipelineRuntimeState import FrameRuntimeState, SignalRuntimeState, ThreadedStageTask
+from sef.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
 
 
 class SignalSegmentExecutor:

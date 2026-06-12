@@ -5,19 +5,19 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
-from library.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_VERSION
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineExportUtils import (
+from sef.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_VERSION
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineExportUtils import (
     dotted_path,
     is_rebuildable_param,
     json_dumps,
     to_exportable_data,
     yaml_dumps,
 )
-from library.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
-from library.core.pipeline.VisualizerBinding import VisualizerBinding
-from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
-from library.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
+from sef.core.pipeline.VisualizerBinding import VisualizerBinding
+from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
 
 
 class PipelineConfigExporter:

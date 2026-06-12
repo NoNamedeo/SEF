@@ -19,7 +19,7 @@ Streamlit views are adapters around this core.
 - [Plugin Authoring](plugin-authoring.md): how to implement new components.
 - [Streaming Runtime](streaming-runtime.md): streaming contracts, planner, buffers.
 - [Error Handling](error-handling.md): typed errors and handling patterns.
-- [Versioning](versioning.md): library, config, plugin, and deprecation policy.
+- [Versioning](versioning.md): package, config, plugin, and deprecation policy.
 - [Examples](examples.md): runnable example modules and expected outputs.
 - [Reference: Component Contracts](reference/component-contracts.md)
 - [Reference: Data and Artifacts](reference/data-and-artifacts.md)
@@ -45,16 +45,16 @@ The site navigation is defined in the repository-level `mkdocs.yml`.
 
 Public contracts are the names exported from public package initializers:
 
-- `library`
-- `library.core`
-- `library.core.artifacts`
-- `library.core.events`
-- `library.core.interfaces`
-- `library.core.interfaces.pipeline`
-- `library.core.pipeline`
-- `library.core.plugins`
-- `library.core.realtime`
-- `library.core.visualization`
+- `sef`
+- `sef.core`
+- `sef.core.artifacts`
+- `sef.core.events`
+- `sef.core.interfaces`
+- `sef.core.interfaces.pipeline`
+- `sef.core.pipeline`
+- `sef.core.plugins`
+- `sef.core.realtime`
+- `sef.core.visualization`
 
 External code should prefer package-level imports over direct module paths.
 Direct module paths may continue to work, but package exports define the

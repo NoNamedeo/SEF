@@ -3,24 +3,24 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
-from library.core.pipeline.PipelineConfigVersioning import (
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.IFrameExtractor import IFrameExtractor
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+from sef.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
+from sef.core.pipeline.PipelineConfigVersioning import (
     CURRENT_PIPELINE_CONFIG_VERSION,
     PipelineConfigMigration,
     PipelineConfigVersionManager,
 )
-from library.core.pipeline.PipelineErrors import ConfigVersionError
-from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
+from sef.core.pipeline.PipelineErrors import ConfigVersionError
+from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 
 
 class VersionedFrameExtractor(IFrameExtractor):

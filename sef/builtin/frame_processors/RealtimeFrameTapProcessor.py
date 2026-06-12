@@ -3,15 +3,15 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.BufferContracts import IBuffer
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor
-from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
-from library.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
-from library.core.realtime.NullRealtimeFrameSink import NullRealtimeFrameSink
-from library.core.realtime.RealtimeFrame import RealtimeFrame
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.BufferContracts import IBuffer
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor
+from sef.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
+from sef.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
+from sef.core.realtime.NullRealtimeFrameSink import NullRealtimeFrameSink
+from sef.core.realtime.RealtimeFrame import RealtimeFrame
 
 
 class RealtimeFrameTapProcessor(IStreamingFrameBufferProcessor):

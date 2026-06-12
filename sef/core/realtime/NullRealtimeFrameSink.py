@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from library.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
-from library.core.realtime.RealtimeFrame import RealtimeFrame
+from sef.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
+from sef.core.realtime.RealtimeFrame import RealtimeFrame
 
 
 class NullRealtimeFrameSink(IRealtimeFrameSink):

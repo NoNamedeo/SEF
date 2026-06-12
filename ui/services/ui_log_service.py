@@ -64,7 +64,7 @@ def install_ui_log_capture(level: str = "INFO") -> None:
     if _handler is None:
         _handler = _UILogHandler()
         _handler.setFormatter(logging.Formatter("%(message)s"))
-        for logger_name in ("library", "ui"):
+        for logger_name in ("sef", "ui"):
             logging.getLogger(logger_name).addHandler(_handler)
     set_capture_level(level)
 
@@ -77,7 +77,7 @@ def set_capture_level(level: str) -> None:
     numeric_level = _LOG_LEVELS[normalized]
     if _handler is not None:
         _handler.setLevel(numeric_level)
-    for logger_name in ("library", "ui"):
+    for logger_name in ("sef", "ui"):
         logging.getLogger(logger_name).setLevel(numeric_level)
 
 

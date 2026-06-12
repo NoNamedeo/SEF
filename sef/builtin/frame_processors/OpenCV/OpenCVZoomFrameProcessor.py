@@ -4,9 +4,9 @@ from typing import Any
 
 import cv2
 
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.signal_sample.BoxSignalSample import BoundingBox
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoundingBox
 
 
 class OpenCVZoomFrameProcessor(ISingleFrameProcessor):

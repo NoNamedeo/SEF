@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from library.core.interfaces.pipeline.IRetryPolicy import IRetryPolicy
+from sef.core.interfaces.pipeline.IRetryPolicy import IRetryPolicy
 
 
 class ExponentialBackoffRetryPolicy(IRetryPolicy):

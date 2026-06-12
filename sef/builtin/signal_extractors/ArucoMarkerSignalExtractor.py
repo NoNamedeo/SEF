@@ -8,19 +8,19 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.artifacts.signal_sample.ArucoMarkerSignalSample import (
+from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import (
     ArucoMarkerObservation,
     ArucoMarkerSignalSample,
     MarkerCorners,
 )
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingSignalExtractor
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingSignalExtractor
 
 
 @dataclass(frozen=True, slots=True)

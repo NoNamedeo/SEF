@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from sef.core._lazy_exports import install_lazy_exports
+
 _EXPORTS = {
-    "DataBuffer": ("library.core.artifacts.buffer.DataBuffer", "DataBuffer"),
-    "DataSubscription": ("library.core.artifacts.buffer.DataBuffer", "DataSubscription"),
-    "FrameBuffer": ("library.core.artifacts.buffer.FrameBuffer", "FrameBuffer"),
-    "SignalBuffer": ("library.core.artifacts.buffer.SignalBuffer", "SignalBuffer"),
-    "SignalSubscription": ("library.core.artifacts.buffer.SignalBuffer", "SignalSubscription"),
+    "DataBuffer": ("sef.core.artifacts.buffer.DataBuffer", "DataBuffer"),
+    "DataSubscription": ("sef.core.artifacts.buffer.DataBuffer", "DataSubscription"),
+    "FrameBuffer": ("sef.core.artifacts.buffer.FrameBuffer", "FrameBuffer"),
+    "SignalBuffer": ("sef.core.artifacts.buffer.SignalBuffer", "SignalBuffer"),
+    "SignalSubscription": ("sef.core.artifacts.buffer.SignalBuffer", "SignalSubscription"),
 }
 
 __all__ = list(_EXPORTS)
@@ -31,6 +33,4 @@ def __dir__() -> list[str]:
     return sorted(__all__)
 
 
-for _name in __all__:
-    __getattr__(_name)
-del _name
+install_lazy_exports(__name__)

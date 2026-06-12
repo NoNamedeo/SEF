@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from library.core.interfaces.IVisualizer import IVisualizer
+from sef.core.interfaces.IVisualizer import IVisualizer
 
 
 @dataclass(frozen=True, slots=True)

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Iterable
 
-from library.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StageCapabilities import StageCapabilities
 
 
 @dataclass(frozen=True, slots=True)

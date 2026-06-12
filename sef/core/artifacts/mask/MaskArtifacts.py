@@ -9,8 +9,8 @@ from typing import Any, ClassVar, Mapping
 import numpy as np
 import numpy.typing as npt
 
-from library.core.artifacts.mask.MaskOperations import MaskArray, ensure_shape_compatible, normalize_binary_mask, spatial_shape_of
-from library.core.interfaces.IData import IData
+from sef.core.artifacts.mask.MaskOperations import MaskArray, ensure_shape_compatible, normalize_binary_mask, spatial_shape_of
+from sef.core.interfaces.IData import IData
 
 
 def _immutable_mapping(value: Mapping[str, Any] | None) -> Mapping[str, Any]:

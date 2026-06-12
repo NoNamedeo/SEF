@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-from library.core.events.Event import Event
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineErrors import InvalidPipelineTriggerEventError
+from sef.core.events.Event import Event
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineErrors import InvalidPipelineTriggerEventError
 
 
 @dataclass(frozen=True, slots=True)

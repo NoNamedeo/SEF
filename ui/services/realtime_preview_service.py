@@ -6,7 +6,7 @@ import copy
 import threading
 from typing import Any
 
-from library.core.realtime.LatestRealtimeFrameStore import LatestRealtimeFrameStore, RealtimeFrameSnapshot
+from sef.core.realtime.LatestRealtimeFrameStore import LatestRealtimeFrameStore, RealtimeFrameSnapshot
 
 STREAMLIT_COCO_POSE_REALTIME_VISUALIZER = "streamlit_coco_pose_realtime"
 STREAMLIT_REALTIME_VISUALIZERS = frozenset({STREAMLIT_COCO_POSE_REALTIME_VISUALIZER})

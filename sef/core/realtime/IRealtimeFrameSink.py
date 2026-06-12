@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from library.core.realtime.RealtimeFrame import RealtimeFrame
+from sef.core.realtime.RealtimeFrame import RealtimeFrame
 
 
 class IRealtimeFrameSink(Protocol):

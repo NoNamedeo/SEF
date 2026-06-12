@@ -6,9 +6,9 @@ from typing import Any, Mapping
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.visualization.VisualArtifact import ImageArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
+from sef.core.interfaces.IVisualizer import IVisualizer
+from sef.core.visualization.VisualArtifact import ImageArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
 
 
 class MatplotlibArtifactVisualizer(IVisualizer):

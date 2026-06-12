@@ -4,21 +4,21 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
-from library.core.interfaces.pipeline.IEventBus import IEventBus
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineErrors import PipelineExecutionError
-from library.core.pipeline.PipelineEventInjector import PipelineEventInjector
-from library.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
-from library.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
-from library.core.pipeline.PipelineExecutionPolicy import (
+from sef.core.interfaces.pipeline.IEventBus import IEventBus
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineErrors import PipelineExecutionError
+from sef.core.pipeline.PipelineEventInjector import PipelineEventInjector
+from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
+from sef.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
+from sef.core.pipeline.PipelineExecutionPolicy import (
     DefaultPipelineExecutionPolicy,
     PipelineExecutionPolicy,
 )
-from library.core.pipeline.PipelineOutputAssembler import PipelineOutputAssembler
-from library.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
-from library.core.pipeline.SegmentedPipelineExecutor import SegmentedPipelineExecutor
-from library.core.pipeline.VisualizationExecutor import VisualizationExecutor
-from library.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.pipeline.PipelineOutputAssembler import PipelineOutputAssembler
+from sef.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
+from sef.core.pipeline.SegmentedPipelineExecutor import SegmentedPipelineExecutor
+from sef.core.pipeline.VisualizationExecutor import VisualizationExecutor
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
 
 __all__ = ["Pipeline", "PipelineExecutionError"]
 

@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from library.core.pipeline.PipelineConfigVersioning import normalize_pipeline_config
-from library.core.pipeline.PipelineErrors import ConfigSchemaError
+from sef.core.pipeline.PipelineConfigVersioning import normalize_pipeline_config
+from sef.core.pipeline.PipelineErrors import ConfigSchemaError
 
 _PIPELINE_STAGE_KEYS = frozenset(
     {

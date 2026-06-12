@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from library.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
-from library.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
+from sef.core.pipeline.PipelineContext import PipelineContext
 
 
 class PipelineExecutionLookahead:

@@ -12,10 +12,10 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
-from library.core.events.Event import Event
-from library.core.events.PipelineEvent import PipelineEvent
-from library.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
-from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
+from sef.core.events.Event import Event
+from sef.core.events.PipelineEvent import PipelineEvent
+from sef.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
+from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from ui.components.pipeline_canvas_models import (
     CanvasEdge,
     CanvasNode,

@@ -9,10 +9,10 @@ or HTTP dependencies so the same producer can feed multiple presentation
 strategies.
 """
 
-from library.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
-from library.core.realtime.LatestRealtimeFrameStore import LatestRealtimeFrameStore, RealtimeFrameSnapshot
-from library.core.realtime.NullRealtimeFrameSink import NullRealtimeFrameSink
-from library.core.realtime.RealtimeFrame import FrameColorSpace, RealtimeFrame
+from sef.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
+from sef.core.realtime.LatestRealtimeFrameStore import LatestRealtimeFrameStore, RealtimeFrameSnapshot
+from sef.core.realtime.NullRealtimeFrameSink import NullRealtimeFrameSink
+from sef.core.realtime.RealtimeFrame import FrameColorSpace, RealtimeFrame
 
 __all__ = [
     "FrameColorSpace",

@@ -1,19 +1,19 @@
-from library.frame_processors.dynamic_object_removal.background_estimator import (
+from sef.builtin.frame_processors.dynamic_object_removal.background_estimator import (
     BackgroundEstimator,
     TemporalMedianBackgroundEstimator,
 )
-from library.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig, ProtectedRegion
-from library.frame_processors.dynamic_object_removal.foreground_mask_extractor import (
+from sef.builtin.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig, ProtectedRegion
+from sef.builtin.frame_processors.dynamic_object_removal.foreground_mask_extractor import (
     BackgroundDifferenceForegroundMaskExtractor,
     ForegroundMaskExtractor,
 )
-from library.frame_processors.dynamic_object_removal.mask_refiner import (
+from sef.builtin.frame_processors.dynamic_object_removal.mask_refiner import (
     MaskRefiner,
     MaskRefinementResult,
     MorphologicalMaskRefiner,
 )
-from library.frame_processors.dynamic_object_removal.processor import DynamicObjectRemovalFrameProcessor
-from library.frame_processors.dynamic_object_removal.region_reconstructor import (
+from sef.builtin.frame_processors.dynamic_object_removal.processor import DynamicObjectRemovalFrameProcessor
+from sef.builtin.frame_processors.dynamic_object_removal.region_reconstructor import (
     BackgroundReplacementRegionReconstructor,
     RegionReconstructor,
 )

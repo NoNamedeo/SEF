@@ -260,12 +260,12 @@ from __future__ import annotations
 
 import numpy as np
 import sef
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.BoxSignalSample import BoxSignalSample
-from library.core.artifacts.TwoDimGraphData import TwoDimGraphData
-from library.core.visualization.VisualArtifact import TextArtifact
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
+from sef.core.visualization.VisualArtifact import TextArtifact
 
 
 @sef.frame_extractor("cli_local_frames_{suffix}")

@@ -8,30 +8,30 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from library.analyzers.ArUco.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
-from library.analyzers.ArUco.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
-from library.core.artifacts.data.ArucoDisplacementData import (
+from sef.builtin.analyzers.ArUco.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
+from sef.builtin.analyzers.ArUco.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
+from sef.core.artifacts.data.ArucoDisplacementData import (
     ArucoMarkerDisplacementData,
     ArucoMarkerDisplacementFrameData,
 )
-from library.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerObservation, ArucoMarkerSignalSample
-from library.core.artifacts.buffer.DataBuffer import DataBuffer
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.pipeline.Pipeline import Pipeline
-from library.core.plugins.PluginRegistry import create_builtin_registry
-from library.core.visualization.VisualArtifact import (
+from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerObservation, ArucoMarkerSignalSample
+from sef.core.artifacts.buffer.DataBuffer import DataBuffer
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+from sef.core.pipeline.Pipeline import Pipeline
+from sef.core.plugins.PluginRegistry import create_builtin_registry
+from sef.core.visualization.VisualArtifact import (
     VIDEO_ARTIFACT_TYPES,
     DeferredVideoArtifact,
     VideoArtifact,
     VideoFileArtifact,
 )
-from library.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
-from library.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
-from library.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
-from library.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
+from sef.builtin.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
+from sef.builtin.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
+from sef.builtin.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+from sef.builtin.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
 
 
 class ArucoPipelineTests(unittest.TestCase):

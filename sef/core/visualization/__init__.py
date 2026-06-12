@@ -10,31 +10,33 @@ from __future__ import annotations
 
 from importlib import import_module
 
+from sef.core._lazy_exports import install_lazy_exports
+
 _EXPORTS = {
-    "ArtifactRole": ("library.core.visualization.VisualArtifact", "ArtifactRole"),
+    "ArtifactRole": ("sef.core.visualization.VisualArtifact", "ArtifactRole"),
     "DeferredVideoArtifact": (
-        "library.core.visualization.VisualArtifact",
+        "sef.core.visualization.VisualArtifact",
         "DeferredVideoArtifact",
     ),
-    "ImageArtifact": ("library.core.visualization.VisualArtifact", "ImageArtifact"),
-    "JsonArtifact": ("library.core.visualization.VisualArtifact", "JsonArtifact"),
-    "PipelineOutputs": ("library.core.visualization.PipelineOutputs", "PipelineOutputs"),
+    "ImageArtifact": ("sef.core.visualization.VisualArtifact", "ImageArtifact"),
+    "JsonArtifact": ("sef.core.visualization.VisualArtifact", "JsonArtifact"),
+    "PipelineOutputs": ("sef.core.visualization.PipelineOutputs", "PipelineOutputs"),
     "PipelineRunMetadata": (
-        "library.core.visualization.PipelineRunMetadata",
+        "sef.core.visualization.PipelineRunMetadata",
         "PipelineRunMetadata",
     ),
-    "TableArtifact": ("library.core.visualization.VisualArtifact", "TableArtifact"),
-    "TextArtifact": ("library.core.visualization.VisualArtifact", "TextArtifact"),
+    "TableArtifact": ("sef.core.visualization.VisualArtifact", "TableArtifact"),
+    "TextArtifact": ("sef.core.visualization.VisualArtifact", "TextArtifact"),
     "VIDEO_ARTIFACT_TYPES": (
-        "library.core.visualization.VisualArtifact",
+        "sef.core.visualization.VisualArtifact",
         "VIDEO_ARTIFACT_TYPES",
     ),
-    "VideoArtifact": ("library.core.visualization.VisualArtifact", "VideoArtifact"),
-    "VideoFileArtifact": ("library.core.visualization.VisualArtifact", "VideoFileArtifact"),
-    "VideoLikeArtifact": ("library.core.visualization.VisualArtifact", "VideoLikeArtifact"),
-    "VisualArtifact": ("library.core.visualization.VisualArtifact", "VisualArtifact"),
+    "VideoArtifact": ("sef.core.visualization.VisualArtifact", "VideoArtifact"),
+    "VideoFileArtifact": ("sef.core.visualization.VisualArtifact", "VideoFileArtifact"),
+    "VideoLikeArtifact": ("sef.core.visualization.VisualArtifact", "VideoLikeArtifact"),
+    "VisualArtifact": ("sef.core.visualization.VisualArtifact", "VisualArtifact"),
     "VisualizationContext": (
-        "library.core.visualization.VisualizationContext",
+        "sef.core.visualization.VisualizationContext",
         "VisualizationContext",
     ),
 }
@@ -58,6 +60,6 @@ def __dir__() -> list[str]:
     return sorted(__all__)
 
 
-for _name in __all__:
-    __getattr__(_name)
-del _name
+install_lazy_exports(__name__)
+
+

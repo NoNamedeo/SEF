@@ -4,15 +4,15 @@ from pathlib import Path
 
 import numpy as np
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from library.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor
-from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry, create_builtin_registry
-from library.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IFrameExtractor import IFrameExtractor
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+from sef.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor
+from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry, create_builtin_registry
+from sef.builtin.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
 
 
 class StaticFrameExtractor(IFrameExtractor):

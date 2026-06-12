@@ -4,8 +4,8 @@ import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from library.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
-from library.core.realtime.RealtimeFrame import RealtimeFrame
+from sef.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
+from sef.core.realtime.RealtimeFrame import RealtimeFrame
 
 
 @dataclass(frozen=True, slots=True)

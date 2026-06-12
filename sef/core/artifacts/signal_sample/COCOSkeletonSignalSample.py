@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from library.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.ISignalSample import ISignalSample
 
 
 Skeleton2D = np.ndarray  # shape: (17, 2)

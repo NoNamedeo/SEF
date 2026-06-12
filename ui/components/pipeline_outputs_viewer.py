@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from library.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
 from ui.components.execution_plan_viewer import render_execution_plan
 from ui.components.rendering_utils import (
     materialize_video_artifact,

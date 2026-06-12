@@ -7,8 +7,8 @@ from typing import Protocol
 import numpy as np
 import numpy.typing as npt
 
-from library.core.artifacts.Frame import Frame
-from library.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig
+from sef.core.artifacts.Frame import Frame
+from sef.builtin.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig
 
 log = logging.getLogger(__name__)
 

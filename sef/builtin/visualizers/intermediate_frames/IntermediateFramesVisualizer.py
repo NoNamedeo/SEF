@@ -3,16 +3,16 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
-from library.core.artifacts.intermediate_frame.IntermediateFrameComposition import (
+from sef.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from sef.core.artifacts.intermediate_frame.IntermediateFrameComposition import (
     compose_intermediate_frame_comparison,
     encode_png,
 )
-from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
-from library.core.interfaces.IData import IData
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.visualization.VisualArtifact import ArtifactRole, ImageArtifact, VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
+from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.IVisualizer import IVisualizer
+from sef.core.visualization.VisualArtifact import ArtifactRole, ImageArtifact, VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
 
 
 class IntermediateFramesVisualizer(IVisualizer):

@@ -4,9 +4,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
-from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from sef.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
 
 
 @dataclass(frozen=True, slots=True)

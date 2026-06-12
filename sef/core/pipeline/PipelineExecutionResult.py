@@ -4,8 +4,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from library.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
-from library.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from sef.core.visualization.VisualArtifact import VisualArtifact
 
 
 @dataclass(frozen=True)

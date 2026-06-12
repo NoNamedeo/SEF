@@ -10,14 +10,14 @@ from typing import TYPE_CHECKING, Any
 import cv2
 import numpy as np
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
-from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
-from library.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
+from sef.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from sef.core.interfaces.StageCapabilities import StageCapabilities
 
 if TYPE_CHECKING:
-    from library.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
+    from sef.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext
 
 _METADATA_KEY = "phase_magnification"
 _DEFAULT_CODEC = "MJPG"

@@ -3,25 +3,25 @@ from __future__ import annotations
 from collections.abc import Iterable
 from concurrent.futures import Future, ThreadPoolExecutor
 
-from library.core.artifacts.buffer.DataBuffer import DataBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.interfaces.BufferContracts import ISubscribableBuffer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.ISignal import ISignal
-from library.core.pipeline.PipelineBoundaryMaterializer import PipelineBoundaryMaterializer
-from library.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.pipeline.PipelineExecutionPolicy import (
+from sef.core.artifacts.buffer.DataBuffer import DataBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.interfaces.BufferContracts import ISubscribableBuffer
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.pipeline.PipelineBoundaryMaterializer import PipelineBoundaryMaterializer
+from sef.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineExecutionPolicy import (
     PipelineExecutionEstimates,
     PipelineExecutionPolicy,
     PipelineStagePolicyContext,
 )
-from library.core.pipeline.PipelineExecutionResources import PipelineExecutionResources
-from library.core.pipeline.PipelineRuntimeState import SignalRuntimeState
-from library.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
-from library.core.pipeline.VisualizationExecutor import VisualizationExecutor
-from library.core.pipeline.VisualizerBinding import VisualizerBinding
-from library.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.pipeline.PipelineExecutionResources import PipelineExecutionResources
+from sef.core.pipeline.PipelineRuntimeState import SignalRuntimeState
+from sef.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
+from sef.core.pipeline.VisualizationExecutor import VisualizationExecutor
+from sef.core.pipeline.VisualizerBinding import VisualizerBinding
+from sef.core.visualization.VisualArtifact import VisualArtifact
 
 _SIGNAL_ANALYSIS_MATERIALIZER_CONSUMER_ID = -20_000
 

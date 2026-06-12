@@ -5,11 +5,11 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.artifacts.Signal import Signal
-from library.core.artifacts.signal_sample.SparseOpticalFlowSignalSample import (
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.SparseOpticalFlowSignalSample import (
     SparseOpticalFlowSignalSample,
     BoundingBox,
 )

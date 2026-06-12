@@ -1,9 +1,9 @@
 import cv2
 from typing import Any, Tuple, List
 
-from library.core.artifacts.Frame import Frame
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
-from library.core.utils.OpenCVDisplayUtils import DisplayTransform
+from sef.core.artifacts.Frame import Frame
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from sef.core.utils.OpenCVDisplayUtils import DisplayTransform
 
 
 class OpenCVMultiStartBoxSelector:

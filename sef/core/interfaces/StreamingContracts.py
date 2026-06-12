@@ -3,21 +3,21 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import Iterable
 
-from library.core.artifacts.Frame import Frame
-from library.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
-from library.core.interfaces.IFrameExporter import FrameExportContext, IFrameExporter
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignalCleaner import ISignalCleaner
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
-from library.core.pipeline.LatencyPolicy import FrameLatencyPolicy
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
+from sef.core.artifacts.Frame import Frame
+from sef.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
+from sef.core.interfaces.IFrameExporter import FrameExportContext, IFrameExporter
+from sef.core.interfaces.IFrameExtractor import IFrameExtractor
+from sef.core.interfaces.ISignalCleaner import ISignalCleaner
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.IVisualizer import IVisualizer
+from sef.core.pipeline.IntermediateFrameCapture import IntermediateFrameArtifactStore
+from sef.core.pipeline.LatencyPolicy import FrameLatencyPolicy
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
 
 
 class IStreamingFrameExtractor(IFrameExtractor):

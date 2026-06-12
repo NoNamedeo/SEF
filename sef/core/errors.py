@@ -14,7 +14,7 @@ from typing import Any, Mapping
 
 
 class SEFError(Exception):
-    """Base class for public SEF library errors."""
+    """Base class for public SEF package errors."""
 
 
 class PipelineError(SEFError):

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.interfaces.IData import IData
+from sef.core.interfaces.IData import IData
 
 
 @dataclass(slots=True)

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from library.core.artifacts.buffer.DataBuffer import DataBuffer
-from library.core.artifacts.data.NoData import NoData
-from library.core.interfaces.BufferContracts import IBuffer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingAnalyzer
+from sef.core.artifacts.buffer.DataBuffer import DataBuffer
+from sef.core.artifacts.data.NoData import NoData
+from sef.core.interfaces.BufferContracts import IBuffer
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingAnalyzer
 
 
 class NoAnalyzer(IStreamingAnalyzer):

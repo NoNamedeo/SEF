@@ -1,10 +1,10 @@
 # API: Core Package
 
-`library.core` is the convenience import surface for the most common stable
+`sef.core` is the convenience import surface for the most common stable
 contracts: builders, execution facade, selected artifacts, registry contracts,
 error types, visualization outputs, and realtime preview handoff values.
 
-::: library.core
+::: sef.core
     options:
       members:
         - ConfigPipelineBuilder

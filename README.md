@@ -162,7 +162,7 @@ runtime integration:
 
 ```python
 from sef.core import ConfigPipelineBuilder, Pipeline
-from library.core.plugins import create_builtin_registry
+from sef.core.plugins import create_builtin_registry
 
 registry = create_builtin_registry()
 
@@ -359,8 +359,8 @@ No benchmark, adoption, or production-readiness claims are made here.
 
 ```text
 sef/                 Recommended Pythonic public API
-library/core/        Public contracts, runtime, registry, artifacts, events
-library/*            Concrete computer-vision components and visualizers
+sef/core/        Public contracts, runtime, registry, artifacts, events
+sef/builtin/*            Concrete computer-vision components and visualizers
 ui/                  Streamlit application built on the core framework
 docs/                MkDocs public documentation
 examples/            Minimal runnable examples

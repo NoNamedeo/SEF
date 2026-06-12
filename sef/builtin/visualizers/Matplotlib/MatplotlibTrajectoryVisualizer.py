@@ -3,10 +3,10 @@ from __future__ import annotations
 import numpy as np
 from matplotlib import cm
 
-from library.core.artifacts.data.TrajectoryData import TrajectoryData
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
-from library.visualizers.Matplotlib.MatplotlibArtifactVisualizer import MatplotlibArtifactVisualizer
+from sef.core.artifacts.data.TrajectoryData import TrajectoryData
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
+from sef.builtin.visualizers.Matplotlib.MatplotlibArtifactVisualizer import MatplotlibArtifactVisualizer
 
 
 class MatplotlibTrajectoryVisualizer(MatplotlibArtifactVisualizer):

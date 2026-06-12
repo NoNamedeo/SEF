@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.artifacts.signal_sample.BoxSignalSample import BoundingBox, Point2D
-from library.core.interfaces.IData import IData
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoundingBox, Point2D
+from sef.core.interfaces.IData import IData
 
 
 @dataclass(slots=True)

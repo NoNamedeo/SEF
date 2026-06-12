@@ -7,7 +7,7 @@ entries without importing concrete OpenCV, YOLO, analysis, or visualization
 implementations directly.
 """
 
-from library.core.plugins.PluginRegistry import (
+from sef.core.plugins.PluginRegistry import (
     PluginCategory,
     PluginDefinition,
     PluginRegistry,

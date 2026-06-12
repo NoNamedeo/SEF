@@ -4,9 +4,9 @@ from pprint import pformat
 from textwrap import dedent
 from typing import Any, Mapping
 
-from library.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
-from library.core.pipeline.PipelineContext import PipelineContext
-from library.core.visualization.PipelineOutputs import PipelineOutputs
+from sef.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.visualization.PipelineOutputs import PipelineOutputs
 
 
 class PipelineCodeExporter:
@@ -41,10 +41,10 @@ class PipelineCodeExporter:
 
                 from typing import Any
 
-                from library.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-                from library.core.pipeline.Pipeline import Pipeline
-                from library.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-                from library.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
+                from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
+                from sef.core.pipeline.Pipeline import Pipeline
+                from sef.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+                from sef.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
 
 
                 PIPELINE_EXPORT: dict[str, Any] = __PIPELINE_EXPORT__

@@ -7,13 +7,13 @@ from typing import Any
 import cv2
 import numpy as np
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.BufferContracts import IBuffer
-from library.core.interfaces.IFrameExporter import FrameExportContext, FrameExportResult
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingFrameExporter
-from library.core.visualization.VisualArtifact import ArtifactRole, VideoFileArtifact
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.BufferContracts import IBuffer
+from sef.core.interfaces.IFrameExporter import FrameExportContext, FrameExportResult
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingFrameExporter
+from sef.core.visualization.VisualArtifact import ArtifactRole, VideoFileArtifact
 
 
 class OpenCVFrameBufferVideoExporter(IStreamingFrameExporter):

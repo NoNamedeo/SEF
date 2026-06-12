@@ -4,17 +4,17 @@ import time
 from collections.abc import Iterable
 from typing import Any
 
-from library.core.artifacts.data.COCOPoseFrameData import COCOPoseFrameData, COCOPoseSequenceData
-from library.core.artifacts.data.COCOPoseTennisFrameData import COCOPoseTennisFrameData, COCOPoseTennisSequenceData
-from library.core.interfaces.IData import IData
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingVisualizer
-from library.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
-from library.core.realtime.NullRealtimeFrameSink import NullRealtimeFrameSink
-from library.core.realtime.RealtimeFrame import RealtimeFrame
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
-from library.visualizers.COCO_pose.COCOPoseFrameRenderer import COCOPoseFrameRenderer, COCOPoseRenderConfig
+from sef.core.artifacts.data.COCOPoseFrameData import COCOPoseFrameData, COCOPoseSequenceData
+from sef.core.artifacts.data.COCOPoseTennisFrameData import COCOPoseTennisFrameData, COCOPoseTennisSequenceData
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingVisualizer
+from sef.core.realtime.IRealtimeFrameSink import IRealtimeFrameSink
+from sef.core.realtime.NullRealtimeFrameSink import NullRealtimeFrameSink
+from sef.core.realtime.RealtimeFrame import RealtimeFrame
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
+from sef.builtin.visualizers.COCO_pose.COCOPoseFrameRenderer import COCOPoseFrameRenderer, COCOPoseRenderConfig
 
 
 class RealtimeCOCOPoseFrameVisualizer(IStreamingVisualizer):

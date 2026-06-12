@@ -5,14 +5,14 @@ from typing import Any
 
 import numpy as np
 
-from library.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
-from library.core.artifacts.Signal import Signal
-from library.core.interfaces.BufferContracts import IBuffer
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalSample import ISignalSample
-from library.core.interfaces.StageCapabilities import StageCapabilities
-from library.core.interfaces.StreamingContracts import IStreamingSignalCleaner
-from library.core.pose.COCOSkeletonNormalizer import (
+from sef.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
+from sef.core.artifacts.Signal import Signal
+from sef.core.interfaces.BufferContracts import IBuffer
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalSample import ISignalSample
+from sef.core.interfaces.StageCapabilities import StageCapabilities
+from sef.core.interfaces.StreamingContracts import IStreamingSignalCleaner
+from sef.core.pose.COCOSkeletonNormalizer import (
     COCOSkeletonNormalizationConfig,
     COCOSkeletonNormalizer,
 )

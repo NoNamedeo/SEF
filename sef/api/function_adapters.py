@@ -4,18 +4,18 @@ import inspect
 from collections.abc import Callable
 from typing import Any
 
-from library.core.artifacts.Frame import Frame
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.IAnalyzer import IAnalyzer
-from library.core.interfaces.IData import IData
-from library.core.interfaces.IFrameExtractor import IFrameExtractor
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalCleaner import ISignalCleaner
-from library.core.interfaces.ISignalExtractor import ISignalExtractor
-from library.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
-from library.core.interfaces.IVisualizer import IVisualizer
-from library.core.visualization.VisualArtifact import VisualArtifact
-from library.core.visualization.VisualizationContext import VisualizationContext
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.IData import IData
+from sef.core.interfaces.IFrameExtractor import IFrameExtractor
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalCleaner import ISignalCleaner
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
+from sef.core.interfaces.IVisualizer import IVisualizer
+from sef.core.visualization.VisualArtifact import VisualArtifact
+from sef.core.visualization.VisualizationContext import VisualizationContext
 
 
 class FunctionFrameExtractor(IFrameExtractor):

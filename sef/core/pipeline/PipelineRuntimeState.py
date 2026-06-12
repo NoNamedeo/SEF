@@ -5,10 +5,10 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any
 
-from library.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from library.core.interfaces.BufferContracts import IAbortableBuffer, ISubscribableBuffer
-from library.core.interfaces.ISignal import ISignal
-from library.core.interfaces.ISignalSample import ISignalSample
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.interfaces.BufferContracts import IAbortableBuffer, ISubscribableBuffer
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalSample import ISignalSample
 
 ThreadedStageTask = Callable[[ThreadPoolExecutor], Future[Any]]
 
