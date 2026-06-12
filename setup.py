@@ -4,15 +4,15 @@ setup(
     name="sef",
     version="0.2.0",
     description="Signal extraction framework for video and image sequences",
-    author="Alejandro Innocenzi, Matteo Vittori",
+    author="Matteo Vittori, Alejandro Innocenzi",
     packages=find_packages(include=("library*", "sef*"), exclude=("tests", "ui")),
     install_requires=[
         "matplotlib",
         "numpy",
         "opencv-contrib-python",
+        "ultralytics",
         "PyYAML>=6.0",
         "streamlit",
-        "ultralytics",
     ],
     entry_points={
         "console_scripts": [
