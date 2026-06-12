@@ -25,6 +25,3 @@ pipeline:
 
   visualizers:
     - name: matplotlib
-
-  orchestration:
-    max_retries: 2

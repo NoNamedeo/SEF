@@ -20,6 +20,7 @@ Advanced users can still import stable lower-level contracts from
 """
 
 from sef.api import (
+    OrchestratorFacade,
     PipelineFacade,
     analyzer,
     cleaner,
@@ -28,6 +29,7 @@ from sef.api import (
     from_config,
     load_config,
     normalize_config,
+    orchestrator,
     pipeline,
     processor,
     register_user_plugin,
@@ -39,6 +41,7 @@ from sef.api import (
 from sef.core import PipelineExecutionError
 
 __all__ = [
+    "OrchestratorFacade",
     "PipelineFacade",
     "PipelineExecutionError",
     "analyzer",
@@ -48,6 +51,7 @@ __all__ = [
     "from_config",
     "load_config",
     "normalize_config",
+    "orchestrator",
     "pipeline",
     "processor",
     "register_user_plugin",

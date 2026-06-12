@@ -10,7 +10,6 @@ import numpy.typing as npt
 
 from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact, MaskArtifact
 
-
 ColorBGR = tuple[int, int, int]
 
 

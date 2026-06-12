@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from sef.core.artifacts.data.VectorFieldGraphData import VectorFieldGraphData
 from sef.core.artifacts.signal_sample.DenseOpticalFlowSignalSample import (
     DenseOpticalFlowSignalSample,
 )
-from sef.core.artifacts.data.VectorFieldGraphData import VectorFieldGraphData
 from sef.core.interfaces.IAnalyzer import IAnalyzer
 from sef.core.interfaces.IData import IData
 from sef.core.interfaces.ISignal import ISignal

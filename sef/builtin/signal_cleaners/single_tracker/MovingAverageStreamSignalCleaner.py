@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Iterable
 
-from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
 from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
 from sef.core.interfaces.BufferContracts import IBuffer
 from sef.core.interfaces.ISignalSample import ISignalSample
 from sef.core.interfaces.StageCapabilities import StageCapabilities

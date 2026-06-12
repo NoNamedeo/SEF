@@ -3,8 +3,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from sef.core.interfaces.ISignal import ISignal
-from sef.core.interfaces.IData import IData
 from sef.core.interfaces.ISignalSample import ISignalSample
 
 

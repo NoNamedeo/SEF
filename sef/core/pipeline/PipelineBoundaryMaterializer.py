@@ -3,8 +3,8 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from sef.core.artifacts.Signal import Signal
 from sef.core.interfaces.BufferContracts import IBuffer
 from sef.core.interfaces.ISignal import ISignal
 from sef.core.interfaces.ISignalSample import ISignalSample

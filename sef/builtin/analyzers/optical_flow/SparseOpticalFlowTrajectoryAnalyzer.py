@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from sef.core.interfaces.IAnalyzer import IAnalyzer
-from sef.core.interfaces.ISignal import ISignal
 from sef.core.artifacts.data.TrajectoryData import TrajectoryData
 from sef.core.artifacts.signal_sample.SparseOpticalFlowSignalSample import SparseOpticalFlowSignalSample
+from sef.core.interfaces.IAnalyzer import IAnalyzer
+from sef.core.interfaces.ISignal import ISignal
 
 
 class SparseOpticalFlowTrajectoryAnalyzer(IAnalyzer):

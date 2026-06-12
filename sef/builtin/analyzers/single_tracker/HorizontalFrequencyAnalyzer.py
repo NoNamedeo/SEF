@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import numpy as np
 
+from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
 from sef.core.interfaces.IAnalyzer import IAnalyzer
 from sef.core.interfaces.IData import IData
 from sef.core.interfaces.ISignal import ISignal
-from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
 
 
 class HorizontalFrequencyAnalyzer(IAnalyzer):

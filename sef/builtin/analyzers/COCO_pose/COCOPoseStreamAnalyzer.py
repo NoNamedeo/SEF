@@ -7,9 +7,9 @@ from typing import Any
 import joblib
 import numpy as np
 
+from sef.core.artifacts.buffer.DataBuffer import DataBuffer
 from sef.core.artifacts.data.COCOPoseTennisFrameData import COCOPoseTennisFrameData, COCOPoseTennisSequenceData
 from sef.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
-from sef.core.artifacts.buffer.DataBuffer import DataBuffer
 from sef.core.interfaces.BufferContracts import IBuffer
 from sef.core.interfaces.IData import IData
 from sef.core.interfaces.ISignal import ISignal

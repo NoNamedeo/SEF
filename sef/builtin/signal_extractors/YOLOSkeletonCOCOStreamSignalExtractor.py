@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from sef.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from sef.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
 from sef.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from sef.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
 from sef.core.interfaces.ISignalSample import ISignalSample

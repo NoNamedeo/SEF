@@ -4,8 +4,8 @@ from typing import Any, Tuple
 
 import cv2
 
-from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from sef.core.artifacts.Frame import Frame
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 
 
 class OpenCVResizeFrameProcessor(ISingleFrameProcessor):

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
 from sef.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from sef.core.interfaces.ISignal import ISignal
 from sef.core.interfaces.ISignalSample import ISignalSample

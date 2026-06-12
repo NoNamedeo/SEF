@@ -5,12 +5,12 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
+from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import (
     ArucoMarkerObservation,
     ArucoMarkerSignalSample,
     MarkerCorners,
 )
-from sef.core.artifacts.Signal import Signal
 from sef.core.interfaces.BufferContracts import IBuffer
 from sef.core.interfaces.ISignal import ISignal
 from sef.core.interfaces.ISignalSample import ISignalSample

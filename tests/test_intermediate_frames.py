@@ -5,8 +5,10 @@ from typing import Any
 
 import numpy as np
 
-from sef.core.artifacts.Frame import Frame
+from sef.builtin.visualizers.intermediate_frames.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
+from sef.builtin.visualizers.intermediate_frames.IntermediateFramesVisualizer import IntermediateFramesVisualizer
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.intermediate_frame.IntermediateFrameComposition import compose_side_by_side
 from sef.core.artifacts.mask.MaskArtifacts import (
     FrameMaskArtifact,
@@ -27,8 +29,6 @@ from sef.core.pipeline.Pipeline import Pipeline
 from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from sef.core.visualization.VisualArtifact import ImageArtifact
-from sef.builtin.visualizers.intermediate_frames.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
-from sef.builtin.visualizers.intermediate_frames.IntermediateFramesVisualizer import IntermediateFramesVisualizer
 
 
 class DebugResult(IData):

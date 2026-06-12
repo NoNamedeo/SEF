@@ -10,11 +10,12 @@ from typing import Any
 
 import numpy as np
 
-from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
-from sef.core.artifacts.Frame import Frame
+from sef.core.pipeline.NoRetryPolicy import NoRetryPolicy
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
 from sef.core.events.Event import Event
 from sef.core.events.EventBus import EventBus
 from sef.core.events.PipelineEvent import PipelineEvent
@@ -46,7 +47,6 @@ from sef.core.pipeline.VisualizerBinding import VisualizerBinding
 from sef.core.visualization.PipelineOutputs import PipelineOutputs
 from sef.core.visualization.VisualArtifact import VisualArtifact
 from sef.core.visualization.VisualizationContext import VisualizationContext
-from sef.builtin.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 # ── Stub components ──────────────────────────────────────────────────────────
 

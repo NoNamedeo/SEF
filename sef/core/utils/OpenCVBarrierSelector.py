@@ -7,7 +7,6 @@ import cv2
 
 from sef.core.utils.OpenCVDisplayUtils import DisplayTransform
 
-
 Barrier = tuple[tuple[int, int], tuple[int, int]]
 
 

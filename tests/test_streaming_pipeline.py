@@ -7,14 +7,16 @@ from pathlib import Path
 import numpy as np
 
 from sef.builtin.analyzers.NoAnalyzer import NoAnalyzer
-from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from sef.builtin.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
+from sef.builtin.signal_extractors.NoSignalExtractor import NoSignalExtractor
 from sef.core.artifacts.buffer.DataBuffer import DataBuffer
-from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.buffer.SignalBuffer import SignalBuffer
 from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
 from sef.core.artifacts.data.TwoDimPointData import TwoDimPointData
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
 from sef.core.interfaces.BufferContracts import (
     IBuffer,
     IBufferSubscription,
@@ -50,8 +52,6 @@ from sef.core.pipeline.PipelineExecutionPolicy import (
 from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from sef.core.visualization.VisualArtifact import TextArtifact, VideoFileArtifact, VisualArtifact
 from sef.core.visualization.VisualizationContext import VisualizationContext
-from sef.builtin.exporters.OpenCVFrameBufferVideoExporter import OpenCVFrameBufferVideoExporter
-from sef.builtin.signal_extractors.NoSignalExtractor import NoSignalExtractor
 
 
 def test_frame_buffer_can_close_when_full() -> None:

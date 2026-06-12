@@ -9,5 +9,6 @@ config builders and plugin catalog UIs.
 
 ::: sef.core.plugins.PluginRegistry.PluginRegistry
 
-::: sef.core.plugins.PluginRegistry.create_builtin_registry
+Built-in component registration lives outside the core registry package:
 
+::: sef.builtin.registry.create_builtin_registry

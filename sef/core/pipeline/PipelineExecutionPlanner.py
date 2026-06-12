@@ -5,16 +5,16 @@ from typing import Any
 from sef.core.pipeline.PipelineComponentCapabilities import PipelineComponentCapabilities
 from sef.core.pipeline.PipelineContext import PipelineContext
 from sef.core.pipeline.PipelineExecutionLookahead import PipelineExecutionLookahead
+from sef.core.pipeline.PipelineExecutionPlan import (
+    ExecutionPlanStage,
+    PipelineExecutionPlan,
+    capabilities_of,
+)
 from sef.core.pipeline.PipelineExecutionPolicy import (
     DefaultPipelineExecutionPolicy,
     PipelineExecutionEstimates,
     PipelineExecutionPolicy,
     PipelineStagePolicyContext,
-)
-from sef.core.pipeline.PipelineExecutionPlan import (
-    ExecutionPlanStage,
-    PipelineExecutionPlan,
-    capabilities_of,
 )
 from sef.core.pipeline.VisualizerBinding import VisualizerBinding
 

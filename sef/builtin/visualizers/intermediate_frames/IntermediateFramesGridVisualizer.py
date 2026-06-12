@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from sef.builtin.visualizers.intermediate_frames.IntermediateFramesVisualizer import (
+    IntermediateFramesVisualizer,
+    _artifact_grid_label,
+)
 from sef.core.artifacts.intermediate_frame.IntermediateFrameComposition import (
     compose_image_grid,
     compose_intermediate_frame_comparison,
@@ -10,10 +14,6 @@ from sef.core.artifacts.intermediate_frame.IntermediateFrameComposition import (
 from sef.core.interfaces.IData import IData
 from sef.core.visualization.VisualArtifact import ArtifactRole, ImageArtifact, VisualArtifact
 from sef.core.visualization.VisualizationContext import VisualizationContext
-from sef.builtin.visualizers.intermediate_frames.IntermediateFramesVisualizer import (
-    IntermediateFramesVisualizer,
-    _artifact_grid_label,
-)
 
 
 class IntermediateFramesGridVisualizer(IntermediateFramesVisualizer):

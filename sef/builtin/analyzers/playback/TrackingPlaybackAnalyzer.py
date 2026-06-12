@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
-from sef.core.artifacts.signal_sample.MultiObjectSignalSample import (
-    MultiObjectSignalSample,
-    MultiObjectTrack,
-)
 from sef.core.artifacts.data.TrackingPlaybackData import (
     TrackingPlaybackData,
     TrackingPlaybackFrame,
     TrackingPlaybackTrack,
+)
+from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from sef.core.artifacts.signal_sample.MultiObjectSignalSample import (
+    MultiObjectSignalSample,
+    MultiObjectTrack,
 )
 from sef.core.interfaces.IAnalyzer import IAnalyzer
 from sef.core.interfaces.ISignal import ISignal

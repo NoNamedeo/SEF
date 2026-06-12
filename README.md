@@ -120,6 +120,11 @@ The same facade accepts plugin names, component classes, component instances, or
 plain Python functions. This keeps simple experiments lightweight without
 removing the advanced extension model.
 
+`.run()` on a pipeline builder is the direct single-run shortcut. Use
+`sef.orchestrator().run(pipeline)` instead when execution needs lifecycle
+callbacks, background submission with `submit()`, active-id tracking, or
+event-driven branching.
+
 ```python
 import cv2
 import sef
@@ -161,8 +166,8 @@ contracts when they need full control over registries, orchestration, or
 runtime integration:
 
 ```python
+from sef.builtin.registry import create_builtin_registry
 from sef.core import ConfigPipelineBuilder, Pipeline
-from sef.core.plugins import create_builtin_registry
 
 registry = create_builtin_registry()
 
@@ -226,6 +231,36 @@ The same example can be run without installing console scripts:
 python -m examples.minimal_pipeline
 python -m sef validate pipeline.yaml
 ```
+
+## Orchestration
+
+`sef.pipeline()` describes one pipeline. `sef.orchestrator()` coordinates
+execution when an application needs lifecycle callbacks, background submission,
+or event-driven branching:
+
+```python
+import sef
+
+events = []
+
+pipeline = (
+    sef.pipeline("tracked-run")
+    .frames(MyFrameExtractor)
+    .signals(MySignalExtractor)
+    .analyze(MyAnalyzer)
+)
+
+outputs = (
+    sef.orchestrator()
+    .on_lifecycle("after_run", events.append)
+    .run(pipeline)
+)
+```
+
+Branching and orchestration are intentionally not part of the YAML config
+schema yet. A config file describes a single pipeline graph; application code
+decides whether to run it directly, submit it in the background, observe
+lifecycle events, or attach branching rules.
 
 
 ## Intermediate Artifacts

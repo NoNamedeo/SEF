@@ -5,7 +5,18 @@ code should import from these packages instead of relying on file layout.
 
 ## Recommended Imports
 
-Use `sef` for normal application code:
+Use `sef` for normal application code. The public mental model is deliberately
+small:
+
+- `sef.pipeline(...)`, `sef.video(...)`, or `sef.webcam(...)` describe one pipeline.
+- `.run()` on that builder is the shortest single-pipeline execution path.
+- `sef.orchestrator()` coordinates execution when lifecycle events, background
+  submission, or branching are needed.
+- `sef.from_config(...)` loads the same pipeline model from YAML/JSON data.
+
+The builder object returned by `sef.pipeline(...)` is named `PipelineFacade` in
+type hints, but users should treat it as the fluent pipeline builder rather than
+as a separate runtime concept.
 
 ```python
 import sef
@@ -18,13 +29,45 @@ outputs = (
 )
 ```
 
-Use `sef.core` or `sef.core` only when you need lower-level contracts,
-custom registries, or runtime integration:
+Use `sef.orchestrator()` when execution needs lifecycle observation, background
+submission, shared runner state, or simple event-driven branching:
+
+```python
+import sef
+
+events = []
+pipeline = (
+    sef.pipeline("tracked-run")
+    .frames(MyFrameExtractor)
+    .signals(MySignalExtractor)
+    .analyze(MyAnalyzer)
+)
+
+outputs = (
+    sef.orchestrator()
+    .on_lifecycle("after_run", events.append)
+    .run(pipeline)
+)
+```
+
+The two run paths are intentionally different:
+
+- `pipeline.run()` is a convenience shortcut for one immediate pipeline run.
+  It builds the context and executes it directly.
+- `sef.orchestrator().run(pipeline)` uses the orchestration layer. Use it when
+  the run needs lifecycle callbacks, async submission through `submit()`,
+  active-id tracking, or event-driven branching.
+
+Use `sef.core` only when you need lower-level contracts, custom registries, or
+runtime integration:
 
 ```python
 from sef.core import (
     ConfigPipelineBuilder,
+    EventBus,
+    IBranchingRule,
     Pipeline,
+    PipelineOrchestrator,
     PipelineConfigurationError,
     PipelineExecutionError,
     PluginRegistry,
@@ -33,11 +76,15 @@ from sef.core.interfaces import IAnalyzer, IFrameExtractor, StageCapabilities
 from sef.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
 from sef.core.plugins import PluginCategory
 from sef.core.visualization import TextArtifact
+from sef.builtin.registry import create_builtin_registry
 ```
 
 ## Public Packages
 
 `sef` exposes high-level convenience imports.
+
+`sef.orchestrator()` exposes the simple orchestration path for synchronous runs,
+background runs, lifecycle callbacks, and branching rules.
 
 `sef.core` exposes common core contracts and error types.
 
@@ -53,6 +100,10 @@ from sef.core.visualization import TextArtifact
 config versioning.
 
 `sef.core.plugins` exposes registry contracts.
+
+`sef.builtin.registry` exposes the built-in registry adapter for OpenCV,
+Matplotlib, and other concrete SEF components. It intentionally lives outside
+`sef.core` so the core registry stays independent from concrete adapters.
 
 `sef.core.realtime` exposes realtime preview publication contracts.
 
@@ -77,6 +128,10 @@ sef version
 CLI commands load builtin components plus local plugin modules from `plugins/*.py`.
 Errors are rendered as readable messages by default; pass `--debug` to include a
 full traceback for `run` and `validate` failures.
+
+The CLI config schema is intentionally pipeline-only. It does not accept
+branching or orchestration fields. Use Python orchestration APIs for those
+workflows.
 
 ## Compatibility Rules
 

@@ -12,22 +12,41 @@ from sef.cli import main
 def test_cli_validates_repository_yaml_config(capsys) -> None:
     pytest.importorskip("yaml")
 
-    exit_code = main(["validate", "pipeline.yaml"])
+    config_path = Path("examples/pipeline.yaml")
+    exit_code = main(["validate", str(config_path)])
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "valid: pipeline.yaml" in captured.out
+    assert f"valid: {config_path}" in captured.out
     assert "schema_version: 1.0" in captured.out
 
 
-def test_cli_validates_repository_aruco_yaml_config(capsys) -> None:
+def test_cli_validates_repository_aruco_yaml_config(tmp_path: Path, capsys) -> None:
     pytest.importorskip("yaml")
+    config_path = tmp_path / "pipeline_aruco.yaml"
+    config_path.write_text(
+        """
+schema_version: "1.0"
+pipeline:
+  frame_extractor:
+    name: opencv_buffered
+    params:
+      path: videos/input.mp4
+      config:
+        max_frames: 1
+  signal_extractor:
+    name: aruco_marker
+  analyzers:
+    - name: aruco_displacement
+""".lstrip(),
+        encoding="utf-8",
+    )
 
-    exit_code = main(["validate", "pipeline_aruco.yaml"])
+    exit_code = main(["validate", str(config_path)])
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "valid: pipeline_aruco.yaml" in captured.out
+    assert f"valid: {config_path}" in captured.out
 
 
 def test_cli_lists_builtin_components(capsys) -> None:

@@ -14,11 +14,11 @@ from sef.core.interfaces.pipeline.IPipelineMonitor import IPipelineMonitor
 from sef.core.interfaces.pipeline.IPipelineOutputStore import IPipelineOutputStore
 from sef.core.interfaces.pipeline.IPipelineRunner import IPipelineRunner
 from sef.core.interfaces.pipeline.IRetryPolicy import IRetryPolicy
+from sef.core.pipeline.NoRetryPolicy import NoRetryPolicy
 from sef.core.pipeline.Pipeline import Pipeline, PipelineExecutionError
 from sef.core.pipeline.PipelineErrors import PipelineRunAlreadyActiveError
 from sef.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
 from sef.core.visualization.PipelineOutputs import PipelineOutputs
-from sef.builtin.retry_policies.NoRetryPolicy import NoRetryPolicy
 
 log = logging.getLogger(__name__)
 

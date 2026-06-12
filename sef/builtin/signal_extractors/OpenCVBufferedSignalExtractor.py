@@ -5,12 +5,12 @@ from typing import Any
 
 import cv2
 
-from sef.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
-from sef.core.interfaces.ISignal import ISignal
-from sef.core.interfaces.ISignalExtractor import ISignalExtractor
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.signal_sample.BoxSignalSample import BoundingBox, BoxSignalSample
+from sef.core.interfaces.ILiveAnalyzer import ILiveAnalyzer
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalExtractor import ISignalExtractor
 
 
 class OpenCVBufferedSignalExtractor(ISignalExtractor):

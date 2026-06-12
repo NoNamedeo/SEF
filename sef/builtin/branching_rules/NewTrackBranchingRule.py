@@ -4,14 +4,14 @@ import logging
 from pathlib import Path
 
 from sef.builtin.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-from sef.core.events.Event import Event
-from sef.core.interfaces.pipeline.IBranchingRule import IBranchingRule
-from sef.core.pipeline.PipelineContext import PipelineContext
-from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from sef.builtin.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
 from sef.builtin.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
 from sef.builtin.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
 from sef.builtin.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
+from sef.core.events.Event import Event
+from sef.core.interfaces.pipeline.IBranchingRule import IBranchingRule
+from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 
 log = logging.getLogger(__name__)
 

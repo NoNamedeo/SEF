@@ -15,17 +15,26 @@ _EXPORT_PACKAGES = (
 )
 
 __all__ = [
+    "BranchingCoordinator",
     "CURRENT_PIPELINE_CONFIG_VERSION",
     "ConfigPipelineBuilder",
     "ConfigSchemaError",
     "ConfigVersionError",
+    "Event",
+    "EventBus",
     "Frame",
     "FrameBuffer",
+    "IBranchingRule",
+    "IEventEmitter",
+    "NoRetryPolicy",
     "Pipeline",
     "PipelineConfigurationError",
     "PipelineContext",
     "PipelineContextError",
+    "PipelineEvent",
     "PipelineExecutionError",
+    "PipelineLifecycleEvent",
+    "PipelineOrchestrator",
     "PluginCategory",
     "PluginRegistry",
     "PluginResolutionError",
@@ -34,6 +43,7 @@ __all__ = [
     "StageErrorContext",
     "StageExecutionError",
     "TextArtifact",
+    "ThreadedPipelineRunner",
     "VisualArtifact",
 ]
 

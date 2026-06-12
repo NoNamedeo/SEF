@@ -7,8 +7,8 @@ from typing import Any
 import cv2
 import numpy as np
 
-from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Frame import Frame
 from sef.core.interfaces.BufferContracts import IBuffer
 from sef.core.interfaces.IFrameExporter import FrameExportContext, FrameExportResult
 from sef.core.interfaces.StageCapabilities import StageCapabilities

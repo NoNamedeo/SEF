@@ -8,8 +8,8 @@ from sef.builtin.frame_processors.dynamic_object_removal.foreground_mask_extract
     ForegroundMaskExtractor,
 )
 from sef.builtin.frame_processors.dynamic_object_removal.mask_refiner import (
-    MaskRefiner,
     MaskRefinementResult,
+    MaskRefiner,
     MorphologicalMaskRefiner,
 )
 from sef.builtin.frame_processors.dynamic_object_removal.processor import DynamicObjectRemovalFrameProcessor

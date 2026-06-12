@@ -7,7 +7,6 @@ import numpy as np
 
 from sef.core.interfaces.ISignalSample import ISignalSample
 
-
 Skeleton2D = np.ndarray  # shape: (17, 2)
 Confidence = np.ndarray   # shape: (17,)
 

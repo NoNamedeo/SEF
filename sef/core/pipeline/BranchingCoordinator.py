@@ -51,8 +51,16 @@ class BranchingCoordinator:
     def event_bus(self) -> IEventBus:
         return self._event_bus
 
+    def add_rules(self, rules: list[IBranchingRule]) -> None:
+        """Append branching rules without registering another coordinator."""
+        with self._lock:
+            self._rules.extend(rules)
+
     def _on_domain_event(self, event: Event) -> None:
-        for rule in self._rules:
+        with self._lock:
+            rules = tuple(self._rules)
+
+        for rule in rules:
             try:
                 if not rule.matches(event):
                     continue

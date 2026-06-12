@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-import math
 from typing import Any
 
 from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerSignalSample, Point2D

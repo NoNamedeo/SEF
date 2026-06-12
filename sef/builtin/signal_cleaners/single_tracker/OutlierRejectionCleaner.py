@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import numpy as np
 
-from sef.core.interfaces.ISignal import ISignal
-from sef.core.interfaces.ISignalCleaner import ISignalCleaner
 from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalCleaner import ISignalCleaner
 
 
 class OutlierRejectionCleaner(ISignalCleaner):

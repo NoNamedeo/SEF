@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Frame import Frame
 from sef.core.interfaces.BufferContracts import IBuffer
 from sef.core.interfaces.StageCapabilities import StageCapabilities
 from sef.core.interfaces.StreamingContracts import IStreamingFrameBufferProcessor

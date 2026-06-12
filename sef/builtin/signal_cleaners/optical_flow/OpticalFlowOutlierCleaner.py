@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from typing import Any
 import math
+from typing import Any
 
 import numpy as np
 
-from sef.core.interfaces.ISignal import ISignal
-from sef.core.interfaces.ISignalCleaner import ISignalCleaner
 from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.signal_sample.SparseOpticalFlowSignalSample import SparseOpticalFlowSignalSample
+from sef.core.interfaces.ISignal import ISignal
+from sef.core.interfaces.ISignalCleaner import ISignalCleaner
 
 
 class OpticalFlowOutlierFilter(ISignalCleaner):

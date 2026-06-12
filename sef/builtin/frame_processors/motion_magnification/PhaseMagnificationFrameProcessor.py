@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Any
 import cv2
 import numpy as np
 
-from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
 from sef.core.interfaces.IFrameBufferProcessor import IFrameBufferProcessor
 from sef.core.interfaces.StageCapabilities import StageCapabilities
@@ -197,6 +197,7 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
         raise ValueError("Cannot infer fps for phase magnification. Provide fps explicitly or ensure frame metadata includes source_fps.")
 
     def _magnify_frames(self, frames: list[Frame], *, fps: float, sampling_rate: float) -> list[np.ndarray]:
+        self._validate_release_dir()
         temp_root_context = (
             tempfile.TemporaryDirectory(prefix="sef_phase_mag_", dir=self.temp_dir)
             if not self.keep_temp_files
@@ -274,8 +275,6 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
         frame_count: int,
     ) -> str:
         release_dir = self.release_dir.resolve()
-        if not release_dir.exists():
-            raise RuntimeError(f"Phase magnification release directory not found: {release_dir}")
         escaped_release = self._matlab_string(release_dir)
         escaped_input = self._matlab_string(input_video)
         escaped_output = self._matlab_string(output_video)
@@ -306,6 +305,11 @@ class PhaseMagnificationFrameProcessor(IFrameBufferProcessor):
                 "end",
             ]
         )
+
+    def _validate_release_dir(self) -> None:
+        release_dir = self.release_dir.resolve()
+        if not release_dir.exists():
+            raise RuntimeError(f"Phase magnification release directory not found: {release_dir}")
 
     @staticmethod
     def _matlab_string(value: str | Path) -> str:

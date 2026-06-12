@@ -10,28 +10,28 @@ import numpy as np
 
 from sef.builtin.analyzers.ArUco.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
 from sef.builtin.analyzers.ArUco.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
+from sef.builtin.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
+from sef.builtin.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
+from sef.builtin.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
+from sef.builtin.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
+from sef.core.artifacts.buffer.DataBuffer import DataBuffer
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from sef.core.artifacts.data.ArucoDisplacementData import (
     ArucoMarkerDisplacementData,
     ArucoMarkerDisplacementFrameData,
 )
-from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerObservation, ArucoMarkerSignalSample
-from sef.core.artifacts.buffer.DataBuffer import DataBuffer
 from sef.core.artifacts.Frame import Frame
-from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
 from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerObservation, ArucoMarkerSignalSample
 from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from sef.core.pipeline.Pipeline import Pipeline
-from sef.core.plugins.PluginRegistry import create_builtin_registry
+from sef.builtin.registry import create_builtin_registry
 from sef.core.visualization.VisualArtifact import (
     VIDEO_ARTIFACT_TYPES,
     DeferredVideoArtifact,
     VideoArtifact,
     VideoFileArtifact,
 )
-from sef.builtin.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
-from sef.builtin.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
-from sef.builtin.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
-from sef.builtin.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
 
 
 class ArucoPipelineTests(unittest.TestCase):

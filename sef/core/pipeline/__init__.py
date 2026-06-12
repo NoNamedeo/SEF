@@ -21,6 +21,7 @@ from sef.core._lazy_exports import install_lazy_exports
 
 _EXPORTS = {
     "AdaptiveSamplingFrameLatencyPolicy": ("sef.core.pipeline.LatencyPolicy", "AdaptiveSamplingFrameLatencyPolicy"),
+    "BranchingCoordinator": ("sef.core.pipeline.BranchingCoordinator", "BranchingCoordinator"),
     "BlockingFrameLatencyPolicy": ("sef.core.pipeline.LatencyPolicy", "BlockingFrameLatencyPolicy"),
     "ConfigPipelineBuilder": ("sef.core.pipeline.ConfigPipelineBuilder", "ConfigPipelineBuilder"),
     "ConfigSchemaError": ("sef.core.errors", "ConfigSchemaError"),
@@ -36,6 +37,7 @@ _EXPORTS = {
     "FluentPipelineBuilder": ("sef.core.pipeline.FluentPipelineBuilder", "FluentPipelineBuilder"),
     "FrameLatencyPolicy": ("sef.core.pipeline.LatencyPolicy", "FrameLatencyPolicy"),
     "LatencyPolicyConfig": ("sef.core.pipeline.LatencyPolicy", "LatencyPolicyConfig"),
+    "NoRetryPolicy": ("sef.core.pipeline.NoRetryPolicy", "NoRetryPolicy"),
     "PIPELINE_CONFIG_VERSION_KEY": (
         "sef.core.pipeline.PipelineConfigVersioning",
         "PIPELINE_CONFIG_VERSION_KEY",

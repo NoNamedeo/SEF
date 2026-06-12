@@ -7,6 +7,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from sef.builtin.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
 from sef.core.artifacts.data.ArucoDisplacementData import ArucoMarkerDisplacementData
 from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import ArucoMarkerObservation
 from sef.core.interfaces.IData import IData
@@ -14,7 +15,6 @@ from sef.core.interfaces.StageCapabilities import StageCapabilities
 from sef.core.interfaces.StreamingContracts import IStreamingVisualizer
 from sef.core.visualization.VisualArtifact import VideoLikeArtifact
 from sef.core.visualization.VisualizationContext import VisualizationContext
-from sef.builtin.visualizers.TrackingVideoVisualizer import TrackingVideoVisualizer
 
 
 class ArucoAnnotatedVideoVisualizer(TrackingVideoVisualizer, IStreamingVisualizer):

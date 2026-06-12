@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import numpy as np
 
+from sef.builtin.visualizers.Matplotlib.MatplotlibArtifactVisualizer import MatplotlibArtifactVisualizer
 from sef.core.artifacts.buffer.DataBuffer import DataSubscription
 from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
 from sef.core.visualization.VisualArtifact import VisualArtifact
 from sef.core.visualization.VisualizationContext import VisualizationContext
-from sef.builtin.visualizers.Matplotlib.MatplotlibArtifactVisualizer import MatplotlibArtifactVisualizer
 
 
 class MatplotlibFunctionStreamVisualizer(MatplotlibArtifactVisualizer):

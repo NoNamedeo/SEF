@@ -8,12 +8,12 @@ import cv2
 import numpy as np
 
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.signal_sample.MultiObjectSignalSample import (
     BoundingBox,
     MultiObjectSignalSample,
     MultiObjectTrack,
 )
-from sef.core.artifacts.Signal import Signal
 from sef.core.interfaces.IEventEmitter import IEventEmitter
 from sef.core.interfaces.ISignal import ISignal
 from sef.core.interfaces.ISignalExtractor import ISignalExtractor

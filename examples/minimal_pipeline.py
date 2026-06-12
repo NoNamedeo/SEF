@@ -4,9 +4,9 @@ import numpy as np
 
 import sef
 from sef.core.artifacts import Frame, Signal
-from sef.core.artifacts.signal_sample import BoxSignalSample
 from sef.core.artifacts.buffer import FrameBuffer
 from sef.core.artifacts.data import TwoDimGraphData
+from sef.core.artifacts.signal_sample import BoxSignalSample
 from sef.core.interfaces import IData, ISignal
 from sef.core.plugins import PluginCategory, PluginRegistry
 from sef.core.visualization import TextArtifact, VisualizationContext

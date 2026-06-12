@@ -1,12 +1,46 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
 from sef.core.interfaces.IData import IData
+
+
+class IntermediateFrameArtifactExporter(Protocol):
+    """Port implemented by infrastructure exporters for debug frame artifacts."""
+
+    def export_many(self, artifacts: tuple[IntermediateFrameArtifact, ...]) -> tuple[Path, ...]:
+        """Export artifacts and return written paths."""
+
+
+IntermediateFrameArtifactExporterFactory = Callable[[Path], IntermediateFrameArtifactExporter]
+
+_exporter_factory: IntermediateFrameArtifactExporterFactory | None = None
+
+
+def set_intermediate_frame_exporter_factory(factory: IntermediateFrameArtifactExporterFactory | None) -> None:
+    """
+    Register the process-local exporter factory used by ``export()``.
+
+    The core artifact model owns the collection and metadata. Concrete image
+    writing is infrastructure behavior, so builtin packages or applications
+    provide the exporter implementation through this hook.
+    """
+    global _exporter_factory
+    _exporter_factory = factory
+
+
+def create_intermediate_frame_exporter(output_directory: Path | str) -> IntermediateFrameArtifactExporter:
+    """Create the registered intermediate-frame exporter."""
+    if _exporter_factory is None:
+        raise RuntimeError(
+            "Intermediate frame export requires an exporter factory. "
+            "Import sef.builtin or register one with set_intermediate_frame_exporter_factory()."
+        )
+    return _exporter_factory(Path(output_directory))
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +108,4 @@ class IntermediateFrameArtifactCollection(IData):
         target = output_directory or self.metadata.get("export_directory")
         if target is None:
             raise ValueError("Intermediate frame export requires an output directory.")
-        from sef.builtin.exporters.IntermediateFrameArtifactExporter import IntermediateFrameArtifactExporter
-
-        return IntermediateFrameArtifactExporter(Path(target)).export_many(self.artifacts)
+        return create_intermediate_frame_exporter(Path(target)).export_many(self.artifacts)

@@ -1,22 +1,19 @@
 """Public plugin registry contracts.
 
 The registry package exposes category identifiers, immutable plugin
-descriptors, the production registry implementation, and the built-in registry
-factory. Declarative builders depend on this layer to resolve configuration
-entries without importing concrete OpenCV, YOLO, analysis, or visualization
-implementations directly.
+descriptors, and the production registry implementation. Declarative builders
+depend on this layer to resolve configuration entries without importing
+concrete OpenCV, YOLO, analysis, or visualization implementations directly.
 """
 
 from sef.core.plugins.PluginRegistry import (
     PluginCategory,
     PluginDefinition,
     PluginRegistry,
-    create_builtin_registry,
 )
 
 __all__ = [
     "PluginCategory",
     "PluginDefinition",
     "PluginRegistry",
-    "create_builtin_registry",
 ]

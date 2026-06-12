@@ -5,8 +5,8 @@ from typing import Any
 import cv2
 import numpy as np
 
-from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 from sef.core.artifacts.Frame import Frame
+from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor
 
 
 class OpenCVDynamicBackgroundReplacementFrameProcessor(ISingleFrameProcessor):

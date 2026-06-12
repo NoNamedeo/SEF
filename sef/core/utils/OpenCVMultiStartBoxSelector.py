@@ -1,5 +1,6 @@
+from typing import Any, List, Tuple
+
 import cv2
-from typing import Any, Tuple, List
 
 from sef.core.artifacts.Frame import Frame
 from sef.core.interfaces.ISingleFrameProcessor import ISingleFrameProcessor

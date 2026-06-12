@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from sef.core.plugins import PluginCategory, PluginRegistry
 from sef.api.function_adapters import (
     FunctionAnalyzer,
     FunctionFrameExtractor,
@@ -13,6 +12,7 @@ from sef.api.function_adapters import (
     FunctionVisualizer,
 )
 from sef.api.registry import register_user_plugin
+from sef.core.plugins import PluginCategory, PluginRegistry
 
 
 def frame_extractor(

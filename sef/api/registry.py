@@ -4,7 +4,8 @@ from collections.abc import Callable, Iterable, Mapping
 from functools import lru_cache
 from typing import Any
 
-from sef.core.plugins import PluginCategory, PluginDefinition, PluginRegistry, create_builtin_registry
+from sef.builtin.registry import create_builtin_registry
+from sef.core.plugins import PluginCategory, PluginDefinition, PluginRegistry
 
 _USER_REGISTRY = PluginRegistry()
 

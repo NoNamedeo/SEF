@@ -44,7 +44,8 @@ class PipelineCodeExporter:
                 from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
                 from sef.core.pipeline.Pipeline import Pipeline
                 from sef.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-                from sef.core.plugins.PluginRegistry import PluginRegistry, create_builtin_registry
+                from sef.api import default_registry
+                from sef.core.plugins.PluginRegistry import PluginRegistry
 
 
                 PIPELINE_EXPORT: dict[str, Any] = __PIPELINE_EXPORT__
@@ -61,7 +62,7 @@ class PipelineCodeExporter:
                     Register project-specific plugins here before calling build_context when the
                     export contains custom registered component names.
                     """
-                    return create_builtin_registry()
+                    return default_registry(include_builtins=True)
 
 
                 def build_context(registry: PluginRegistry | None = None):

@@ -5,6 +5,9 @@ from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
 
+from sef.api.config import normalize_config
+from sef.api.registry import clone_registry, default_registry
+from sef.api.stage_refs import ComponentRef, StageRegistry, StageSpec
 from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
 from sef.core.pipeline.Pipeline import Pipeline
 from sef.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_VERSION
@@ -12,20 +15,21 @@ from sef.core.pipeline.PipelineContext import PipelineContext
 from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
 from sef.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
 from sef.core.plugins import PluginCategory, PluginRegistry
-from sef.api.config import normalize_config
-from sef.api.registry import clone_registry, default_registry
-from sef.api.stage_refs import ComponentRef, StageRegistry, StageSpec
 
 
 @dataclass(frozen=True, slots=True)
 class PipelineFacade:
     """
-    User-facing immutable builder that hides context construction and execution.
+    User-facing immutable builder that hides context construction.
 
     The facade accepts existing plugin names, component classes, component
     instances, and plain Python callables. At execution time it emits the same
     versioned config consumed by ``ConfigPipelineBuilder``, so advanced users can
     still drop down to the core API without a second pipeline model.
+
+    ``run()`` is the direct single-pipeline shortcut. Use
+    ``sef.orchestrator().run(...)`` when a run needs lifecycle callbacks,
+    background submission, active-id tracking, or event-driven branching.
     """
 
     pipeline_id: str | None
@@ -161,7 +165,14 @@ class PipelineFacade:
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
     ):
-        """Build and execute the pipeline through the stable core facade."""
+        """
+        Build and execute this pipeline immediately.
+
+        This is intentionally the shortest path for simple single-pipeline
+        scripts. It does not create a shared orchestrator runner; use
+        ``sef.orchestrator()`` for lifecycle observation, async submission, or
+        branching.
+        """
         resolved_pipeline_id = pipeline_id or self.pipeline_id
         return Pipeline(
             self.build_context(),
@@ -179,26 +190,14 @@ class PipelineFacade:
                 PluginCategory.FRAME_EXTRACTOR,
                 self._required(self._frame_extractor, "frames"),
             ),
-            "frame_processors": [
-                stage_registry.frame_processor_entry(spec)
-                for spec in self._frame_processors
-            ],
+            "frame_processors": [stage_registry.frame_processor_entry(spec) for spec in self._frame_processors],
             "signal_extractor": stage_registry.entry(
                 PluginCategory.SIGNAL_EXTRACTOR,
                 self._required(self._signal_extractor, "signals"),
             ),
-            "signal_cleaners": [
-                stage_registry.entry(PluginCategory.SIGNAL_CLEANER, spec)
-                for spec in self._signal_cleaners
-            ],
-            "analyzers": [
-                stage_registry.entry(PluginCategory.ANALYZER, spec)
-                for spec in self._analyzers
-            ],
-            "visualizers": [
-                stage_registry.entry(PluginCategory.VISUALIZER, spec)
-                for spec in self._visualizers
-            ],
+            "signal_cleaners": [stage_registry.entry(PluginCategory.SIGNAL_CLEANER, spec) for spec in self._signal_cleaners],
+            "analyzers": [stage_registry.entry(PluginCategory.ANALYZER, spec) for spec in self._analyzers],
+            "visualizers": [stage_registry.entry(PluginCategory.VISUALIZER, spec) for spec in self._visualizers],
         }
         if self._runtime:
             pipeline_config["runtime"] = deepcopy(self._runtime)
@@ -214,10 +213,7 @@ class PipelineFacade:
         section = dict(self._intermediate_frames or {})
         visualizers = section.get("visualizers", ())
         if visualizers:
-            section["visualizers"] = [
-                stage_registry.entry(PluginCategory.VISUALIZER, spec)
-                for spec in visualizers
-            ]
+            section["visualizers"] = [stage_registry.entry(PluginCategory.VISUALIZER, spec) for spec in visualizers]
         return section
 
     def _with_frame_source_config(self, key: str, value: Any) -> PipelineFacade:

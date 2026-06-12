@@ -4,6 +4,7 @@ import time
 from collections.abc import Iterable
 from typing import Any
 
+from sef.builtin.visualizers.COCO_pose.COCOPoseFrameRenderer import COCOPoseFrameRenderer, COCOPoseRenderConfig
 from sef.core.artifacts.data.COCOPoseFrameData import COCOPoseFrameData, COCOPoseSequenceData
 from sef.core.artifacts.data.COCOPoseTennisFrameData import COCOPoseTennisFrameData, COCOPoseTennisSequenceData
 from sef.core.interfaces.IData import IData
@@ -14,7 +15,6 @@ from sef.core.realtime.NullRealtimeFrameSink import NullRealtimeFrameSink
 from sef.core.realtime.RealtimeFrame import RealtimeFrame
 from sef.core.visualization.VisualArtifact import VisualArtifact
 from sef.core.visualization.VisualizationContext import VisualizationContext
-from sef.builtin.visualizers.COCO_pose.COCOPoseFrameRenderer import COCOPoseFrameRenderer, COCOPoseRenderConfig
 
 
 class RealtimeCOCOPoseFrameVisualizer(IStreamingVisualizer):

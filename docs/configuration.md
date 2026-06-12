@@ -50,6 +50,23 @@ Optional fields:
 Legacy configs that use `frame_cleaners` are normalized to `frame_processors`.
 New configs should always write `frame_processors`.
 
+## No Orchestration in Config
+
+Pipeline config describes one executable pipeline graph. It intentionally does
+not configure event buses, lifecycle handlers, retry policies, output stores,
+or branching rules.
+
+That boundary is deliberate. Branching and orchestration are application
+behavior, not pipeline structure. Keeping them in Python avoids a complex config
+language before real usage patterns are clear. Use `sef.orchestrator()` for the
+common orchestration path, and `sef.core` for custom runners, monitors, stores,
+or retry policies.
+
+If a branching workflow needs to expose child pipeline results, model that at
+the application/output layer: record which child pipelines ran, which events
+triggered them, and which upstream data contributed to the final result. Do not
+put branching topology into the YAML schema yet.
+
 ## Plugin Entry
 
 ```python

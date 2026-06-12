@@ -8,14 +8,14 @@ from typing import Any
 import cv2
 import numpy as np
 
+from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.signal_sample.ArucoMarkerSignalSample import (
     ArucoMarkerObservation,
     ArucoMarkerSignalSample,
     MarkerCorners,
 )
-from sef.core.artifacts.Frame import Frame
-from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from sef.core.artifacts.Signal import Signal
 from sef.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from sef.core.interfaces.ISignal import ISignal
 from sef.core.interfaces.ISignalSample import ISignalSample

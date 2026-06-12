@@ -7,9 +7,11 @@ from pathlib import Path
 from typing import Any, ClassVar, Protocol
 
 from sef.core.artifacts.Frame import Frame
-from sef.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import IntermediateFrameArtifactCollection
+from sef.core.artifacts.intermediate_frame.IntermediateFrameArtifacts import (
+    IntermediateFrameArtifactCollection,
+    create_intermediate_frame_exporter,
+)
 from sef.core.artifacts.mask.MaskArtifacts import IntermediateFrameArtifact
-from sef.builtin.exporters.IntermediateFrameArtifactExporter import IntermediateFrameArtifactExporter
 
 
 @dataclass(frozen=True, slots=True)
@@ -149,7 +151,7 @@ class IntermediateFrameArtifactStore:
         self._artifacts_by_sequence: OrderedDict[int, list[IntermediateFrameArtifact]] = OrderedDict()
         self._eager_exported_paths: list[Path] = []
         self._exporter = (
-            IntermediateFrameArtifactExporter(config.export_directory)
+            create_intermediate_frame_exporter(config.export_directory)
             if config.export_directory is not None and not config.lazy_saving
             else None
         )

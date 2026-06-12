@@ -26,6 +26,7 @@ nav:
   - Plugin Authoring: plugin-authoring.md
   - Streaming Runtime: streaming-runtime.md
   - Error Handling: error-handling.md
+  - Dependency Plan: dependency-management-plan.md
   - Versioning: versioning.md
   - Examples: examples.md
   - Reference:

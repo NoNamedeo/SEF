@@ -3,10 +3,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
-from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
+from sef.core.artifacts.Frame import Frame
+from sef.core.artifacts.Signal import Signal
 from sef.core.interfaces.IAnalyzer import IAnalyzer
 from sef.core.interfaces.IData import IData
 from sef.core.interfaces.IFrameExtractor import IFrameExtractor

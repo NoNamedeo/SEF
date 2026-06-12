@@ -4,8 +4,8 @@ import inspect
 from collections.abc import Callable
 from typing import Any
 
-from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Frame import Frame
 from sef.core.interfaces.IAnalyzer import IAnalyzer
 from sef.core.interfaces.IData import IData
 from sef.core.interfaces.IFrameExtractor import IFrameExtractor

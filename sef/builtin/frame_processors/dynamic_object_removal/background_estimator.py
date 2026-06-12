@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 import logging
+from collections.abc import Sequence
 from typing import Protocol
 
 import numpy as np
 import numpy.typing as npt
 
-from sef.core.artifacts.Frame import Frame
 from sef.builtin.frame_processors.dynamic_object_removal.config import DynamicObjectRemovalConfig
+from sef.core.artifacts.Frame import Frame
 
 log = logging.getLogger(__name__)
 

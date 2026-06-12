@@ -3,13 +3,13 @@ from __future__ import annotations
 import numpy as np
 
 from sef.builtin.analyzers.COCO_pose.COCOPoseStreamAnalyzer import COCOPoseStreamAnalyzer
+from sef.builtin.visualizers.COCO_pose.OpenCVCOCOPoseRealtimeVisualizer import OpenCVCOCOPoseRealtimeVisualizer
+from sef.core.artifacts.buffer.DataBuffer import DataBuffer
 from sef.core.artifacts.data.COCOPoseFrameData import COCOPoseFrameData
 from sef.core.artifacts.data.COCOPoseTennisFrameData import COCOPoseTennisSequenceData
-from sef.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
-from sef.core.artifacts.buffer.DataBuffer import DataBuffer
 from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
 from sef.core.pose.COCOSkeletonNormalizer import COCOSkeletonNormalizer
-from sef.builtin.visualizers.COCO_pose.OpenCVCOCOPoseRealtimeVisualizer import OpenCVCOCOPoseRealtimeVisualizer
 
 
 def test_coco_pose_stream_analyzer_maps_skeleton_samples_to_pose_frames() -> None:

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import unittest
 
-from sef.core.errors import DuplicatePluginRegistrationError, InvalidPluginRegistrationError
-from sef.core.plugins.PluginRegistry import PluginDefinition, PluginRegistry, create_builtin_registry
 from sef.builtin.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
 from sef.builtin.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
+from sef.core.errors import DuplicatePluginRegistrationError, InvalidPluginRegistrationError
+from sef.builtin.registry import create_builtin_registry
+from sef.core.plugins.PluginRegistry import PluginDefinition, PluginRegistry
 
 
 class RegistryPlugin:

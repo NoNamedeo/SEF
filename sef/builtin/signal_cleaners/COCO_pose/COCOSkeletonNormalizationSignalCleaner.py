@@ -5,8 +5,8 @@ from typing import Any
 
 import numpy as np
 
-from sef.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
 from sef.core.artifacts.Signal import Signal
+from sef.core.artifacts.signal_sample.COCOSkeletonSignalSample import COCOSkeletonSignalSample
 from sef.core.interfaces.BufferContracts import IBuffer
 from sef.core.interfaces.ISignal import ISignal
 from sef.core.interfaces.ISignalSample import ISignalSample

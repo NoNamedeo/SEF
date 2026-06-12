@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import Any
 
-from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.buffer.FrameBuffer import FrameBuffer
+from sef.core.artifacts.Frame import Frame
 from sef.core.interfaces.BufferContracts import IBuffer, IFrameBuffer
 from sef.core.interfaces.IFrameExporter import FrameExportContext
 from sef.core.pipeline.FrameProcessingStage import FrameProcessorExecutionContext

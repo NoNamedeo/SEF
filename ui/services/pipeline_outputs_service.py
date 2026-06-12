@@ -278,8 +278,8 @@ def _render_category_preview(result: Any):
 
 def _maybe_render_trajectory_preview(result: Any, warnings: list[str]):
     try:
-        from sef.core.artifacts.data.TrajectoryData import TrajectoryData
         from sef.builtin.visualizers.Matplotlib.MatplotlibTrajectoryVisualizer import MatplotlibTrajectoryVisualizer
+        from sef.core.artifacts.data.TrajectoryData import TrajectoryData
     except Exception:
         return None
 
