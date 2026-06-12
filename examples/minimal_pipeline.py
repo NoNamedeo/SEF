@@ -8,6 +8,7 @@ from library.core.artifacts.signal_sample import BoxSignalSample
 from library.core.artifacts.buffer import FrameBuffer
 from library.core.artifacts.data import TwoDimGraphData
 from library.core.interfaces import IData, ISignal
+from library.core.plugins import PluginCategory, PluginRegistry
 from library.core.visualization import TextArtifact, VisualizationContext
 
 
@@ -79,6 +80,16 @@ class SummaryVisualizer:
                 metadata={"pipeline_id": context.pipeline_id if context else None},
             ),
         )
+
+
+def build_registry() -> PluginRegistry:
+    """Build a small named registry for docs and tests."""
+    registry = PluginRegistry()
+    registry.register(PluginCategory.FRAME_EXTRACTOR, "demo_frames", DemoFrameExtractor, "Produce deterministic demo frames.")
+    registry.register(PluginCategory.SIGNAL_EXTRACTOR, "demo_signals", DemoSignalExtractor, "Convert demo frames into centroid samples.")
+    registry.register(PluginCategory.ANALYZER, "sample_count", SampleCountAnalyzer, "Count signal samples.")
+    registry.register(PluginCategory.VISUALIZER, "summary_text", SummaryVisualizer, "Render sample count as text.")
+    return registry
 
 
 def run_example(frame_count: int = 3):

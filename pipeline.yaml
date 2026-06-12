@@ -1,15 +1,18 @@
+schema_version: "1.0"
+
 pipeline:
   frame_extractor:
     name: opencv_buffered
     params:
       path: videos/Baloons.mp4
 
-  frame_cleaners:
+  frame_processors:
     - name: opencv_gray
 
   signal_extractor:
     name: opencv_tracker
     params:
+      tracker_type: MIL
       start_box: [100, 200, 50, 80]
 
   signal_cleaners:

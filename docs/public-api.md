@@ -5,6 +5,22 @@ code should import from these packages instead of relying on file layout.
 
 ## Recommended Imports
 
+Use `sef` for normal application code:
+
+```python
+import sef
+
+outputs = (
+    sef.video("videos/Baloons.mp4", max_frames=300)
+    .extract("opencv_tracker", tracker_type="MIL", start_box=[100, 200, 50, 80])
+    .analyze("vertical_position")
+    .run()
+)
+```
+
+Use `library.core` or `sef.core` only when you need lower-level contracts,
+custom registries, or runtime integration:
+
 ```python
 from library.core import (
     ConfigPipelineBuilder,
@@ -41,6 +57,26 @@ config versioning.
 `library.core.realtime` exposes realtime preview publication contracts.
 
 `library.core.visualization` exposes artifact and output contracts.
+
+## Public CLI
+
+The `sef` console script, and the equivalent `python -m sef`, expose the public
+CLI surface:
+
+```bash
+sef init [tracking-demo] [--force]
+sef doctor [--config pipeline.yaml]
+sef validate <config> [--strict] [--debug]
+sef run <config> [--dry-run] [--explain] [--output outputs/run] [--debug]
+sef components list [--category analyzer] [--json]
+sef components inspect <name> [--category analyzer] [--json]
+sef config schema [--format json|yaml]
+sef version
+```
+
+CLI commands load builtin components plus local plugin modules from `plugins/*.py`.
+Errors are rendered as readable messages by default; pass `--debug` to include a
+full traceback for `run` and `validate` failures.
 
 ## Compatibility Rules
 

@@ -10,7 +10,13 @@ setup(
         "matplotlib",
         "numpy",
         "opencv-contrib-python",
+        "PyYAML>=6.0",
         "streamlit",
         "ultralytics",
     ],
+    entry_points={
+        "console_scripts": [
+            "sef=sef.cli:main",
+        ],
+    },
 )

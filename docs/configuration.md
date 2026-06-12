@@ -4,6 +4,19 @@ SEF supports declarative pipeline construction through a versioned mapping.
 `ConfigPipelineBuilder` validates the config, resolves plugin factories through
 `PluginRegistry`, and returns a `PipelineContext`.
 
+Use the CLI to validate a config before running it:
+
+```bash
+sef validate pipeline.yaml
+sef validate pipeline.yaml --strict
+sef run pipeline.yaml --dry-run --explain
+sef run pipeline.yaml --output outputs/run-001
+sef config schema --format yaml
+```
+
+Unknown fields are warnings by default so exploratory configs remain easy to
+iterate on. With `--strict`, unknown fields become blocking errors.
+
 ## Top-Level Schema
 
 ```python
@@ -29,12 +42,13 @@ Required fields:
 Optional fields:
 
 - `frame_processors`: list of plugin entries.
-- `frame_exporters`: list of plugin entries when supported by the builder.
 - `signal_cleaners`: list of plugin entries.
 - `visualizers`: list of plugin entries.
 - `intermediate_frames`: debug capture config.
 - `runtime`: streaming runtime config.
-- additional custom keys, preserved in exported source config.
+
+Legacy configs that use `frame_cleaners` are normalized to `frame_processors`.
+New configs should always write `frame_processors`.
 
 ## Plugin Entry
 

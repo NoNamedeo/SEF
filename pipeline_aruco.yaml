@@ -1,3 +1,5 @@
+schema_version: "1.0"
+
 pipeline:
   frame_extractor:
     name: opencv_buffered
@@ -7,7 +9,7 @@ pipeline:
         stride: 1
         max_frames: 300
 
-  frame_cleaners:
+  frame_processors:
     - name: smoothing
       params:
         alpha: 0.9

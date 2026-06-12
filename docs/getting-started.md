@@ -1,41 +1,48 @@
 # Getting Started
 
-This guide builds and runs a complete pipeline without relying on OpenCV, YOLO,
-or UI components. The example is intentionally small so plugin authors can focus
-on core contracts.
+This guide builds and runs a complete pipeline through the public `sef` facade.
+The example is intentionally small so plugin authors can focus on component
+contracts without touching the lower-level runtime.
 
 ## Install Context
 
-Run examples from the repository root so `library` is importable:
+Install SEF in editable mode, then run examples from the repository root:
 
 ```bash
-python examples/minimal_pipeline.py
+pip install -e .
+python -m examples.minimal_pipeline
 ```
+
+Validate a YAML config from the terminal:
+
+```bash
+sef init tracking-demo
+sef doctor --config pipeline.yaml
+sef validate pipeline.yaml
+sef run pipeline.yaml --dry-run --explain
+sef run pipeline.yaml --output outputs/run-001
+sef components list
+sef components inspect vertical_position
+```
+
+`sef init tracking-demo` creates a video-based demo config that expects the user
+to place a video at `videos/input.mp4`; it does not download or include assets.
+`sef doctor` exits with `0` when only warnings are found and exits with `1` only
+for blocking errors.
 
 ## Minimal Pipeline
 
 ```python
-from library.core import ConfigPipelineBuilder, Pipeline, PluginRegistry
-from library.core.plugins import PluginCategory
+import sef
 
-registry = PluginRegistry()
-registry.register(PluginCategory.FRAME_EXTRACTOR, "frames", DemoFrameExtractor)
-registry.register(PluginCategory.SIGNAL_EXTRACTOR, "signals", DemoSignalExtractor)
-registry.register(PluginCategory.ANALYZER, "sample_count", SampleCountAnalyzer)
-registry.register(PluginCategory.VISUALIZER, "summary", SummaryVisualizer)
-
-config = {
-    "schema_version": "1.0",
-    "pipeline": {
-        "frame_extractor": {"name": "frames", "params": {"frame_count": 3}},
-        "signal_extractor": {"name": "signals"},
-        "analyzers": [{"name": "sample_count"}],
-        "visualizers": [{"name": "summary", "result_indices": [0]}],
-    },
-}
-
-context = ConfigPipelineBuilder(registry).build_context(config)
-outputs = Pipeline(context, pipeline_id="docs-quickstart").run()
+outputs = (
+    sef.pipeline("docs-quickstart")
+    .frames(DemoFrameExtractor, frame_count=3)
+    .signals(DemoSignalExtractor)
+    .analyze(SampleCountAnalyzer)
+    .visualize(SummaryVisualizer)
+    .run()
+)
 
 print(outputs.results[0].y)
 print(outputs.final_artifacts[0].content)
@@ -61,11 +68,12 @@ summary: Sample count: 3.0
 Catch configuration errors separately from execution errors:
 
 ```python
+import sef
 from library.core import PipelineConfigurationError, PipelineExecutionError
 
 try:
-    context = ConfigPipelineBuilder(registry).build_context(config)
-    outputs = Pipeline(context).run()
+    config = sef.load_config("pipeline.yaml")
+    outputs = sef.from_config(config).run()
 except PipelineConfigurationError as exc:
     print(exc.path, exc)
 except PipelineExecutionError as exc:

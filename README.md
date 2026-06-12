@@ -102,7 +102,7 @@ outputs = (
     .resize(640, 480)
     .extract(
         "opencv_tracker",
-        tracker_type="CSRT",
+        tracker_type="MIL",
         start_box=[100, 200, 50, 80],
         config={"show": False},
     )
@@ -134,7 +134,7 @@ def grayscale(image):
 outputs = (
     sef.video("videos/input.mp4")
     .process("grayscale")
-    .extract("opencv_tracker", start_box=[100, 200, 50, 80])
+    .extract("opencv_tracker", tracker_type="MIL", start_box=[100, 200, 50, 80])
     .analyze("vertical_position")
     .run()
 )
@@ -175,7 +175,7 @@ config = {
         },
         "signal_extractor": {
             "name": "opencv_tracker",
-            "params": {"start_box": [100, 200, 50, 80]},
+            "params": {"tracker_type": "MIL", "start_box": [100, 200, 50, 80]},
         },
         "signal_cleaners": [
             {"name": "moving_average", "params": {"window_size": 5}},
@@ -195,6 +195,37 @@ outputs = Pipeline(context, pipeline_id="demo-run").run()
 
 For a minimal runnable example without OpenCV or UI dependencies, see
 [`examples/minimal_pipeline.py`](examples/minimal_pipeline.py).
+
+## Command Line
+
+After installing SEF in editable mode, the `sef` command can scaffold projects,
+validate configs, explain execution plans, run pipelines, and inspect registered
+components:
+
+```bash
+pip install -e .
+sef init tracking-demo
+sef doctor --config pipeline.yaml
+sef validate pipeline.yaml --strict
+sef run pipeline.yaml --dry-run --explain
+sef run pipeline.yaml --pipeline-id demo-run --output outputs/demo-run
+sef components list
+sef components list --category analyzer
+sef components inspect vertical_position
+sef config schema --format yaml
+sef version
+```
+
+Local plugin modules placed in `plugins/*.py` are imported before `validate`,
+`run`, and `components` commands, so decorator plugins such as
+`@sef.analyzer("my_analyzer")` are immediately available to configs.
+
+The same example can be run without installing console scripts:
+
+```bash
+python -m examples.minimal_pipeline
+python -m sef validate pipeline.yaml
+```
 
 
 ## Intermediate Artifacts

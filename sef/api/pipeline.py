@@ -12,6 +12,7 @@ from library.core.pipeline.PipelineContext import PipelineContext
 from library.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
 from library.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
 from library.core.plugins import PluginCategory, PluginRegistry
+from sef.api.config import normalize_config
 from sef.api.registry import clone_registry, default_registry
 from sef.api.stage_refs import ComponentRef, StageRegistry, StageSpec
 
@@ -299,5 +300,5 @@ def from_config(
     return PipelineFacade(
         pipeline_id=pipeline_id,
         _registry=clone_registry(registry) if registry is not None else default_registry(include_builtins=include_builtins),
-        _source_config=deepcopy(dict(config)),
+        _source_config=normalize_config(config),
     )

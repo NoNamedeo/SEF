@@ -32,6 +32,7 @@ from library.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner 
 from library.core.plugins.PluginRegistry import PluginCategory, PluginRegistry  # noqa: E402
 from library.core.visualization.PipelineOutputs import PipelineOutputs  # noqa: E402
 from library.retry_policies.NoRetryPolicy import NoRetryPolicy  # noqa: E402
+from sef.api.config import normalize_config  # noqa: E402
 
 log = logging.getLogger(__name__)
 
@@ -238,52 +239,4 @@ def event_integration_status() -> dict[str, object]:
 
 def context_from_config(config: dict[str, Any], registry: PluginRegistry) -> PipelineContext:
     """Build a PipelineContext from a config dictionary using ConfigPipelineBuilder."""
-    return ConfigPipelineBuilder(registry).build_context(_normalise_config(config))
-
-
-def _normalise_config(config: dict[str, Any]) -> dict[str, Any]:
-    """
-    Accept both the current ConfigPipelineBuilder schema and the older UI shape.
-
-    New UI-generated configs already pass constructor-specific params.  Older
-    saved configs may still put frame-extractor options directly in params; this
-    moves them under OpenCVBufferedFrameExtractor.config.
-    """
-    pipeline = dict(config.get("pipeline", config))
-    normalised = {"pipeline": pipeline}
-
-    frame_extractor = pipeline.get("frame_extractor")
-    if isinstance(frame_extractor, dict):
-        params = dict(frame_extractor.get("params", {}))
-        extractor_config = dict(params.get("config", {}))
-        for key in ("resize", "stride", "max_frames"):
-            if key in params:
-                extractor_config[key] = params.pop(key)
-        if extractor_config:
-            params["config"] = extractor_config
-        frame_extractor["params"] = params
-
-    frame_source_path = None
-    if isinstance(frame_extractor, dict):
-        params = frame_extractor.get("params", {})
-        if isinstance(params, dict):
-            raw_path = params.get("path")
-            if isinstance(raw_path, str) and raw_path:
-                frame_source_path = raw_path
-
-    signal_extractor = pipeline.get("signal_extractor")
-    if isinstance(signal_extractor, dict):
-        params = dict(signal_extractor.get("params", {}))
-        extractor_config = dict(params.get("config", {}))
-        extractor_name = str(signal_extractor.get("name", ""))
-        if (
-            extractor_name in {"opencv_tracker", "opencv_stream_tracker", "opencv_multi_tracker"}
-            and frame_source_path
-            and "source_path" not in extractor_config
-        ):
-            extractor_config["source_path"] = frame_source_path
-        if extractor_config:
-            params["config"] = extractor_config
-        signal_extractor["params"] = params
-
-    return normalised
+    return ConfigPipelineBuilder(registry).build_context(normalize_config(config))

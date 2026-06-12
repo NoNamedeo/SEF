@@ -9,7 +9,7 @@ Repository file: `examples/minimal_pipeline.py`
 Run:
 
 ```bash
-python examples/minimal_pipeline.py
+python -m examples.minimal_pipeline
 ```
 
 Expected output:
@@ -25,8 +25,7 @@ This example demonstrates:
 
 - public package-level imports;
 - custom plugin implementations;
-- registry-backed config construction;
-- explicit config `schema_version`;
+- facade-backed pipeline construction;
 - typed analyzer output;
 - UI-agnostic `TextArtifact`;
 - `PipelineOutputs` inspection.

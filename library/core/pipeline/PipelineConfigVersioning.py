@@ -134,16 +134,33 @@ class PipelineConfigVersionManager:
         pipeline = migrated_root.get("pipeline")
         if not isinstance(pipeline, Mapping):
             raise ConfigSchemaError("Missing required config section 'pipeline'.", path="pipeline")
+        canonical_pipeline = self._canonical_pipeline(pipeline)
 
         canonical_root = dict(migrated_root)
         canonical_root[PIPELINE_CONFIG_VERSION_KEY] = self.current_version
+        canonical_root["pipeline"] = canonical_pipeline
         return VersionedPipelineConfig(
             root=canonical_root,
-            pipeline=dict(pipeline),
+            pipeline=canonical_pipeline,
             schema_version=self.current_version,
             explicit_version=explicit_version,
             applied_migrations=applied_migrations,
         )
+
+    @staticmethod
+    def _canonical_pipeline(pipeline: Mapping[str, Any]) -> dict[str, Any]:
+        """
+        Return the public canonical pipeline section for the current schema.
+
+        Early SEF examples used ``frame_cleaners`` for frame preprocessing.
+        The stable schema calls the same stage ``frame_processors`` because
+        both single-frame and frame-buffer processors are supported.
+        """
+        canonical = dict(pipeline)
+        legacy_frame_processors = canonical.pop("frame_cleaners", None)
+        if legacy_frame_processors is not None and "frame_processors" not in canonical:
+            canonical["frame_processors"] = legacy_frame_processors
+        return canonical
 
     def _read_version(self, root: Mapping[str, Any]) -> tuple[str, bool]:
         raw_version = root.get(PIPELINE_CONFIG_VERSION_KEY)

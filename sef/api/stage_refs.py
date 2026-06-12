@@ -116,6 +116,10 @@ class StageRegistry:
             if params:
                 raise ValueError("Do not pass params when using an already constructed component instance.")
             return lambda **_: component
+        if self._is_contract_like_instance(category, component):
+            if params:
+                raise ValueError("Do not pass params when using an already constructed component instance.")
+            return lambda **_: component
         if callable(component):
             return self._function_factory(category, component)
         raise TypeError(f"Unsupported component reference for {category}: {component!r}")
@@ -153,6 +157,20 @@ class StageRegistry:
         }
         contract = contracts.get(category)
         return bool(contract is not None and isinstance(component, contract))
+
+    @staticmethod
+    def _is_contract_like_instance(category: PluginCategory, component: object) -> bool:
+        required_methods = {
+            PluginCategory.FRAME_EXTRACTOR: "extract",
+            PluginCategory.SIGNAL_EXTRACTOR: "extract",
+            PluginCategory.SIGNAL_CLEANER: "clean",
+            PluginCategory.ANALYZER: "analyze",
+            PluginCategory.VISUALIZER: "render",
+            PluginCategory.SINGLE_FRAME_PROCESSOR: "process",
+            PluginCategory.FRAME_BUFFER_PROCESSOR: "process",
+        }
+        method_name = required_methods.get(category)
+        return bool(method_name is not None and callable(getattr(component, method_name, None)))
 
     def _infer_frame_processor_type(self, component: ComponentRef) -> str:
         if isinstance(component, str):

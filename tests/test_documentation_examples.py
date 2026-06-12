@@ -33,9 +33,9 @@ def test_minimal_pipeline_example_runs_as_imported_function() -> None:
     assert outputs.final_artifacts[0].content == "Sample count: 3.0"
 
 
-def test_minimal_pipeline_example_runs_as_script() -> None:
+def test_minimal_pipeline_example_runs_as_module() -> None:
     completed = subprocess.run(
-        [sys.executable, "examples/minimal_pipeline.py"],
+        [sys.executable, "-m", "examples.minimal_pipeline"],
         check=True,
         capture_output=True,
         text=True,

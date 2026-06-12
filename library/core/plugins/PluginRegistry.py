@@ -24,9 +24,7 @@ def _normalize_identifier(value: str, field_name: str) -> str:
     if not normalized:
         raise InvalidPluginRegistrationError(f"Plugin {field_name} must be a non-empty string.")
     if not _PLUGIN_IDENTIFIER_RE.fullmatch(normalized):
-        raise InvalidPluginRegistrationError(
-            f"Plugin {field_name} '{value}' must match {_PLUGIN_IDENTIFIER_RE.pattern}."
-        )
+        raise InvalidPluginRegistrationError(f"Plugin {field_name} '{value}' must match {_PLUGIN_IDENTIFIER_RE.pattern}.")
     return normalized
 
 
@@ -252,9 +250,7 @@ class PluginRegistry:
             raise DuplicatePluginRegistrationError(f"Plugin '{name}' already registered in category '{category}'.")
         if name in alias_map:
             canonical_name = alias_map[name]
-            raise DuplicatePluginRegistrationError(
-                f"Plugin alias '{name}' already points to '{canonical_name}' in category '{category}'."
-            )
+            raise DuplicatePluginRegistrationError(f"Plugin alias '{name}' already points to '{canonical_name}' in category '{category}'.")
 
     # ── Lookup ───────────────────────────────────────────────────────────────
 
@@ -342,12 +338,7 @@ class PluginRegistry:
         lookup concerns and are visible through each definition.
         """
         with self._lock:
-            return MappingProxyType(
-                {
-                    category: MappingProxyType(dict(definitions))
-                    for category, definitions in self._definitions.items()
-                }
-            )
+            return MappingProxyType({category: MappingProxyType(dict(definitions)) for category, definitions in self._definitions.items()})
 
     def describe(self, category: str | PluginCategory | None = None) -> list[dict[str, Any]]:
         """Return JSON-serializable plugin descriptors for diagnostics and UIs."""
@@ -484,19 +475,21 @@ def create_builtin_registry() -> PluginRegistry:
         "Measure relative distance changes between ArUco marker pairs.",
     )
 
-    registry.register(
-        PluginCategory.VISUALIZER,
-        "matplotlib",
-        MatplotlibFunctionVisualizer,
-        "Plot analytical data with Matplotlib.",
-    )
+    if MatplotlibFunctionVisualizer is not None:
+        registry.register(
+            PluginCategory.VISUALIZER,
+            "matplotlib",
+            MatplotlibFunctionVisualizer,
+            "Plot analytical data with Matplotlib.",
+        )
 
-    registry.register(
-        PluginCategory.VISUALIZER,
-        "aruco_motion_plot",
-        MatplotlibArucoMotionVisualizer,
-        "Render ArUco displacement and relative-motion plots.",
-    )
+    if MatplotlibArucoMotionVisualizer is not None:
+        registry.register(
+            PluginCategory.VISUALIZER,
+            "aruco_motion_plot",
+            MatplotlibArucoMotionVisualizer,
+            "Render ArUco displacement and relative-motion plots.",
+        )
 
     registry.register(
         PluginCategory.VISUALIZER,

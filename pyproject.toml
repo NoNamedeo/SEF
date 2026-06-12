@@ -11,9 +11,13 @@ dependencies = [
   "matplotlib",
   "numpy",
   "opencv-contrib-python",
+  "PyYAML>=6.0",
   "streamlit",
   "ultralytics",
 ]
+
+[project.scripts]
+sef = "sef.cli:main"
 
 [project.optional-dependencies]
 docs = [

@@ -59,6 +59,16 @@ def test_builder_normalizes_legacy_unversioned_configs() -> None:
     assert context.source_config["schema_version"] == CURRENT_PIPELINE_CONFIG_VERSION
 
 
+def test_builder_normalizes_legacy_frame_cleaners_key() -> None:
+    pipeline = _pipeline_section()
+    pipeline["frame_cleaners"] = []
+
+    context = ConfigPipelineBuilder(_registry()).build_context({"pipeline": pipeline})
+
+    assert "frame_processors" in context.source_config["pipeline"]
+    assert "frame_cleaners" not in context.source_config["pipeline"]
+
+
 def test_builder_rejects_unsupported_schema_version() -> None:
     builder = ConfigPipelineBuilder(_registry())
 
