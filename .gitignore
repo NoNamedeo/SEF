@@ -43,6 +43,9 @@ library/**/YOLOPoseModels/*.pt
 # Datasets
 datasets/
 
+# PyPi distribution packages
+dist/
+
 .DS_Store
 __pycache__/
 *.pyc

@@ -423,3 +423,9 @@ tests/               Core, registry, builder, streaming, and UI service tests
 
 - Matteo Vittori
 - Alejandro Innocenzi
+
+## Acknowledgements
+
+We would like to extend our special thanks to:
+- Michele Loreti (for his guidance and advice throughout the project)
+- Tomek Paczkowski (for kindly granting us ownership of the "sef" package name on PyPi)
