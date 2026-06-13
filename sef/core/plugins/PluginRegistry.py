@@ -113,6 +113,9 @@ class PluginDefinition:
     @property
     def factory_path(self) -> str:
         """Return a stable dotted path for diagnostics and exported descriptors."""
+        explicit_path = getattr(self.factory, "factory_path", None)
+        if isinstance(explicit_path, str) and explicit_path:
+            return explicit_path
         module = getattr(self.factory, "__module__", type(self.factory).__module__)
         qualname = getattr(self.factory, "__qualname__", type(self.factory).__qualname__)
         return f"{module}.{qualname}"

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import sef.cli as cli_module
+import sef.cli.commands as cli_module
 from sef.cli import main
 
 
@@ -229,7 +229,7 @@ def test_cli_doctor_warning_only_exit_zero(tmp_path: Path, monkeypatch, capsys) 
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "sef: warning:" in captured.err
+    assert "SEF  warning" in captured.err
 
 
 def test_cli_doctor_missing_config_is_blocking(tmp_path: Path, monkeypatch, capsys) -> None:

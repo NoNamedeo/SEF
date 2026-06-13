@@ -8,21 +8,62 @@ version = "0.2.0"
 description = "Signal extraction framework for video and image sequences"
 requires-python = ">=3.11"
 dependencies = [
-  "matplotlib",
   "numpy",
-  "opencv-contrib-python",
   "PyYAML>=6.0",
-  "streamlit",
-  "ultralytics",
 ]
 
 [project.scripts]
 sef = "sef.cli:main"
 
 [project.optional-dependencies]
+opencv = [
+  "opencv-contrib-python",
+]
+visualization = [
+  "matplotlib",
+]
+ui = [
+  "matplotlib",
+  "opencv-contrib-python",
+  "Pillow>=10.0.0",
+  "streamlit",
+  "streamlit-drawable-canvas",
+]
+yolo = [
+  "opencv-contrib-python",
+  "ultralytics",
+]
+pose = [
+  "joblib",
+  "scikit-learn",
+]
+all = [
+  "joblib",
+  "matplotlib",
+  "opencv-contrib-python",
+  "Pillow>=10.0.0",
+  "scikit-learn",
+  "streamlit",
+  "streamlit-drawable-canvas",
+  "ultralytics",
+]
 docs = [
   "mkdocs>=1.6",
   "mkdocstrings[python]>=0.25",
+]
+dev = [
+  "joblib",
+  "matplotlib",
+  "mkdocs>=1.6",
+  "mkdocstrings[python]>=0.25",
+  "opencv-contrib-python",
+  "Pillow>=10.0.0",
+  "pytest",
+  "ruff",
+  "scikit-learn",
+  "streamlit",
+  "streamlit-drawable-canvas",
+  "ultralytics",
 ]
 
 [tool.setuptools.packages.find]

@@ -7,6 +7,7 @@ import importlib.metadata
 import importlib.util
 import inspect
 import json
+import os
 import platform
 import shutil
 import sys
@@ -19,6 +20,7 @@ from typing import Any
 
 import sef
 from sef.api import default_registry, from_config, normalize_config
+from sef.cli.output import renderer_for
 from sef.core.errors import (
     ConfigSchemaError,
     DuplicatePluginRegistrationError,
@@ -47,6 +49,18 @@ _PLUGIN_DIR_NAME = "plugins"
 _VIDEO_DIR_NAME = "videos"
 _OUTPUT_DIR_NAME = "outputs"
 _UNKNOWN_FIELD_DOC = "Remove the field or move custom values under params/metadata."
+
+
+def _print_status(level: str, message: str) -> None:
+    renderer_for(sys.stdout).print_status(level, message)
+
+
+def _print_ok(message: str) -> None:
+    _print_status("ok", message)
+
+
+def _print_info(message: str) -> None:
+    _print_status("info", message)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -236,13 +250,14 @@ class CliDiagnostics:
     def print(self, *, debug: bool = False, stream=None) -> None:
         """Render collected diagnostics."""
         target = stream or sys.stderr
+        renderer = renderer_for(target)
         for item in self.items:
             label = "error" if item.severity == "error" else "warning"
-            print(f"sef: {label}: {item.message}", file=target)
+            renderer.print_status(label, item.message, stream=target)
             if item.cause:
-                print(f"  cause: {item.cause}", file=target)
+                renderer.print_detail("cause", item.cause, stream=target)
             if item.suggestion:
-                print(f"  suggestion: {item.suggestion}", file=target)
+                renderer.print_detail("suggestion", item.suggestion, stream=target)
         if debug and self.exception is not None:
             print("", file=target)
             traceback.print_exception(self.exception, file=target)
@@ -683,7 +698,7 @@ def _init_project(args: argparse.Namespace) -> int:
 
 def _doctor(args: argparse.Namespace) -> int:
     diagnostics = CliDiagnostics()
-    print("SEF doctor")
+    _print_info("doctor")
     _doctor_python(diagnostics)
     _doctor_installation()
     _doctor_dependencies(diagnostics)
@@ -693,8 +708,8 @@ def _doctor(args: argparse.Namespace) -> int:
 
     registry, import_result = CliRegistryLoader().load()
     diagnostics.extend(import_result.diagnostics)
-    print(f"[OK] registered_components={len(registry.list())}")
-    print(f"[OK] local_plugin_modules={len(import_result.loaded_paths)}")
+    _print_ok(f"registered_components={len(registry.list())}")
+    _print_ok(f"local_plugin_modules={len(import_result.loaded_paths)}")
 
     if args.config:
         try:
@@ -703,7 +718,7 @@ def _doctor(args: argparse.Namespace) -> int:
             diagnostics.extend(inspection.warnings)
             diagnostics.extend(inspection.errors)
             from_config(config, registry=registry).build_context()
-            print(f"[OK] config_valid={args.config}")
+            _print_ok(f"config_valid={args.config}")
         except Exception as exc:  # noqa: BLE001 - doctor keeps scanning but exits non-zero for blockers.
             diagnostics.add_error(
                 f"Config check failed for {args.config}.",
@@ -1141,34 +1156,40 @@ def _doctor_python(diagnostics: CliDiagnostics) -> None:
             suggestion="Create a Python 3.11+ environment and reinstall SEF.",
         )
     else:
-        print(f"[OK] python={platform.python_version()}")
+        _print_ok(f"python={platform.python_version()}")
 
 
 def _doctor_installation() -> None:
-    print(f"[OK] sef_version={_sef_distribution_version()}")
-    print(f"[OK] install_path={Path(sef.__file__).resolve()}")
-    print(f"[OK] install_mode={_installation_mode()}")
+    _print_ok(f"sef_version={_sef_distribution_version()}")
+    _print_ok(f"install_path={Path(sef.__file__).resolve()}")
+    _print_ok(f"install_mode={_installation_mode()}")
 
 
 def _doctor_dependencies(diagnostics: CliDiagnostics) -> None:
-    required = {"numpy": "numpy", "cv2": "opencv-python", "yaml": "PyYAML"}
-    optional = {"matplotlib": "matplotlib", "streamlit": "streamlit", "ultralytics": "ultralytics"}
+    required = {"numpy": "numpy", "yaml": "PyYAML"}
+    optional = {
+        "cv2": ("opencv", "opencv-contrib-python"),
+        "matplotlib": ("visualization", "matplotlib"),
+        "streamlit": ("ui", "streamlit"),
+        "ultralytics": ("yolo", "ultralytics"),
+        "joblib": ("pose", "joblib"),
+    }
     for module_name, package_name in required.items():
         if _module_importable(module_name):
-            print(f"[OK] dependency={package_name}")
+            _print_ok(f"core_dependency={package_name}")
         else:
             diagnostics.add_error(
                 f"Missing dependency `{package_name}`.",
                 cause=f"Python cannot import `{module_name}`.",
                 suggestion="Install project dependencies with `pip install -e .` or `pip install -r requirements.txt`.",
             )
-    for module_name, package_name in optional.items():
+    for module_name, (extra_name, package_name) in optional.items():
         if _module_importable(module_name):
-            print(f"[OK] optional_dependency={package_name}")
+            _print_ok(f"optional_extra={extra_name} dependency={package_name}")
         else:
             diagnostics.add_warning(
-                f"Optional dependency `{package_name}` is not importable.",
-                suggestion="Install it only if you use the related SEF feature.",
+                f"Optional extra `{extra_name}` is not available because `{package_name}` is not importable.",
+                suggestion=f"Install it only if you use that feature: `pip install 'sef[{extra_name}]'`.",
             )
 
 
@@ -1176,10 +1197,10 @@ def _doctor_opencv_trackers(diagnostics: CliDiagnostics) -> None:
     try:
         import cv2  # type: ignore[import-not-found]
     except Exception as exc:  # noqa: BLE001 - doctor reports import diagnostics.
-        diagnostics.add_error(
-            "OpenCV is not importable.",
+        diagnostics.add_warning(
+            "OpenCV optional extra is not available.",
             cause=str(exc),
-            suggestion="Install opencv-python or opencv-contrib-python.",
+            suggestion="Install `sef[opencv]` if you need OpenCV-backed pipeline components.",
         )
         return
 
@@ -1189,7 +1210,7 @@ def _doctor_opencv_trackers(diagnostics: CliDiagnostics) -> None:
         if hasattr(cv2, f"Tracker{name}_create") or hasattr(getattr(cv2, "legacy", object()), f"Tracker{name}_create"):
             available.append(name)
     if available:
-        print(f"[OK] opencv_trackers={','.join(available)}")
+        _print_ok(f"opencv_trackers={','.join(available)}")
     else:
         diagnostics.add_warning(
             "No common OpenCV tracker constructors were detected.",
@@ -1199,13 +1220,15 @@ def _doctor_opencv_trackers(diagnostics: CliDiagnostics) -> None:
 
 
 def _doctor_matplotlib_cache(diagnostics: CliDiagnostics) -> None:
-    try:
-        import matplotlib  # type: ignore[import-not-found]
-    except Exception:
+    if not _module_importable("matplotlib"):
         return
-    cache_dir = Path(matplotlib.get_cachedir())
+    configured_cache = os.environ.get("MPLCONFIGDIR")
+    if not configured_cache:
+        _print_ok("matplotlib_cache=not_checked")
+        return
+    cache_dir = Path(configured_cache)
     if cache_dir.exists() and cache_dir.is_dir() and _path_writable(cache_dir):
-        print(f"[OK] matplotlib_cache={cache_dir}")
+        _print_ok(f"matplotlib_cache={cache_dir}")
         return
     diagnostics.add_warning(
         f"Matplotlib cache directory is not writable: {cache_dir}",
@@ -1235,15 +1258,11 @@ def _doctor_project_directories(diagnostics: CliDiagnostics) -> None:
                 suggestion="Fix permissions or pass a writable --output directory when running pipelines.",
             )
         else:
-            print(f"[OK] directory={name}/")
+            _print_ok(f"directory={name}/")
 
 
 def _module_importable(module_name: str) -> bool:
-    try:
-        importlib.import_module(module_name)
-    except Exception:
-        return False
-    return True
+    return importlib.util.find_spec(module_name) is not None
 
 
 def _path_writable(path: Path) -> bool:

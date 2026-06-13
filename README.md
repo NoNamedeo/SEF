@@ -221,6 +221,12 @@ sef config schema --format yaml
 sef version
 ```
 
+Video/OpenCV configs such as `tracking-demo` require the OpenCV extra:
+
+```bash
+pip install -e ".[opencv]"
+```
+
 Local plugin modules placed in `plugins/*.py` are imported before `validate`,
 `run`, and `components` commands, so decorator plugins such as
 `@sef.analyzer("my_analyzer")` are immediately available to configs.
@@ -330,6 +336,7 @@ Current UI goals:
 - browse generated artifacts and analyzer results.
 
 ```bash
+pip install -e ".[ui]"
 streamlit run ui/app.py
 ```
 
@@ -369,11 +376,21 @@ SEF currently targets Python 3.11+.
 pip install -e .
 ```
 
-For the full local development environment, including UI and computer-vision
-dependencies:
+Install only the adapter stacks you need:
 
 ```bash
-pip install -r requirements.txt
+pip install -e ".[opencv]"        # OpenCV sources, processors, ArUco, video artifacts
+pip install -e ".[visualization]" # Matplotlib visualizers
+pip install -e ".[ui]"            # Streamlit Studio
+pip install -e ".[yolo]"          # Ultralytics pose extraction
+pip install -e ".[pose]"          # COCO pose analyzer model helpers
+pip install -e ".[all]"           # all runtime adapter extras
+```
+
+For the full local development environment:
+
+```bash
+pip install -e ".[dev]"
 ```
 
 ## Project Status

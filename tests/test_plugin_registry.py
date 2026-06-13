@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 import unittest
 
-from sef.builtin.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
-from sef.builtin.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
 from sef.core.errors import DuplicatePluginRegistrationError, InvalidPluginRegistrationError
 from sef.builtin.registry import create_builtin_registry
 from sef.core.plugins.PluginRegistry import PluginDefinition, PluginRegistry
@@ -21,10 +21,30 @@ class PluginRegistryTests(unittest.TestCase):
         self.assertIn("vertical_position", analyzer_names)
 
         cleaner = registry.create("signal_cleaner", "moving_average", window_size=5)
-        self.assertIsInstance(cleaner, MovingAverageCleaner)
+        self.assertEqual(type(cleaner).__name__, "MovingAverageCleaner")
 
-        single_frame_processor = registry.create("single_frame_processor", "color_stabilization")
-        self.assertIsInstance(single_frame_processor, ColorStabilizationFrameProcessor)
+        processor_definition = registry.get("single_frame_processor", "color_stabilization")
+        self.assertEqual(processor_definition.metadata["optional_extra"], "opencv")
+        self.assertEqual(
+            processor_definition.factory_path,
+            "sef.builtin.frame_processors.ColorStabilizationFrameProcessor.ColorStabilizationFrameProcessor",
+        )
+
+    def test_builtin_registry_does_not_import_optional_adapter_stacks(self):
+        code = """
+import sys
+from sef.builtin.registry import create_builtin_registry
+create_builtin_registry()
+loaded = [name for name in ("cv2", "matplotlib", "streamlit", "ultralytics") if name in sys.modules]
+assert loaded == [], loaded
+"""
+        result = subprocess.run(
+            [sys.executable, "-c", code],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
 
     def test_register_rejects_duplicates(self):
         registry = PluginRegistry()

@@ -1,11 +1,7 @@
 # Dependency Management Plan
 
-SEF currently installs every supported adapter dependency by default. That is
-convenient during development, but it makes the base framework heavier than the
-core architecture requires.
-
-This plan is intentionally limited to dependency cleanup. It does not change the
-current package metadata yet.
+SEF keeps the base framework install small and moves concrete adapter stacks
+behind explicit extras.
 
 ## Goal
 
@@ -21,23 +17,34 @@ adapter stacks behind explicit extras.
 - `visualization`: Matplotlib visualizers.
 - `ui`: Streamlit Studio and UI services.
 - `yolo`: Ultralytics pose/skeleton extractors.
-- `phase-mag`: external phase magnification integration. This extra should only
-  install Python-side helpers; MATLAB/Octave release assets remain an external
-  runtime prerequisite.
+- `pose`: COCO pose analyzer model helpers such as `joblib` and
+  `scikit-learn`.
 - `dev`: pytest, ruff, docs tooling, and local QA helpers.
 
-## Execution Steps
+## Implemented Refactor
 
-1. Map every import in `sef.builtin` and `ui` to the dependency that provides it.
-2. Split mandatory dependencies in `pyproject.toml` into a minimal base set and
-   optional extras.
-3. Add lazy import errors for optional adapters with actionable messages such as
-   `Install SEF with the opencv extra to use opencv_buffered`.
-4. Update `sef doctor` to report missing optional dependencies by feature group.
-5. Add tests that import `sef`, `sef.core`, and `sef.api` in a minimal
-   environment without OpenCV, Streamlit, Matplotlib, or Ultralytics.
-6. Add one smoke test per extra group in the full development environment.
-7. Update README and docs install examples after the tests prove the split.
+- `pyproject.toml` defines minimal base dependencies plus `opencv`,
+  `visualization`, `ui`, `yolo`, `pose`, `all`, and `dev` extras.
+- Built-in registry creation uses lazy factories for optional adapter
+  components, so listing built-ins does not import OpenCV, Matplotlib,
+  Streamlit, or Ultralytics.
+- Optional adapter creation raises actionable install guidance when a required
+  package is missing.
+- `sef doctor` reports missing adapter groups as warnings instead of core
+  install failures.
+
+## Install Examples
+
+```bash
+pip install -e .
+pip install -e ".[opencv]"
+pip install -e ".[visualization]"
+pip install -e ".[ui]"
+pip install -e ".[yolo]"
+pip install -e ".[pose]"
+pip install -e ".[all]"
+pip install -e ".[dev]"
+```
 
 ## Acceptance Criteria
 

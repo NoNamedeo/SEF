@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from sef.builtin._optional_dependencies import lazy_component_factory
 from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 
 
@@ -14,72 +15,90 @@ def create_builtin_registry() -> PluginRegistry:
     from sef.builtin.analyzers.ArUco.ArucoMarkerDisplacementAnalyzer import ArucoMarkerDisplacementAnalyzer
     from sef.builtin.analyzers.ArUco.ArucoMarkerRelativeMotionAnalyzer import ArucoMarkerRelativeMotionAnalyzer
     from sef.builtin.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-    from sef.builtin.branching_rules.NewTrackBranchingRule import NewTrackBranchingRule
-    from sef.builtin.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-    from sef.builtin.frame_extractors.OpenCVWebcamFrameExtractor import OpenCVWebcamFrameExtractor
-    from sef.builtin.frame_processors.ColorStabilizationFrameProcessor import ColorStabilizationFrameProcessor
-    from sef.builtin.frame_processors.DynamicObjectRemovalFrameProcessor import DynamicObjectRemovalFrameProcessor
-    from sef.builtin.frame_processors.OpenCV.OpenCVGrayFrameProcessor import OpenCVGrayFrameProcessor
-    from sef.builtin.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor import PhaseMagnificationFrameProcessor
     from sef.builtin.signal_cleaners.ArUco.ArucoTemporalStabilizerCleaner import ArucoTemporalStabilizerCleaner
     from sef.builtin.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
-    from sef.builtin.signal_extractors.ArucoMarkerSignalExtractor import ArucoMarkerSignalExtractor
-    from sef.builtin.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
-    from sef.builtin.visualizers.ArUco.ArucoAnnotatedVideoVisualizer import ArucoAnnotatedVideoVisualizer
-    from sef.builtin.visualizers.intermediate_frames.IntermediateFramesGridVisualizer import IntermediateFramesGridVisualizer
-    from sef.builtin.visualizers.intermediate_frames.IntermediateFramesVisualizer import IntermediateFramesVisualizer
-    from sef.builtin.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer import MatplotlibArucoMotionVisualizer
-    from sef.builtin.visualizers.Matplotlib.MatplotlibFunctionVisualizer import MatplotlibFunctionVisualizer
 
     registry = PluginRegistry()
 
     registry.register(
         PluginCategory.FRAME_EXTRACTOR,
         "opencv_buffered",
-        OpenCVBufferedFrameExtractor,
+        lazy_component_factory(
+            "sef.builtin.frame_extractors.OpenCVBufferedFrameExtractor.OpenCVBufferedFrameExtractor",
+            extra="opencv",
+        ),
         "Extract frames from a video using OpenCV.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.FRAME_EXTRACTOR,
         "opencv_webcam",
-        OpenCVWebcamFrameExtractor,
+        lazy_component_factory(
+            "sef.builtin.frame_extractors.OpenCVWebcamFrameExtractor.OpenCVWebcamFrameExtractor",
+            extra="opencv",
+        ),
         "Capture frames from a local webcam using OpenCV.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.SINGLE_FRAME_PROCESSOR,
         "opencv_gray",
-        OpenCVGrayFrameProcessor,
+        lazy_component_factory(
+            "sef.builtin.frame_processors.OpenCV.OpenCVGrayFrameProcessor.OpenCVGrayFrameProcessor",
+            extra="opencv",
+        ),
         "Convert frames to grayscale.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.SINGLE_FRAME_PROCESSOR,
         "color_stabilization",
-        ColorStabilizationFrameProcessor,
+        lazy_component_factory(
+            "sef.builtin.frame_processors.ColorStabilizationFrameProcessor.ColorStabilizationFrameProcessor",
+            extra="opencv",
+        ),
         "Stabilize illumination, brightness, and chromatic drift between frames.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.FRAME_BUFFER_PROCESSOR,
         "dynamic_object_removal",
-        DynamicObjectRemovalFrameProcessor,
+        lazy_component_factory(
+            "sef.builtin.frame_processors.DynamicObjectRemovalFrameProcessor.DynamicObjectRemovalFrameProcessor",
+            extra="opencv",
+        ),
         "Remove transient dynamic objects using a temporal median background.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.FRAME_BUFFER_PROCESSOR,
         "motion_magnification",
-        PhaseMagnificationFrameProcessor,
+        lazy_component_factory(
+            "sef.builtin.frame_processors.motion_magnification.PhaseMagnificationFrameProcessor.PhaseMagnificationFrameProcessor",
+            extra="opencv",
+        ),
         "Magnify subtle motions by wrapping the external phase-based MATLAB pipeline.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.SIGNAL_EXTRACTOR,
         "opencv_tracker",
-        OpenCVBufferedSignalExtractor,
+        lazy_component_factory(
+            "sef.builtin.signal_extractors.OpenCVBufferedSignalExtractor.OpenCVBufferedSignalExtractor",
+            extra="opencv",
+        ),
         "Track a single ROI with an OpenCV tracker.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.SIGNAL_EXTRACTOR,
         "aruco_marker",
-        ArucoMarkerSignalExtractor,
+        lazy_component_factory(
+            "sef.builtin.signal_extractors.ArucoMarkerSignalExtractor.ArucoMarkerSignalExtractor",
+            extra="opencv",
+        ),
         "Detect configurable ArUco markers frame by frame.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.SIGNAL_CLEANER,
@@ -112,44 +131,66 @@ def create_builtin_registry() -> PluginRegistry:
         "Measure relative distance changes between ArUco marker pairs.",
     )
 
-    if MatplotlibFunctionVisualizer is not None:
-        registry.register(
-            PluginCategory.VISUALIZER,
-            "matplotlib",
-            MatplotlibFunctionVisualizer,
-            "Plot analytical data with Matplotlib.",
-        )
-    if MatplotlibArucoMotionVisualizer is not None:
-        registry.register(
-            PluginCategory.VISUALIZER,
-            "aruco_motion_plot",
-            MatplotlibArucoMotionVisualizer,
-            "Render ArUco displacement and relative-motion plots.",
-        )
+    registry.register(
+        PluginCategory.VISUALIZER,
+        "matplotlib",
+        lazy_component_factory(
+            "sef.builtin.visualizers.Matplotlib.MatplotlibFunctionVisualizer.MatplotlibFunctionVisualizer",
+            extra="visualization",
+        ),
+        "Plot analytical data with Matplotlib.",
+        metadata={"optional_extra": "visualization"},
+    )
+    registry.register(
+        PluginCategory.VISUALIZER,
+        "aruco_motion_plot",
+        lazy_component_factory(
+            "sef.builtin.visualizers.Matplotlib.MatplotlibArucoMotionVisualizer.MatplotlibArucoMotionVisualizer",
+            extra="visualization",
+        ),
+        "Render ArUco displacement and relative-motion plots.",
+        metadata={"optional_extra": "visualization"},
+    )
 
     registry.register(
         PluginCategory.VISUALIZER,
         "aruco_annotated_video",
-        ArucoAnnotatedVideoVisualizer,
+        lazy_component_factory(
+            "sef.builtin.visualizers.ArUco.ArucoAnnotatedVideoVisualizer.ArucoAnnotatedVideoVisualizer",
+            extra="opencv",
+        ),
         "Render annotated MP4 output for ArUco detections.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.VISUALIZER,
         "intermediate_frames",
-        IntermediateFramesVisualizer,
+        lazy_component_factory(
+            "sef.builtin.visualizers.intermediate_frames.IntermediateFramesVisualizer.IntermediateFramesVisualizer",
+            extra="opencv",
+        ),
         "Render each captured preprocessing snapshot as a comparison PNG.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.VISUALIZER,
         "intermediate_frames_grid",
-        IntermediateFramesGridVisualizer,
+        lazy_component_factory(
+            "sef.builtin.visualizers.intermediate_frames.IntermediateFramesGridVisualizer.IntermediateFramesGridVisualizer",
+            extra="opencv",
+        ),
         "Render captured preprocessing snapshots as a bounded comparison grid.",
+        metadata={"optional_extra": "opencv"},
     )
     registry.register(
         PluginCategory.BRANCHING_RULE,
         "default_track_branch",
-        NewTrackBranchingRule,
+        lazy_component_factory(
+            "sef.builtin.branching_rules.NewTrackBranchingRule.NewTrackBranchingRule",
+            extra="opencv",
+        ),
         "Branch once when the primary multi-object tracker creates its seed track.",
+        metadata={"optional_extra": "opencv"},
     )
 
     return registry

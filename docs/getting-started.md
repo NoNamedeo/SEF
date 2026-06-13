@@ -13,6 +13,18 @@ pip install -e .
 python -m examples.minimal_pipeline
 ```
 
+The base install supports the public API, core runtime, config parsing, and
+minimal custom pipelines. Install adapter extras only when you use those
+features:
+
+```bash
+pip install -e ".[opencv]"        # OpenCV video/tracking/ArUco components
+pip install -e ".[visualization]" # Matplotlib visualizers
+pip install -e ".[ui]"            # Streamlit Studio
+pip install -e ".[yolo]"          # Ultralytics pose extraction
+pip install -e ".[pose]"          # COCO pose analyzer model helpers
+```
+
 Validate a YAML config from the terminal:
 
 ```bash
@@ -26,7 +38,8 @@ sef components inspect vertical_position
 ```
 
 `sef init tracking-demo` creates a video-based demo config that expects the user
-to place a video at `videos/input.mp4`; it does not download or include assets.
+to place a video at `videos/input.mp4` and install `sef[opencv]`; it does not
+download or include assets.
 `sef doctor` exits with `0` when only warnings are found and exits with `1` only
 for blocking errors.
 
