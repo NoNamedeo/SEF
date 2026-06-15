@@ -95,3 +95,18 @@ class CliMessageRenderer:
 def renderer_for(stream: TextIO | None = None, *, enable_color: bool | None = None) -> CliMessageRenderer:
     """Create a renderer for a specific output stream."""
     return CliMessageRenderer(stream=stream, enable_color=enable_color)
+
+
+def print_status(level: str, message: str, *, stream: TextIO | None = None) -> None:
+    """Print one branded CLI status line."""
+    renderer_for(stream or sys.stdout).print_status(level, message, stream=stream)
+
+
+def print_ok(message: str, *, stream: TextIO | None = None) -> None:
+    """Print one successful CLI status line."""
+    print_status("ok", message, stream=stream)
+
+
+def print_info(message: str, *, stream: TextIO | None = None) -> None:
+    """Print one informational CLI status line."""
+    print_status("info", message, stream=stream)

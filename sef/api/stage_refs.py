@@ -8,6 +8,7 @@ from typing import Any
 
 from sef.api.function_adapters import (
     FunctionAnalyzer,
+    FunctionFrameBufferProcessor,
     FunctionFrameExtractor,
     FunctionFrameProcessor,
     FunctionSignalCleaner,
@@ -142,6 +143,8 @@ class StageRegistry:
                 params,
                 accepts_frame=bool(accepts_frame),
             )
+        if category == PluginCategory.FRAME_BUFFER_PROCESSOR:
+            return lambda **params: FunctionFrameBufferProcessor(function, params)
         raise TypeError(f"Plain callables are not supported for {category}.")
 
     @staticmethod

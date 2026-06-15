@@ -34,6 +34,9 @@ class SingleFrameProcessorAdapter(IStreamingFrameBufferProcessor):
     def __init__(self, single_frame_processor: ISingleFrameProcessor, config: dict[str, Any] | None = None):
         super().__init__(config)
         self.single_frame_processor = single_frame_processor
+        declared = getattr(single_frame_processor, "capabilities", None)
+        if isinstance(declared, StageCapabilities):
+            self.capabilities = declared
 
     def process(self, buffer: FrameBuffer) -> FrameBuffer:
         """Apply the wrapped single-frame processor without debug capture."""

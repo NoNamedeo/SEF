@@ -12,12 +12,13 @@ from examples.minimal_pipeline import (
     SummaryVisualizer,
     build_registry,
 )
-from sef.core import Event, IBranchingRule, IEventEmitter
+from sef.core import Event, IBranchingRule, IEventEmitter, PluginCategory, PluginRegistry
 from sef.core.artifacts import Frame, Signal
 from sef.core.artifacts.buffer import FrameBuffer
 from sef.core.artifacts.data import TwoDimGraphData
 from sef.core.artifacts.signal_sample import BoxSignalSample
 from sef.core.events import PipelineLifecycleEvent
+from sef.core.interfaces import StageCapabilities
 from sef.core.visualization import TextArtifact
 
 
@@ -80,6 +81,34 @@ def test_pipeline_facade_accepts_plain_processor_functions() -> None:
     assert outputs.results[0].y == [3.0]
 
 
+def test_pipeline_facade_accepts_plain_frame_buffer_processor_functions() -> None:
+    def mark_buffer(buffer: FrameBuffer, label: str) -> FrameBuffer:
+        output = buffer.clone_empty()
+        for frame in buffer:
+            output.put(
+                Frame(
+                    image=frame.image,
+                    index=frame.index,
+                    timestamp_seconds=frame.timestamp_seconds,
+                    metadata={**frame.metadata, "label": label},
+                )
+            )
+        output.close()
+        return output
+
+    outputs = (
+        sef.pipeline("function-buffer-processor", include_builtins=False)
+        .frames(DemoFrameExtractor, frame_count=3)
+        .process(mark_buffer, processor_type="frame_buffer", label="processed")
+        .signals(DemoSignalExtractor)
+        .analyze(SampleCountAnalyzer)
+        .visualize(SummaryVisualizer)
+        .run()
+    )
+
+    assert outputs.results[0].y == [3.0]
+
+
 @sef.frame_extractor("decorated_test_frames")
 def decorated_frames(frame_count: int = 3) -> FrameBuffer:
     buffer = FrameBuffer(frame_count)
@@ -115,6 +144,11 @@ def decorated_count(signal: Signal) -> TwoDimGraphData:
     return TwoDimGraphData(x=[0.0], y=[float(len(list(signal)))], title="Decorated count")
 
 
+@sef.analyzer
+def decorated_test_legacy_count(signal: Signal) -> TwoDimGraphData:
+    return TwoDimGraphData(x=[0.0], y=[float(len(list(signal)))], title="Legacy decorated count")
+
+
 @sef.visualizer("decorated_test_summary")
 def decorated_summary(data: TwoDimGraphData):
     return TextArtifact(
@@ -136,6 +170,70 @@ def test_decorators_register_function_plugins_for_default_facade_registry() -> N
 
     assert outputs.results[0].y == [5.0]
     assert outputs.final_artifacts[0].content == "Decorated count: 5.0"
+
+
+def test_decorator_without_parentheses_remains_supported() -> None:
+    registry = sef.default_registry(include_builtins=False)
+    definition = registry.get(PluginCategory.ANALYZER, "decorated_test_legacy_count")
+
+    assert definition.name == "decorated_test_legacy_count"
+    assert definition.metadata["source"] == "sef.decorator"
+
+
+def test_decorators_register_rich_plugin_metadata_aliases_and_capabilities() -> None:
+    registry = PluginRegistry()
+    capabilities = StageCapabilities.streaming(stateful=False, realtime_safe=True)
+
+    @sef.analyzer(
+        "rich_count",
+        registry=registry,
+        description="Count samples with a configurable scale.",
+        version="2.0.0",
+        aliases=("count_alias",),
+        metadata={
+            "domain": "tests",
+            "tags": ["decorator", "metadata"],
+            "params": {"scale": {"type": "float", "default": 1.0}},
+        },
+        capabilities=capabilities,
+    )
+    def rich_count(signal: Signal, scale: float = 1.0) -> TwoDimGraphData:
+        return TwoDimGraphData(x=[0.0], y=[float(len(list(signal))) * scale], title="Rich count")
+
+    definition = registry.get(PluginCategory.ANALYZER, "count_alias")
+    assert definition.name == "rich_count"
+    assert definition.description == "Count samples with a configurable scale."
+    assert definition.version == "2.0.0"
+    assert definition.aliases == ("count_alias",)
+    assert definition.metadata["domain"] == "tests"
+    assert definition.metadata["source"] == "sef.decorator"
+    assert definition.factory.capabilities == capabilities
+
+    analyzer = registry.create(PluginCategory.ANALYZER, "rich_count", scale=2.0)
+    assert analyzer.capabilities == capabilities
+
+
+def test_frame_buffer_processor_decorator_registers_buffer_level_functions() -> None:
+    registry = PluginRegistry()
+    capabilities = StageCapabilities.batch(stateful=False, realtime_safe=False)
+
+    @sef.frame_buffer_processor(
+        "buffer_passthrough",
+        registry=registry,
+        description="Return frames unchanged.",
+        metadata={"domain": "frames"},
+        capabilities=capabilities,
+    )
+    def buffer_passthrough(buffer: FrameBuffer) -> FrameBuffer:
+        return buffer
+
+    definition = registry.get(PluginCategory.FRAME_BUFFER_PROCESSOR, "buffer_passthrough")
+    assert definition.description == "Return frames unchanged."
+    assert definition.metadata["domain"] == "frames"
+    assert definition.factory.capabilities == capabilities
+
+    processor = registry.create(PluginCategory.FRAME_BUFFER_PROCESSOR, "buffer_passthrough")
+    assert processor.capabilities == capabilities
 
 
 def test_orchestrator_facade_runs_pipeline_facade_and_emits_lifecycle_events() -> None:

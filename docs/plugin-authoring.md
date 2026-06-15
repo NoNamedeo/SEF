@@ -30,6 +30,55 @@ class SampleCountAnalyzer(IAnalyzer):
         return TwoDimGraphData(x=[0.0], y=[float(count)], title="Sample count")
 ```
 
+## Function Plugin Example
+
+Use decorators for small components whose behavior fits a single function.
+Decorator metadata is public: it appears in `sef components inspect`, JSON
+catalog output, and registry descriptors.
+
+```python
+import sef
+from sef.core.artifacts.data import TwoDimGraphData
+from sef.core.interfaces import StageCapabilities
+
+
+@sef.analyzer(
+    "vertical_velocity",
+    description="Estimate vertical velocity from a tracked signal.",
+    version="1.0.0",
+    aliases=("velocity_y",),
+    metadata={
+        "domain": "motion",
+        "tags": ["tracking", "kinematics"],
+        "output": "TwoDimGraphData",
+        "params": {
+            "fps": {"type": "float", "default": 30.0, "min": 0.0},
+        },
+    },
+    capabilities=StageCapabilities.streaming(stateful=False, realtime_safe=True),
+)
+def vertical_velocity(signal, fps: float = 30.0):
+    samples = list(signal)
+    return TwoDimGraphData(x=[0.0], y=[float(len(samples)) * fps], title="Velocity")
+```
+
+Recommended metadata keys are `domain`, `tags`, `input`, `output`, `params`,
+`optional_extra`, `realtime_safe`, and `hardware`. The registry does not enforce
+that shape; keep metadata JSON-friendly so CLI tools and UI catalogs can render
+it without importing the component.
+
+Use `@sef.frame_buffer_processor` when the function needs the whole frame
+sequence instead of one frame at a time:
+
+```python
+@sef.frame_buffer_processor(
+    "temporal_filter",
+    description="Apply a temporal filter to the complete frame sequence.",
+)
+def temporal_filter(buffer, strength: float = 0.5):
+    return buffer
+```
+
 ## Visualizer Example
 
 ```python

@@ -13,6 +13,9 @@ small:
 - `sef.orchestrator()` coordinates execution when lifecycle events, background
   submission, or branching are needed.
 - `sef.from_config(...)` loads the same pipeline model from YAML/JSON data.
+- Decorators such as `@sef.analyzer(...)` and
+  `@sef.frame_buffer_processor(...)` register function plugins with optional
+  description, version, aliases, metadata, and capabilities.
 
 The builder object returned by `sef.pipeline(...)` is named `PipelineFacade` in
 type hints, but users should treat it as the fluent pipeline builder rather than

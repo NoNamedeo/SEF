@@ -231,6 +231,10 @@ Local plugin modules placed in `plugins/*.py` are imported before `validate`,
 `run`, and `components` commands, so decorator plugins such as
 `@sef.analyzer("my_analyzer")` are immediately available to configs.
 
+CLI diagnostics use branded `SEF` status lines with severity-aware colors when
+stdout/stderr is an interactive terminal. Set `NO_COLOR=1` to force plain text
+for logs, CI, or scripts.
+
 The same example can be run without installing console scripts:
 
 ```bash

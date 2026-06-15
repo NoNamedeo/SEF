@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import sef.cli.commands as cli_module
+import sef.cli.command_handlers as cli_handlers
 from sef.cli import main
 
 
@@ -184,6 +184,50 @@ def test_cli_inspects_local_plugin(tmp_path: Path, monkeypatch, capsys) -> None:
     assert "scale=1" in captured.out
 
 
+def test_cli_inspect_renders_rich_decorator_metadata(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.chdir(tmp_path)
+    plugin_dir = tmp_path / "plugins"
+    plugin_dir.mkdir()
+    plugin_dir.joinpath("rich_components.py").write_text(
+        """
+from __future__ import annotations
+
+import sef
+from sef.core.artifacts.data import TwoDimGraphData
+from sef.core.interfaces import StageCapabilities
+
+
+@sef.analyzer(
+    "cli_rich_analyzer",
+    description="Analyzer with rich public metadata.",
+    version="2.1.0",
+    aliases=("cli_rich_alias",),
+    metadata={
+        "domain": "quality",
+        "tags": ["cli", "metadata"],
+        "params": {"scale": {"type": "float", "default": 1.0}},
+    },
+    capabilities=StageCapabilities.streaming(stateful=False, realtime_safe=True),
+)
+def rich(signal, scale: float = 1.0):
+    return TwoDimGraphData(x=[0.0], y=[float(scale)], title="Rich")
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    exit_code = main(["components", "inspect", "cli_rich_alias"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "description: Analyzer with rich public metadata." in captured.out
+    assert "version: 2.1.0" in captured.out
+    assert "aliases: cli_rich_alias" in captured.out
+    assert "supports_streaming: True" in captured.out
+    assert "domain: quality" in captured.out
+    assert 'params: {"scale": {"default": 1.0, "type": "float"}}' in captured.out
+    assert 'tags: ["cli", "metadata"]' in captured.out
+
+
 def test_cli_run_dry_run_explain_uses_local_plugins(tmp_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.chdir(tmp_path)
     _write_local_plugin(tmp_path, suffix="dry_run")
@@ -218,12 +262,12 @@ def test_cli_run_output_writes_summary_config_and_plan(tmp_path: Path, monkeypat
 def test_cli_doctor_warning_only_exit_zero(tmp_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(
-        cli_module,
-        "_doctor_dependencies",
+        cli_handlers,
+        "doctor_dependencies",
         lambda diagnostics: diagnostics.add_warning("synthetic warning"),
     )
-    monkeypatch.setattr(cli_module, "_doctor_opencv_trackers", lambda diagnostics: None)
-    monkeypatch.setattr(cli_module, "_doctor_matplotlib_cache", lambda diagnostics: None)
+    monkeypatch.setattr(cli_handlers, "doctor_opencv_trackers", lambda diagnostics: None)
+    monkeypatch.setattr(cli_handlers, "doctor_matplotlib_cache", lambda diagnostics: None)
 
     exit_code = main(["doctor"])
 
