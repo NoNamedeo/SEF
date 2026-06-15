@@ -55,8 +55,8 @@ def _add_init_parser(subcommands: Any) -> None:
     init_parser.add_argument(
         "template",
         nargs="?",
-        choices=("tracking-demo",),
-        help="Optional scaffold template. Currently supports tracking-demo.",
+        choices=("tracking-demo", "plugin"),
+        help="Optional scaffold template. Supports tracking-demo and plugin.",
     )
     init_parser.add_argument("--force", action="store_true", help="Overwrite SEF scaffold files created by sef init.")
     init_parser.set_defaults(handler=init_project)

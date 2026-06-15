@@ -62,10 +62,9 @@ def vertical_velocity(signal, fps: float = 30.0):
     return TwoDimGraphData(x=[0.0], y=[float(len(samples)) * fps], title="Velocity")
 ```
 
-Recommended metadata keys are `domain`, `tags`, `input`, `output`, `params`,
-`optional_extra`, `realtime_safe`, and `hardware`. The registry does not enforce
-that shape; keep metadata JSON-friendly so CLI tools and UI catalogs can render
-it without importing the component.
+Recommended metadata keys are documented in [Plugin Metadata](plugin-metadata.md).
+The registry does not enforce that shape; keep metadata JSON-friendly so CLI
+tools and UI catalogs can render it without importing the component.
 
 Use `@sef.frame_buffer_processor` when the function needs the whole frame
 sequence instead of one frame at a time:

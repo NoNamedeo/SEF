@@ -7,105 +7,79 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-orange)](LICENSE)
 
 **SEF is an experimental Python framework for building modular computer-vision
-signal-extraction pipelines through a small Pythonic API and an extensible
-runtime core.**
+signal-extraction pipelines.** It separates video acquisition, frame
+processing, signal extraction, cleaning, analysis, visualization, runtime
+monitoring, and UI adapters into explicit contracts.
 
+SEF is pre-1.0. The public API is being hardened, the config schema is
+versioned, and the framework is currently best suited for research,
+experimentation, demos, and architecture exploration.
 
 ![SEF Studio](docs/assets/sef-studio-hero.png)
 
-It separates video acquisition, frame processing, signal extraction, cleaning,
-analysis, visualization, runtime monitoring, and UI composition into explicit
-contracts. The recommended API hides that machinery behind `import sef`, while
-the lower-level core remains available for advanced registry, runtime, and
-integration use cases.
+## Use Cases
 
-The project is architecture-focused and currently pre-1.0: public APIs are
-being hardened and may still evolve before a stable release.
+Use SEF when the pipeline structure matters as much as the individual computer
+vision model:
 
+- motion tracking and displacement analysis;
+- ArUco marker detection and relative motion analysis;
+- frame preprocessing, masking, stabilization, and intermediate inspection;
+- video-to-signal extraction followed by cleaning and analytics;
+- UI-agnostic visual artifact generation for dashboards, notebooks, or CLIs;
+- rapid experimentation with custom pipeline components;
+- teaching or evaluating modular computer-vision architectures.
 
-## Processing Example
+SEF is not intended to replace model-training frameworks, annotation platforms,
+or low-level OpenCV scripts when a single script is enough.
 
-The same sequence before and after the SEF processing pipeline.
+## Quick Start
 
-| Pre-processed video | Processed video |
-|---|---|
-| ![SEF Studio Demo pre-processed](docs/assets/sef-studio-demo-pre-processed.gif) | ![SEF Studio Demo processed](docs/assets/sef-studio-demo-processed.gif) |
-## Why SEF
+Install the core package:
 
-SEF is designed for research, experimentation, and framework-oriented computer
-vision workflows where the pipeline matters as much as the individual model.
-
-Use it when you want to:
-
-- compose video-analysis pipelines from small interchangeable stages;
-- switch between programmatic and config-driven pipeline construction;
-- run batch and streaming-compatible stages through a shared runtime;
-- expose analyzer output as UI-agnostic visual artifacts;
-- build custom plugins without editing the execution engine;
-- inspect execution plans, runtime state, logs, outputs, and artifacts from a UI.
-
-## Key Features
-
-- **Modular pipeline architecture** for extractors, processors, cleaners,
-  analyzers, visualizers, exporters, and branching rules.
-- **Streaming runtime** with bounded buffers and latency policies.
-- **Runtime execution planner** that records batch/streaming decisions.
-- **Plugin registry** with categories, aliases, descriptors, and config-driven
-  construction.
-- **Visual artifacts** decoupled from UI frameworks.
-- **Sync and async execution** through pipeline runners and monitors.
-- **Event-driven branching** for secondary pipelines triggered by domain events.
-- **SEF Studio** Streamlit UI for composing, running, and monitoring pipelines.
-- **Versioned configuration** for evolving declarative pipeline schemas.
-
-## Architecture Overview
-
-SEF keeps the framework core independent from concrete OpenCV, YOLO, Matplotlib,
-and Streamlit adapters. The core owns contracts, planning, runtime execution,
-events, typed errors, buffers, artifacts, and plugin resolution.
-
-```mermaid
-flowchart LR
-    API["Pythonic API / Studio / Config"] --> Config["Versioned Pipeline Config"]
-    Config --> Registry["Plugin Registry"]
-    Registry --> Context["PipelineContext"]
-    Context --> Planner["Execution Planner"]
-    Planner --> Runtime["Pipeline Runtime"]
-
-    Runtime --> Frames["Frame Extraction"]
-    Frames --> Processing["Frame Processing"]
-    Processing --> Signals["Signal Extraction"]
-    Signals --> Cleaning["Signal Cleaning"]
-    Cleaning --> Analysis["Analysis"]
-    Analysis --> Visuals["Visual Artifacts"]
-    Runtime --> Events["Events / Branching"]
-    Visuals --> UI["SEF Studio / APIs / Notebooks"]
+```bash
+pip install -e .
 ```
 
-<!-- PLACEHOLDER: Add high-level architecture image matching the Mermaid flow; purpose: provide a polished visual for readers who do not inspect diagrams; ideal placement: directly after the Architecture Overview paragraph. -->
+Install only the adapter stacks you need:
 
-<!-- PLACEHOLDER: Add execution/runtime flow diagram showing batch vs streaming decisions, buffers, and latency policy; purpose: clarify the adaptive runtime at a glance; ideal placement: after the Mermaid diagram. -->
+```bash
+pip install -e ".[opencv]"        # OpenCV video/tracking/ArUco components
+pip install -e ".[visualization]" # Matplotlib visualizers
+pip install -e ".[ui]"            # Streamlit Studio
+pip install -e ".[yolo]"          # Ultralytics pose extraction
+pip install -e ".[pose]"          # COCO pose analyzer helpers
+pip install -e ".[all]"           # all runtime adapter extras
+```
 
-The detailed architecture, public contracts, and extension rules live in the
-[MkDocs documentation](https://nonamedeo.github.io/SEF/).
+Create and inspect a starter project:
 
-## Quick Example
+```bash
+sef init tracking-demo
+sef doctor --config pipeline.yaml
+sef validate pipeline.yaml --strict
+sef run pipeline.yaml --dry-run --explain
+```
 
-The recommended API keeps the common path short: describe the source, choose the
-stages, and run.
+For a dependency-light custom component scaffold:
+
+```bash
+sef init plugin
+sef components inspect sample_count
+python -m pytest tests/test_custom_components.py
+```
+
+## Python API
+
+The common path is intentionally short: describe a source, add stages, and run.
 
 ```python
 import sef
 
 outputs = (
-    sef.video("videos/Baloons.mp4", max_frames=300)
+    sef.video("videos/input.mp4", max_frames=300)
     .resize(640, 480)
-    .extract(
-        "opencv_tracker",
-        tracker_type="MIL",
-        start_box=[100, 200, 50, 80],
-        config={"show": False},
-    )
+    .extract("opencv_tracker", tracker_type="MIL", start_box=[100, 200, 50, 80])
     .clean("moving_average", window_size=5)
     .analyze("vertical_position")
     .visualize("matplotlib")
@@ -116,312 +90,258 @@ print(outputs.results)
 print(outputs.final_artifacts)
 ```
 
-The same facade accepts plugin names, component classes, component instances, or
-plain Python functions. This keeps simple experiments lightweight without
-removing the advanced extension model.
-
-`.run()` on a pipeline builder is the direct single-run shortcut. Use
-`sef.orchestrator().run(pipeline)` instead when execution needs lifecycle
-callbacks, background submission with `submit()`, active-id tracking, or
-event-driven branching.
+The facade accepts registered plugin names, component classes, component
+instances, or plain Python callables:
 
 ```python
-import cv2
 import sef
 
 
-@sef.processor("grayscale")
+@sef.processor(
+    "grayscale",
+    description="Convert one frame image to grayscale.",
+    metadata={"domain": "preprocessing", "input": "Frame", "output": "Frame"},
+)
 def grayscale(image):
-    """Convert one OpenCV frame image to grayscale."""
-    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    return image.mean(axis=2)
 
 
 outputs = (
-    sef.video("videos/input.mp4")
+    sef.pipeline("custom-run", include_builtins=True)
+    .frames("opencv_buffered", path="videos/input.mp4")
     .process("grayscale")
-    .extract("opencv_tracker", tracker_type="MIL", start_box=[100, 200, 50, 80])
+    .signals("opencv_tracker", tracker_type="MIL", start_box=[100, 200, 50, 80])
     .analyze("vertical_position")
     .run()
 )
 ```
 
-For custom classes, pass the class directly and SEF will register it in the
-pipeline-scoped registry:
+Use `sef.orchestrator()` when execution needs lifecycle callbacks, background
+submission, active-id tracking, or event-driven branching. Branching and
+orchestration are intentionally Python-only for now; YAML config describes one
+pipeline graph.
+
+## Plugin Authoring
+
+Function decorators cover the simple authoring path and expose rich registry
+metadata:
 
 ```python
 import sef
+from sef.core.interfaces import StageCapabilities
 
-outputs = (
-    sef.pipeline("quickstart")
-    .frames(DemoFrameExtractor, frame_count=3)
-    .signals(DemoSignalExtractor)
-    .analyze(SampleCountAnalyzer)
-    .visualize(SummaryVisualizer)
-    .run()
-)
-```
 
-Advanced users can still drop down to the versioned configuration path and core
-contracts when they need full control over registries, orchestration, or
-runtime integration:
-
-```python
-from sef.builtin.registry import create_builtin_registry
-from sef.core import ConfigPipelineBuilder, Pipeline
-
-registry = create_builtin_registry()
-
-config = {
-    "schema_version": "1.0",
-    "pipeline": {
-        "frame_extractor": {
-            "name": "opencv_buffered",
-            "params": {"path": "videos/Baloons.mp4"},
-        },
-        "signal_extractor": {
-            "name": "opencv_tracker",
-            "params": {"tracker_type": "MIL", "start_box": [100, 200, 50, 80]},
-        },
-        "signal_cleaners": [
-            {"name": "moving_average", "params": {"window_size": 5}},
-        ],
-        "analyzers": [
-            {"name": "vertical_position"},
-        ],
-        "visualizers": [
-            {"name": "matplotlib"},
-        ],
+@sef.analyzer(
+    "vertical_velocity",
+    description="Estimate vertical velocity from a tracked signal.",
+    version="1.0.0",
+    aliases=("velocity_y",),
+    metadata={
+        "domain": "motion",
+        "tags": ["tracking", "kinematics"],
+        "input": "Signal",
+        "output": "TwoDimGraphData",
+        "params": {"fps": {"type": "float", "default": 30.0}},
     },
-}
-
-context = ConfigPipelineBuilder(registry).build_context(config)
-outputs = Pipeline(context, pipeline_id="demo-run").run()
+    capabilities=StageCapabilities.streaming(stateful=False, realtime_safe=True),
+)
+def vertical_velocity(signal, fps: float = 30.0):
+    ...
 ```
 
-For a minimal runnable example without OpenCV or UI dependencies, see
-[`examples/minimal_pipeline.py`](examples/minimal_pipeline.py).
+Available public function decorators:
+
+- `@sef.frame_extractor`
+- `@sef.processor`
+- `@sef.frame_buffer_processor`
+- `@sef.signal_extractor`
+- `@sef.cleaner`
+- `@sef.analyzer`
+- `@sef.visualizer`
+
+Advanced components should implement contracts from `sef.core.interfaces` and
+register through `PluginRegistry` when they need explicit lifecycle, streaming,
+or integration behavior. Branching rules remain part of the advanced API.
+
+See [Plugin Authoring](docs/plugin-authoring.md) and
+[Plugin Metadata](docs/plugin-metadata.md).
 
 ## Command Line
 
-After installing SEF in editable mode, the `sef` command can scaffold projects,
-validate configs, explain execution plans, run pipelines, and inspect registered
-components:
+The `sef` CLI scaffolds projects, validates configs, explains execution plans,
+runs pipelines, and inspects component catalogs:
 
 ```bash
-pip install -e .
-sef init tracking-demo
-sef doctor --config pipeline.yaml
-sef validate pipeline.yaml --strict
-sef run pipeline.yaml --dry-run --explain
-sef run pipeline.yaml --pipeline-id demo-run --output outputs/demo-run
-sef components list
-sef components list --category analyzer
-sef components inspect vertical_position
-sef config schema --format yaml
+sef init [tracking-demo|plugin] [--force]
+sef doctor [--config pipeline.yaml]
+sef validate <config> [--strict] [--debug]
+sef run <config> [--dry-run] [--explain] [--output outputs/run] [--debug]
+sef components list [--category analyzer] [--json]
+sef components inspect <name> [--category analyzer] [--json]
+sef config schema [--format json|yaml]
 sef version
 ```
 
-Video/OpenCV configs such as `tracking-demo` require the OpenCV extra:
+Local modules under `plugins/*.py` are imported before `validate`, `run`, and
+`components` commands. CLI diagnostics use branded `SEF` status lines with
+severity-aware colors in interactive terminals; set `NO_COLOR=1` for plain
+logs.
 
-```bash
-pip install -e ".[opencv]"
+## Architecture
+
+SEF keeps the core independent from concrete OpenCV, YOLO, Matplotlib, and
+Streamlit adapters. The core owns contracts, planning, runtime execution,
+events, typed errors, buffers, artifacts, and plugin resolution.
+
+```mermaid
+flowchart LR
+    API["Python API / CLI / Studio"] --> Config["Versioned pipeline config"]
+    Config --> Registry["Plugin registry"]
+    Registry --> Context["PipelineContext"]
+    Context --> Planner["Execution planner"]
+    Planner --> Runtime["Pipeline runtime"]
+    Runtime --> Frames["Frames"]
+    Frames --> Processing["Frame processors"]
+    Processing --> Signals["Signals"]
+    Signals --> Cleaning["Signal cleaners"]
+    Cleaning --> Analysis["Analyzers"]
+    Analysis --> Artifacts["Visual artifacts"]
+    Runtime --> Events["Events"]
 ```
 
-Local plugin modules placed in `plugins/*.py` are imported before `validate`,
-`run`, and `components` commands, so decorator plugins such as
-`@sef.analyzer("my_analyzer")` are immediately available to configs.
-
-CLI diagnostics use branded `SEF` status lines with severity-aware colors when
-stdout/stderr is an interactive terminal. Set `NO_COLOR=1` to force plain text
-for logs, CI, or scripts.
-
-The same example can be run without installing console scripts:
-
-```bash
-python -m examples.minimal_pipeline
-python -m sef validate pipeline.yaml
+```mermaid
+flowchart TB
+    Core["sef.core\ncontracts + runtime"] --> API["sef.api\nfacades + decorators"]
+    Core --> Builtin["sef.builtin\nOpenCV / Matplotlib / CV adapters"]
+    API --> CLI["sef.cli\nscaffold + validate + run + inspect"]
+    API --> UI["SEF Studio\nStreamlit adapter"]
+    Builtin --> CLI
+    Builtin --> UI
 ```
 
-## Orchestration
+## Design Principles
 
-`sef.pipeline()` describes one pipeline. `sef.orchestrator()` coordinates
-execution when an application needs lifecycle callbacks, background submission,
-or event-driven branching:
+- **Small public API first**: common workflows go through `import sef`.
+- **Advanced API remains available**: custom runners, branching, registries, and
+  framework integrations live in `sef.core`.
+- **Core is adapter-free**: OpenCV, Matplotlib, Streamlit, YOLO, and pose helpers
+  are optional extras.
+- **Plugins are explicit**: categories, names, aliases, metadata, capabilities,
+  and config construction are registry-backed.
+- **Artifacts are UI-agnostic**: visualizers return `VisualArtifact` values, not
+  Streamlit widgets or notebook globals.
+- **Config is pipeline-only**: orchestration and branching stay in Python until
+  real usage patterns justify declarative support.
 
-```python
-import sef
+## Comparisons
 
-events = []
+| Tool type | SEF position |
+|---|---|
+| OpenCV scripts | SEF adds reusable pipeline contracts, config, execution planning, artifacts, and plugin inspection. |
+| Model frameworks | SEF orchestrates computer-vision pipeline stages; it is not a training framework. |
+| Workflow engines | SEF is domain-specific for frame/signal/visual-artifact pipelines, not a general DAG scheduler. |
+| Dashboard apps | SEF keeps output UI-agnostic so Streamlit, notebooks, CLIs, or future UIs can consume the same artifacts. |
 
-pipeline = (
-    sef.pipeline("tracked-run")
-    .frames(MyFrameExtractor)
-    .signals(MySignalExtractor)
-    .analyze(MyAnalyzer)
-)
+## Benchmarks
 
-outputs = (
-    sef.orchestrator()
-    .on_lifecycle("after_run", events.append)
-    .run(pipeline)
-)
-```
+No benchmark or production-readiness claim is made yet.
 
-Branching and orchestration are intentionally not part of the YAML config
-schema yet. A config file describes a single pipeline graph; application code
-decides whether to run it directly, submit it in the background, observe
-lifecycle events, or attach branching rules.
+Planned benchmark dimensions:
 
+- pipeline startup and config-build time;
+- batch vs streaming memory usage;
+- frame throughput for OpenCV-backed pipelines;
+- artifact export overhead;
+- CLI/project scaffold latency;
+- SEF Studio responsiveness for realtime-safe components.
 
-## Intermediate Artifacts
+Benchmark results should be reproducible, versioned, and tied to specific
+hardware and optional extras before being published.
 
-SEF can expose intermediate frame artifacts produced during the pipeline,
-including pre-processed frames, cleaned frames, masks, overlays, and final debug
-views.
+## Roadmap
 
-This makes each run easier to inspect, compare, and reproduce: users can see not
-only the final result, but also how each processing stage transformed the input.
+Near term:
+
+- stabilize decorator-based plugin authoring;
+- improve plugin metadata conventions and catalog output;
+- expand `sef init plugin` examples;
+- tighten README/docs around current public APIs;
+- add focused benchmark harnesses.
+
+Later:
+
+- richer Studio component catalog and visual pipeline editing;
+- broader intermediate artifact inspection;
+- more built-in analyzers and visualizers;
+- package-level plugin discovery only if external plugin distribution becomes a
+  real need;
+- declarative orchestration/branching only after Python usage patterns are
+  clear.
+
+## Visual Results
+
+| Pre-processed video | Processed video |
+|---|---|
+| ![SEF Studio Demo pre-processed](docs/assets/sef-studio-demo-pre-processed.gif) | ![SEF Studio Demo processed](docs/assets/sef-studio-demo-processed.gif) |
 
 | Original / Pre-processed | Noise / Motion Mask | Motion Mask | Final Output |
 |---|---|---|---|
 | ![Pre-processed frame](docs/assets/original.png) | ![Noise mask](docs/assets/noise.png) | ![Intermediate debug frame](docs/assets/intermediate.png) | ![Final output frame](docs/assets/final.png) |
 
-## Visual Results
-
-SEF is built around visual inspection, replayable artifacts, and UI-friendly
-outputs. The repository should eventually include real captures from the current
-pipeline and SEF Studio workflows.
-
-### Tracking Playback
-| Pre-processed video | Processed video |
-|---|---|
-| ![SEF tracking playback roi](docs/assets/tracking-playback.png) | ![SEF tracking playback](docs/assets/tracking-playback.gif) |
-
-### Annotated Playback
-
-<!-- PLACEHOLDER: Add annotated playback clip with bounding boxes, trajectories, and frame metadata; purpose: demonstrate visual artifact output quality; ideal placement: after Tracking Playback. -->
-
-### Optical Flow
-
-<!-- PLACEHOLDER: Add dense optical flow visualization from an actual SEF run; purpose: show motion-field analysis output; ideal placement: Optical Flow subsection. -->
-
-### Signal Graphs
-
-<!-- PLACEHOLDER: Add signal graph screenshot for vertical/horizontal position or velocity; purpose: show analyzer-to-visualizer data flow; ideal placement: Signal Graphs subsection. -->
-
-### Barrier Counting
-
-<!-- PLACEHOLDER: Add barrier counting screenshot or GIF with counted crossings; purpose: demonstrate geometric event analysis; ideal placement: Barrier Counting subsection. -->
-
-### Pose Tracking
-
-<!-- PLACEHOLDER: Add COCO/YOLO pose tracking GIF from a real pipeline run; purpose: show realtime or playback skeleton analysis; ideal placement: Pose Tracking subsection. -->
-
-### Motion Analysis
-
-<!-- PLACEHOLDER: Add motion-analysis comparison panel with source, processed frame, and output artifact; purpose: show intermediate artifacts and inspection workflow; ideal placement: Motion Analysis subsection. -->
-
 ## SEF Studio
 
-
-`SEF Studio` is the Streamlit application built on top of the same pipeline
-runtime. It is not a separate engine: visual composition, Python facade usage,
-and versioned config all resolve to the same core execution model.
-
-![SEF Studio Demo](docs/assets/cursorful-video.gif)
-
-Current UI goals:
-
-- compose pipeline stages visually;
-- edit and submit config-driven runs;
-- inspect execution plan and runtime status;
-- monitor logs by level;
-- preview realtime outputs when supported;
-- browse generated artifacts and analyzer results.
+`SEF Studio` is the Streamlit application built on top of the same runtime. It
+is not a separate engine: visual composition, Python facade usage, and
+versioned config resolve to the same core execution model.
 
 ```bash
 pip install -e ".[ui]"
 streamlit run ui/app.py
 ```
 
-<!-- PLACEHOLDER: Add screenshot of SEF Studio pipeline composer canvas; purpose: show visual pipeline construction; ideal placement: start of SEF Studio section. -->
-
-<!-- PLACEHOLDER: Add screenshot of Run & Monitor tab with live preview, status, logs, and plan view; purpose: show runtime observability; ideal placement: after the SEF Studio feature list. -->
-
-<!-- PLACEHOLDER: Add screenshot of artifacts/results panel; purpose: show final outputs and visual artifacts; ideal placement: end of SEF Studio section. -->
+![SEF Studio Demo](docs/assets/cursorful-video.gif)
 
 ## Documentation
-
-The README is intentionally concise. Use the MkDocs documentation for technical
-details, contracts, and extension guidance:
 
 - [Overview](docs/overview.md)
 - [Getting Started](docs/getting-started.md)
 - [Public API](docs/public-api.md)
 - [Configuration](docs/configuration.md)
+- [Registry](docs/registry.md)
 - [Plugin Authoring](docs/plugin-authoring.md)
+- [Plugin Metadata](docs/plugin-metadata.md)
 - [Streaming Runtime](docs/streaming-runtime.md)
 - [Error Handling](docs/error-handling.md)
 - [Versioning](docs/versioning.md)
-- [Generated API](docs/reference/generated-api.md)
 
-Build the docs locally:
+Build docs locally:
 
 ```bash
 pip install -e ".[docs]"
 mkdocs serve
 ```
 
-## Installation
+## Repository Map
 
-SEF currently targets Python 3.11+.
-
-```bash
-pip install -e .
-```
-
-Install only the adapter stacks you need:
-
-```bash
-pip install -e ".[opencv]"        # OpenCV sources, processors, ArUco, video artifacts
-pip install -e ".[visualization]" # Matplotlib visualizers
-pip install -e ".[ui]"            # Streamlit Studio
-pip install -e ".[yolo]"          # Ultralytics pose extraction
-pip install -e ".[pose]"          # COCO pose analyzer model helpers
-pip install -e ".[all]"           # all runtime adapter extras
-```
-
-For the full local development environment:
-
-```bash
-pip install -e ".[dev]"
+```text
+sef/                 Pythonic public API
+sef/core/            Public contracts, runtime, registry, artifacts, events
+sef/builtin/         Optional concrete computer-vision components
+sef/cli/             Command-line parser, handlers, diagnostics, scaffolds
+ui/                  Streamlit application built on the core framework
+docs/                MkDocs documentation
+examples/            Minimal runnable examples
+tests/               Core, API, CLI, registry, streaming, and UI service tests
 ```
 
 ## Project Status
 
-SEF is experimental and evolving.
-
-- The project is pre-1.0.
-- Public APIs are being documented and hardened.
-- Configuration schemas are versioned, but compatibility policy is still
-  maturing.
-- The current implementation is suitable for experimentation, research,
-  demos, and architecture exploration.
-- It should not yet be presented as production-stable infrastructure.
-
-No benchmark, adoption, or production-readiness claims are made here.
-
-## Repository Map
-
-```text
-sef/                 Recommended Pythonic public API
-sef/core/        Public contracts, runtime, registry, artifacts, events
-sef/builtin/*            Concrete computer-vision components and visualizers
-ui/                  Streamlit application built on the core framework
-docs/                MkDocs public documentation
-examples/            Minimal runnable examples
-tests/               Core, registry, builder, streaming, and UI service tests
-```
+- Experimental, pre-1.0.
+- Public API is being documented and hardened.
+- Config schema is versioned.
+- Optional dependencies are split by feature extras.
+- Suitable for research, demos, and framework exploration.
+- Not yet presented as production-stable infrastructure.
 
 ## Core Authors
 
@@ -430,6 +350,8 @@ tests/               Core, registry, builder, streaming, and UI service tests
 
 ## Acknowledgements
 
-We would like to extend our special thanks to:
-- Michele Loreti (for his guidance and advice throughout the project)
-- Tomek Paczkowski (for kindly granting us ownership of the "sef" package name on PyPi)
+Special thanks to:
+
+- Michele Loreti, for guidance and advice throughout the project.
+- Tomek Paczkowski, for kindly granting ownership of the `sef` package name on
+  PyPI.

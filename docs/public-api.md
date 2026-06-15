@@ -118,7 +118,7 @@ The `sef` console script, and the equivalent `python -m sef`, expose the public
 CLI surface:
 
 ```bash
-sef init [tracking-demo] [--force]
+sef init [tracking-demo|plugin] [--force]
 sef doctor [--config pipeline.yaml]
 sef validate <config> [--strict] [--debug]
 sef run <config> [--dry-run] [--explain] [--output outputs/run] [--debug]

@@ -40,6 +40,15 @@ sef components inspect vertical_position
 `sef init tracking-demo` creates a video-based demo config that expects the user
 to place a video at `videos/input.mp4` and install `sef[opencv]`; it does not
 download or include assets.
+
+For dependency-light component authoring, scaffold local plugins instead:
+
+```bash
+sef init plugin
+sef components inspect sample_count
+python -m pytest tests/test_custom_components.py
+```
+
 `sef doctor` exits with `0` when only warnings are found and exits with `1` only
 for blocking errors.
 

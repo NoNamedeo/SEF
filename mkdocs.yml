@@ -24,6 +24,7 @@ nav:
   - Configuration: configuration.md
   - Registry: registry.md
   - Plugin Authoring: plugin-authoring.md
+  - Plugin Metadata: plugin-metadata.md
   - Streaming Runtime: streaming-runtime.md
   - Error Handling: error-handling.md
   - Dependency Plan: dependency-management-plan.md

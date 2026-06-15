@@ -55,6 +55,14 @@ def can_overwrite_scaffold(path: Path, *, force: bool) -> bool:
 
 def scaffold_files(template: str) -> dict[str, str]:
     """Return scaffold file contents for the requested template."""
+    if template == "plugin":
+        return {
+            DEFAULT_CONFIG_NAME: _plugin_pipeline_yaml(),
+            "README.md": _plugin_readme(),
+            "plugins/__init__.py": f"{SCAFFOLD_FILE_MARKER}\n",
+            "plugins/custom_components.py": _plugin_components_file(),
+            "tests/test_custom_components.py": _plugin_test_file(),
+        }
     if template == "tracking-demo":
         return {
             DEFAULT_CONFIG_NAME: _tracking_demo_pipeline_yaml(),
@@ -151,6 +159,35 @@ pipeline:
 """
 
 
+def _plugin_pipeline_yaml() -> str:
+    return f"""{SCAFFOLD_FILE_MARKER}
+schema_version: "1.0"
+pipeline:
+  frame_extractor:
+    name: demo_frames
+    params:
+      frame_count: 5
+
+  frame_processors:
+    - name: tag_frames
+      processor_type: frame_buffer
+      params:
+        label: scaffolded
+
+  signal_extractor:
+    name: demo_signal
+
+  analyzers:
+    - name: sample_count
+      params:
+        scale: 1.0
+
+  visualizers:
+    - name: summary_text
+      result_indices: [0]
+"""
+
+
 def _default_readme() -> str:
     return f"""{SCAFFOLD_FILE_MARKER}
 # SEF project
@@ -205,6 +242,33 @@ match the object you want to track in your video.
 """
 
 
+def _plugin_readme() -> str:
+    return f"""{SCAFFOLD_FILE_MARKER}
+# SEF plugin project
+
+This scaffold is intentionally small and dependency-light. It shows how to
+register local function plugins with metadata, aliases, and capabilities.
+
+## Run
+
+```bash
+sef components inspect sample_count
+sef validate pipeline.yaml --strict
+sef run pipeline.yaml --dry-run --explain
+sef run pipeline.yaml --output outputs/plugin-demo
+```
+
+## Test
+
+```bash
+python -m pytest tests/test_custom_components.py
+```
+
+Local plugin modules under `plugins/*.py` are imported by the SEF CLI before
+validation, execution, and component inspection.
+"""
+
+
 def _example_plugin_file() -> str:
     return f'''{SCAFFOLD_FILE_MARKER}
 from __future__ import annotations
@@ -216,4 +280,134 @@ import sef
 def sample_counter(signal):
     """Return a simple count-like result for local plugin experiments."""
     return signal
+'''
+
+
+def _plugin_components_file() -> str:
+    return f'''{SCAFFOLD_FILE_MARKER}
+from __future__ import annotations
+
+import numpy as np
+
+import sef
+from sef.core.artifacts import Frame, Signal
+from sef.core.artifacts.buffer import FrameBuffer
+from sef.core.artifacts.data import TwoDimGraphData
+from sef.core.artifacts.signal_sample import BoxSignalSample
+from sef.core.interfaces import StageCapabilities
+from sef.core.visualization import TextArtifact
+
+
+@sef.frame_extractor(
+    "demo_frames",
+    description="Create deterministic demo frames for plugin development.",
+    metadata={{"domain": "demo", "output": "FrameBuffer"}},
+)
+def demo_frames(frame_count: int = 5) -> FrameBuffer:
+    buffer = FrameBuffer(frame_count)
+    for index in range(frame_count):
+        buffer.put(
+            Frame(
+                image=np.zeros((4, 4, 3), dtype=np.uint8),
+                index=index,
+                timestamp_seconds=float(index),
+                metadata={{"source": "plugin-scaffold"}},
+            )
+        )
+    buffer.close()
+    return buffer
+
+
+@sef.frame_buffer_processor(
+    "tag_frames",
+    description="Annotate each frame with a metadata label.",
+    metadata={{"domain": "demo", "input": "FrameBuffer", "output": "FrameBuffer"}},
+    capabilities=StageCapabilities.batch(stateful=False),
+)
+def tag_frames(buffer: FrameBuffer, label: str = "processed") -> FrameBuffer:
+    output = buffer.clone_empty()
+    for frame in buffer:
+        output.put(
+            Frame(
+                image=frame.image,
+                index=frame.index,
+                timestamp_seconds=frame.timestamp_seconds,
+                metadata={{**frame.metadata, "label": label}},
+            )
+        )
+    output.close()
+    return output
+
+
+@sef.signal_extractor(
+    "demo_signal",
+    description="Convert frames into one centroid sample per frame.",
+    metadata={{"domain": "demo", "input": "FrameBuffer", "output": "Signal"}},
+)
+def demo_signal(buffer: FrameBuffer) -> Signal:
+    return Signal(
+        [
+            BoxSignalSample(
+                frame_index=int(frame.index or 0),
+                box=(0, 0, 2, 2),
+                centroid=(1.0, float(frame.index or 0)),
+                timestamp_seconds=frame.timestamp_seconds,
+                metadata=dict(frame.metadata),
+            )
+            for frame in buffer
+        ]
+    )
+
+
+@sef.analyzer(
+    "sample_count",
+    description="Count samples in a signal.",
+    aliases=("count_samples",),
+    metadata={{
+        "domain": "demo",
+        "input": "Signal",
+        "output": "TwoDimGraphData",
+        "params": {{"scale": {{"type": "float", "default": 1.0}}}},
+    }},
+)
+def sample_count(signal: Signal, scale: float = 1.0) -> TwoDimGraphData:
+    count = float(len(list(signal))) * scale
+    return TwoDimGraphData(x=[0.0], y=[count], title="Sample count")
+
+
+@sef.visualizer(
+    "summary_text",
+    description="Render analyzer output as a text artifact.",
+    metadata={{"domain": "demo", "input": "TwoDimGraphData", "output": "TextArtifact"}},
+)
+def summary_text(data: TwoDimGraphData) -> TextArtifact:
+    return TextArtifact(
+        kind="text",
+        title="Summary",
+        content=f"Sample count: {{data.y[0]}}",
+    )
+'''
+
+
+def _plugin_test_file() -> str:
+    return f'''{SCAFFOLD_FILE_MARKER}
+from __future__ import annotations
+
+import plugins.custom_components  # noqa: F401 - imports decorator registrations.
+import sef
+
+
+def test_scaffolded_pipeline_runs() -> None:
+    outputs = (
+        sef.pipeline("plugin-test", include_builtins=False)
+        .frames("demo_frames", frame_count=3)
+        .process("tag_frames", processor_type="frame_buffer", label="tested")
+        .signals("demo_signal")
+        .analyze("sample_count", scale=2.0)
+        .visualize("summary_text")
+        .run()
+    )
+
+    assert outputs.results[0].y == [6.0]
+    assert outputs.final_artifacts[0].content == "Sample count: 6.0"
 '''

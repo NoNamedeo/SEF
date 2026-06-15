@@ -114,6 +114,19 @@ def test_cli_init_tracking_demo_has_expected_video_path(tmp_path: Path, monkeypa
     assert not (tmp_path / "videos" / "input.mp4").exists()
 
 
+def test_cli_init_plugin_creates_authoring_scaffold(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.chdir(tmp_path)
+
+    exit_code = main(["init", "plugin"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "template: plugin" in captured.out
+    assert "@sef.frame_buffer_processor" in (tmp_path / "plugins" / "custom_components.py").read_text(encoding="utf-8")
+    assert "name: demo_frames" in (tmp_path / "pipeline.yaml").read_text(encoding="utf-8")
+    assert (tmp_path / "tests" / "test_custom_components.py").exists()
+
+
 def test_cli_init_does_not_overwrite_existing_file_without_force(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     pipeline_path = tmp_path / "pipeline.yaml"
