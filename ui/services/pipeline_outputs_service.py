@@ -115,7 +115,7 @@ def _build_analysis_result_output(result: Any, idx: int, warnings: list[str]) ->
 
     if TwoDimGraphData is not None and isinstance(result, TwoDimGraphData):
         preview_artifacts = _safe_render_preview(
-            "matplotlib_function",
+            "matplotlib",
             lambda: _render_function_preview(result),
             warnings,
         )

@@ -181,7 +181,7 @@ def _registry_signature(registry: PluginRegistry) -> tuple[tuple[str, str, str],
             (
                 str(plugin.category),
                 plugin.name,
-                f"{plugin.factory.__module__}.{plugin.factory.__name__}",
+                plugin.factory_path,
             )
             for plugin in registry.list()
         )

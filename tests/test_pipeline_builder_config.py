@@ -17,7 +17,7 @@ class PipelineBuilderConfigurationTests(unittest.TestCase):
             frame_extractor=PluginConfig("opencv_buffered"),
             signal_extractor=PluginConfig("opencv_tracker"),
             analyzers=(PluginConfig("vertical_position"),),
-            visualizers=(VisualizerConfig("matplotlib_function", result_indices=(0,)),),
+            visualizers=(VisualizerConfig("matplotlib", result_indices=(0,)),),
             intermediate_frames=IntermediateFrameConfiguration(
                 enabled=True,
                 max_stored_frames=30,
@@ -29,7 +29,7 @@ class PipelineBuilderConfigurationTests(unittest.TestCase):
 
         self.assertEqual(
             pipeline["visualizers"],
-            [{"name": "matplotlib_function", "result_indices": [0]}],
+            [{"name": "matplotlib", "result_indices": [0]}],
         )
         self.assertEqual(
             pipeline["intermediate_frames"]["visualizers"],

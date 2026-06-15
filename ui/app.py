@@ -8,6 +8,7 @@ Run with:
 from __future__ import annotations
 
 import importlib
+import html
 import json
 import sys
 import time
@@ -35,11 +36,9 @@ from ui.components.pipeline_status_dashboard import (  # noqa: E402
 from ui.components.realtime_preview_viewer import render_realtime_preview  # noqa: E402
 from ui.services.execution_plan_service import build_execution_plan_preview, summarize_execution_plan  # noqa: E402
 from ui.services.pipeline_builder_service import (  # noqa: E402
+    SCENARIO_OPTIONS,
     apply_aruco_preset,
-    apply_dense_flow_preset,
-    apply_multi_object_preset,
     apply_tracking_preset,
-    apply_yolo_pose_preset,
     current_pipeline_config_dict,
     generated_pipeline_config_dict,
     has_manual_config_override,
@@ -72,12 +71,20 @@ from ui.services.pipeline_service import (  # noqa: E402
     snapshots,
     submit_async,
 )
+from ui.services.plugin_display import plugin_factory_label  # noqa: E402
 from ui.services.realtime_preview_service import (  # noqa: E402
     config_has_streamlit_realtime_visualizer,
     preview_has_content,
     reset_sink,
     streamlit_realtime_visualizer_names,
     with_realtime_sink_ids,
+)
+from ui.services.registry_catalog import (  # noqa: E402
+    RegistryPluginCard,
+    build_registry_catalog,
+    filter_registry_cards,
+    metadata_as_pretty_json,
+    registry_category_label,
 )
 from ui.services.registry_bootstrap import get_registry  # noqa: E402
 from ui.services.ui_log_service import (  # noqa: E402
@@ -152,17 +159,8 @@ def render_sidebar(registry) -> None:
         if st.button("Tracking singolo", width="stretch"):
             apply_tracking_preset()
             st.rerun()
-        if st.button("Multi-oggetto + barriere", width="stretch"):
-            apply_multi_object_preset()
-            st.rerun()
-        if st.button("Dense optical flow", width="stretch"):
-            apply_dense_flow_preset()
-            st.rerun()
-        if st.button("ArUco wall motion", width="stretch"):
+        if st.button("ArUco marker motion", width="stretch"):
             apply_aruco_preset()
-            st.rerun()
-        if st.button("YOLO pose realtime", width="stretch"):
-            apply_yolo_pose_preset()
             st.rerun()
 
         st.divider()
@@ -193,13 +191,7 @@ def render_composer(registry) -> None:
     st.subheader("Composizione visuale")
     mode = st.radio(
         "Scenario",
-        [
-            "Single object tracking",
-            "Multi-object barriers",
-            "Dense optical flow",
-            "ArUco wall micromovements",
-            "YOLO pose realtime",
-        ],
+        list(SCENARIO_OPTIONS),
         key="sef_builder_mode",
         horizontal=True,
     )
@@ -559,7 +551,7 @@ def render_stored_outputs_browser(*, default_pipeline_id: str | None = None) -> 
 
 def render_registry(registry) -> None:
     st.subheader("Registry operativo")
-    st.caption("Componenti disponibili e registrazione runtime di nuovi plugin.")
+    st.caption("Catalogo live dei plugin SEF: categorie, metadata, aliases, factory path, capability e dipendenze opzionali.")
 
     categories = [
         PluginCategory.FRAME_EXTRACTOR,
@@ -571,21 +563,60 @@ def render_registry(registry) -> None:
         PluginCategory.VISUALIZER,
         PluginCategory.BRANCHING_RULE,
     ]
+    catalog = build_registry_catalog(registry)
+    _inject_registry_styles()
 
-    selected_category = st.selectbox(
-        "Categoria",
-        categories,
-        format_func=lambda category: category.value.replace("_", " ").title(),
+    summary_cols = st.columns(4)
+    summary_cols[0].metric("Plugin", len(catalog.cards))
+    summary_cols[1].metric("Categorie", len(catalog.categories))
+    summary_cols[2].metric("Tag", len(catalog.tags))
+    summary_cols[3].metric("Extras opzionali", len(catalog.optional_extras))
+
+    search_col, category_col = st.columns([0.45, 0.55])
+    query = search_col.text_input(
+        "Cerca nel registry",
+        placeholder="nome, tag, optional extra, factory path, metadata...",
+        key="sef_registry_search",
     )
-    rows = [
-        {
-            "name": plugin.name,
-            "factory": plugin.factory.__name__,
-            "description": plugin.description,
-        }
-        for plugin in sorted(registry.list(selected_category), key=lambda item: item.name)
-    ]
-    st.dataframe(rows, hide_index=True, width="stretch")
+    selected_categories = category_col.multiselect(
+        "Categorie",
+        [category.value for category in categories],
+        format_func=registry_category_label,
+        key="sef_registry_category_filter",
+    )
+
+    tag_col, extra_col, capability_col = st.columns(3)
+    selected_tags = tag_col.multiselect("Tag", list(catalog.tags), key="sef_registry_tag_filter")
+    selected_extras = extra_col.multiselect("Optional extra", list(catalog.optional_extras), key="sef_registry_extra_filter")
+    selected_capabilities = capability_col.multiselect(
+        "Capability vere",
+        list(catalog.capability_names),
+        key="sef_registry_capability_filter",
+    )
+
+    filtered_cards = filter_registry_cards(
+        catalog.cards,
+        query=query,
+        categories=selected_categories,
+        tags=selected_tags,
+        optional_extras=selected_extras,
+        capabilities=selected_capabilities,
+    )
+
+    view_mode = st.segmented_control(
+        "Vista registry",
+        ["Cards", "Table", "Metadata"],
+        default="Cards",
+        key="sef_registry_view_mode",
+    )
+    st.caption(f"{len(filtered_cards)} plugin mostrati su {len(catalog.cards)}.")
+
+    if view_mode == "Table":
+        st.dataframe([card.table_row() for card in filtered_cards], hide_index=True, width="stretch")
+    elif view_mode == "Metadata":
+        _render_registry_metadata_view(filtered_cards)
+    else:
+        _render_registry_cards(filtered_cards)
 
     st.markdown("### Registra nuovo componente")
     with st.form("register_plugin_form"):
@@ -597,10 +628,31 @@ def render_registry(registry) -> None:
         name = st.text_input("Nome registry", placeholder="my_custom_analyzer")
         class_path = st.text_input("Classe Python", placeholder="my_package.module.MyAnalyzer")
         description = st.text_input("Descrizione")
+        c1, c2 = st.columns(2)
+        version = c1.text_input("Versione", value="1.0.0")
+        aliases_text = c2.text_input("Aliases", placeholder="alias_a, alias_b")
+        metadata_text = st.text_area(
+            "Metadata JSON",
+            value='{\n  "tags": ["custom"],\n  "domain": "experiment"\n}',
+            height=150,
+            help=(
+                "Metadati suggeriti: tags, domain, owner, optional_extra, expected_input, "
+                "expected_output, hardware, maturity, docs_url."
+            ),
+        )
         submitted = st.form_submit_button("Registra componente")
 
     if submitted:
-        register_runtime_plugin(registry, category, name, class_path, description)
+        register_runtime_plugin(
+            registry,
+            category,
+            name,
+            class_path,
+            description,
+            version=version,
+            aliases=tuple(alias.strip() for alias in aliases_text.split(",") if alias.strip()),
+            metadata_text=metadata_text,
+        )
 
 
 def render_config_lab(registry) -> None:
@@ -711,18 +763,44 @@ def _realtime_preview_pipeline_id(current_pipeline_id: str | None, fallback_pipe
     return fallback_pipeline_id
 
 
-def register_runtime_plugin(registry, category: PluginCategory, name: str, class_path: str, description: str) -> None:
+def register_runtime_plugin(
+    registry,
+    category: PluginCategory,
+    name: str,
+    class_path: str,
+    description: str,
+    *,
+    version: str,
+    aliases: tuple[str, ...],
+    metadata_text: str,
+) -> None:
     if not name.strip():
         st.error("Il nome registry e obbligatorio.")
         return
     if "." not in class_path:
         st.error("Inserisci un path completo del tipo package.module.ClassName.")
         return
+    try:
+        metadata = json.loads(metadata_text) if metadata_text.strip() else {}
+    except json.JSONDecodeError as exc:
+        st.error(f"Metadata JSON non valido: {exc}")
+        return
+    if not isinstance(metadata, dict):
+        st.error("Metadata JSON deve essere un oggetto.")
+        return
     module_path, class_name = class_path.rsplit(".", 1)
     try:
         module = importlib.import_module(module_path)
         factory = getattr(module, class_name)
-        registry.register(category, name.strip(), factory, description.strip())
+        registry.register(
+            category,
+            name.strip(),
+            factory,
+            description.strip(),
+            version=version.strip() or "1.0.0",
+            aliases=aliases,
+            metadata=metadata,
+        )
         st.success(f"Plugin {name} registrato in {category.value}.")
         st.rerun()
     except Exception as exc:
@@ -737,11 +815,245 @@ def _display_plugin(registry, category: PluginCategory):
     def _format(name: str) -> str:
         try:
             plugin = registry.get(category, name)
-            return f"{plugin.name} - {plugin.factory.__name__}"
+            return f"{plugin.name} - {plugin_factory_label(plugin)}"
         except Exception:
             return name
 
     return _format
+
+
+def _render_registry_cards(cards: tuple[RegistryPluginCard, ...]) -> None:
+    if not cards:
+        st.info("Nessun plugin corrisponde ai filtri correnti.")
+        return
+
+    for category in sorted({card.category for card in cards}):
+        group = tuple(card for card in cards if card.category == category)
+        style = _registry_category_style(category)
+        st.markdown(
+            (
+                f"<div class='sef-category-heading' style='border-color:{style['accent']};'>"
+                f"<span style='background:{style['accent']};'></span>"
+                f"{html.escape(registry_category_label(category))}"
+                f"<small>{len(group)} plugin</small>"
+                "</div>"
+            ),
+            unsafe_allow_html=True,
+        )
+        columns = st.columns(2)
+        for index, card in enumerate(group):
+            with columns[index % 2]:
+                _render_registry_card(card)
+
+
+def _render_registry_card(card: RegistryPluginCard) -> None:
+    style = _registry_category_style(card.category)
+    tags = "".join(f"<span class='sef-chip'>{html.escape(tag)}</span>" for tag in card.tags[:8])
+    aliases = ", ".join(card.aliases) if card.aliases else "-"
+    optional_extra = card.optional_extra or "core"
+    capabilities = _capability_badges(card)
+    metadata_preview = metadata_as_pretty_json(card.metadata) if card.metadata else "{}"
+    st.markdown(
+        f"""
+        <div class="sef-registry-card" style="border-top-color:{style['accent']}; background:{style['background']};">
+          <div class="sef-registry-card-title">
+            <strong>{html.escape(card.name)}</strong>
+            <span style="background:{style['accent']};">{html.escape(card.category_label)}</span>
+          </div>
+          <p>{html.escape(card.description or "Nessuna descrizione disponibile.")}</p>
+          <div class="sef-registry-meta">
+            <span>version <b>{html.escape(card.version)}</b></span>
+            <span>extra <b>{html.escape(optional_extra)}</b></span>
+            <span>aliases <b>{html.escape(aliases)}</b></span>
+          </div>
+          <div class="sef-registry-tags">{tags or "<span class='sef-muted'>nessun tag</span>"}</div>
+          <div class="sef-registry-capabilities">{capabilities}</div>
+          <details>
+            <summary>Factory path</summary>
+            <code>{html.escape(card.factory_path)}</code>
+          </details>
+          <details>
+            <summary>Metadata</summary>
+            <pre>{html.escape(metadata_preview)}</pre>
+          </details>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_registry_metadata_view(cards: tuple[RegistryPluginCard, ...]) -> None:
+    if not cards:
+        st.info("Nessun metadata disponibile per i filtri correnti.")
+        return
+    selected_name = st.selectbox(
+        "Plugin",
+        [f"{card.category}/{card.name}" for card in cards],
+        key="sef_registry_metadata_plugin",
+    )
+    selected_card = cards[[f"{card.category}/{card.name}" for card in cards].index(selected_name)]
+    c1, c2 = st.columns([0.42, 0.58])
+    with c1:
+        st.markdown("**Descriptor registry**")
+        st.json(
+            {
+                "category": selected_card.category,
+                "name": selected_card.name,
+                "version": selected_card.version,
+                "aliases": list(selected_card.aliases),
+                "factory_path": selected_card.factory_path,
+                "description": selected_card.description,
+                "tags": list(selected_card.tags),
+                "optional_extra": selected_card.optional_extra,
+            }
+        )
+    with c2:
+        st.markdown("**Metadata e capability**")
+        st.json(
+            {
+                "metadata": dict(selected_card.metadata),
+                "capabilities": dict(selected_card.capabilities),
+            }
+        )
+
+
+def _capability_badges(card: RegistryPluginCard) -> str:
+    if not card.capabilities:
+        return "<span class='sef-muted'>capabilities non dichiarate sul factory lazy</span>"
+    badges = []
+    for name, enabled in sorted(card.capabilities.items()):
+        state_class = "sef-cap-on" if enabled else "sef-cap-off"
+        badges.append(f"<span class='{state_class}'>{html.escape(name)}</span>")
+    return "".join(badges)
+
+
+def _inject_registry_styles() -> None:
+    st.markdown(
+        """
+        <style>
+        .sef-category-heading {
+          display: flex;
+          align-items: center;
+          gap: 0.55rem;
+          border-left: 4px solid;
+          padding: 0.45rem 0.7rem;
+          margin: 1.1rem 0 0.45rem;
+          background: rgba(255,255,255,0.035);
+          font-weight: 700;
+        }
+        .sef-category-heading span {
+          width: 0.7rem;
+          height: 0.7rem;
+          border-radius: 999px;
+          display: inline-block;
+        }
+        .sef-category-heading small {
+          color: rgba(250,250,250,0.62);
+          font-weight: 500;
+          margin-left: auto;
+        }
+        .sef-registry-card {
+          border: 1px solid rgba(255,255,255,0.12);
+          border-top: 4px solid;
+          border-radius: 8px;
+          padding: 0.85rem;
+          margin-bottom: 0.85rem;
+          min-height: 18rem;
+        }
+        .sef-registry-card-title {
+          display: flex;
+          gap: 0.55rem;
+          justify-content: space-between;
+          align-items: start;
+        }
+        .sef-registry-card-title strong {
+          font-size: 1rem;
+          line-height: 1.2;
+        }
+        .sef-registry-card-title span {
+          border-radius: 999px;
+          color: #0f1419;
+          font-size: 0.72rem;
+          font-weight: 800;
+          padding: 0.18rem 0.45rem;
+          white-space: nowrap;
+        }
+        .sef-registry-card p {
+          color: rgba(250,250,250,0.76);
+          min-height: 2.6rem;
+          margin: 0.55rem 0;
+        }
+        .sef-registry-meta,
+        .sef-registry-tags,
+        .sef-registry-capabilities {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.35rem;
+          margin: 0.45rem 0;
+        }
+        .sef-registry-meta span,
+        .sef-chip,
+        .sef-cap-on,
+        .sef-cap-off {
+          border-radius: 999px;
+          padding: 0.16rem 0.42rem;
+          font-size: 0.72rem;
+        }
+        .sef-registry-meta span {
+          background: rgba(255,255,255,0.07);
+          color: rgba(250,250,250,0.72);
+        }
+        .sef-chip {
+          background: rgba(125,211,252,0.12);
+          color: #bae6fd;
+          border: 1px solid rgba(125,211,252,0.22);
+        }
+        .sef-cap-on {
+          background: rgba(134,239,172,0.12);
+          color: #bbf7d0;
+          border: 1px solid rgba(134,239,172,0.22);
+        }
+        .sef-cap-off {
+          background: rgba(248,113,113,0.10);
+          color: #fecaca;
+          border: 1px solid rgba(248,113,113,0.18);
+        }
+        .sef-muted {
+          color: rgba(250,250,250,0.54);
+          font-size: 0.78rem;
+        }
+        .sef-registry-card details {
+          margin-top: 0.45rem;
+        }
+        .sef-registry-card summary {
+          cursor: pointer;
+          color: rgba(250,250,250,0.7);
+          font-size: 0.8rem;
+        }
+        .sef-registry-card code,
+        .sef-registry-card pre {
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-size: 0.75rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _registry_category_style(category: str) -> dict[str, str]:
+    styles = {
+        PluginCategory.FRAME_EXTRACTOR.value: {"accent": "#7dd3fc", "background": "rgba(14,116,144,0.13)"},
+        PluginCategory.SINGLE_FRAME_PROCESSOR.value: {"accent": "#a7f3d0", "background": "rgba(6,95,70,0.12)"},
+        PluginCategory.FRAME_BUFFER_PROCESSOR.value: {"accent": "#fcd34d", "background": "rgba(146,64,14,0.12)"},
+        PluginCategory.SIGNAL_EXTRACTOR.value: {"accent": "#c4b5fd", "background": "rgba(91,33,182,0.12)"},
+        PluginCategory.SIGNAL_CLEANER.value: {"accent": "#fdba74", "background": "rgba(154,52,18,0.12)"},
+        PluginCategory.ANALYZER.value: {"accent": "#f0abfc", "background": "rgba(134,25,143,0.12)"},
+        PluginCategory.VISUALIZER.value: {"accent": "#93c5fd", "background": "rgba(30,64,175,0.12)"},
+        PluginCategory.BRANCHING_RULE.value: {"accent": "#fda4af", "background": "rgba(159,18,57,0.12)"},
+    }
+    return styles.get(category, {"accent": "#d1d5db", "background": "rgba(75,85,99,0.12)"})
 
 
 if __name__ == "__main__":

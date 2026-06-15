@@ -29,6 +29,7 @@ from ui.components.pipeline_canvas_models import (
     PortDirection,
 )
 from ui.services.execution_plan_service import build_execution_plan_preview
+from ui.services.plugin_display import plugin_factory_label
 from ui.state.canvas import layout as canvas_layout
 from ui.state.canvas import viewport as canvas_viewport
 
@@ -567,7 +568,7 @@ def _collect_stage_events(
             if not plugin_name:
                 continue
             try:
-                component_sources[stage_key].add(registry.get(category, str(plugin_name)).factory.__name__)
+                component_sources[stage_key].add(plugin_factory_label(registry.get(category, str(plugin_name))))
             except Exception:
                 continue
 

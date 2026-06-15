@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-from library.core.visualization.VisualArtifact import VideoLikeArtifact, VisualArtifact
+from sef.core.visualization.VisualArtifact import VideoLikeArtifact, VisualArtifact
 
 
 @dataclass(frozen=True, slots=True)
