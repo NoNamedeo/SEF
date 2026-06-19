@@ -1,8 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/sef_logo.png" width="180"/>
-
-# SEF
+<img src="docs/assets/sef_logo.png" width="210"/>
 
 ### Signal Extraction Framework
 
