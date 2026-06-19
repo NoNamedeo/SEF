@@ -131,26 +131,7 @@ python -m pytest tests/test_custom_components.py
 ## Python API
 
 The common path is intentionally short: describe a source, add stages, and run.
-
-```python
-import sef
-
-outputs = (
-    sef.video("videos/input.mp4", max_frames=300)
-    .resize(640, 480)
-    .extract("opencv_tracker", tracker_type="MIL", start_box=[100, 200, 50, 80])
-    .clean("moving_average", window_size=5)
-    .analyze("vertical_position")
-    .visualize("matplotlib")
-    .run(pipeline_id="demo-run")
-)
-
-print(outputs.results)
-print(outputs.final_artifacts)
-```
-
-The facade accepts registered plugin names, component classes, component
-instances, or plain Python callables:
+The facade accepts registered plugin names, component classes, component instances, or plain Python callables:
 
 ```python
 import sef
@@ -285,20 +266,6 @@ flowchart LR
 
 ✓ Reproducible execution plans
 
-## Design Principles
-
-- **Small public API first**: common workflows go through `import sef`.
-- **Advanced API remains available**: custom runners, branching, registries, and
-  framework integrations live in `sef.core`.
-- **Core is adapter-free**: OpenCV, Matplotlib, Streamlit, YOLO, and pose helpers
-  are optional extras.
-- **Plugins are explicit**: categories, names, aliases, metadata, capabilities,
-  and config construction are registry-backed.
-- **Artifacts are UI-agnostic**: visualizers return `VisualArtifact` values, not
-  Streamlit widgets or notebook globals.
-- **Config is pipeline-only**: orchestration and branching stay in Python until
-  real usage patterns justify declarative support.
-
 ## Comparisons
 
 | Tool type | SEF position |
@@ -307,26 +274,6 @@ flowchart LR
 | Model frameworks | SEF orchestrates computer-vision pipeline stages; it is not a training framework. |
 | Workflow engines | SEF is domain-specific for frame/signal/visual-artifact pipelines, not a general DAG scheduler. |
 | Dashboard apps | SEF keeps output UI-agnostic so Streamlit, notebooks, CLIs, or future UIs can consume the same artifacts. |
-
-## Roadmap
-
-Near term:
-
-- stabilize decorator-based plugin authoring;
-- improve plugin metadata conventions and catalog output;
-- expand `sef init plugin` examples;
-- tighten README/docs around current public APIs;
-- expand benchmark coverage to OpenCV-backed and Studio-facing workloads.
-
-Later:
-
-- richer Studio component catalog and visual pipeline editing;
-- broader intermediate artifact inspection;
-- more built-in analyzers and visualizers;
-- package-level plugin discovery only if external plugin distribution becomes a
-  real need;
-- declarative orchestration/branching only after Python usage patterns are
-  clear.
 
 ## Visual Results
 
@@ -350,26 +297,6 @@ streamlit run ui/app.py
 ```
 
 ![SEF Studio Demo](docs/assets/cursorful-video.gif)
-
-## Documentation
-
-- [Overview](docs/overview.md)
-- [Getting Started](docs/getting-started.md)
-- [Public API](docs/public-api.md)
-- [Configuration](docs/configuration.md)
-- [Registry](docs/registry.md)
-- [Plugin Authoring](docs/plugin-authoring.md)
-- [Plugin Metadata](docs/plugin-metadata.md)
-- [Streaming Runtime](docs/streaming-runtime.md)
-- [Error Handling](docs/error-handling.md)
-- [Versioning](docs/versioning.md)
-
-Build docs locally:
-
-```bash
-pip install -e ".[docs]"
-mkdocs serve
-```
 
 ## Repository Map
 
