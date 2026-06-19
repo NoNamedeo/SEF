@@ -1,56 +1,80 @@
+<div align="center">
+
 # SEF
 
+### Signal Extraction Framework
+
+**Modular • Streaming • Inspectable • Reproducible**
+
+*Build computer-vision pipelines around signals, not monolithic scripts.*
+
+<br>
+
+[![PyPI version](https://img.shields.io/pypi/v/sef?label=PyPI&color=blue)](https://pypi.org/project/sef/)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
 ![Status](https://img.shields.io/badge/status-experimental-orange)
 [![Docs](https://img.shields.io/badge/docs-MkDocs-brightgreen)](https://nonamedeo.github.io/SEF/)
 ![Architecture](https://img.shields.io/badge/architecture-modular-informational)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-orange)](LICENSE)
 
+<br>
+
+ [Documentation](https://nonamedeo.github.io/SEF/) •  [PyPI](https://pypi.org/project/sef/) •  [Benchmarks](benchmarks/README.md)
+
+</div>
+
+---
+
+<div align="center">
+
+<img src="docs/assets/sef-studio-hero.png" width="950"/>
+
+</div>
+
+---
+
+<div align="center">
+    
 ## Performance Highlights
 
-<p align="center">
 
-<strong>↓ 84%</strong> RSS memory &nbsp;&nbsp;•&nbsp;&nbsp;
+| Memory (RSS) | Peak Allocations | Runtime Overhead | Realtime Latency |
+|:--------------:|:------------------:|:------------------:|:------------------:|
+| **↓ 84%** | **↓ 98%** | **1.06×** | **↓ 74%** |
 
-<strong>↓ 98%</strong> Python peak allocations &nbsp;&nbsp;•&nbsp;&nbsp;
+---
 
-<strong>1.06×</strong> runtime overhead &nbsp;&nbsp;•&nbsp;&nbsp;
+</div>
 
-<strong>↓ 74%</strong> realtime latency
+Recent synthetic benchmarks show that SEF can:
 
-</p>
+- reduce process memory usage by up to **84%** through end-to-end streaming;
+- reduce Python peak allocations by up to **98%**;
+- keep architectural overhead close to a direct procedural implementation (**1.06×**);
+- reduce realtime latency by up to **74%** through configurable backpressure policies.
 
-**SEF is an experimental Python framework for building modular, inspectable,
-and benchmarked computer-vision signal-extraction pipelines.** It separates
-video acquisition, frame processing, signal extraction, cleaning, analysis,
-visualization, runtime monitoring, and UI adapters into explicit contracts.
+See [Benchmarks](benchmarks/README.md) for reproducible commands, raw CSV files, execution plans, and generated charts.
 
-SEF is pre-1.0. The public API is being hardened, the config schema is
-versioned, and the framework is currently best suited for research,
-experimentation, demos, and architecture exploration.
+---
 
-![SEF Studio](docs/assets/sef-studio-hero.png)
+## ✨ Why SEF
 
-## Why SEF
+SEF is designed for projects where the **pipeline architecture matters as much as the computer-vision algorithm itself**.
 
-SEF is designed for projects where a computer-vision pipeline must be reusable,
-observable, configurable, and easy to explain. Instead of hiding the workflow in
-a monolithic script, SEF turns each step into a component with explicit
-contracts, runtime capabilities, planner decisions, artifact outputs, and
-plugin metadata.
+Instead of hiding the workflow inside monolithic OpenCV scripts, SEF turns every stage into an explicit, inspectable, and reusable component.
 
-Recent synthetic benchmarks show why this matters:
+SEF provides:
 
-| Capability | Result | What it means |
-|---|---:|---|
-| End-to-end streaming | up to **84% lower process RSS** vs batch | Bounded queues avoid keeping full video sequences in memory. |
-| Python traced allocations | up to **98% lower peak memory** vs batch | Streaming keeps the active working set small. |
-| Streaming throughput | **2.22x** batch throughput | Progressive execution can outperform full materialization for compatible stages. |
-| Framework overhead | **1.06x** vs direct loop | The streaming runtime adds little overhead in the synthetic workload. |
-| Realtime backpressure | up to **74% lower mean latency** | Drop policies keep live pipelines responsive when downstream stages are slower. |
+- **modular pipeline contracts** for acquisition, processing, signal extraction, analysis, and visualization;
+- **hybrid batch/streaming execution** with automatic materialization boundaries;
+- **plugin-based extensibility** through decorators and runtime registries;
+- **UI-agnostic artifacts** reusable from Streamlit, notebooks, CLIs, or future interfaces;
+- **inspectable execution plans** for debugging and reproducibility;
+- **versioned configurations** to reproduce experiments over time.
 
-See [Benchmarks](/benchmarks/README.md) for commands, raw CSV files, and reproducibility
-notes.
+SEF is **not** a model-training framework, a dashboard application, or a generic workflow engine.
+
+It is an architectural layer that sits **between raw computer-vision libraries and domain-specific applications**, making video-to-signal pipelines easier to build, explain, benchmark, and evolve.
 
 ## Use Cases
 
@@ -73,18 +97,18 @@ or low-level OpenCV scripts when a single script is enough.
 Install the core package:
 
 ```bash
-pip install -e .
+pip install sef
 ```
 
 Install only the adapter stacks you need:
 
 ```bash
-pip install -e ".[opencv]"        # OpenCV video/tracking/ArUco components
-pip install -e ".[visualization]" # Matplotlib visualizers
-pip install -e ".[ui]"            # Streamlit Studio
-pip install -e ".[yolo]"          # Ultralytics pose extraction
-pip install -e ".[pose]"          # COCO pose analyzer helpers
-pip install -e ".[all]"           # all runtime adapter extras
+pip install "sef[opencv]"        # OpenCV video/tracking/ArUco components
+pip install "sef[visualization]" # Matplotlib visualizers
+pip install "sef[ui]"            # Streamlit Studio
+pip install "sef[yolo]"          # Ultralytics pose extraction
+pip install "sef[pose]"          # COCO pose analyzer helpers
+pip install "sef[all]"           # all runtime adapter extras
 ```
 
 Create and inspect a starter project:
@@ -361,6 +385,7 @@ sef/builtin/         Optional concrete computer-vision components
 sef/cli/             Command-line parser, handlers, diagnostics, scaffolds
 ui/                  Streamlit application built on the core framework
 docs/                MkDocs documentation
+benchmarks/          Architecture validation benchmarks
 examples/            Minimal runnable examples
 tests/               Core, API, CLI, registry, streaming, and UI service tests
 ```
