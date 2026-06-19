@@ -267,16 +267,11 @@ flowchart LR
     Analysis --> Artifacts["Visual artifacts"]
     Runtime --> Events["Events"]
 ```
+<div align="center">
 
-```mermaid
-flowchart TB
-    Core["sef.core\ncontracts + runtime"] --> API["sef.api\nfacades + decorators"]
-    Core --> Builtin["sef.builtin\nOpenCV / Matplotlib / CV adapters"]
-    API --> CLI["sef.cli\nscaffold + validate + run + inspect"]
-    API --> UI["SEF Studio\nStreamlit adapter"]
-    Builtin --> CLI
-    Builtin --> UI
-```
+<img src="docs/assets/architecture-onion.png" width="210"/>
+
+</div>
 
 ## Validated Architectural Properties
 
