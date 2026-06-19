@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="460" viewBox="0 0 760 460">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="380.0" y="34" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700">Median execution time</text>
+<text x="28" y="230.0" transform="rotate(-90 28 230.0)" text-anchor="middle" font-family="Arial" font-size="14">Seconds</text>
+<line x1="90" y1="370" x2="720" y2="370" stroke="#333" stroke-width="1"/>
+<line x1="90" y1="70" x2="90" y2="370" stroke="#333" stroke-width="1"/>
+<line x1="90" y1="370.0" x2="720" y2="370.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="374.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.00</text>
+<line x1="90" y1="295.0" x2="720" y2="295.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="299.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.25</text>
+<line x1="90" y1="220.0" x2="720" y2="220.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="224.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.50</text>
+<line x1="90" y1="145.0" x2="720" y2="145.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="149.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.75</text>
+<line x1="90" y1="70.0" x2="720" y2="70.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="74.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">1.00</text>
+<rect x="134.1" y="253.2" width="121.8" height="116.8" fill="#4C78A8"/>
+<text x="195.0" y="245.2" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.39</text>
+<text x="195.0" y="398.0" text-anchor="middle" font-family="Arial" font-size="14" fill="#111">batch</text>
+<rect x="344.1" y="317.5" width="121.8" height="52.5" fill="#54A24B"/>
+<text x="405.0" y="309.5" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.18</text>
+<text x="405.0" y="398.0" text-anchor="middle" font-family="Arial" font-size="14" fill="#111">streaming</text>
+<rect x="554.1" y="272.7" width="121.8" height="97.3" fill="#F58518"/>
+<text x="615.0" y="264.7" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.32</text>
+<text x="615.0" y="398.0" text-anchor="middle" font-family="Arial" font-size="14" fill="#111">mixed</text>
+</svg>

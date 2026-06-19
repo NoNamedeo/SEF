@@ -1,0 +1,355 @@
+{
+  "adaptive_sampling": {
+    "materialization_boundaries": [],
+    "runtime": {
+      "data_buffer_size": 8,
+      "frame_buffer_size": 8,
+      "latency_policy": {
+        "name": "adaptive_sampling",
+        "params": {
+          "high_watermark": 0.65,
+          "low_watermark": 0.2,
+          "max_interval": 8,
+          "min_interval": 1
+        }
+      },
+      "signal_buffer_size": 8
+    },
+    "stages": [
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "RealtimeSyntheticFrameExtractor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 345600,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "source opens a streaming segment for downstream demand",
+        "stage_group": "frame_extractor",
+        "stage_id": "frame_extraction"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "SlowStreamingFrameProcessor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 345600,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "preserves active stream and avoids materialization",
+        "stage_group": "frame_processors",
+        "stage_id": "frame_processing[0]"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "StreamingFrameIndexSignalExtractor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 8192,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "preserves active stream and avoids materialization",
+        "stage_group": "signal_extractor",
+        "stage_id": "signal_extraction"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": true,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "FreshnessAnalyzer",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 8192,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "consumes active signal stream",
+        "stage_group": "analyzers",
+        "stage_id": "analysis[0]"
+      }
+    ],
+    "streamable_end_to_end": true
+  },
+  "blocking": {
+    "materialization_boundaries": [],
+    "runtime": {
+      "data_buffer_size": 8,
+      "frame_buffer_size": 8,
+      "latency_policy": {
+        "name": "blocking",
+        "params": {}
+      },
+      "signal_buffer_size": 8
+    },
+    "stages": [
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "RealtimeSyntheticFrameExtractor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 345600,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "source opens a streaming segment for downstream demand",
+        "stage_group": "frame_extractor",
+        "stage_id": "frame_extraction"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "SlowStreamingFrameProcessor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 345600,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "preserves active stream and avoids materialization",
+        "stage_group": "frame_processors",
+        "stage_id": "frame_processing[0]"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "StreamingFrameIndexSignalExtractor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 8192,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "preserves active stream and avoids materialization",
+        "stage_group": "signal_extractor",
+        "stage_id": "signal_extraction"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": true,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "FreshnessAnalyzer",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 8192,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "consumes active signal stream",
+        "stage_group": "analyzers",
+        "stage_id": "analysis[0]"
+      }
+    ],
+    "streamable_end_to_end": true
+  },
+  "drop_newest": {
+    "materialization_boundaries": [],
+    "runtime": {
+      "data_buffer_size": 8,
+      "frame_buffer_size": 8,
+      "latency_policy": {
+        "name": "drop_newest",
+        "params": {}
+      },
+      "signal_buffer_size": 8
+    },
+    "stages": [
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "RealtimeSyntheticFrameExtractor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 345600,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "source opens a streaming segment for downstream demand",
+        "stage_group": "frame_extractor",
+        "stage_id": "frame_extraction"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "SlowStreamingFrameProcessor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 345600,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "preserves active stream and avoids materialization",
+        "stage_group": "frame_processors",
+        "stage_id": "frame_processing[0]"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "StreamingFrameIndexSignalExtractor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 8192,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "preserves active stream and avoids materialization",
+        "stage_group": "signal_extractor",
+        "stage_id": "signal_extraction"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": true,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "FreshnessAnalyzer",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 8192,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "consumes active signal stream",
+        "stage_group": "analyzers",
+        "stage_id": "analysis[0]"
+      }
+    ],
+    "streamable_end_to_end": true
+  },
+  "drop_oldest": {
+    "materialization_boundaries": [],
+    "runtime": {
+      "data_buffer_size": 8,
+      "frame_buffer_size": 8,
+      "latency_policy": {
+        "name": "drop_oldest",
+        "params": {}
+      },
+      "signal_buffer_size": 8
+    },
+    "stages": [
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "RealtimeSyntheticFrameExtractor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 345600,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "source opens a streaming segment for downstream demand",
+        "stage_group": "frame_extractor",
+        "stage_id": "frame_extraction"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "SlowStreamingFrameProcessor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 345600,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "preserves active stream and avoids materialization",
+        "stage_group": "frame_processors",
+        "stage_id": "frame_processing[0]"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": false,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "StreamingFrameIndexSignalExtractor",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 8192,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "preserves active stream and avoids materialization",
+        "stage_group": "signal_extractor",
+        "stage_id": "signal_extraction"
+      },
+      {
+        "capabilities": {
+          "preserves_order": true,
+          "realtime_safe": true,
+          "requires_complete_sequence": false,
+          "stateful": true,
+          "supports_frame_parallelism": false,
+          "supports_streaming": true
+        },
+        "component_name": "FreshnessAnalyzer",
+        "estimated_materialized_bytes": null,
+        "estimated_queue_bytes": 8192,
+        "execution_mode": "streaming",
+        "materializes_input": false,
+        "reason": "consumes active signal stream",
+        "stage_group": "analyzers",
+        "stage_id": "analysis[0]"
+      }
+    ],
+    "streamable_end_to_end": true
+  }
+}

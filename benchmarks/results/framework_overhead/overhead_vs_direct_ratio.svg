@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="470" viewBox="0 0 800 470">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="400.0" y="34" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700">Median overhead vs direct loop</text>
+<text x="28" y="235.0" transform="rotate(-90 28 235.0)" text-anchor="middle" font-family="Arial" font-size="14">Ratio</text>
+<line x1="90" y1="370" x2="760" y2="370" stroke="#333" stroke-width="1"/>
+<line x1="90" y1="70" x2="90" y2="370" stroke="#333" stroke-width="1"/>
+<line x1="90" y1="370.0" x2="760" y2="370.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="374.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.00</text>
+<line x1="90" y1="295.0" x2="760" y2="295.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="299.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.29</text>
+<line x1="90" y1="220.0" x2="760" y2="220.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="224.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.58</text>
+<line x1="90" y1="145.0" x2="760" y2="145.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="149.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.87</text>
+<line x1="90" y1="70.0" x2="760" y2="70.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="80" y="74.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">1.16</text>
+<rect x="139.1" y="111.0" width="125.1" height="259.0" fill="#4C78A8"/>
+<text x="201.7" y="103.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">1.00</text>
+<text x="201.7" y="398.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">direct_loop</text>
+<rect x="362.5" y="70.0" width="125.1" height="300.0" fill="#F58518"/>
+<text x="425.0" y="84.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">1.16</text>
+<text x="425.0" y="398.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">sef_batch</text>
+<rect x="585.8" y="94.7" width="125.1" height="275.3" fill="#54A24B"/>
+<text x="648.3" y="86.7" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">1.06</text>
+<text x="648.3" y="398.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">sef_streaming</text>
+</svg>

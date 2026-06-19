@@ -1,0 +1,1741 @@
+{
+  "runs": [
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.19676241697743535,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {},
+      "fps": 6098.725653169912,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 155.5,
+      "result_count": 1,
+      "run_index": 0,
+      "sample_count": 1200,
+      "scenario": "direct_loop",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 100.35386657714844,
+      "uses_sef_pipeline": false,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.1843881249660626,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {},
+      "fps": 6508.011295309093,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 155.046875,
+      "result_count": 1,
+      "run_index": 1,
+      "sample_count": 1200,
+      "scenario": "direct_loop",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 100.35386657714844,
+      "uses_sef_pipeline": false,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.19267041701823473,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {},
+      "fps": 6228.25246642005,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 154.9375,
+      "result_count": 1,
+      "run_index": 2,
+      "sample_count": 1200,
+      "scenario": "direct_loop",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 100.35386657714844,
+      "uses_sef_pipeline": false,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.1870043750386685,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {},
+      "fps": 6416.962168675816,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 155.21875,
+      "result_count": 1,
+      "run_index": 3,
+      "sample_count": 1200,
+      "scenario": "direct_loop",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 100.35386657714844,
+      "uses_sef_pipeline": false,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.18263245804701,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {},
+      "fps": 6570.573559772805,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 155.25,
+      "result_count": 1,
+      "run_index": 4,
+      "sample_count": 1200,
+      "scenario": "direct_loop",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 100.35386657714844,
+      "uses_sef_pipeline": false,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.19268533296417445,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {},
+      "fps": 6227.770331762165,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 154.53125,
+      "result_count": 1,
+      "run_index": 5,
+      "sample_count": 1200,
+      "scenario": "direct_loop",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 100.35386657714844,
+      "uses_sef_pipeline": false,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.26721983402967453,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {},
+      "fps": 4490.684624355919,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 155.265625,
+      "result_count": 1,
+      "run_index": 6,
+      "sample_count": 1200,
+      "scenario": "direct_loop",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 100.35386657714844,
+      "uses_sef_pipeline": false,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 4,
+      "elapsed_seconds": 0.2345330409007147,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "source exposes only a batch contract",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "analyzer requires a complete signal",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": false
+      },
+      "fps": 5116.549870293108,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 122.125,
+      "result_count": 1,
+      "run_index": 0,
+      "sample_count": 1200,
+      "scenario": "sef_batch",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 50.05825614929199,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 4,
+      "elapsed_seconds": 0.2363732079975307,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "source exposes only a batch contract",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "analyzer requires a complete signal",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": false
+      },
+      "fps": 5076.717493348637,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 161.921875,
+      "result_count": 1,
+      "run_index": 1,
+      "sample_count": 1200,
+      "scenario": "sef_batch",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 50.05825614929199,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 4,
+      "elapsed_seconds": 0.22183454199694097,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "source exposes only a batch contract",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "analyzer requires a complete signal",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": false
+      },
+      "fps": 5409.4370930589685,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 135.484375,
+      "result_count": 1,
+      "run_index": 2,
+      "sample_count": 1200,
+      "scenario": "sef_batch",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 50.05825614929199,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 4,
+      "elapsed_seconds": 0.2248272920260206,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "source exposes only a batch contract",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "analyzer requires a complete signal",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": false
+      },
+      "fps": 5337.43029676805,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 125.28125,
+      "result_count": 1,
+      "run_index": 3,
+      "sample_count": 1200,
+      "scenario": "sef_batch",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 50.05825614929199,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 4,
+      "elapsed_seconds": 0.2034244160167873,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "source exposes only a batch contract",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "analyzer requires a complete signal",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": false
+      },
+      "fps": 5898.9969026184735,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 116.421875,
+      "result_count": 1,
+      "run_index": 4,
+      "sample_count": 1200,
+      "scenario": "sef_batch",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 50.05825614929199,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 4,
+      "elapsed_seconds": 0.22317658306565136,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "source exposes only a batch contract",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "analyzer requires a complete signal",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": false
+      },
+      "fps": 5376.9082020894575,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 108.203125,
+      "result_count": 1,
+      "run_index": 5,
+      "sample_count": 1200,
+      "scenario": "sef_batch",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 50.05825614929199,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 4,
+      "elapsed_seconds": 0.21456170896999538,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "source exposes only a batch contract",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "stage requires a complete input sequence",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": false,
+              "requires_complete_sequence": true,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": false
+            },
+            "component_name": "BatchMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": null,
+            "execution_mode": "batch",
+            "materializes_input": false,
+            "reason": "analyzer requires a complete signal",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": false
+      },
+      "fps": 5592.796616696457,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 117.9375,
+      "result_count": 1,
+      "run_index": 6,
+      "sample_count": 1200,
+      "scenario": "sef_batch",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib": 50.05825614929199,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": false,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.20292283408343792,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "source opens a streaming segment for downstream demand",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": true,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "consumes active signal stream",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": true
+      },
+      "fps": 5913.577963860801,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 39.015625,
+      "result_count": 1,
+      "run_index": 0,
+      "sample_count": 1200,
+      "scenario": "sef_streaming",
+      "streamable_end_to_end": true,
+      "streaming_stage_count": 4,
+      "tracemalloc_peak_mib": 0.3778200149536133,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": true,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.20408875006251037,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "source opens a streaming segment for downstream demand",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": true,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "consumes active signal stream",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": true
+      },
+      "fps": 5879.794940350469,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 39.140625,
+      "result_count": 1,
+      "run_index": 1,
+      "sample_count": 1200,
+      "scenario": "sef_streaming",
+      "streamable_end_to_end": true,
+      "streaming_stage_count": 4,
+      "tracemalloc_peak_mib": 0.3690919876098633,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": true,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.20508162502665073,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "source opens a streaming segment for downstream demand",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": true,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "consumes active signal stream",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": true
+      },
+      "fps": 5851.328707991552,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 39.484375,
+      "result_count": 1,
+      "run_index": 2,
+      "sample_count": 1200,
+      "scenario": "sef_streaming",
+      "streamable_end_to_end": true,
+      "streaming_stage_count": 4,
+      "tracemalloc_peak_mib": 0.3690919876098633,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": true,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.20312233304139227,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "source opens a streaming segment for downstream demand",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": true,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "consumes active signal stream",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": true
+      },
+      "fps": 5907.769874598004,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 39.296875,
+      "result_count": 1,
+      "run_index": 3,
+      "sample_count": 1200,
+      "scenario": "sef_streaming",
+      "streamable_end_to_end": true,
+      "streaming_stage_count": 4,
+      "tracemalloc_peak_mib": 0.39839649200439453,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": true,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.2075599170057103,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "source opens a streaming segment for downstream demand",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": true,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "consumes active signal stream",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": true
+      },
+      "fps": 5781.463094182033,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 39.765625,
+      "result_count": 1,
+      "run_index": 4,
+      "sample_count": 1200,
+      "scenario": "sef_streaming",
+      "streamable_end_to_end": true,
+      "streaming_stage_count": 4,
+      "tracemalloc_peak_mib": 0.3691377639770508,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": true,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.2048359999898821,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "source opens a streaming segment for downstream demand",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": true,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "consumes active signal stream",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": true
+      },
+      "fps": 5858.345213044944,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 39.328125,
+      "result_count": 1,
+      "run_index": 5,
+      "sample_count": 1200,
+      "scenario": "sef_streaming",
+      "streamable_end_to_end": true,
+      "streaming_stage_count": 4,
+      "tracemalloc_peak_mib": 0.3701448440551758,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": true,
+      "warmup": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds": 0.20561279193498194,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "execution_plan": {
+        "materialization_boundaries": [],
+        "runtime": {
+          "data_buffer_size": 8,
+          "frame_buffer_size": 8,
+          "latency_policy": {
+            "name": "blocking",
+            "params": {}
+          },
+          "signal_buffer_size": 8
+        },
+        "stages": [
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSyntheticFrameExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "source opens a streaming segment for downstream demand",
+            "stage_group": "frame_extractor",
+            "stage_id": "frame_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingPixelTransformProcessor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 345600,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "frame_processors",
+            "stage_id": "frame_processing[0]"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": false,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingSignalExtractor",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "preserves active stream and avoids materialization",
+            "stage_group": "signal_extractor",
+            "stage_id": "signal_extraction"
+          },
+          {
+            "capabilities": {
+              "preserves_order": true,
+              "realtime_safe": true,
+              "requires_complete_sequence": false,
+              "stateful": true,
+              "supports_frame_parallelism": false,
+              "supports_streaming": true
+            },
+            "component_name": "StreamingMeanAnalyzer",
+            "estimated_materialized_bytes": null,
+            "estimated_queue_bytes": 8192,
+            "execution_mode": "streaming",
+            "materializes_input": false,
+            "reason": "consumes active signal stream",
+            "stage_group": "analyzers",
+            "stage_id": "analysis[0]"
+          }
+        ],
+        "streamable_end_to_end": true
+      },
+      "fps": 5836.212760436905,
+      "frame_count": 1200,
+      "height": 90,
+      "process_peak_rss_mib": 39.28125,
+      "result_count": 1,
+      "run_index": 6,
+      "sample_count": 1200,
+      "scenario": "sef_streaming",
+      "streamable_end_to_end": true,
+      "streaming_stage_count": 4,
+      "tracemalloc_peak_mib": 0.37164783477783203,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": true,
+      "warmup": false,
+      "width": 160
+    }
+  ],
+  "summary": [
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds_max": 0.26721983402967453,
+      "elapsed_seconds_median": 0.19267041701823473,
+      "elapsed_seconds_min": 0.18263245804701,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "fps_median": 6228.25246642005,
+      "frame_count": 1200,
+      "height": 90,
+      "overhead_vs_direct_ratio": 1.0,
+      "overhead_vs_direct_seconds": 0.0,
+      "process_peak_rss_mib_median": 155.21875,
+      "repetitions": 7,
+      "sample_count": 1200,
+      "scenario": "direct_loop",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib_median": 100.35386657714844,
+      "uses_sef_pipeline": false,
+      "uses_streaming_runtime": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 4,
+      "elapsed_seconds_max": 0.2363732079975307,
+      "elapsed_seconds_median": 0.22317658306565136,
+      "elapsed_seconds_min": 0.2034244160167873,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "fps_median": 5376.9082020894575,
+      "frame_count": 1200,
+      "height": 90,
+      "overhead_vs_direct_ratio": 1.1583334199382018,
+      "overhead_vs_direct_seconds": 0.030506166047416627,
+      "process_peak_rss_mib_median": 122.125,
+      "repetitions": 7,
+      "sample_count": 1200,
+      "scenario": "sef_batch",
+      "streamable_end_to_end": false,
+      "streaming_stage_count": 0,
+      "tracemalloc_peak_mib_median": 50.05825614929199,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": false,
+      "width": 160
+    },
+    {
+      "batch_stage_count": 0,
+      "elapsed_seconds_max": 0.2075599170057103,
+      "elapsed_seconds_median": 0.2048359999898821,
+      "elapsed_seconds_min": 0.20292283408343792,
+      "estimated_frame_queue_mib": 0.32958984375,
+      "estimated_full_frame_sequence_mib": 49.4384765625,
+      "fps_median": 5858.345213044944,
+      "frame_count": 1200,
+      "height": 90,
+      "overhead_vs_direct_ratio": 1.0631419351238338,
+      "overhead_vs_direct_seconds": 0.012165582971647382,
+      "process_peak_rss_mib_median": 39.296875,
+      "repetitions": 7,
+      "sample_count": 1200,
+      "scenario": "sef_streaming",
+      "streamable_end_to_end": true,
+      "streaming_stage_count": 4,
+      "tracemalloc_peak_mib_median": 0.3701448440551758,
+      "uses_sef_pipeline": true,
+      "uses_streaming_runtime": true,
+      "width": 160
+    }
+  ]
+}
