@@ -233,22 +233,7 @@ SEF keeps the core independent from concrete OpenCV, YOLO, Matplotlib, and
 Streamlit adapters. The core owns contracts, planning, runtime execution,
 events, typed errors, buffers, artifacts, and plugin resolution.
 
-```mermaid
-flowchart LR
-    API["Python API / CLI / Studio"] --> Config["Versioned pipeline config"]
-    Config --> Registry["Plugin registry"]
-    Registry --> Context["PipelineContext"]
-    Context --> Planner["Execution planner"]
-    Planner --> Runtime["Pipeline runtime"]
-    Runtime --> Frames["Frames"]
-    Frames --> Processing["Frame processors"]
-    Processing --> Signals["Signals"]
-    Signals --> Cleaning["Signal cleaners"]
-    Cleaning --> Analysis["Analyzers"]
-    Analysis --> Artifacts["Visual artifacts"]
-    Runtime --> Events["Events"]
-```
-<div align="center">
+<div align="left">
 
 <img src="docs/assets/architecture-onion.png" width="210"/>
 
@@ -256,15 +241,13 @@ flowchart LR
 
 ## Validated Architectural Properties
 
-✓ Hybrid runtime efficiency
-
-✓ Configurable latency management
-
-✓ Low architectural overhead
-
-✓ Memory-efficient streaming execution
-
-✓ Reproducible execution plans
+| Property | Status |
+|----------|--------|
+| Hybrid runtime efficiency | ✓ |
+| Configurable latency management | ✓ |
+| Low architectural overhead | ✓ |
+| Memory-efficient streaming execution | ✓ |
+| Reproducible execution plans | ✓ |
 
 ## Comparisons
 
