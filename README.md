@@ -8,6 +8,8 @@
 
 *Build computer-vision pipelines around signals, not monolithic scripts.*
 
+*Design architectures that survive changing algorithms.*
+
 <br>
 
 [![PyPI version](https://img.shields.io/pypi/v/sef?label=PyPI&color=blue)](https://pypi.org/project/sef/)
@@ -63,6 +65,18 @@ SEF is designed for projects where the **pipeline architecture matters as much a
 
 Instead of hiding the workflow inside monolithic OpenCV scripts, SEF turns every stage into an explicit, inspectable, and reusable component.
 
+Modern computer vision evolves faster than most software architectures.
+
+Models, trackers, and foundation models constantly change, while projects often
+remain tied to monolithic scripts that are difficult to evolve.
+
+SEF decouples pipeline architecture from individual algorithms.
+
+Algorithms become interchangeable components instead of architectural decisions.
+
+This allows pipelines to evolve over time without rewriting the surrounding
+system.
+
 SEF provides:
 
 - **modular pipeline contracts** for acquisition, processing, signal extraction, analysis, and visualization;
@@ -75,6 +89,21 @@ SEF provides:
 SEF is **not** a model-training framework, a dashboard application, or a generic workflow engine.
 
 It is an architectural layer that sits **between raw computer-vision libraries and domain-specific applications**, making video-to-signal pipelines easier to build, explain, benchmark, and evolve.
+
+## Reproducibility First
+
+Every execution produces a reproducible description of the experiment itself.
+
+SEF can automatically generate:
+
+- normalized configurations;
+- execution plans;
+- execution summaries;
+- reproducibility files;
+- visual artifacts;
+- execution metadata.
+
+Experiments can be reconstructed months later without relying on undocumented scripts.
 
 ## Use Cases
 
