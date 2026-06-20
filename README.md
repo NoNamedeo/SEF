@@ -19,7 +19,7 @@
 
 <br>
 
- [Documentation](https://nonamedeo.github.io/SEF/) •  [PyPI](https://pypi.org/project/sef/) •  [Benchmarks](benchmarks/README.md)
+ [Documentation](https://nonamedeo.github.io/SEF/) •  [PyPI](https://pypi.org/project/sef/) •  [Benchmarks](benchmarks/)
 
 </div>
 
