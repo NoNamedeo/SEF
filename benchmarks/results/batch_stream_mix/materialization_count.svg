@@ -14,13 +14,13 @@
 <text x="80" y="149.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.75</text>
 <line x1="90" y1="70.0" x2="720" y2="70.0" stroke="#e6e6e6" stroke-width="1"/>
 <text x="80" y="74.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">1.00</text>
-<rect x="134.1" y="370.0" width="121.8" height="0.0" fill="#4C78A8"/>
+<rect x="134.1" y="370.0" width="121.8" height="0.0" fill="#0FA4DB"/>
 <text x="195.0" y="362.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.00</text>
 <text x="195.0" y="398.0" text-anchor="middle" font-family="Arial" font-size="14" fill="#111">batch</text>
-<rect x="344.1" y="370.0" width="121.8" height="0.0" fill="#54A24B"/>
+<rect x="344.1" y="370.0" width="121.8" height="0.0" fill="#0173F1"/>
 <text x="405.0" y="362.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.00</text>
 <text x="405.0" y="398.0" text-anchor="middle" font-family="Arial" font-size="14" fill="#111">streaming</text>
-<rect x="554.1" y="70.0" width="121.8" height="300.0" fill="#F58518"/>
+<rect x="554.1" y="70.0" width="121.8" height="300.0" fill="#31BDF1"/>
 <text x="615.0" y="84.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">1.00</text>
 <text x="615.0" y="398.0" text-anchor="middle" font-family="Arial" font-size="14" fill="#111">mixed</text>
 </svg>

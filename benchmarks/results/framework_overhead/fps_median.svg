@@ -7,20 +7,20 @@
 <line x1="90" y1="370.0" x2="760" y2="370.0" stroke="#e6e6e6" stroke-width="1"/>
 <text x="80" y="374.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.00</text>
 <line x1="90" y1="295.0" x2="760" y2="295.0" stroke="#e6e6e6" stroke-width="1"/>
-<text x="80" y="299.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">1557.06</text>
+<text x="80" y="299.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">1717.10</text>
 <line x1="90" y1="220.0" x2="760" y2="220.0" stroke="#e6e6e6" stroke-width="1"/>
-<text x="80" y="224.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">3114.13</text>
+<text x="80" y="224.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">3434.19</text>
 <line x1="90" y1="145.0" x2="760" y2="145.0" stroke="#e6e6e6" stroke-width="1"/>
-<text x="80" y="149.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">4671.19</text>
+<text x="80" y="149.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">5151.29</text>
 <line x1="90" y1="70.0" x2="760" y2="70.0" stroke="#e6e6e6" stroke-width="1"/>
-<text x="80" y="74.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">6228.25</text>
-<rect x="139.1" y="70.0" width="125.1" height="300.0" fill="#4C78A8"/>
-<text x="201.7" y="84.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">6228.25</text>
+<text x="80" y="74.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">6868.39</text>
+<rect x="139.1" y="70.0" width="125.1" height="300.0" fill="#0FA4DB"/>
+<text x="201.7" y="84.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">6868.39</text>
 <text x="201.7" y="398.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">direct_loop</text>
-<rect x="362.5" y="111.0" width="125.1" height="259.0" fill="#F58518"/>
-<text x="425.0" y="103.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">5376.91</text>
+<rect x="362.5" y="123.2" width="125.1" height="246.8" fill="#0173F1"/>
+<text x="425.0" y="115.2" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">5650.42</text>
 <text x="425.0" y="398.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">sef_batch</text>
-<rect x="585.8" y="87.8" width="125.1" height="282.2" fill="#54A24B"/>
-<text x="648.3" y="84.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">5858.35</text>
+<rect x="585.8" y="111.0" width="125.1" height="259.0" fill="#31BDF1"/>
+<text x="648.3" y="103.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">5930.10</text>
 <text x="648.3" y="398.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">sef_streaming</text>
 </svg>

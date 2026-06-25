@@ -568,7 +568,7 @@ def _bar_plot(
     plt: Any,
 ) -> None:
     fig, ax = plt.subplots(figsize=(7, 4))
-    bars = ax.bar(labels, values, color=["#4C78A8", "#54A24B", "#F58518"])
+    bars = ax.bar(labels, values, color=["#0FA4DB", "#0173F1", "#31BDF1"])
     ax.set_title(title)
     ax.set_ylabel(ylabel)
     ax.grid(axis="y", alpha=0.25)
@@ -634,7 +634,7 @@ def _svg_bar_plot(
     margin_bottom = 90
     plot_width = width - margin_left - margin_right
     plot_height = height - margin_top - margin_bottom
-    colors = ["#4C78A8", "#54A24B", "#F58518"]
+    colors = ["#0FA4DB", "#0173F1", "#31BDF1"]
     max_value = max(max(values), 1.0)
     bar_width = plot_width / max(len(values), 1) * 0.58
     slot_width = plot_width / max(len(values), 1)
@@ -652,28 +652,28 @@ def _svg_bar_plot(
         y = margin_top + plot_height - ratio * plot_height
         value = ratio * max_value
         lines.append(f'<line x1="{margin_left}" y1="{y:.1f}" x2="{margin_left + plot_width}" y2="{y:.1f}" stroke="#e6e6e6" stroke-width="1"/>')
-        lines.append(f'<text x="{margin_left - 10}" y="{y + 4:.1f}" text-anchor="end" font-family="Arial" font-size="12" fill="#333">{value:.2f}</text>')
+        lines.append(
+            f'<text x="{margin_left - 10}" y="{y + 4:.1f}" text-anchor="end" font-family="Arial" font-size="12" fill="#333">{value:.2f}</text>'
+        )
 
     for index, (label, value) in enumerate(zip(labels, values, strict=True)):
         bar_height = (value / max_value) * plot_height
         x = margin_left + index * slot_width + (slot_width - bar_width) / 2
         y = margin_top + plot_height - bar_height
         lines.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_width:.1f}" height="{bar_height:.1f}" fill="{colors[index % len(colors)]}"/>')
-        lines.append(f'<text x="{x + bar_width / 2:.1f}" y="{max(y - 8, margin_top + 14):.1f}" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">{value:.2f}</text>')
-        lines.append(f'<text x="{x + bar_width / 2:.1f}" y="{margin_top + plot_height + 28:.1f}" text-anchor="middle" font-family="Arial" font-size="14" fill="#111">{_xml(label)}</text>')
+        lines.append(
+            f'<text x="{x + bar_width / 2:.1f}" y="{max(y - 8, margin_top + 14):.1f}" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">{value:.2f}</text>'
+        )
+        lines.append(
+            f'<text x="{x + bar_width / 2:.1f}" y="{margin_top + plot_height + 28:.1f}" text-anchor="middle" font-family="Arial" font-size="14" fill="#111">{_xml(label)}</text>'
+        )
 
     lines.append("</svg>")
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def _xml(value: str) -> str:
-    return (
-        str(value)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
+    return str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 def _count_mode(plan: dict[str, Any], mode: str) -> int:

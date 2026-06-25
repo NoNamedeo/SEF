@@ -14,16 +14,16 @@
 <text x="80" y="147.8" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.75</text>
 <line x1="90" y1="70.0" x2="780" y2="70.0" stroke="#e6e6e6" stroke-width="1"/>
 <text x="80" y="74.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">1.00</text>
-<rect x="127.9" y="70.0" width="96.6" height="295.0" fill="#4C78A8"/>
+<rect x="127.9" y="70.0" width="96.6" height="295.0" fill="#0389EA"/>
 <text x="176.2" y="84.0" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">1.00</text>
 <text x="176.2" y="393.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">blocking</text>
-<rect x="300.4" y="294.9" width="96.6" height="70.1" fill="#F58518"/>
-<text x="348.8" y="286.9" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.24</text>
+<rect x="300.4" y="298.6" width="96.6" height="66.4" fill="#0173F1"/>
+<text x="348.8" y="290.6" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.23</text>
 <text x="348.8" y="393.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">drop_newest</text>
-<rect x="472.9" y="294.9" width="96.6" height="70.1" fill="#54A24B"/>
-<text x="521.2" y="286.9" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.24</text>
+<rect x="472.9" y="297.4" width="96.6" height="67.6" fill="#31BDF1"/>
+<text x="521.2" y="289.4" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.23</text>
 <text x="521.2" y="393.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">drop_oldest</text>
-<rect x="645.5" y="301.1" width="96.6" height="63.9" fill="#B279A2"/>
-<text x="693.8" y="293.1" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.22</text>
+<rect x="645.5" y="302.3" width="96.6" height="62.7" fill="#0FA4DB"/>
+<text x="693.8" y="294.3" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.21</text>
 <text x="693.8" y="393.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">adaptive_sampling</text>
 </svg>

@@ -603,10 +603,7 @@ def _execution_plans_by_scenario(runs: list[dict[str, Any]]) -> dict[str, Any]:
 def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     if not rows:
         return
-    serializable_rows = [
-        {key: _csv_value(value) for key, value in row.items() if key != "execution_plan"}
-        for row in rows
-    ]
+    serializable_rows = [{key: _csv_value(value) for key, value in row.items() if key != "execution_plan"} for row in rows]
     fieldnames = list(serializable_rows[0].keys())
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
@@ -759,7 +756,7 @@ def _svg_bar_plot(
     margin_bottom = 105
     plot_width = width - margin_left - margin_right
     plot_height = height - margin_top - margin_bottom
-    colors = ["#4C78A8", "#F58518", "#54A24B", "#B279A2"]
+    colors = ["#0389EA", "#0173F1", "#31BDF1", "#0FA4DB"]
     max_value = max(max(values), 1.0)
     bar_width = plot_width / max(len(values), 1) * 0.56
     slot_width = plot_width / max(len(values), 1)
@@ -776,9 +773,7 @@ def _svg_bar_plot(
         ratio = tick / 4
         y = margin_top + plot_height - ratio * plot_height
         value = ratio * max_value
-        lines.append(
-            f'<line x1="{margin_left}" y1="{y:.1f}" x2="{margin_left + plot_width}" y2="{y:.1f}" stroke="#e6e6e6" stroke-width="1"/>'
-        )
+        lines.append(f'<line x1="{margin_left}" y1="{y:.1f}" x2="{margin_left + plot_width}" y2="{y:.1f}" stroke="#e6e6e6" stroke-width="1"/>')
         lines.append(
             f'<text x="{margin_left - 10}" y="{y + 4:.1f}" text-anchor="end" font-family="Arial" font-size="12" fill="#333">{value:.2f}</text>'
         )
@@ -787,9 +782,7 @@ def _svg_bar_plot(
         bar_height = (value / max_value) * plot_height
         x = margin_left + index * slot_width + (slot_width - bar_width) / 2
         y = margin_top + plot_height - bar_height
-        lines.append(
-            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_width:.1f}" height="{bar_height:.1f}" fill="{colors[index % len(colors)]}"/>'
-        )
+        lines.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_width:.1f}" height="{bar_height:.1f}" fill="{colors[index % len(colors)]}"/>')
         lines.append(
             f'<text x="{x + bar_width / 2:.1f}" y="{max(y - 8, margin_top + 14):.1f}" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">{value:.2f}</text>'
         )
@@ -802,13 +795,7 @@ def _svg_bar_plot(
 
 
 def _xml(value: str) -> str:
-    return (
-        str(value)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
+    return str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 def _count_mode(plan: dict[str, Any], mode: str) -> int:
