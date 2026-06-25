@@ -31,6 +31,10 @@ from sef.cli.output import print_info, print_ok
 from sef.cli.registry_loader import CliRegistryLoader
 from sef.cli.scaffold import ProjectScaffolder
 from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
+from sef.core.pipeline.PipelineRunOptions import (
+    PipelineDiagnosticsLevel,
+    PipelineRunOptions,
+)
 
 
 def init_project(args: argparse.Namespace) -> int:
@@ -98,8 +102,10 @@ def run_pipeline(args: argparse.Namespace) -> int:
         return diagnostics.exit_code()
 
     facade = from_config(config, pipeline_id=args.pipeline_id, registry=registry)
-    plan = facade.execution_plan()
+    plan = facade.execution_plan() if args.explain or args.output else None
     if args.explain:
+        if plan is None:
+            raise RuntimeError("Execution plan was not built for --explain.")
         print(plan.as_text())
         print_materialization_boundaries(plan)
 
@@ -108,6 +114,8 @@ def run_pipeline(args: argparse.Namespace) -> int:
         print(f"schema_version: {config.get('schema_version')}")
         print(f"registered_components: {len(registry.list())}")
         if args.output:
+            if plan is None:
+                raise RuntimeError("Execution plan was not built for output export.")
             writer = ArtifactWriter(args.output)
             writer.write(outputs=None, config=config, execution_plan=plan, dry_run=True)
             diagnostics.extend(writer.warnings)
@@ -115,12 +123,23 @@ def run_pipeline(args: argparse.Namespace) -> int:
         diagnostics.print()
         return diagnostics.exit_code()
 
-    outputs = facade.run()
+    outputs = facade.run(
+        run_options=PipelineRunOptions(
+            diagnostics=(
+                PipelineDiagnosticsLevel.FULL
+                if args.explain or args.output
+                else PipelineDiagnosticsLevel.NONE
+            ),
+            reproducibility=bool(args.output),
+        )
+    )
     print(f"pipeline_id: {outputs.metadata.pipeline_id}")
     print(f"results: {len(outputs.results)}")
     print(f"artifacts: {outputs.artifact_count}")
 
     if args.output:
+        if plan is None:
+            raise RuntimeError("Execution plan was not built for output export.")
         writer = ArtifactWriter(args.output)
         writer.write(outputs=outputs, config=config, execution_plan=plan, dry_run=False)
         diagnostics.extend(writer.warnings)

@@ -7,6 +7,7 @@ from sef.core.interfaces.pipeline.IPipelineFactory import IPipelineFactory
 from sef.core.pipeline.Pipeline import Pipeline
 from sef.core.pipeline.PipelineContext import PipelineContext
 from sef.core.pipeline.PipelineExecutionPolicy import PipelineExecutionPolicy
+from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
 
 
 class DefaultPipelineFactory(IPipelineFactory):
@@ -21,6 +22,7 @@ class DefaultPipelineFactory(IPipelineFactory):
         event_bus: IEventBus | None = None,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> Pipeline:
         return Pipeline(
             context,
@@ -28,4 +30,5 @@ class DefaultPipelineFactory(IPipelineFactory):
             pipeline_id=pipeline_id,
             execution_metadata=execution_metadata,
             execution_policy=self._execution_policy,
+            run_options=run_options,
         )

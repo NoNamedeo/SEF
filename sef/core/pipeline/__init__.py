@@ -59,6 +59,11 @@ _EXPORTS = {
     "PipelineOrchestrator": ("sef.core.pipeline.PipelineOrchestrator", "PipelineOrchestrator"),
     "PipelineRunSnapshot": ("sef.core.pipeline.PipelineRunSnapshot", "PipelineRunSnapshot"),
     "PipelineRunState": ("sef.core.pipeline.PipelineRunSnapshot", "PipelineRunState"),
+    "PipelineDiagnosticsLevel": (
+        "sef.core.pipeline.PipelineRunOptions",
+        "PipelineDiagnosticsLevel",
+    ),
+    "PipelineRunOptions": ("sef.core.pipeline.PipelineRunOptions", "PipelineRunOptions"),
     "PipelineRunAlreadyActiveError": ("sef.core.errors", "PipelineRunAlreadyActiveError"),
     "PipelineStagePolicyContext": ("sef.core.pipeline.PipelineExecutionPolicy", "PipelineStagePolicyContext"),
     "PluginConstructionError": ("sef.core.errors", "PluginConstructionError"),

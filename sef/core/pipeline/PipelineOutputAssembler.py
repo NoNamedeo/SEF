@@ -7,6 +7,10 @@ from typing import Any
 from sef.core.pipeline.PipelineContext import PipelineContext
 from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
 from sef.core.pipeline.PipelineExecutionResult import PipelineExecutionResult
+from sef.core.pipeline.PipelineRunOptions import (
+    PipelineDiagnosticsLevel,
+    PipelineRunOptions,
+)
 from sef.core.visualization.PipelineOutputs import PipelineOutputs
 from sef.core.visualization.PipelineRunMetadata import PipelineRunMetadata
 
@@ -30,14 +34,16 @@ class PipelineOutputAssembler:
         self,
         *,
         context: PipelineContext,
-        execution_plan: PipelineExecutionPlan,
+        execution_plan: PipelineExecutionPlan | None,
         pipeline_id: str | None,
         execution_metadata: Mapping[str, Any],
+        run_options: PipelineRunOptions,
     ) -> None:
         self._context = context
         self._execution_plan = execution_plan
         self._pipeline_id = pipeline_id
         self._execution_metadata = dict(execution_metadata)
+        self._run_options = run_options
 
     def build(self, execution_result: PipelineExecutionResult) -> PipelineOutputs:
         """
@@ -58,11 +64,22 @@ class PipelineOutputAssembler:
                     **dict(self._execution_metadata),
                     "latency_policy_metrics": dict(execution_result.latency_policy_metrics),
                 },
-                execution_plan=self._execution_plan.as_dict(),
+                execution_plan=self._execution_plan_metadata(),
             ),
             intermediate_frames=execution_result.intermediate_frames,
         )
+        if not self._run_options.reproducibility:
+            return outputs
         return self._attach_reproducibility(outputs)
+
+    def _execution_plan_metadata(self) -> dict[str, Any]:
+        if self._execution_plan is None:
+            return {}
+        if self._run_options.diagnostics is PipelineDiagnosticsLevel.SUMMARY:
+            return self._execution_plan.as_summary_dict()
+        if self._run_options.diagnostics is PipelineDiagnosticsLevel.FULL:
+            return self._execution_plan.as_dict()
+        return {}
 
     def _attach_reproducibility(self, outputs: PipelineOutputs) -> PipelineOutputs:
         from sef.core.pipeline.PipelineCodeExporter import PipelineCodeExporter

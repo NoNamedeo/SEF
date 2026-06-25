@@ -18,6 +18,7 @@ from sef.core.pipeline.PipelineErrors import (
     InvalidPipelineTriggerEventError,
     PipelineRunAlreadyActiveError,
 )
+from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
 from sef.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
 from sef.core.visualization.PipelineOutputs import PipelineOutputs
 
@@ -64,6 +65,7 @@ class PipelineOrchestrator:
         context: PipelineContext,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> PipelineOutputs:
         """
         Execute a pipeline synchronously and return analyzer results.
@@ -80,6 +82,8 @@ class PipelineOrchestrator:
         execution_metadata:
             Optional metadata propagated into pipeline events, visualizer
             contexts, output metadata, and reproducibility data.
+        run_options:
+            Optional diagnostics and reproducibility settings for this run.
 
         Returns
         -------
@@ -87,7 +91,12 @@ class PipelineOrchestrator:
             Completed outputs for the run.
         """
         resolved_pipeline_id = pipeline_id or self._new_pipeline_id()
-        pipeline = self._build_pipeline(context, resolved_pipeline_id, execution_metadata=execution_metadata)
+        pipeline = self._build_pipeline(
+            context,
+            resolved_pipeline_id,
+            execution_metadata=execution_metadata,
+            run_options=run_options,
+        )
 
         return self._runner.run(resolved_pipeline_id, pipeline)
 
@@ -96,9 +105,13 @@ class PipelineOrchestrator:
         context: PipelineContext,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> Future[PipelineOutputs]:
         """
         Submit a pipeline for background execution.
+
+        ``run_options`` has the same lightweight default and semantics as the
+        synchronous ``run`` method.
 
         Returns
         -------
@@ -106,7 +119,12 @@ class PipelineOrchestrator:
             Future owned by the configured runner.
         """
         resolved_pipeline_id = pipeline_id or self._new_pipeline_id()
-        pipeline = self._build_pipeline(context, resolved_pipeline_id, execution_metadata=execution_metadata)
+        pipeline = self._build_pipeline(
+            context,
+            resolved_pipeline_id,
+            execution_metadata=execution_metadata,
+            run_options=run_options,
+        )
 
         return self._runner.submit(resolved_pipeline_id, pipeline)
 
@@ -175,13 +193,16 @@ class PipelineOrchestrator:
         pipeline_id: str,
         *,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> Pipeline:
-        return self._pipeline_factory.create(
-            context,
-            event_bus=self._domain_bus,
-            pipeline_id=pipeline_id,
-            execution_metadata=execution_metadata,
-        )
+        create_kwargs: dict[str, Any] = {
+            "event_bus": self._domain_bus,
+            "pipeline_id": pipeline_id,
+            "execution_metadata": execution_metadata,
+        }
+        if run_options is not None:
+            create_kwargs["run_options"] = run_options
+        return self._pipeline_factory.create(context, **create_kwargs)
 
     @staticmethod
     def _new_pipeline_id() -> str:

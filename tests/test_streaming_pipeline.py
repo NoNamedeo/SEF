@@ -49,6 +49,7 @@ from sef.core.pipeline.PipelineExecutionPolicy import (
     PipelineExecutionMode,
     PipelineStagePolicyContext,
 )
+from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
 from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from sef.core.visualization.VisualArtifact import TextArtifact, VideoFileArtifact, VisualArtifact
 from sef.core.visualization.VisualizationContext import VisualizationContext
@@ -220,7 +221,7 @@ def test_execution_plan_reports_streaming_and_materialization_boundary(tmp_path:
         .build_context()
     )
 
-    pipeline = Pipeline(context)
+    pipeline = Pipeline(context, run_options=PipelineRunOptions.full())
     plan = pipeline.execution_plan()
 
     assert not plan.streamable_end_to_end

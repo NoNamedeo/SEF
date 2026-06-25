@@ -26,6 +26,7 @@ from sef.core.pipeline.FluentPipelineBuilder import FluentPipelineBuilder
 from sef.core.pipeline.Pipeline import Pipeline
 from sef.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
 from sef.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_VERSION
+from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
 from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from sef.core.visualization.VisualArtifact import TextArtifact, VisualArtifact
@@ -231,6 +232,7 @@ class PipelineExportTests(unittest.TestCase):
             original_context,
             pipeline_id="pipeline-export-test",
             execution_metadata={"request_id": "req-123"},
+            run_options=PipelineRunOptions.full(),
         ).run()
 
         reproducibility = outputs.metadata.reproducibility

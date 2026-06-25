@@ -14,6 +14,7 @@ from sef.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_V
 from sef.core.pipeline.PipelineContext import PipelineContext
 from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
 from sef.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
+from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
 from sef.core.plugins import PluginCategory, PluginRegistry
 
 
@@ -164,6 +165,7 @@ class PipelineFacade:
         *,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ):
         """
         Build and execute this pipeline immediately.
@@ -171,13 +173,15 @@ class PipelineFacade:
         This is intentionally the shortest path for simple single-pipeline
         scripts. It does not create a shared orchestrator runner; use
         ``sef.orchestrator()`` for lifecycle observation, async submission, or
-        branching.
+        branching. Diagnostics and reproducibility are disabled unless supplied
+        through ``run_options``.
         """
         resolved_pipeline_id = pipeline_id or self.pipeline_id
         return Pipeline(
             self.build_context(),
             pipeline_id=resolved_pipeline_id,
             execution_metadata=dict(execution_metadata or {}),
+            run_options=run_options,
         ).run()
 
     def _compile(self) -> tuple[dict[str, Any], PluginRegistry]:

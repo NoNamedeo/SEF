@@ -9,7 +9,7 @@ from sef.api.pipeline import PipelineFacade, from_config
 from sef.api.registry import clone_registry, default_registry
 from sef.core.events import Event, EventBus, PipelineLifecycleEvent
 from sef.core.interfaces.pipeline import IBranchingRule
-from sef.core.pipeline import BranchingCoordinator, PipelineContext, PipelineOrchestrator
+from sef.core.pipeline import BranchingCoordinator, PipelineContext, PipelineOrchestrator, PipelineRunOptions
 from sef.core.plugins import PluginRegistry
 from sef.core.visualization import PipelineOutputs
 
@@ -56,12 +56,14 @@ class OrchestratorFacade:
         *,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> PipelineOutputs:
         """Run a pipeline synchronously through the shared orchestrator."""
         return self._resolved_orchestrator().run(
             self._build_context(pipeline),
             pipeline_id=self._pipeline_id(pipeline, pipeline_id),
             execution_metadata=execution_metadata,
+            run_options=run_options,
         )
 
     def submit(
@@ -70,12 +72,14 @@ class OrchestratorFacade:
         *,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> Future[PipelineOutputs]:
         """Submit a pipeline for background execution."""
         return self._resolved_orchestrator().submit(
             self._build_context(pipeline),
             pipeline_id=self._pipeline_id(pipeline, pipeline_id),
             execution_metadata=execution_metadata,
+            run_options=run_options,
         )
 
     def on_lifecycle(self, event: str | PipelineLifecycleEvent, handler: LifecycleHandler) -> OrchestratorFacade:

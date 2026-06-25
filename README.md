@@ -160,6 +160,24 @@ python -m pytest tests/test_custom_components.py
 ## Python API
 
 The common path is intentionally short: describe a source, add stages, and run.
+
+Runs are lightweight by default: execution-plan metadata and reproducibility
+exports are generated only when explicitly requested.
+
+```python
+outputs = pipeline.run(
+    run_options=sef.PipelineRunOptions.full(),
+)
+```
+
+For compact diagnostics without JSON/YAML/Python reproducibility exports:
+
+```python
+outputs = pipeline.run(
+    run_options=sef.PipelineRunOptions(diagnostics="summary"),
+)
+```
+
 The facade accepts registered plugin names, component classes, component instances, or plain Python callables:
 
 ```python

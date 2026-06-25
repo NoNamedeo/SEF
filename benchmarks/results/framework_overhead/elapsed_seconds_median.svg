@@ -14,13 +14,13 @@
 <text x="80" y="149.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">0.75</text>
 <line x1="90" y1="70.0" x2="760" y2="70.0" stroke="#e6e6e6" stroke-width="1"/>
 <text x="80" y="74.0" text-anchor="end" font-family="Arial" font-size="12" fill="#333">1.00</text>
-<rect x="139.1" y="317.6" width="125.1" height="52.4" fill="#0FA4DB"/>
-<text x="201.7" y="309.6" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.17</text>
+<rect x="139.1" y="314.4" width="125.1" height="55.6" fill="#0FA4DB"/>
+<text x="201.7" y="306.4" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.19</text>
 <text x="201.7" y="398.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">direct_loop</text>
-<rect x="362.5" y="306.3" width="125.1" height="63.7" fill="#0173F1"/>
-<text x="425.0" y="298.3" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.21</text>
+<rect x="362.5" y="308.6" width="125.1" height="61.4" fill="#0173F1"/>
+<text x="425.0" y="300.6" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.20</text>
 <text x="425.0" y="398.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">sef_batch</text>
-<rect x="585.8" y="309.3" width="125.1" height="60.7" fill="#31BDF1"/>
-<text x="648.3" y="301.3" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.20</text>
+<rect x="585.8" y="313.9" width="125.1" height="56.1" fill="#31BDF1"/>
+<text x="648.3" y="305.9" text-anchor="middle" font-family="Arial" font-size="12" fill="#111">0.19</text>
 <text x="648.3" y="398.0" text-anchor="middle" font-family="Arial" font-size="13" fill="#111">sef_streaming</text>
 </svg>

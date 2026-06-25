@@ -6,6 +6,7 @@ from typing import Any, Mapping
 from sef.core.interfaces.pipeline.IEventBus import IEventBus
 from sef.core.pipeline.Pipeline import Pipeline
 from sef.core.pipeline.PipelineContext import PipelineContext
+from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
 
 
 class IPipelineFactory(ABC):
@@ -24,6 +25,7 @@ class IPipelineFactory(ABC):
         event_bus: IEventBus | None = None,
         pipeline_id: str | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> Pipeline:
         """
         Create a pipeline facade for a validated context.
@@ -32,5 +34,10 @@ class IPipelineFactory(ABC):
         -------
         Pipeline
             Executable pipeline instance ready for a runner.
+
+        Notes
+        -----
+        Implementations should forward ``run_options`` without eagerly
+        constructing diagnostics or reproducibility exports.
         """
         ...

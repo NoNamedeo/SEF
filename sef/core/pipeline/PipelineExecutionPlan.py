@@ -114,6 +114,20 @@ class PipelineExecutionPlan:
             "stages": [stage.as_dict() for stage in self.stages],
         }
 
+    def as_summary_dict(self) -> dict[str, Any]:
+        """Return compact diagnostics without per-stage capability metadata."""
+        streaming_stage_count = sum(1 for stage in self.stages if stage.streams)
+        return {
+            "streamable_end_to_end": self.streamable_end_to_end,
+            "stage_count": len(self.stages),
+            "streaming_stage_count": streaming_stage_count,
+            "batch_stage_count": len(self.stages) - streaming_stage_count,
+            "materialization_boundaries": [
+                stage.stage_id for stage in self.materialization_boundaries
+            ],
+            "latency_policy": self.runtime.get("latency_policy", {}).get("name"),
+        }
+
     def as_text(self) -> str:
         """Return a stable, human-readable execution plan summary."""
         lines = [
