@@ -61,6 +61,16 @@ def create_builtin_registry() -> PluginRegistry:
         metadata={"optional_extra": "opencv"},
     )
     registry.register(
+        PluginCategory.SINGLE_FRAME_PROCESSOR,
+        "smoothing",
+        lazy_component_factory(
+            "sef.builtin.frame_processors.SmoothingFrameProcessor.SmoothingFrameProcessor",
+            extra="opencv",
+        ),
+        "Apply temporal smoothing between consecutive frames.",
+        metadata={"optional_extra": "opencv"},
+    )
+    registry.register(
         PluginCategory.FRAME_BUFFER_PROCESSOR,
         "dynamic_object_removal",
         lazy_component_factory(

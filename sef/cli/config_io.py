@@ -12,9 +12,10 @@ from sef.cli.diagnostics import DiagnosticItem
 from sef.core.errors import ConfigSchemaError
 from sef.core.pipeline.PipelineExportUtils import yaml_dumps
 from sef.core.pipeline.PipelineRunOptions import (
-    RUN_OPTIONS_CONFIG_KEY,
+    RUN_CONFIG_KEY,
     RUN_OPTIONS_EXECUTION_PLAN_CONFIG_KEY,
     RUN_OPTIONS_REPRODUCIBILITY_CONFIG_KEY,
+    RUN_RUNTIME_CONFIG_KEY,
 )
 
 
@@ -34,7 +35,7 @@ class ConfigInspectionResult:
 class ConfigInspector:
     """Performs practical CLI config checks before the core builder runs."""
 
-    _TOP_LEVEL_KEYS = frozenset({"schema_version", "pipeline", RUN_OPTIONS_CONFIG_KEY})
+    _TOP_LEVEL_KEYS = frozenset({"schema_version", "id", "metadata", "pipeline", RUN_CONFIG_KEY})
     _PIPELINE_KEYS = frozenset(
         {
             "frame_extractor",
@@ -44,7 +45,6 @@ class ConfigInspector:
             "analyzers",
             "visualizers",
             "intermediate_frames",
-            "runtime",
         }
     )
     _COMPONENT_KEYS = frozenset({"name", "params", "processor_type", "result_indices"})
@@ -60,10 +60,11 @@ class ConfigInspector:
     )
     _RUNTIME_KEYS = frozenset({"frame_buffer_size", "signal_buffer_size", "data_buffer_size", "latency_policy"})
     _LATENCY_POLICY_KEYS = frozenset({"name", "params"})
-    _RUN_OPTIONS_KEYS = frozenset(
+    _RUN_KEYS = frozenset(
         {
             RUN_OPTIONS_EXECUTION_PLAN_CONFIG_KEY,
             RUN_OPTIONS_REPRODUCIBILITY_CONFIG_KEY,
+            RUN_RUNTIME_CONFIG_KEY,
         }
     )
 
@@ -76,9 +77,10 @@ class ConfigInspector:
         pipeline = config.get("pipeline")
         if isinstance(pipeline, Mapping):
             self._inspect_pipeline(pipeline, strict, warnings, errors)
-        run_options = config.get(RUN_OPTIONS_CONFIG_KEY)
-        if isinstance(run_options, Mapping):
-            self._unknown_keys(run_options, self._RUN_OPTIONS_KEYS, RUN_OPTIONS_CONFIG_KEY, strict, warnings, errors)
+        run = config.get(RUN_CONFIG_KEY)
+        if isinstance(run, Mapping):
+            self._unknown_keys(run, self._RUN_KEYS, RUN_CONFIG_KEY, strict, warnings, errors)
+            self._inspect_runtime(run.get(RUN_RUNTIME_CONFIG_KEY), strict, warnings, errors, path=f"{RUN_CONFIG_KEY}.{RUN_RUNTIME_CONFIG_KEY}")
 
         return ConfigInspectionResult(tuple(warnings), tuple(errors))
 
@@ -97,7 +99,6 @@ class ConfigInspector:
         self._inspect_component_list(pipeline.get("analyzers", ()), "pipeline.analyzers", strict, warnings, errors)
         self._inspect_component_list(pipeline.get("visualizers", ()), "pipeline.visualizers", strict, warnings, errors)
         self._inspect_intermediate_frames(pipeline.get("intermediate_frames"), strict, warnings, errors)
-        self._inspect_runtime(pipeline.get("runtime"), strict, warnings, errors)
 
     def _inspect_component_list(
         self,
@@ -148,16 +149,18 @@ class ConfigInspector:
         strict: bool,
         warnings: list[DiagnosticItem],
         errors: list[DiagnosticItem],
+        *,
+        path: str = f"{RUN_CONFIG_KEY}.{RUN_RUNTIME_CONFIG_KEY}",
     ) -> None:
         if not isinstance(value, Mapping):
             return
-        self._unknown_keys(value, self._RUNTIME_KEYS, "pipeline.runtime", strict, warnings, errors)
+        self._unknown_keys(value, self._RUNTIME_KEYS, path, strict, warnings, errors)
         latency_policy = value.get("latency_policy")
         if isinstance(latency_policy, Mapping):
             self._unknown_keys(
                 latency_policy,
                 self._LATENCY_POLICY_KEYS,
-                "pipeline.runtime.latency_policy",
+                f"{path}.latency_policy",
                 strict,
                 warnings,
                 errors,
@@ -224,9 +227,11 @@ def public_config_schema() -> dict[str, Any]:
         "required": ["schema_version", "pipeline"],
         "properties": {
             "schema_version": {"type": "string", "example": "1.0"},
-            RUN_OPTIONS_CONFIG_KEY: {
+            "id": {"type": "string", "description": "Optional run identifier."},
+            "metadata": {"type": "object", "description": "Optional descriptive run metadata."},
+            RUN_CONFIG_KEY: {
                 "type": "object",
-                "description": "Optional run metadata controls. Omit for lowest-overhead execution.",
+                "description": "Execution controls for this run.",
                 "properties": {
                     RUN_OPTIONS_EXECUTION_PLAN_CONFIG_KEY: {
                         "oneOf": [
@@ -236,6 +241,7 @@ def public_config_schema() -> dict[str, Any]:
                         "description": "Optional execution-plan metadata. true maps to full; false maps to none.",
                     },
                     RUN_OPTIONS_REPRODUCIBILITY_CONFIG_KEY: {"type": "boolean", "default": False},
+                    RUN_RUNTIME_CONFIG_KEY: _runtime_schema(),
                 },
             },
             "pipeline": {
@@ -279,21 +285,6 @@ def public_config_schema() -> dict[str, Any]:
                             "visualizers": {"type": "array", "items": _component_schema("visualizer")},
                         },
                     },
-                    "runtime": {
-                        "type": "object",
-                        "properties": {
-                            "frame_buffer_size": {"type": "integer", "minimum": 1},
-                            "signal_buffer_size": {"type": "integer", "minimum": 1},
-                            "data_buffer_size": {"type": "integer", "minimum": 1},
-                            "latency_policy": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {"type": "string", "example": "blocking"},
-                                    "params": {"type": "object"},
-                                },
-                            },
-                        },
-                    },
                 },
             },
         },
@@ -305,6 +296,24 @@ def dump_config_schema(schema: Mapping[str, Any], *, output_format: str) -> str:
     if output_format == "yaml":
         return yaml_dumps(schema)
     return json.dumps(schema, indent=2, sort_keys=False)
+
+
+def _runtime_schema() -> dict[str, Any]:
+    return {
+        "type": "object",
+        "properties": {
+            "frame_buffer_size": {"type": "integer", "minimum": 1},
+            "signal_buffer_size": {"type": "integer", "minimum": 1},
+            "data_buffer_size": {"type": "integer", "minimum": 1},
+            "latency_policy": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "example": "blocking"},
+                    "params": {"type": "object"},
+                },
+            },
+        },
+    }
 
 
 def _load_yaml_raw(raw_text: str, config_path: Path) -> Any:

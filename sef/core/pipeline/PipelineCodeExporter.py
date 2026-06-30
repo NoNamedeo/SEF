@@ -41,11 +41,8 @@ class PipelineCodeExporter:
 
                 from typing import Any
 
+                from sef.api import default_registry, run as sef_run
                 from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-                from sef.core.pipeline.Pipeline import Pipeline
-                from sef.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
-                from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
-                from sef.api import default_registry
                 from sef.core.plugins.PluginRegistry import PluginRegistry
 
 
@@ -54,9 +51,9 @@ class PipelineCodeExporter:
                     "schema_version": PIPELINE_EXPORT.get("schema_version", "1.0"),
                     "pipeline": PIPELINE_EXPORT["pipeline"],
                 }
-                if "run_options" in PIPELINE_EXPORT:
-                    PIPELINE_CONFIG["run_options"] = PIPELINE_EXPORT["run_options"]
-
+                for key in ("id", "metadata", "run"):
+                    if key in PIPELINE_EXPORT:
+                        PIPELINE_CONFIG[key] = PIPELINE_EXPORT[key]
 
                 def build_registry() -> PluginRegistry:
                     """
@@ -74,34 +71,9 @@ class PipelineCodeExporter:
                     return ConfigPipelineBuilder(resolved_registry).build_context(PIPELINE_CONFIG)
 
 
-                def build_run_options() -> PipelineRunOptions:
-                    """Rebuild execution-plan/reproducibility settings from the exported config."""
-                    return PipelineRunOptions.from_config(PIPELINE_CONFIG)
-
-
-                def build_pipeline(
-                    registry: PluginRegistry | None = None,
-                    pipeline_id: str | None = None,
-                    execution_metadata: dict[str, Any] | None = None,
-                ) -> Pipeline:
-                    """Create a Pipeline instance from the rebuilt context."""
-                    return Pipeline(
-                        build_context(registry),
-                        pipeline_id=pipeline_id,
-                        execution_metadata=execution_metadata,
-                        run_options=build_run_options(),
-                    )
-
-
                 def run_pipeline(registry: PluginRegistry | None = None):
-                    """Execute the rebuilt pipeline through the public orchestrator facade."""
-                    execution = PIPELINE_EXPORT.get("execution", {})
-                    return PipelineOrchestrator().run(
-                        build_context(registry),
-                        pipeline_id=execution.get("pipeline_id"),
-                        execution_metadata=execution.get("metadata", {}),
-                        run_options=build_run_options(),
-                    )
+                    """Execute the rebuilt run config through the public orchestrator path."""
+                    return sef_run(PIPELINE_CONFIG, registry=registry or build_registry())
 
 
                 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from concurrent.futures import Future
 from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
@@ -9,12 +10,10 @@ from sef.api.config import normalize_config
 from sef.api.registry import clone_registry, default_registry
 from sef.api.stage_refs import ComponentRef, StageRegistry, StageSpec
 from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
-from sef.core.pipeline.Pipeline import Pipeline
 from sef.core.pipeline.PipelineConfigVersioning import CURRENT_PIPELINE_CONFIG_VERSION
 from sef.core.pipeline.PipelineContext import PipelineContext
 from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
 from sef.core.pipeline.PipelineExecutionPlanner import PipelineExecutionPlanner
-from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
 from sef.core.plugins import PluginCategory, PluginRegistry
 
 
@@ -33,7 +32,7 @@ class PipelineFacade:
     background submission, active-id tracking, or event-driven branching.
     """
 
-    pipeline_id: str | None
+    _id: str | None
     _registry: PluginRegistry
     _frame_extractor: StageSpec | None = None
     _frame_processors: tuple[StageSpec, ...] = ()
@@ -44,7 +43,6 @@ class PipelineFacade:
     _intermediate_frames: dict[str, Any] | None = None
     _runtime: dict[str, Any] | None = None
     _source_config: Mapping[str, Any] | None = None
-    _run_options: PipelineRunOptions | None = None
 
     def frames(self, component: ComponentRef, **params: Any) -> PipelineFacade:
         """Set the frame source using a plugin name, class, instance, or callable."""
@@ -147,10 +145,28 @@ class PipelineFacade:
         """Set ``pipeline.frame_extractor.params.config.max_frames``."""
         return self._with_frame_source_config("max_frames", value)
 
-    def to_config(self) -> dict[str, Any]:
-        """Return the versioned config that will be passed to the core builder."""
+    def to_config(
+        self,
+        *,
+        id: str | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        run: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """
+        Return the public run config emitted by this facade.
+
+        ``pipeline`` contains the component graph, while top-level ``id``,
+        ``metadata`` and ``run`` describe one execution of that graph.
+        """
         config, _ = self._compile()
-        return config
+        from sef.api.execution import _apply_run_overrides
+
+        return _apply_run_overrides(
+            config,
+            id=id,
+            metadata=metadata,
+            run=run,
+        )
 
     def build_context(self) -> PipelineContext:
         """Build the core ``PipelineContext`` without running the pipeline."""
@@ -161,38 +177,51 @@ class PipelineFacade:
         """Return the runtime execution plan for the current facade."""
         return PipelineExecutionPlanner().build(self.build_context())
 
-    def configured_run_options(self) -> PipelineRunOptions:
-        """Return run options declared by config, or the lightweight default."""
-        return self._run_options or PipelineRunOptions.lightweight()
-
     def run(
         self,
         *,
-        pipeline_id: str | None = None,
-        execution_metadata: Mapping[str, Any] | None = None,
-        run_options: PipelineRunOptions | None = None,
-    ):
+        id: str | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        run: Mapping[str, Any] | None = None,
+    ) -> Any:
         """
-        Build and execute this pipeline immediately.
+        Execute this pipeline through the shared orchestrator runtime.
 
-        This is intentionally the shortest path for simple single-pipeline
-        scripts. It does not create a shared orchestrator runner; use
-        ``sef.orchestrator()`` for lifecycle observation, async submission, or
-        branching. Diagnostics and reproducibility are disabled unless supplied
-        through ``run_options`` or declared in a loaded config. An explicit
-        ``run_options`` argument takes precedence over config-declared options.
+        This remains the fluent convenience API; internally it builds the same
+        run config consumed by ``sef.run`` and ``sef.orchestrator().run``.
         """
-        resolved_pipeline_id = pipeline_id or self.pipeline_id
-        return Pipeline(
-            self.build_context(),
-            pipeline_id=resolved_pipeline_id,
-            execution_metadata=dict(execution_metadata or {}),
-            run_options=run_options if run_options is not None else self._run_options,
-        ).run()
+        from sef.api.execution import run as run_pipeline
+
+        return run_pipeline(
+            self,
+            id=id,
+            metadata=metadata,
+            run=run,
+        )
+
+    def submit(
+        self,
+        *,
+        id: str | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        run: Mapping[str, Any] | None = None,
+    ) -> Future:
+        """Submit this pipeline through the shared orchestrator runtime."""
+        from sef.api.execution import submit as submit_pipeline
+
+        return submit_pipeline(
+            self,
+            id=id,
+            metadata=metadata,
+            run=run,
+        )
 
     def _compile(self) -> tuple[dict[str, Any], PluginRegistry]:
         if self._source_config is not None:
-            return deepcopy(dict(self._source_config)), clone_registry(self._registry)
+            config = deepcopy(dict(self._source_config))
+            if self._id is not None:
+                config.setdefault("id", self._id)
+            return config, clone_registry(self._registry)
 
         stage_registry = StageRegistry(clone_registry(self._registry))
         pipeline_config: dict[str, Any] = {
@@ -209,15 +238,18 @@ class PipelineFacade:
             "analyzers": [stage_registry.entry(PluginCategory.ANALYZER, spec) for spec in self._analyzers],
             "visualizers": [stage_registry.entry(PluginCategory.VISUALIZER, spec) for spec in self._visualizers],
         }
-        if self._runtime:
-            pipeline_config["runtime"] = deepcopy(self._runtime)
         if self._intermediate_frames:
             pipeline_config["intermediate_frames"] = self._compile_intermediate_frames(stage_registry)
 
-        return {
+        config = {
             "schema_version": CURRENT_PIPELINE_CONFIG_VERSION,
             "pipeline": pipeline_config,
-        }, stage_registry.registry
+        }
+        if self._runtime:
+            config["run"] = {"runtime": deepcopy(self._runtime)}
+        if self._id is not None:
+            config["id"] = self._id
+        return config, stage_registry.registry
 
     def _compile_intermediate_frames(self, stage_registry: StageRegistry) -> dict[str, Any]:
         section = dict(self._intermediate_frames or {})
@@ -246,7 +278,7 @@ class PipelineFacade:
 
 
 def pipeline(
-    pipeline_id: str | None = None,
+    id: str | None = None,
     *,
     registry: PluginRegistry | None = None,
     include_builtins: bool = False,
@@ -260,7 +292,7 @@ def pipeline(
     directly from ``pipeline``.
     """
     return PipelineFacade(
-        pipeline_id=pipeline_id,
+        _id=id,
         _registry=clone_registry(registry) if registry is not None else default_registry(include_builtins=include_builtins),
     )
 
@@ -268,7 +300,7 @@ def pipeline(
 def video(
     path: str,
     *,
-    pipeline_id: str | None = None,
+    id: str | None = None,
     registry: PluginRegistry | None = None,
     include_builtins: bool = True,
     **config: Any,
@@ -277,13 +309,13 @@ def video(
     params: dict[str, Any] = {"path": path}
     if config:
         params["config"] = dict(config)
-    return pipeline(pipeline_id, registry=registry, include_builtins=include_builtins).frames("opencv_buffered", **params)
+    return pipeline(id, registry=registry, include_builtins=include_builtins).frames("opencv_buffered", **params)
 
 
 def webcam(
     index: int = 0,
     *,
-    pipeline_id: str | None = None,
+    id: str | None = None,
     registry: PluginRegistry | None = None,
     include_builtins: bool = True,
     **config: Any,
@@ -292,21 +324,20 @@ def webcam(
     params: dict[str, Any] = {"camera_index": int(index)}
     if config:
         params["config"] = dict(config)
-    return pipeline(pipeline_id, registry=registry, include_builtins=include_builtins).frames("opencv_webcam", **params)
+    return pipeline(id, registry=registry, include_builtins=include_builtins).frames("opencv_webcam", **params)
 
 
 def from_config(
     config: Mapping[str, Any],
     *,
-    pipeline_id: str | None = None,
+    id: str | None = None,
     registry: PluginRegistry | None = None,
     include_builtins: bool = True,
 ) -> PipelineFacade:
     """Create a runnable facade from an existing SEF config mapping."""
     source_config = normalize_config(config)
     return PipelineFacade(
-        pipeline_id=pipeline_id,
+        _id=id,
         _registry=clone_registry(registry) if registry is not None else default_registry(include_builtins=include_builtins),
         _source_config=source_config,
-        _run_options=PipelineRunOptions.from_config(source_config),
     )

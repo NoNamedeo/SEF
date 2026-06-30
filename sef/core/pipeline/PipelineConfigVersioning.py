@@ -5,7 +5,11 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from sef.core.pipeline.PipelineErrors import ConfigSchemaError, ConfigVersionError
-from sef.core.pipeline.PipelineRunOptions import RUN_OPTIONS_CONFIG_KEY, PipelineRunOptions
+from sef.core.pipeline.PipelineRunOptions import (
+    RUN_CONFIG_KEY,
+    RUN_RUNTIME_CONFIG_KEY,
+    PipelineRunOptions,
+)
 
 PIPELINE_CONFIG_VERSION_KEY = "schema_version"
 CURRENT_PIPELINE_CONFIG_VERSION = "1.0"
@@ -89,9 +93,14 @@ class VersionedPipelineConfig:
             PIPELINE_CONFIG_VERSION_KEY: self.schema_version,
             "pipeline": dict(self.pipeline),
         }
-        if RUN_OPTIONS_CONFIG_KEY in self.root:
-            run_options = self.root[RUN_OPTIONS_CONFIG_KEY]
-            source[RUN_OPTIONS_CONFIG_KEY] = dict(run_options) if isinstance(run_options, Mapping) else run_options
+        run = self.root.get(RUN_CONFIG_KEY)
+        if isinstance(run, Mapping) and run:
+            source[RUN_CONFIG_KEY] = dict(run)
+        if "id" in self.root:
+            source["id"] = self.root["id"]
+        if "metadata" in self.root:
+            metadata = self.root["metadata"]
+            source["metadata"] = dict(metadata) if isinstance(metadata, Mapping) else metadata
         return source
 
 
@@ -134,21 +143,33 @@ class PipelineConfigVersionManager:
             raise ConfigSchemaError("'config' must be a mapping.", path="config")
 
         root = dict(config)
+        if "run_options" in root:
+            raise ConfigSchemaError("Unsupported field 'run_options'. Use the top-level 'run' section.", path="run_options")
         version, explicit_version = self._read_version(root)
         migrated_root, applied_migrations = self._migrate_to_current(root, version)
         pipeline = migrated_root.get("pipeline")
         if not isinstance(pipeline, Mapping):
             raise ConfigSchemaError("Missing required config section 'pipeline'.", path="pipeline")
-        canonical_pipeline = self._canonical_pipeline(pipeline)
+        canonical_run = self._canonical_run(migrated_root)
+        canonical_pipeline = self._canonical_pipeline(pipeline, canonical_run)
 
         canonical_root = dict(migrated_root)
         canonical_root[PIPELINE_CONFIG_VERSION_KEY] = self.current_version
         canonical_root["pipeline"] = canonical_pipeline
-        run_options = self._canonical_run_options(migrated_root)
-        if run_options:
-            canonical_root[RUN_OPTIONS_CONFIG_KEY] = run_options
+        if canonical_run:
+            canonical_root[RUN_CONFIG_KEY] = canonical_run
         else:
-            canonical_root.pop(RUN_OPTIONS_CONFIG_KEY, None)
+            canonical_root.pop(RUN_CONFIG_KEY, None)
+        if "metadata" in canonical_root:
+            metadata = canonical_root["metadata"]
+            if not isinstance(metadata, Mapping):
+                raise ConfigSchemaError("'metadata' must be a mapping.", path="metadata")
+            canonical_root["metadata"] = dict(metadata)
+        if "id" in canonical_root:
+            run_id = canonical_root["id"]
+            if not isinstance(run_id, str) or not run_id.strip():
+                raise ConfigSchemaError("'id' must be a non-empty string.", path="id")
+            canonical_root["id"] = run_id.strip()
         return VersionedPipelineConfig(
             root=canonical_root,
             pipeline=canonical_pipeline,
@@ -158,7 +179,7 @@ class PipelineConfigVersionManager:
         )
 
     @staticmethod
-    def _canonical_pipeline(pipeline: Mapping[str, Any]) -> dict[str, Any]:
+    def _canonical_pipeline(pipeline: Mapping[str, Any], run: Mapping[str, Any]) -> dict[str, Any]:
         """
         Return the public canonical pipeline section for the current schema.
 
@@ -167,17 +188,37 @@ class PipelineConfigVersionManager:
         both single-frame and frame-buffer processors are supported.
         """
         canonical = dict(pipeline)
-        legacy_frame_processors = canonical.pop("frame_cleaners", None)
-        if legacy_frame_processors is not None and "frame_processors" not in canonical:
-            canonical["frame_processors"] = legacy_frame_processors
+        if "frame_cleaners" in canonical:
+            raise ConfigSchemaError("Unsupported field 'pipeline.frame_cleaners'. Use 'pipeline.frame_processors'.", path="pipeline.frame_cleaners")
+        if "runtime" in canonical:
+            raise ConfigSchemaError("Unsupported field 'pipeline.runtime'. Use 'run.runtime'.", path="pipeline.runtime")
+        run_runtime = run.get(RUN_RUNTIME_CONFIG_KEY)
+        if run_runtime is not None:
+            if not isinstance(run_runtime, Mapping):
+                raise ConfigSchemaError("'run.runtime' must be a mapping.", path="run.runtime")
+            canonical["runtime"] = dict(run_runtime)
         return canonical
 
     @staticmethod
-    def _canonical_run_options(root: Mapping[str, Any]) -> dict[str, Any]:
-        """Return normalized run options, or an empty mapping for defaults."""
-        if RUN_OPTIONS_CONFIG_KEY not in root:
+    def _canonical_run(root: Mapping[str, Any]) -> dict[str, Any]:
+        """Return the public canonical run section, or an empty mapping."""
+        if RUN_CONFIG_KEY not in root:
             return {}
-        return PipelineRunOptions.from_mapping(root[RUN_OPTIONS_CONFIG_KEY]).to_config()
+        raw_run = root[RUN_CONFIG_KEY]
+        if raw_run is None:
+            return {}
+        if not isinstance(raw_run, Mapping):
+            raise ConfigSchemaError("'run' must be a mapping.", path="run")
+
+        run = dict(raw_run)
+        normalized_options = PipelineRunOptions.from_run_mapping(run).to_config()
+        canonical: dict[str, Any] = dict(normalized_options)
+        if RUN_RUNTIME_CONFIG_KEY in run:
+            runtime = run[RUN_RUNTIME_CONFIG_KEY]
+            if not isinstance(runtime, Mapping):
+                raise ConfigSchemaError("'run.runtime' must be a mapping.", path="run.runtime")
+            canonical[RUN_RUNTIME_CONFIG_KEY] = dict(runtime)
+        return canonical
 
     def _read_version(self, root: Mapping[str, Any]) -> tuple[str, bool]:
         raw_version = root.get(PIPELINE_CONFIG_VERSION_KEY)

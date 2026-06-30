@@ -146,7 +146,7 @@ class FluentBuilderContextTests(unittest.TestCase):
     def test_context_runs_through_orchestrator(self):
         context = _base_builder().build_context()
 
-        outputs = PipelineOrchestrator().run(context)
+        outputs = PipelineOrchestrator().run_context(context)
 
         self.assertEqual(len(outputs.results), 1)
 
@@ -192,7 +192,7 @@ class ConfigBuilderContextTests(unittest.TestCase):
         builder = ConfigPipelineBuilder(self._build_registry())
         context = builder.build_context(self._config())
 
-        outputs = PipelineOrchestrator().run(context)
+        outputs = PipelineOrchestrator().run_context(context)
 
         self.assertEqual(len(outputs.results), 1)
 

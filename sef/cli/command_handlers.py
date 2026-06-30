@@ -33,6 +33,7 @@ from sef.cli.scaffold import ProjectScaffolder
 from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
 from sef.core.pipeline.PipelineRunOptions import (
     PipelineExecutionPlanLevel,
+    PipelineRunOptions,
 )
 
 
@@ -100,7 +101,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
         diagnostics.print()
         return diagnostics.exit_code()
 
-    facade = from_config(config, pipeline_id=args.pipeline_id, registry=registry)
+    facade = from_config(config, id=args.pipeline_id, registry=registry)
     plan = facade.execution_plan() if args.explain else None
     if args.explain:
         if plan is None:
@@ -120,11 +121,14 @@ def run_pipeline(args: argparse.Namespace) -> int:
         diagnostics.print()
         return diagnostics.exit_code()
 
-    run_options = facade.configured_run_options().with_required(
+    run_options = PipelineRunOptions.from_config(config).with_required(
         execution_plan=PipelineExecutionPlanLevel.FULL if args.explain else None,
     )
-    outputs = facade.run(
-        run_options=run_options,
+    outputs = sef.run(
+        config,
+        id=args.pipeline_id,
+        registry=registry,
+        run=run_options.to_config(),
     )
     print(f"pipeline_id: {outputs.metadata.pipeline_id}")
     print(f"results: {len(outputs.results)}")

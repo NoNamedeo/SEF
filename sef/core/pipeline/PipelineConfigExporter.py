@@ -14,7 +14,7 @@ from sef.core.pipeline.PipelineExportUtils import (
     to_exportable_data,
     yaml_dumps,
 )
-from sef.core.pipeline.PipelineRunOptions import RUN_OPTIONS_CONFIG_KEY, PipelineRunOptions
+from sef.core.pipeline.PipelineRunOptions import RUN_CONFIG_KEY, PipelineRunOptions
 from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from sef.core.pipeline.VisualizerBinding import VisualizerBinding
 from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
@@ -39,7 +39,6 @@ class PipelineConfigExporter:
         "analyzers",
         "visualizers",
         "intermediate_frames",
-        "runtime",
     }
 
     def __init__(
@@ -72,9 +71,13 @@ class PipelineConfigExporter:
             "execution": self._execution_metadata(outputs, execution_metadata),
             "artifacts": self._artifact_metadata(outputs),
         }
-        configured_run_options = self._run_options_config(context, run_options)
-        if configured_run_options:
-            export[RUN_OPTIONS_CONFIG_KEY] = configured_run_options
+        self._copy_run_identity(context, export)
+        run_config = self._run_config(context, run_options)
+        if run_config:
+            export[RUN_CONFIG_KEY] = {
+                **dict(export.get(RUN_CONFIG_KEY, {})),
+                **run_config,
+            }
         return to_exportable_data(export)
 
     def export_json(
@@ -135,7 +138,6 @@ class PipelineConfigExporter:
                 source_pipeline.get("analyzers"),
             ),
             "visualizers": self._visualizer_entries(context, source_pipeline.get("visualizers")),
-            "runtime": context.stream_runtime.as_dict(),
         }
 
         intermediate_frames = self._intermediate_frames_entry(context, source_pipeline.get("intermediate_frames"))
@@ -149,17 +151,34 @@ class PipelineConfigExporter:
         return config
 
     @staticmethod
-    def _run_options_config(
+    def _run_config(
         context: PipelineContext,
         run_options: PipelineRunOptions | None,
     ) -> dict[str, Any]:
+        run_config: dict[str, Any] = {"runtime": context.stream_runtime.as_dict()}
         if run_options is not None:
-            return run_options.to_config()
+            run_config.update(run_options.to_config())
+            return run_config
 
-        source_run_options = context.source_config.get(RUN_OPTIONS_CONFIG_KEY)
-        if isinstance(source_run_options, Mapping):
-            return dict(source_run_options)
-        return {}
+        source_run = context.source_config.get(RUN_CONFIG_KEY)
+        if isinstance(source_run, Mapping):
+            run_config.update(
+                {
+                    key: source_run[key]
+                    for key in ("execution_plan", "reproducibility")
+                    if key in source_run
+                }
+            )
+        return run_config
+
+    @staticmethod
+    def _copy_run_identity(context: PipelineContext, export: dict[str, Any]) -> None:
+        source = context.source_config
+        if "id" in source:
+            export["id"] = source["id"]
+        metadata = source.get("metadata")
+        if isinstance(metadata, Mapping):
+            export["metadata"] = dict(metadata)
 
     def _frame_processor_entries(self, context: PipelineContext, source_entries: Any) -> list[dict[str, Any]]:
         sources = source_entries if isinstance(source_entries, list) else []

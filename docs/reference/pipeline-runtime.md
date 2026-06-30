@@ -10,13 +10,14 @@ exports.
 
 ## Pipeline
 
-Official import: `from sef.core import Pipeline`
+Official import: `from sef.core.pipeline import PipelineOrchestrator`
 
 ```python
-outputs = Pipeline(context, pipeline_id="run-id").run()
+outputs = PipelineOrchestrator().run_context(context, id="run-id")
 ```
 
-Runs an already-built context and returns `PipelineOutputs`.
+Runs an already-built context through the advanced context API and returns
+`PipelineOutputs`.
 
 ## ConfigPipelineBuilder
 

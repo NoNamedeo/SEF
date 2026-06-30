@@ -36,6 +36,7 @@ __all__ = [
     "PipelineExecutionPlanLevel",
     "PipelineLifecycleEvent",
     "PipelineOrchestrator",
+    "PipelineRunMaterializer",
     "PipelineRunOptions",
     "PluginCategory",
     "PluginRegistry",

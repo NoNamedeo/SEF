@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
+from typing import Any
 
 from sef.core.events.Event import Event
-from sef.core.pipeline.PipelineContext import PipelineContext
 
 
 class IBranchingRule(ABC):
@@ -17,7 +18,7 @@ class IBranchingRule(ABC):
     event arrives on the EventBus, **each** rule is evaluated in order:
 
     1. ``matches(event)`` — should this event trigger a secondary pipeline?
-    2. ``build_context(event)`` — build the PipelineContext for the new pipeline.
+    2. ``build_config(event)`` — build the run config for the new pipeline.
 
     This is the **Strategy pattern**: users define their own branching
     logic by subclassing IBranchingRule, without touching the Orchestrator.
@@ -28,12 +29,14 @@ class IBranchingRule(ABC):
     ...     def matches(self, event: Event) -> bool:
     ...         return event.event_type == "tracking_lost"
     ...
-    ...     def build_context(self, event: Event) -> PipelineContext:
-    ...         return PipelineContext(
-    ...             frame_extractor=...,
-    ...             signal_extractor=...,
-    ...             analyzers=[...],
-    ...         )
+    ...     def build_config(self, event: Event) -> dict[str, Any]:
+    ...         return {
+    ...             "pipeline": {
+    ...                 "frame_extractor": ...,
+    ...                 "signal_extractor": ...,
+    ...                 "analyzers": [...],
+    ...             },
+    ...         }
     """
 
     @abstractmethod
@@ -49,14 +52,14 @@ class IBranchingRule(ABC):
         Returns
         -------
         bool
-            ``True``  -> ``build_context()`` will be called next.
+            ``True``  -> ``build_config()`` will be called next.
             ``False`` -> this rule is skipped for this event.
         """
 
     @abstractmethod
-    def build_context(self, event: Event) -> PipelineContext:
+    def build_config(self, event: Event) -> Mapping[str, Any]:
         """
-        Build the PipelineContext for the secondary pipeline.
+        Build the run config for the secondary pipeline.
 
         Called only when ``matches(event)`` returned ``True``.
 
@@ -67,7 +70,6 @@ class IBranchingRule(ABC):
 
         Returns
         -------
-        PipelineContext
-            A fully configured, immutable context ready for execution
-            by a secondary Pipeline.
+        Mapping[str, Any]
+            A run config ready for orchestration.
         """

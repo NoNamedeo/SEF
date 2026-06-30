@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 
 import numpy as np
+import pytest
 
 import sef
 from examples.minimal_pipeline import (
@@ -36,11 +37,94 @@ def test_pipeline_facade_runs_registered_plugin_names() -> None:
     assert outputs.final_artifacts[0].content == "Sample count: 3.0"
 
 
-def test_from_config_preserves_run_options() -> None:
+def test_top_level_run_accepts_pipeline_facade_and_metadata() -> None:
+    pipeline = (
+        sef.pipeline("top-level-run", registry=build_registry())
+        .frames("demo_frames", frame_count=2)
+        .signals("demo_signals")
+        .analyze("sample_count")
+    )
+
+    outputs = sef.run(pipeline, metadata={"owner": "matteo"})
+
+    assert outputs.metadata.pipeline_id == "top-level-run"
+    assert outputs.results[0].y == [2.0]
+    assert outputs.metadata.execution_metadata["owner"] == "matteo"
+
+
+def test_top_level_submit_accepts_pipeline_facade() -> None:
+    pipeline = (
+        sef.pipeline("top-level-submit", registry=build_registry())
+        .frames("demo_frames", frame_count=2)
+        .signals("demo_signals")
+        .analyze("sample_count")
+    )
+
+    future = sef.submit(pipeline)
+    outputs = future.result(timeout=5)
+
+    assert outputs.metadata.pipeline_id == "top-level-submit"
+    assert outputs.results[0].y == [2.0]
+
+
+def test_top_level_run_accepts_run_config_schema() -> None:
+    config = {
+        "schema_version": "1.0",
+        "id": "config-run",
+        "metadata": {"owner": "matteo"},
+        "run": {
+            "execution_plan": "summary",
+            "runtime": {"frame_buffer_size": 4},
+        },
+        "pipeline": {
+            "frame_extractor": {"name": "demo_frames", "params": {"frame_count": 2}},
+            "signal_extractor": {"name": "demo_signals"},
+            "analyzers": [{"name": "sample_count"}],
+        },
+    }
+
+    outputs = sef.run(config, registry=build_registry())
+
+    assert outputs.metadata.pipeline_id == "config-run"
+    assert outputs.metadata.execution_metadata["owner"] == "matteo"
+    assert outputs.metadata.execution_plan["stage_count"] == 3
+
+
+def test_top_level_run_rejects_pipeline_context() -> None:
+    context = (
+        sef.pipeline("context-is-core-only", registry=build_registry())
+        .frames("demo_frames", frame_count=1)
+        .signals("demo_signals")
+        .analyze("sample_count")
+        .build_context()
+    )
+
+    with pytest.raises(TypeError, match="PipelineContext"):
+        sef.run(context)
+
+
+def test_pipeline_to_config_emits_run_document_runtime() -> None:
+    config = (
+        sef.pipeline("run-document", registry=build_registry())
+        .frames("demo_frames", frame_count=2)
+        .signals("demo_signals")
+        .analyze("sample_count")
+        .runtime(frame_buffer_size=4)
+        .to_config(metadata={"owner": "matteo"}, run={"execution_plan": "summary"})
+    )
+
+    assert config["id"] == "run-document"
+    assert config["metadata"] == {"owner": "matteo"}
+    assert config["run"]["execution_plan"] == "summary"
+    assert config["run"]["runtime"]["frame_buffer_size"] == 4
+    assert "runtime" not in config["pipeline"]
+
+
+def test_from_config_preserves_run_section() -> None:
     outputs = sef.from_config(
         {
             "schema_version": "1.0",
-            "run_options": {
+            "run": {
                 "execution_plan": "summary",
                 "reproducibility": True,
             },
@@ -55,17 +139,15 @@ def test_from_config_preserves_run_options() -> None:
 
     assert outputs.metadata.execution_plan["stage_count"] == 3
     assert "stages" not in outputs.metadata.execution_plan
-    assert outputs.metadata.reproducibility["config"]["run_options"] == {
-        "execution_plan": "summary",
-        "reproducibility": True,
-    }
+    assert outputs.metadata.reproducibility["config"]["run"]["execution_plan"] == "summary"
+    assert outputs.metadata.reproducibility["config"]["run"]["reproducibility"] is True
 
 
-def test_explicit_run_options_override_configured_run_options() -> None:
+def test_explicit_run_overrides_configured_run() -> None:
     facade = sef.from_config(
         {
             "schema_version": "1.0",
-            "run_options": {
+            "run": {
                 "execution_plan": "full",
                 "reproducibility": True,
             },
@@ -78,7 +160,7 @@ def test_explicit_run_options_override_configured_run_options() -> None:
         registry=build_registry(),
     )
 
-    outputs = facade.run(run_options=sef.PipelineRunOptions.lightweight())
+    outputs = facade.run(run={"execution_plan": "none", "reproducibility": False})
 
     assert outputs.metadata.execution_plan == {}
     assert outputs.metadata.reproducibility == {}
@@ -312,7 +394,7 @@ def test_orchestrator_facade_submits_pipeline_context() -> None:
         .build_context()
     )
 
-    future = sef.orchestrator().submit(context, pipeline_id="submitted-context")
+    future = sef.orchestrator().submit_context(context, id="submitted-context")
     outputs = future.result(timeout=5)
 
     assert outputs.results[0].y == [2.0]
@@ -333,19 +415,20 @@ class DemoBranchRule(IBranchingRule):
     def matches(self, event: Event) -> bool:
         return event.event_type == "demo.branch"
 
-    def build_context(self, event: Event):
+    def build_config(self, event: Event):
         return (
-            sef.pipeline("child-from-event", include_builtins=False)
-            .frames(DemoFrameExtractor, frame_count=int(event.require("sample_count")))
-            .signals(DemoSignalExtractor)
-            .analyze(SampleCountAnalyzer)
-            .visualize(SummaryVisualizer)
-            .build_context()
+            sef.pipeline("child-from-event", registry=build_registry(), include_builtins=False)
+            .frames("demo_frames", frame_count=int(event.require("sample_count")))
+            .signals("demo_signals")
+            .analyze("sample_count")
+            .visualize("summary_text")
+            .to_config()
         )
 
 
-def test_orchestrator_facade_wires_branching_without_config_schema() -> None:
-    orchestrator = sef.orchestrator().with_branching(DemoBranchRule()).with_branching(DemoBranchRule())
+def test_orchestrator_facade_wires_branching_with_run_config_schema() -> None:
+    orchestrator = sef.orchestrator(registry=build_registry(), include_builtins=False)
+    orchestrator.with_branching(DemoBranchRule()).with_branching(DemoBranchRule())
     events: list[Event] = []
     orchestrator.on_lifecycle("after_run", events.append)
     pipeline = (

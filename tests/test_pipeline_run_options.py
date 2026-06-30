@@ -124,10 +124,10 @@ def test_reproducibility_can_be_enabled_without_execution_plan() -> None:
     assert "python_builder_code" in outputs.metadata.reproducibility
 
 
-def test_run_options_can_be_read_from_config() -> None:
+def test_run_options_can_be_read_from_run_config() -> None:
     options = PipelineRunOptions.from_config(
         {
-            "run_options": {
+            "run": {
                 "execution_plan": "summary",
                 "reproducibility": True,
             }
@@ -140,11 +140,11 @@ def test_run_options_can_be_read_from_config() -> None:
 
 def test_execution_plan_bool_config_maps_to_level() -> None:
     assert (
-        PipelineRunOptions.from_config({"run_options": {"execution_plan": True}}).execution_plan
+        PipelineRunOptions.from_config({"run": {"execution_plan": True}}).execution_plan
         is PipelineExecutionPlanLevel.FULL
     )
     assert (
-        PipelineRunOptions.from_config({"run_options": {"execution_plan": False}}).execution_plan
+        PipelineRunOptions.from_config({"run": {"execution_plan": False}}).execution_plan
         is PipelineExecutionPlanLevel.NONE
     )
 
@@ -175,8 +175,8 @@ def test_run_options_reject_invalid_values() -> None:
     with pytest.raises(TypeError, match="reproducibility must be a boolean"):
         PipelineRunOptions(reproducibility=1)
 
-    with pytest.raises(ConfigSchemaError, match="run_options.execution_plan"):
-        PipelineRunOptions.from_config({"run_options": {"execution_plan": "verbose"}})
+    with pytest.raises(ConfigSchemaError, match="run.execution_plan"):
+        PipelineRunOptions.from_config({"run": {"execution_plan": "verbose"}})
 
-    with pytest.raises(ConfigSchemaError, match="Unsupported field 'run_options.diagnostics'"):
-        PipelineRunOptions.from_config({"run_options": {"diagnostics": "verbose"}})
+    with pytest.raises(ConfigSchemaError, match="Unsupported field 'run.diagnostics'"):
+        PipelineRunOptions.from_config({"run": {"diagnostics": "verbose"}})

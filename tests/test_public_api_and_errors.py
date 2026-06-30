@@ -84,19 +84,19 @@ def test_runtime_config_raises_schema_errors_with_paths() -> None:
     with pytest.raises(ConfigSchemaError) as raised:
         StreamRuntimeConfig.from_mapping({"frame_buffer_size": 0})
 
-    assert raised.value.path == "pipeline.runtime.frame_buffer_size"
+    assert raised.value.path == "run.runtime.frame_buffer_size"
 
 
 def test_latency_policy_raises_typed_policy_errors() -> None:
     with pytest.raises(LatencyPolicyError) as raised:
         LatencyPolicyConfig(name="unsupported").create()
 
-    assert raised.value.path == "pipeline.runtime.latency_policy.name"
+    assert raised.value.path == "run.runtime.latency_policy.name"
 
     with pytest.raises(LatencyPolicyError) as bad_param:
         LatencyPolicyConfig(name="adaptive_sampling", params={"min_interval": "bad"}).create()
 
-    assert bad_param.value.path == "pipeline.runtime.latency_policy.params.min_interval"
+    assert bad_param.value.path == "run.runtime.latency_policy.params.min_interval"
 
 
 def test_pipeline_context_errors_remain_value_errors() -> None:

@@ -79,6 +79,12 @@ def scaffold_files(template: str) -> dict[str, str]:
 def _default_pipeline_yaml() -> str:
     return f"""{SCAFFOLD_FILE_MARKER}
 schema_version: "1.0"
+run:
+  runtime:
+    frame_buffer_size: 8
+    signal_buffer_size: 8
+    data_buffer_size: 8
+
 pipeline:
   frame_extractor:
     name: opencv_buffered
@@ -106,11 +112,6 @@ pipeline:
   visualizers:
     - name: matplotlib
       result_indices: [0]
-
-  runtime:
-    frame_buffer_size: 8
-    signal_buffer_size: 8
-    data_buffer_size: 8
 """
 
 
@@ -118,6 +119,12 @@ def _tracking_demo_pipeline_yaml() -> str:
     return f"""{SCAFFOLD_FILE_MARKER}
 # Put your demo video at videos/input.mp4 before running this pipeline.
 schema_version: "1.0"
+run:
+  runtime:
+    frame_buffer_size: 8
+    signal_buffer_size: 8
+    data_buffer_size: 8
+
 pipeline:
   frame_extractor:
     name: opencv_buffered
@@ -151,11 +158,6 @@ pipeline:
 
   intermediate_frames:
     enabled: false
-
-  runtime:
-    frame_buffer_size: 8
-    signal_buffer_size: 8
-    data_buffer_size: 8
 """
 
 

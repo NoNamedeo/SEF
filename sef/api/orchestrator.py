@@ -5,15 +5,21 @@ from concurrent.futures import Future
 from dataclasses import dataclass, field
 from typing import Any
 
-from sef.api.pipeline import PipelineFacade, from_config
+from sef.api.execution import prepare_run_config
+from sef.api.pipeline import PipelineFacade
 from sef.api.registry import clone_registry, default_registry
 from sef.core.events import Event, EventBus, PipelineLifecycleEvent
 from sef.core.interfaces.pipeline import IBranchingRule
-from sef.core.pipeline import BranchingCoordinator, PipelineContext, PipelineOrchestrator, PipelineRunOptions
+from sef.core.pipeline import (
+    BranchingCoordinator,
+    PipelineContext,
+    PipelineOrchestrator,
+    PipelineRunMaterializer,
+)
 from sef.core.plugins import PluginRegistry
 from sef.core.visualization import PipelineOutputs
 
-PipelineInput = PipelineFacade | PipelineContext | Mapping[str, Any]
+PipelineInput = PipelineFacade | Mapping[str, Any]
 LifecycleHandler = Callable[[Event], None]
 
 _LIFECYCLE_ALIASES = {
@@ -54,32 +60,80 @@ class OrchestratorFacade:
         self,
         pipeline: PipelineInput,
         *,
-        pipeline_id: str | None = None,
-        execution_metadata: Mapping[str, Any] | None = None,
-        run_options: PipelineRunOptions | None = None,
+        id: str | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        run: Mapping[str, Any] | None = None,
     ) -> PipelineOutputs:
         """Run a pipeline synchronously through the shared orchestrator."""
-        return self._resolved_orchestrator().run(
-            self._build_context(pipeline),
-            pipeline_id=self._pipeline_id(pipeline, pipeline_id),
-            execution_metadata=execution_metadata,
-            run_options=run_options,
+        if isinstance(pipeline, PipelineContext):
+            raise TypeError("orchestrator.run does not accept PipelineContext. Use run_context for advanced context execution.")
+        materialized = self._materialize(
+            pipeline,
+            id=id,
+            metadata=metadata,
+            run=run,
+        )
+        return self._resolved_orchestrator().run_context(
+            materialized.context,
+            id=materialized.pipeline_id,
+            metadata=materialized.execution_metadata,
+            run=materialized.run_options.to_config(),
         )
 
     def submit(
         self,
         pipeline: PipelineInput,
         *,
-        pipeline_id: str | None = None,
-        execution_metadata: Mapping[str, Any] | None = None,
-        run_options: PipelineRunOptions | None = None,
+        id: str | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        run: Mapping[str, Any] | None = None,
     ) -> Future[PipelineOutputs]:
         """Submit a pipeline for background execution."""
-        return self._resolved_orchestrator().submit(
-            self._build_context(pipeline),
-            pipeline_id=self._pipeline_id(pipeline, pipeline_id),
-            execution_metadata=execution_metadata,
-            run_options=run_options,
+        if isinstance(pipeline, PipelineContext):
+            raise TypeError("orchestrator.submit does not accept PipelineContext. Use submit_context for advanced context execution.")
+        materialized = self._materialize(
+            pipeline,
+            id=id,
+            metadata=metadata,
+            run=run,
+        )
+        return self._resolved_orchestrator().submit_context(
+            materialized.context,
+            id=materialized.pipeline_id,
+            metadata=materialized.execution_metadata,
+            run=materialized.run_options.to_config(),
+        )
+
+    def run_context(
+        self,
+        context: PipelineContext,
+        *,
+        id: str | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        run: Mapping[str, Any] | None = None,
+    ) -> PipelineOutputs:
+        """Advanced API: run an already-materialized PipelineContext."""
+        return self._resolved_orchestrator().run_context(
+            context,
+            id=id,
+            metadata=metadata,
+            run=run,
+        )
+
+    def submit_context(
+        self,
+        context: PipelineContext,
+        *,
+        id: str | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        run: Mapping[str, Any] | None = None,
+    ) -> Future[PipelineOutputs]:
+        """Advanced API: submit an already-materialized PipelineContext."""
+        return self._resolved_orchestrator().submit_context(
+            context,
+            id=id,
+            metadata=metadata,
+            run=run,
         )
 
     def on_lifecycle(self, event: str | PipelineLifecycleEvent, handler: LifecycleHandler) -> OrchestratorFacade:
@@ -98,8 +152,8 @@ class OrchestratorFacade:
         Attach one or more branching rules for future runs and return this facade.
 
         Branching rules listen to domain events emitted by components that
-        implement ``IEventEmitter``. Matching rules build child ``PipelineContext``
-        instances, which are submitted through the same orchestrator.
+        implement ``IEventEmitter``. Matching rules build child run configs,
+        which are submitted through the same orchestrator.
         """
         resolved_rules = _flatten_rules(rules)
         if not resolved_rules:
@@ -125,31 +179,29 @@ class OrchestratorFacade:
     def _resolved_orchestrator(self) -> PipelineOrchestrator:
         if self._orchestrator is None:
             self._orchestrator = PipelineOrchestrator(
+                registry=self._registry,
                 bus=self._lifecycle_bus,
                 domain_bus=self._domain_bus,
             )
         return self._orchestrator
 
-    def _build_context(self, pipeline: PipelineInput) -> PipelineContext:
-        if isinstance(pipeline, PipelineContext):
-            return pipeline
-        if isinstance(pipeline, PipelineFacade):
-            return pipeline.build_context()
-        if isinstance(pipeline, Mapping):
-            return from_config(
-                pipeline,
-                registry=self._registry,
-                include_builtins=self._include_builtins,
-            ).build_context()
-        raise TypeError("orchestrator.run/submit expects a PipelineFacade, PipelineContext, or config mapping.")
-
-    @staticmethod
-    def _pipeline_id(pipeline: PipelineInput, override: str | None) -> str | None:
-        if override is not None:
-            return override
-        if isinstance(pipeline, PipelineFacade):
-            return pipeline.pipeline_id
-        return None
+    def _materialize(
+        self,
+        pipeline: PipelineInput,
+        *,
+        id: str | None,
+        metadata: Mapping[str, Any] | None,
+        run: Mapping[str, Any] | None,
+    ):
+        prepared = prepare_run_config(
+            pipeline,
+            id=id,
+            metadata=metadata,
+            run=run,
+            registry=self._registry,
+            include_builtins=self._include_builtins,
+        )
+        return PipelineRunMaterializer(prepared.registry).materialize(prepared.config)
 
 
 def orchestrator(

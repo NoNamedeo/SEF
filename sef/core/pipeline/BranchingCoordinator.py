@@ -22,15 +22,14 @@ class BranchingCoordinator:
     spawning.  It has no thread pool, no futures, and no retry logic — those
     responsibilities belong to IPipelineRunner and IRetryPolicy respectively.
 
-    When a rule matches an Event the coordinator builds the secondary
-    PipelineContext via IBranchingRule.build_context() and dispatches a
-    PipelineEvent onto the trigger bus. The PipelineOrchestrator subscribed
-    to that bus picks it up and delegates execution through its monitor and
-    runner.
+    When a rule matches an Event the coordinator builds the secondary run
+    config via IBranchingRule.build_config() and dispatches a PipelineEvent
+    onto the trigger bus. The PipelineOrchestrator subscribed to that bus picks
+    it up and delegates execution through its monitor and runner.
 
     Rule isolation
     --------------
-    A rule that raises during ``matches()`` or ``build_context()`` is logged
+    A rule that raises during ``matches()`` or ``build_config()`` is logged
     and skipped; remaining rules still run.
     """
 
@@ -64,10 +63,21 @@ class BranchingCoordinator:
             try:
                 if not rule.matches(event):
                     continue
-                context = rule.build_context(event)
+                run_config = dict(rule.build_config(event))
                 with self._lock:
                     self._counter += 1
                     pipeline_id = f"secondary-{self._counter}"
+                run_config["id"] = pipeline_id
+                metadata = dict(run_config.get("metadata", {}))
+                metadata.update(
+                    {
+                        "parent_pipeline_id": str(event.payload.get("pipeline_id", "")) or None,
+                        "branch_rule": type(rule).__name__,
+                        "trigger_event_type": event.event_type,
+                        "trigger_source": event.source,
+                    }
+                )
+                run_config["metadata"] = metadata
                 log.info(
                     "Rule %s matched '%s' — dispatching %s.",
                     type(rule).__name__,
@@ -76,16 +86,9 @@ class BranchingCoordinator:
                 )
                 self._trigger_bus.dispatch(
                     PipelineEvent.create(
-                        pipeline_id=pipeline_id,
-                        context=context,
+                        config=run_config,
                         source=type(self).__name__,
                         correlation_id=event.correlation_id or event.event_id,
-                        execution_metadata={
-                            "parent_pipeline_id": str(event.payload.get("pipeline_id", "")) or None,
-                            "branch_rule": type(rule).__name__,
-                            "trigger_event_type": event.event_type,
-                            "trigger_source": event.source,
-                        },
                     )
                 )
             except Exception as exc:

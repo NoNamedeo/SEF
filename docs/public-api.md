@@ -9,9 +9,12 @@ Use `sef` for normal application code. The public mental model is deliberately
 small:
 
 - `sef.pipeline(...)`, `sef.video(...)`, or `sef.webcam(...)` describe one pipeline.
-- `.run()` on that builder is the shortest single-pipeline execution path.
+- `.run()` on that builder is the fluent single-pipeline execution path.
+- `sef.run(config_or_pipeline)` and `sef.submit(config_or_pipeline)` execute
+  existing run configs or pipeline builders through the same runtime.
 - `sef.orchestrator()` coordinates execution when lifecycle events, background
-  submission, or branching are needed.
+  submission, branching, shared active-id state, or custom runtime wiring are
+  needed.
 - `sef.from_config(...)` loads the same pipeline model from YAML/JSON data.
 - Decorators such as `@sef.analyzer(...)` and
   `@sef.frame_buffer_processor(...)` register function plugins with optional
@@ -28,12 +31,25 @@ outputs = (
     sef.video("videos/Baloons.mp4", max_frames=300)
     .extract("opencv_tracker", tracker_type="MIL", start_box=[100, 200, 50, 80])
     .analyze("vertical_position")
-    .run()
+    .run(id="tracked-run", metadata={"owner": "lab"})
 )
 ```
 
-Use `sef.orchestrator()` when execution needs lifecycle observation, background
-submission, shared runner state, or simple event-driven branching:
+The same runtime also accepts a run config:
+
+```python
+config = (
+    sef.video("videos/Baloons.mp4", max_frames=300)
+    .extract("opencv_tracker", tracker_type="MIL", start_box=[100, 200, 50, 80])
+    .analyze("vertical_position")
+    .to_config(id="tracked-run", metadata={"owner": "lab"})
+)
+
+outputs = sef.run(config)
+```
+
+Use `sef.orchestrator()` when execution needs reusable lifecycle observation,
+background submission, shared runner state, or simple event-driven branching:
 
 ```python
 import sef
@@ -53,13 +69,13 @@ outputs = (
 )
 ```
 
-The two run paths are intentionally different:
+All public run paths converge on the same orchestrator runtime:
 
-- `pipeline.run()` is a convenience shortcut for one immediate pipeline run.
-  It builds the context and executes it directly.
-- `sef.orchestrator().run(pipeline)` uses the orchestration layer. Use it when
-  the run needs lifecycle callbacks, async submission through `submit()`,
-  active-id tracking, or event-driven branching.
+- `pipeline.run()` is fluent convenience for one immediate pipeline run.
+- `sef.run(config)` executes an already-built run config.
+- `sef.orchestrator().run(...)` uses a reusable orchestrator instance. Use it
+  when the run needs lifecycle callbacks, async submission through `submit()`,
+  active-id tracking, branching, or custom runner integration.
 
 Use `sef.core` only when you need lower-level contracts, custom registries, or
 runtime integration:

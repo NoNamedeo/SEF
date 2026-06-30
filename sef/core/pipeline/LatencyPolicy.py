@@ -30,16 +30,22 @@ class LatencyPolicyConfig:
 
     name: str = "blocking"
     params: Mapping[str, Any] = field(default_factory=dict)
+    _path: str = field(default="run.runtime.latency_policy", repr=False, compare=False)
 
     @classmethod
-    def from_mapping(cls, value: Mapping[str, Any] | None) -> LatencyPolicyConfig:
+    def from_mapping(
+        cls,
+        value: Mapping[str, Any] | None,
+        *,
+        path: str = "run.runtime.latency_policy",
+    ) -> LatencyPolicyConfig:
         """
         Parse a latency policy mapping from declarative config.
 
         Parameters
         ----------
         value:
-            Mapping from `pipeline.runtime.latency_policy`, or `None` to select
+            Mapping from `run.runtime.latency_policy`, or `None` to select
             the default blocking policy.
 
         Returns
@@ -55,17 +61,17 @@ class LatencyPolicyConfig:
         if value is None:
             return cls()
         if not isinstance(value, Mapping):
-            raise LatencyPolicyError("latency_policy must be a mapping.", path="pipeline.runtime.latency_policy")
+            raise LatencyPolicyError("latency_policy must be a mapping.", path=path)
         name = str(value.get("name", "blocking")).strip().lower()
         if not name:
-            raise LatencyPolicyError("latency_policy.name cannot be empty.", path="pipeline.runtime.latency_policy.name")
+            raise LatencyPolicyError("latency_policy.name cannot be empty.", path=f"{path}.name")
         params = value.get("params", {})
         if not isinstance(params, Mapping):
             raise LatencyPolicyError(
                 "latency_policy.params must be a mapping.",
-                path="pipeline.runtime.latency_policy.params",
+                path=f"{path}.params",
             )
-        return cls(name=name, params=dict(params))
+        return cls(name=name, params=dict(params), _path=path)
 
     def create(self) -> FrameLatencyPolicy:
         """
@@ -88,11 +94,11 @@ class LatencyPolicyConfig:
         if self.name == "drop_oldest":
             return DropOldestFrameLatencyPolicy()
         if self.name == "adaptive_sampling":
-            return AdaptiveSamplingFrameLatencyPolicy.from_mapping(self.params)
+            return AdaptiveSamplingFrameLatencyPolicy.from_mapping(self.params, path=f"{self._path}.params")
         raise LatencyPolicyError(
             "Unsupported latency policy "
             f"'{self.name}'. Supported values: blocking, drop_newest, drop_oldest, adaptive_sampling.",
-            path="pipeline.runtime.latency_policy.name",
+            path=f"{self._path}.name",
         )
 
     def as_dict(self) -> dict[str, Any]:
@@ -224,21 +230,22 @@ class AdaptiveSamplingFrameLatencyPolicy(FrameLatencyPolicy):
         max_interval: int = 8,
         high_watermark: float = 0.75,
         low_watermark: float = 0.25,
+        path: str = "run.runtime.latency_policy.params",
     ) -> None:
         if min_interval <= 0:
             raise LatencyPolicyError(
                 "min_interval must be greater than 0.",
-                path="pipeline.runtime.latency_policy.params.min_interval",
+                path=f"{path}.min_interval",
             )
         if max_interval < min_interval:
             raise LatencyPolicyError(
                 "max_interval must be greater than or equal to min_interval.",
-                path="pipeline.runtime.latency_policy.params.max_interval",
+                path=f"{path}.max_interval",
             )
         if not (0.0 <= low_watermark <= high_watermark <= 1.0):
             raise LatencyPolicyError(
                 "watermarks must satisfy 0 <= low_watermark <= high_watermark <= 1.",
-                path="pipeline.runtime.latency_policy.params",
+                path=path,
             )
         self.min_interval = int(min_interval)
         self.max_interval = int(max_interval)
@@ -250,7 +257,12 @@ class AdaptiveSamplingFrameLatencyPolicy(FrameLatencyPolicy):
         self.dropped_frames = 0
 
     @classmethod
-    def from_mapping(cls, params: Mapping[str, Any]) -> AdaptiveSamplingFrameLatencyPolicy:
+    def from_mapping(
+        cls,
+        params: Mapping[str, Any],
+        *,
+        path: str = "run.runtime.latency_policy.params",
+    ) -> AdaptiveSamplingFrameLatencyPolicy:
         """
         Build an adaptive policy from config params.
 
@@ -268,20 +280,21 @@ class AdaptiveSamplingFrameLatencyPolicy(FrameLatencyPolicy):
         return cls(
             min_interval=_coerce_int(
                 params.get("min_interval", 1),
-                "pipeline.runtime.latency_policy.params.min_interval",
+                f"{path}.min_interval",
             ),
             max_interval=_coerce_int(
                 params.get("max_interval", 8),
-                "pipeline.runtime.latency_policy.params.max_interval",
+                f"{path}.max_interval",
             ),
             high_watermark=_coerce_float(
                 params.get("high_watermark", 0.75),
-                "pipeline.runtime.latency_policy.params.high_watermark",
+                f"{path}.high_watermark",
             ),
             low_watermark=_coerce_float(
                 params.get("low_watermark", 0.25),
-                "pipeline.runtime.latency_policy.params.low_watermark",
+                f"{path}.low_watermark",
             ),
+            path=path,
         )
 
     def publish(self, frame: Frame, output_buffer: IFrameBuffer) -> bool:

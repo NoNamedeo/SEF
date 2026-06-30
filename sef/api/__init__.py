@@ -10,6 +10,7 @@ from sef.api.decorators import (
     signal_extractor,
     visualizer,
 )
+from sef.api.execution import run, submit
 from sef.api.orchestrator import OrchestratorFacade, orchestrator
 from sef.api.pipeline import PipelineFacade, from_config, pipeline, video, webcam
 from sef.api.registry import default_registry, register_user_plugin
@@ -29,7 +30,9 @@ __all__ = [
     "pipeline",
     "processor",
     "register_user_plugin",
+    "run",
     "signal_extractor",
+    "submit",
     "video",
     "visualizer",
     "webcam",

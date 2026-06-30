@@ -42,7 +42,7 @@
 
 | Memory (RSS) | Peak Allocations | Runtime Overhead | Realtime Latency |
 |:--------------:|:------------------:|:------------------:|:------------------:|
-| **↓ 84%** | **↓ 98%** | **1.06×** | **↓ 74%** |
+| **↓ 84%** | **↓ 98%** | **1.01×** | **↓ 74%** |
 
 ---
 
@@ -52,7 +52,7 @@ Recent synthetic benchmarks show that SEF can:
 
 - reduce process memory usage by up to **84%** through end-to-end streaming;
 - reduce Python peak allocations by up to **98%**;
-- keep architectural overhead close to a direct procedural implementation (**1.06×**);
+- keep architectural overhead close to a direct procedural implementation (**1.01×**);
 - reduce realtime latency by up to **74%** through configurable backpressure policies.
 
 See [Benchmarks](benchmarks/README.md) for reproducible commands, raw CSV files, execution plans, and generated charts.
@@ -167,7 +167,7 @@ exports are generated only when explicitly requested.
 
 ```python
 outputs = pipeline.run(
-    run_options=sef.PipelineRunOptions.full(),
+    run={"execution_plan": "full", "reproducibility": True},
 )
 ```
 
@@ -175,7 +175,7 @@ For compact execution-plan metadata without JSON/YAML/Python reproducibility exp
 
 ```python
 outputs = pipeline.run(
-    run_options=sef.PipelineRunOptions(execution_plan="summary"),
+    run={"execution_plan": "summary"},
 )
 ```
 
@@ -183,7 +183,7 @@ The same controls can be declared in YAML/JSON configs:
 
 ```yaml
 schema_version: "1.0"
-run_options:
+run:
   execution_plan: summary  # none | summary | full; true maps to full
   reproducibility: true
 pipeline:

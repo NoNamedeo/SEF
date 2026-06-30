@@ -34,14 +34,19 @@ class StreamRuntimeConfig:
     latency_policy: LatencyPolicyConfig = field(default_factory=LatencyPolicyConfig)
 
     @classmethod
-    def from_mapping(cls, value: Mapping[str, Any] | None) -> StreamRuntimeConfig:
+    def from_mapping(
+        cls,
+        value: Mapping[str, Any] | None,
+        *,
+        path: str = "run.runtime",
+    ) -> StreamRuntimeConfig:
         """
         Parse runtime settings from a declarative config mapping.
 
         Parameters
         ----------
         value:
-            Mapping from `pipeline.runtime`, or `None` for defaults.
+            Mapping from `run.runtime`, or `None` for defaults.
 
         Returns
         -------
@@ -51,28 +56,28 @@ class StreamRuntimeConfig:
         Raises
         ------
         ConfigSchemaError
-            If `pipeline.runtime` or a buffer size has an invalid shape.
+            If `run.runtime` or a buffer size has an invalid shape.
         LatencyPolicyError
             If the nested latency-policy config is invalid.
         """
         if value is None:
             return cls()
         if not isinstance(value, Mapping):
-            raise ConfigSchemaError("pipeline.runtime must be a mapping.", path="pipeline.runtime")
-        frame_buffer_size = cls._positive_int(value.get("frame_buffer_size", 8), "pipeline.runtime.frame_buffer_size")
+            raise ConfigSchemaError(f"{path} must be a mapping.", path=path)
+        frame_buffer_size = cls._positive_int(value.get("frame_buffer_size", 8), f"{path}.frame_buffer_size")
         signal_buffer_size = cls._positive_int(
             value.get("signal_buffer_size", frame_buffer_size),
-            "pipeline.runtime.signal_buffer_size",
+            f"{path}.signal_buffer_size",
         )
         data_buffer_size = cls._positive_int(
             value.get("data_buffer_size", signal_buffer_size),
-            "pipeline.runtime.data_buffer_size",
+            f"{path}.data_buffer_size",
         )
         config = cls(
             frame_buffer_size=frame_buffer_size,
             signal_buffer_size=signal_buffer_size,
             data_buffer_size=data_buffer_size,
-            latency_policy=LatencyPolicyConfig.from_mapping(value.get("latency_policy")),
+            latency_policy=LatencyPolicyConfig.from_mapping(value.get("latency_policy"), path=f"{path}.latency_policy"),
         )
         config.validate()
         return config
@@ -89,17 +94,17 @@ class StreamRuntimeConfig:
         if self.frame_buffer_size <= 0:
             raise ConfigSchemaError(
                 "runtime.frame_buffer_size must be greater than 0.",
-                path="pipeline.runtime.frame_buffer_size",
+                path="run.runtime.frame_buffer_size",
             )
         if self.signal_buffer_size <= 0:
             raise ConfigSchemaError(
                 "runtime.signal_buffer_size must be greater than 0.",
-                path="pipeline.runtime.signal_buffer_size",
+                path="run.runtime.signal_buffer_size",
             )
         if self.data_buffer_size <= 0:
             raise ConfigSchemaError(
                 "runtime.data_buffer_size must be greater than 0.",
-                path="pipeline.runtime.data_buffer_size",
+                path="run.runtime.data_buffer_size",
             )
 
     def as_dict(self) -> dict[str, Any]:

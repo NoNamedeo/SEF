@@ -3,15 +3,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from sef.builtin.analyzers.single_tracker.VerticalPositionAnalyzer import VerticalPositionAnalyzer
-from sef.builtin.frame_extractors.OpenCVBufferedFrameExtractor import OpenCVBufferedFrameExtractor
-from sef.builtin.frame_processors.SmoothingFrameProcessor import SmoothingFrameProcessor
-from sef.builtin.signal_cleaners.single_tracker.MovingAverageCleaner import MovingAverageCleaner
-from sef.builtin.signal_extractors.OpenCVBufferedSignalExtractor import OpenCVBufferedSignalExtractor
 from sef.core.events.Event import Event
 from sef.core.interfaces.pipeline.IBranchingRule import IBranchingRule
-from sef.core.pipeline.PipelineContext import PipelineContext
-from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +20,7 @@ class NewTrackBranchingRule(IBranchingRule):
         pipeline_id = str(event.payload.get("pipeline_id", ""))
         return not pipeline_id.startswith("secondary-")
 
-    def build_context(self, event: Event) -> PipelineContext:
+    def build_config(self, event: Event) -> dict:
         source_path = event.require("source_path")
         box = event.require("box")
         if not isinstance(box, (tuple, list)) or len(box) != 4:
@@ -37,21 +30,29 @@ class NewTrackBranchingRule(IBranchingRule):
         if source_path and not Path(str(source_path)).exists():
             log.warning("Branching source video not found on disk: %s", source_path)
 
-        frame_extractor = OpenCVBufferedFrameExtractor(
-            path=str(source_path),
-            config={"resize": None, "stride": 2, "max_frames": 180},
-        )
-
-        signal_extractor = OpenCVBufferedSignalExtractor(
-            tracker_type="CSRT",
-            start_box=start_box,
-            config={"show": False},
-        )
-
-        return PipelineContext(
-            frame_extractor=frame_extractor,
-            signal_extractor=signal_extractor,
-            frame_processors=(SingleFrameProcessorAdapter(SmoothingFrameProcessor()),),
-            signal_cleaners=(MovingAverageCleaner(window_size=5),),
-            analyzers=(VerticalPositionAnalyzer(),),
-        )
+        return {
+            "pipeline": {
+                "frame_extractor": {
+                    "name": "opencv_buffered",
+                    "params": {
+                        "path": str(source_path),
+                        "config": {"resize": None, "stride": 2, "max_frames": 180},
+                    },
+                },
+                "frame_processors": [
+                    {"name": "smoothing", "processor_type": "single_frame"},
+                ],
+                "signal_extractor": {
+                    "name": "opencv_tracker",
+                    "params": {
+                        "tracker_type": "CSRT",
+                        "start_box": start_box,
+                        "config": {"show": False},
+                    },
+                },
+                "signal_cleaners": [
+                    {"name": "moving_average", "params": {"window_size": 5}},
+                ],
+                "analyzers": [{"name": "vertical_position"}],
+            },
+        }

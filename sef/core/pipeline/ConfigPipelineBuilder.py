@@ -38,6 +38,15 @@ class ConfigPipelineBuilder:
     --------------------
     ```yaml
     schema_version: "1.0"
+    run:
+      runtime:
+        frame_buffer_size: 8
+        signal_buffer_size: 8
+        data_buffer_size: 8
+        latency_policy:
+          name: blocking
+          params: {}
+
     pipeline:
       frame_extractor:
         name: opencv_buffered
@@ -75,14 +84,6 @@ class ConfigPipelineBuilder:
         lazy_saving: true
         visualizers:
           - name: intermediate_frames_grid
-
-      runtime:
-        frame_buffer_size: 8
-        signal_buffer_size: 8
-        data_buffer_size: 8
-        latency_policy:
-          name: blocking
-          params: {}
     ```
 
     Versioning

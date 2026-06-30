@@ -72,6 +72,14 @@ from sef.core.pipeline import CURRENT_PIPELINE_CONFIG_VERSION
 
 config = {
     "schema_version": CURRENT_PIPELINE_CONFIG_VERSION,
+    "run": {
+        "runtime": {
+            "frame_buffer_size": 8,
+            "signal_buffer_size": 8,
+            "data_buffer_size": 8,
+            "latency_policy": {"name": "blocking", "params": {}},
+        },
+    },
     "pipeline": {
         "frame_extractor": {"name": "opencv_buffered", "params": {"path": "video.mp4"}},
         "frame_processors": [],
@@ -79,12 +87,6 @@ config = {
         "signal_cleaners": [],
         "analyzers": [{"name": "vertical_position"}],
         "visualizers": [{"name": "matplotlib", "result_indices": [0]}],
-        "runtime": {
-            "frame_buffer_size": 8,
-            "signal_buffer_size": 8,
-            "data_buffer_size": 8,
-            "latency_policy": {"name": "blocking", "params": {}},
-        },
     },
 }
 ```
@@ -489,12 +491,12 @@ Branching rules implement `IBranchingRule`:
 def matches(self, event: Event) -> bool:
     ...
 
-def build_context(self, event: Event) -> PipelineContext:
+def build_config(self, event: Event) -> Mapping[str, Any]:
     ...
 ```
 
-Branching rules should be deterministic and should not mutate the triggering
-event.
+Branching rules should return a run config, be deterministic, and avoid mutating
+the triggering event.
 
 ## Error Model
 

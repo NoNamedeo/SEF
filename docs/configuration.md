@@ -22,9 +22,18 @@ iterate on. With `--strict`, unknown fields become blocking errors.
 ```python
 {
     "schema_version": "1.0",
-    "run_options": {
+    "id": "experiment-001",
+    "metadata": {
+        "owner": "lab",
+    },
+    "run": {
         "execution_plan": "summary",
         "reproducibility": True,
+        "runtime": {
+            "frame_buffer_size": 8,
+            "signal_buffer_size": 8,
+            "data_buffer_size": 8,
+        },
     },
     "pipeline": {
         ...
@@ -35,7 +44,12 @@ iterate on. With `--strict`, unknown fields become blocking errors.
 `schema_version` is optional for legacy configs. Missing version means `1.0`.
 New tools should always write it explicitly.
 
-`run_options` is optional. Omit it for the lowest-overhead execution path.
+`id` is the optional run identifier propagated into events, output metadata, and
+artifacts. `metadata` is optional descriptive data copied into execution
+metadata.
+
+`run` is optional. Omit it for the lowest-overhead execution path. The current
+schema accepts only the `run` section for execution controls.
 
 ## Pipeline Section
 
@@ -51,23 +65,33 @@ Optional fields:
 - `signal_cleaners`: list of plugin entries.
 - `visualizers`: list of plugin entries.
 - `intermediate_frames`: debug capture config.
-- `runtime`: streaming runtime config.
 
-Legacy configs that use `frame_cleaners` are normalized to `frame_processors`.
-New configs should always write `frame_processors`.
+Configs must use `frame_processors` for frame preprocessing.
 
-## Run Options
+Runtime settings belong in `run.runtime` because they describe how a run is
+executed, not which components belong to the pipeline graph. `pipeline.runtime`
+is rejected by the current schema.
+
+## Run Section
 
 ```python
 {
     "execution_plan": "summary",
     "reproducibility": True,
+    "runtime": {
+        "frame_buffer_size": 8,
+        "signal_buffer_size": 8,
+        "data_buffer_size": 8,
+        "latency_policy": {
+            "name": "blocking",
+            "params": {},
+        },
+    },
 }
 ```
 
-Run options control metadata attached to completed outputs. They do not change
-the pipeline graph, so they live at the top level instead of inside
-`pipeline.runtime`.
+The `run` section controls execution behavior and metadata attached to completed
+outputs. It does not describe pipeline components.
 
 Fields:
 
@@ -76,22 +100,25 @@ Fields:
   values are also accepted: `True` maps to `full`, `False` maps to `none`.
 - `reproducibility`: when `True`, outputs include normalized config, JSON/YAML
   exports, and generated Python rebuild code.
+- `runtime`: bounded-buffer and latency-policy settings used by adaptive
+  streaming.
 
 CLI `sef run --output` writes summaries, normalized config, and artifacts
 without forcing execution-plan metadata. Use `--explain` when you also want the
 CLI to print and persist `execution_plan.*` files.
 
-## No Orchestration in Config
+## Orchestration Boundary
 
-Pipeline config describes one executable pipeline graph. It intentionally does
-not configure event buses, lifecycle handlers, retry policies, output stores,
-or branching rules.
+Run config describes one executable pipeline run: identity, metadata, execution
+settings, and the pipeline graph. It intentionally does not configure in-process
+event buses, Python lifecycle handlers, output-store objects, or custom runner
+instances.
 
-That boundary is deliberate. Branching and orchestration are application
-behavior, not pipeline structure. Keeping them in Python avoids a complex config
-language before real usage patterns are clear. Use `sef.orchestrator()` for the
-common orchestration path, and `sef.core` for custom runners, monitors, stores,
-or retry policies.
+That boundary is deliberate. Reusable orchestration state remains Python/API
+behavior. Use `pipeline.run()` or `sef.run(config)` for normal execution,
+`sef.submit(...)` for background execution, and `sef.orchestrator()` when a
+shared orchestrator needs lifecycle callbacks, active-id tracking, branching, or
+custom runner integration.
 
 If a branching workflow needs to expose child pipeline results, model that at
 the application/output layer: record which child pipelines ran, which events
@@ -155,7 +182,8 @@ default visualization behavior.
 }
 ```
 
-Buffer sizes must be positive integers.
+Runtime config lives under `run.runtime` in new configs. Buffer sizes must be
+positive integers.
 
 Supported latency policies:
 

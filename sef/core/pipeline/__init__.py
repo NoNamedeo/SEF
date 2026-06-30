@@ -64,6 +64,8 @@ _EXPORTS = {
         "PipelineExecutionPlanLevel",
     ),
     "PipelineRunOptions": ("sef.core.pipeline.PipelineRunOptions", "PipelineRunOptions"),
+    "PipelineRunMaterializer": ("sef.core.pipeline.PipelineRunMaterializer", "PipelineRunMaterializer"),
+    "MaterializedPipelineRun": ("sef.core.pipeline.PipelineRunMaterializer", "MaterializedPipelineRun"),
     "PipelineRunAlreadyActiveError": ("sef.core.errors", "PipelineRunAlreadyActiveError"),
     "PipelineStagePolicyContext": ("sef.core.pipeline.PipelineExecutionPolicy", "PipelineStagePolicyContext"),
     "PluginConstructionError": ("sef.core.errors", "PluginConstructionError"),

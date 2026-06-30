@@ -84,8 +84,9 @@ def test_cli_prints_config_schema(capsys) -> None:
     assert exit_code == 0
     payload = json.loads(captured.out)
     assert "frame_processors" in payload["properties"]["pipeline"]["properties"]
-    assert "runtime" in payload["properties"]["pipeline"]["properties"]
-    assert "run_options" in payload["properties"]
+    assert "runtime" in payload["properties"]["run"]["properties"]
+    assert "runtime" not in payload["properties"]["pipeline"]["properties"]
+    assert "run_options" not in payload["properties"]
 
 
 def test_cli_init_creates_default_scaffold(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -185,10 +186,10 @@ def test_cli_validate_reports_top_level_unknown_fields(tmp_path: Path, capsys) -
     assert "Unknown field `config.unexpected_top_level`" in captured.err
 
 
-def test_cli_validate_accepts_run_options_in_strict_mode(tmp_path: Path, capsys) -> None:
+def test_cli_validate_accepts_run_in_strict_mode(tmp_path: Path, capsys) -> None:
     config_path = _write_json_config(tmp_path)
     payload = json.loads(config_path.read_text(encoding="utf-8"))
-    payload["run_options"] = {"execution_plan": "summary", "reproducibility": True}
+    payload["run"] = {"execution_plan": "summary", "reproducibility": True}
     config_path.write_text(json.dumps(payload), encoding="utf-8")
 
     exit_code = main(["validate", str(config_path), "--strict"])
@@ -196,20 +197,33 @@ def test_cli_validate_accepts_run_options_in_strict_mode(tmp_path: Path, capsys)
     captured = capsys.readouterr()
     assert exit_code == 0
     assert "valid:" in captured.out
-    assert "Unknown field `config.run_options`" not in captured.err
+    assert "Unknown field `config.run`" not in captured.err
 
 
-def test_cli_validate_rejects_invalid_run_options(tmp_path: Path, capsys) -> None:
+def test_cli_validate_rejects_invalid_run(tmp_path: Path, capsys) -> None:
     config_path = _write_json_config(tmp_path)
     payload = json.loads(config_path.read_text(encoding="utf-8"))
-    payload["run_options"] = {"diagnostics": "verbose"}
+    payload["run"] = {"diagnostics": "verbose"}
     config_path.write_text(json.dumps(payload), encoding="utf-8")
 
     exit_code = main(["validate", str(config_path)])
 
     captured = capsys.readouterr()
     assert exit_code == 1
-    assert "run_options.diagnostics" in captured.err
+    assert "run.diagnostics" in captured.err
+
+
+def test_cli_validate_rejects_legacy_run_options(tmp_path: Path, capsys) -> None:
+    config_path = _write_json_config(tmp_path)
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    payload["run_options"] = {"execution_plan": "summary"}
+    config_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    exit_code = main(["validate", str(config_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "run_options" in captured.err
 
 
 def test_cli_inspects_local_plugin(tmp_path: Path, monkeypatch, capsys) -> None:

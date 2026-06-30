@@ -18,8 +18,10 @@ from sef.core.pipeline.PipelineErrors import (
     InvalidPipelineTriggerEventError,
     PipelineRunAlreadyActiveError,
 )
+from sef.core.pipeline.PipelineRunMaterializer import PipelineRunMaterializer
 from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
 from sef.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
+from sef.core.plugins.PluginRegistry import PluginRegistry
 from sef.core.visualization.PipelineOutputs import PipelineOutputs
 
 __all__ = ["PipelineOrchestrator"]
@@ -46,6 +48,8 @@ class PipelineOrchestrator:
         self,
         runner: IPipelineRunner | None = None,
         pipeline_factory: IPipelineFactory | None = None,
+        registry: PluginRegistry | None = None,
+        materializer: PipelineRunMaterializer | None = None,
         bus: IEventBus | None = None,
         domain_bus: IEventBus | None = None,
     ) -> None:
@@ -54,6 +58,7 @@ class PipelineOrchestrator:
             lifecycle_bus=bus,
         )
         self._pipeline_factory = pipeline_factory or DefaultPipelineFactory()
+        self._materializer = materializer or PipelineRunMaterializer(registry)
         self._bus = bus
         self._domain_bus = domain_bus
 
@@ -62,70 +67,94 @@ class PipelineOrchestrator:
 
     def run(
         self,
-        context: PipelineContext,
-        pipeline_id: str | None = None,
-        execution_metadata: Mapping[str, Any] | None = None,
-        run_options: PipelineRunOptions | None = None,
+        config: Mapping[str, Any],
     ) -> PipelineOutputs:
         """
-        Execute a pipeline synchronously and return analyzer results.
+        Execute a declarative run config synchronously and return outputs.
 
         This path does not require an EventBus. If a domain bus was configured,
         it is injected into event-emitting components before execution.
 
         Parameters
         ----------
-        context:
-            Validated pipeline context.
-        pipeline_id:
-            Optional run id. A unique id is generated when omitted.
-        execution_metadata:
-            Optional metadata propagated into pipeline events, visualizer
-            contexts, output metadata, and reproducibility data.
-        run_options:
-            Optional execution-plan and reproducibility settings for this run.
+        config:
+            Run config containing ``pipeline`` and optional ``id``,
+            ``metadata`` and ``run`` sections.
 
         Returns
         -------
         PipelineOutputs
             Completed outputs for the run.
         """
-        resolved_pipeline_id = pipeline_id or self._new_pipeline_id()
-        pipeline = self._build_pipeline(
-            context,
-            resolved_pipeline_id,
-            execution_metadata=execution_metadata,
-            run_options=run_options,
+        materialized = self._materializer.materialize(config)
+        return self.run_context(
+            materialized.context,
+            id=materialized.pipeline_id,
+            metadata=materialized.execution_metadata,
+            run=materialized.run_options.to_config(),
         )
-
-        return self._runner.run(resolved_pipeline_id, pipeline)
 
     def submit(
         self,
-        context: PipelineContext,
-        pipeline_id: str | None = None,
-        execution_metadata: Mapping[str, Any] | None = None,
-        run_options: PipelineRunOptions | None = None,
+        config: Mapping[str, Any],
     ) -> Future[PipelineOutputs]:
         """
         Submit a pipeline for background execution.
-
-        ``run_options`` has the same lightweight default and semantics as the
-        synchronous ``run`` method.
 
         Returns
         -------
         Future[PipelineOutputs]
             Future owned by the configured runner.
         """
-        resolved_pipeline_id = pipeline_id or self._new_pipeline_id()
+        materialized = self._materializer.materialize(config)
+        return self.submit_context(
+            materialized.context,
+            id=materialized.pipeline_id,
+            metadata=materialized.execution_metadata,
+            run=materialized.run_options.to_config(),
+        )
+
+    def run_context(
+        self,
+        context: PipelineContext,
+        id: str | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        run: Mapping[str, Any] | None = None,
+    ) -> PipelineOutputs:
+        """
+        Execute an already-materialized context.
+
+        This is the advanced/core path for tests and integrations that own
+        component instances directly.
+        """
+        resolved_pipeline_id = id or self._new_pipeline_id()
         pipeline = self._build_pipeline(
             context,
             resolved_pipeline_id,
-            execution_metadata=execution_metadata,
-            run_options=run_options,
+            execution_metadata=metadata,
+            run_options=PipelineRunOptions.from_run_mapping(run),
         )
+        return self._runner.run(resolved_pipeline_id, pipeline)
 
+    def submit_context(
+        self,
+        context: PipelineContext,
+        id: str | None = None,
+        metadata: Mapping[str, Any] | None = None,
+        run: Mapping[str, Any] | None = None,
+    ) -> Future[PipelineOutputs]:
+        """
+        Submit an already-materialized context through the configured runner.
+
+        This mirrors ``run_context`` for advanced asynchronous integrations.
+        """
+        resolved_pipeline_id = id or self._new_pipeline_id()
+        pipeline = self._build_pipeline(
+            context,
+            resolved_pipeline_id,
+            execution_metadata=metadata,
+            run_options=PipelineRunOptions.from_run_mapping(run),
+        )
         return self._runner.submit(resolved_pipeline_id, pipeline)
 
     def terminate(self, pipeline_id: str) -> bool:
@@ -178,14 +207,12 @@ class PipelineOrchestrator:
 
         try:
             self.submit(
-                trigger.context,
-                pipeline_id=trigger.pipeline_id,
-                execution_metadata=trigger.execution_metadata,
+                trigger.config,
             )
         except PipelineRunAlreadyActiveError:
-            log.info("Pipeline trigger ignored because '%s' is already running.", trigger.pipeline_id)
+            log.info("Pipeline trigger ignored because '%s' is already running.", trigger.config.get("id", "-"))
         except Exception:
-            log.exception("Pipeline trigger submit failed for %s", trigger.pipeline_id)
+            log.exception("Pipeline trigger submit failed for %s", trigger.config.get("id", "-"))
 
     def _build_pipeline(
         self,

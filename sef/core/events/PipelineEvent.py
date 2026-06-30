@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Any, Mapping
 
 from sef.core.events.Event import Event
-from sef.core.pipeline.PipelineContext import PipelineContext
 from sef.core.pipeline.PipelineErrors import InvalidPipelineTriggerEventError
 
 
@@ -17,9 +16,7 @@ class PipelineTrigger:
     generic event payload.
     """
 
-    pipeline_id: str
-    context: PipelineContext
-    execution_metadata: Mapping[str, Any]
+    config: Mapping[str, Any]
 
 
 class PipelineEvent:
@@ -34,37 +31,34 @@ class PipelineEvent:
 
     @staticmethod
     def create(
-        pipeline_id: str,
-        context: PipelineContext,
+        config: Mapping[str, Any],
         source: str,
         correlation_id: str | None = None,
-        execution_metadata: Mapping[str, Any] | None = None,
     ) -> Event:
         """
         Create a generic event that requests pipeline execution.
 
         Parameters
         ----------
-        pipeline_id:
-            Desired run id.
-        context:
-            Validated context to execute.
+        config:
+            Run config to execute. It must contain its own optional ``id`` and
+            ``metadata`` fields.
         source:
             Event producer identifier.
         correlation_id:
             Optional correlation id. Defaults to `pipeline_id`.
-        execution_metadata:
-            Optional metadata propagated into execution.
         """
+        if not isinstance(config, Mapping):
+            raise InvalidPipelineTriggerEventError(
+                "Pipeline trigger config must be a mapping."
+            )
+        run_id = _config_id(config)
+
         return Event(
             event_type=PipelineEvent.event_type,
             source=source,
-            correlation_id=correlation_id or pipeline_id,
-            payload={
-                "pipeline_id": pipeline_id,
-                "context": context,
-                "execution_metadata": dict(execution_metadata or {}),
-            },
+            correlation_id=correlation_id or run_id,
+            payload={"config": dict(config)},
         )
 
     @staticmethod
@@ -75,40 +69,24 @@ class PipelineEvent:
                 f"Expected event type '{PipelineEvent.event_type}', got '{event.event_type}'."
             )
 
-        pipeline_id = PipelineEvent._require_string(event, "pipeline_id")
-        try:
-            context = event.require("context")
-        except KeyError as exc:
+        config = event.payload.get("config")
+        if config is None:
             raise InvalidPipelineTriggerEventError(
-                "Pipeline trigger payload is missing required field 'context'."
-            ) from exc
-        if not isinstance(context, PipelineContext):
-            raise InvalidPipelineTriggerEventError(
-                "Pipeline trigger payload field 'context' must be a PipelineContext."
+                "Pipeline trigger payload is missing required field 'config'."
             )
-
-        execution_metadata = event.payload.get("execution_metadata", {})
-        if not isinstance(execution_metadata, Mapping):
+        if not isinstance(config, Mapping):
             raise InvalidPipelineTriggerEventError(
-                "Pipeline trigger payload field 'execution_metadata' must be a mapping."
+                "Pipeline trigger payload field 'config' must be a mapping."
             )
 
         return PipelineTrigger(
-            pipeline_id=pipeline_id,
-            context=context,
-            execution_metadata=dict(execution_metadata),
+            config=dict(config),
         )
 
-    @staticmethod
-    def _require_string(event: Event, key: str) -> str:
-        try:
-            value: Any = event.require(key)
-        except KeyError as exc:
-            raise InvalidPipelineTriggerEventError(
-                f"Pipeline trigger payload is missing required field '{key}'."
-            ) from exc
-        if not isinstance(value, str) or not value:
-            raise InvalidPipelineTriggerEventError(
-                f"Pipeline trigger payload field '{key}' must be a non-empty string."
-            )
-        return value
+def _config_id(config: Mapping[str, Any]) -> str | None:
+    value = config.get("id")
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value:
+        raise InvalidPipelineTriggerEventError("Pipeline trigger config field 'id' must be a non-empty string.")
+    return value

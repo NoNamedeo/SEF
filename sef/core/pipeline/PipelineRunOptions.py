@@ -7,13 +7,21 @@ from typing import Any
 
 from sef.core.pipeline.PipelineErrors import ConfigSchemaError
 
-RUN_OPTIONS_CONFIG_KEY = "run_options"
+RUN_CONFIG_KEY = "run"
 RUN_OPTIONS_EXECUTION_PLAN_CONFIG_KEY = "execution_plan"
 RUN_OPTIONS_REPRODUCIBILITY_CONFIG_KEY = "reproducibility"
+RUN_RUNTIME_CONFIG_KEY = "runtime"
 _RUN_OPTIONS_CONFIG_KEYS = frozenset(
     {
         RUN_OPTIONS_EXECUTION_PLAN_CONFIG_KEY,
         RUN_OPTIONS_REPRODUCIBILITY_CONFIG_KEY,
+    }
+)
+_RUN_CONFIG_KEYS = frozenset(
+    {
+        RUN_OPTIONS_EXECUTION_PLAN_CONFIG_KEY,
+        RUN_OPTIONS_REPRODUCIBILITY_CONFIG_KEY,
+        RUN_RUNTIME_CONFIG_KEY,
     }
 )
 
@@ -81,7 +89,7 @@ class PipelineRunOptions:
 
         .. code-block:: yaml
 
-            run_options:
+            run:
               execution_plan: summary  # none | summary | full
               reproducibility: true
 
@@ -92,16 +100,44 @@ class PipelineRunOptions:
             return cls.lightweight()
         if not isinstance(config, Mapping):
             raise ConfigSchemaError("'config' must be a mapping.", path="config")
-        return cls.from_mapping(config.get(RUN_OPTIONS_CONFIG_KEY), path=RUN_OPTIONS_CONFIG_KEY)
+        return cls.from_run_mapping(config.get(RUN_CONFIG_KEY), path=RUN_CONFIG_KEY)
+
+    @classmethod
+    def from_run_mapping(
+        cls,
+        config: Mapping[str, Any] | None,
+        *,
+        path: str = RUN_CONFIG_KEY,
+    ) -> PipelineRunOptions:
+        """
+        Build run options from the public ``run`` section.
+
+        ``run.runtime`` belongs to execution materialization, not to
+        ``PipelineRunOptions``. It is accepted here and ignored by this value
+        object so the full run section can be passed safely.
+        """
+        if config is None:
+            return cls.lightweight()
+        if not isinstance(config, Mapping):
+            raise ConfigSchemaError(f"'{path}' must be a mapping.", path=path)
+        _validate_run_config_keys(config, path=path)
+        return cls.from_mapping(
+            {
+                key: config[key]
+                for key in _RUN_OPTIONS_CONFIG_KEYS
+                if key in config
+            },
+            path=path,
+        )
 
     @classmethod
     def from_mapping(
         cls,
         config: Mapping[str, Any] | None,
         *,
-        path: str = RUN_OPTIONS_CONFIG_KEY,
+        path: str = RUN_CONFIG_KEY,
     ) -> PipelineRunOptions:
-        """Build run options from a validated ``run_options`` mapping."""
+        """Build run options from a mapping containing execution metadata controls."""
         if config is None:
             return cls.lightweight()
         if not isinstance(config, Mapping):
@@ -167,6 +203,16 @@ def _validate_run_options_keys(config: Mapping[str, Any], *, path: str) -> None:
         key = unknown_keys[0]
         raise ConfigSchemaError(
             f"Unsupported field '{path}.{key}'. Supported fields: execution_plan, reproducibility.",
+            path=f"{path}.{key}",
+        )
+
+
+def _validate_run_config_keys(config: Mapping[str, Any], *, path: str) -> None:
+    unknown_keys = sorted(str(key) for key in config.keys() if key not in _RUN_CONFIG_KEYS)
+    if unknown_keys:
+        key = unknown_keys[0]
+        raise ConfigSchemaError(
+            f"Unsupported field '{path}.{key}'. Supported fields: execution_plan, reproducibility, runtime.",
             path=f"{path}.{key}",
         )
 

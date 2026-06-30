@@ -44,6 +44,7 @@ from sef.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
 from sef.core.pipeline.PipelineRunSnapshot import PipelineRunSnapshot, PipelineRunState
 from sef.core.pipeline.ThreadedPipelineRunner import ThreadedPipelineRunner
 from sef.core.pipeline.VisualizerBinding import VisualizerBinding
+from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 from sef.core.visualization.PipelineOutputs import PipelineOutputs
 from sef.core.visualization.VisualArtifact import VisualArtifact
 from sef.core.visualization.VisualizationContext import VisualizationContext
@@ -139,12 +140,8 @@ class AlwaysMatchRule(IBranchingRule):
     def matches(self, event: Event) -> bool:
         return True
 
-    def build_context(self, event: Event) -> PipelineContext:
-        return PipelineContext(
-            frame_extractor=StubFrameExtractor(num_frames=2),
-            signal_extractor=StubSignalExtractor(),
-            analyzers=[StubAnalyzer()],
-        )
+    def build_config(self, event: Event) -> dict[str, Any]:
+        return _make_run_config(num_frames=2)
 
 
 class SelectiveRule(IBranchingRule):
@@ -154,19 +151,15 @@ class SelectiveRule(IBranchingRule):
     def matches(self, event: Event) -> bool:
         return event.event_type == self._target
 
-    def build_context(self, event: Event) -> PipelineContext:
-        return PipelineContext(
-            frame_extractor=StubFrameExtractor(num_frames=2),
-            signal_extractor=StubSignalExtractor(),
-            analyzers=[StubAnalyzer()],
-        )
+    def build_config(self, event: Event) -> dict[str, Any]:
+        return _make_run_config(num_frames=2)
 
 
 class NeverMatchRule(IBranchingRule):
     def matches(self, event: Event) -> bool:
         return False
 
-    def build_context(self, event: Event) -> PipelineContext:
+    def build_config(self, event: Event) -> dict[str, Any]:
         raise AssertionError("Should never be called")
 
 
@@ -285,6 +278,7 @@ class RecordingPipelineFactory(IPipelineFactory):
         event_bus: IEventBus | None = None,
         pipeline_id: str | None = None,
         execution_metadata: dict[str, Any] | None = None,
+        run_options: Any | None = None,
     ) -> Pipeline:
         self.created.append(context)
         return Pipeline(
@@ -292,6 +286,7 @@ class RecordingPipelineFactory(IPipelineFactory):
             event_bus=event_bus,
             pipeline_id=pipeline_id,
             execution_metadata=execution_metadata,
+            run_options=run_options,
         )
 
 
@@ -314,15 +309,41 @@ def _make_failing_context() -> PipelineContext:
     )
 
 
-def _make_pipeline_event(pipeline_id: str, context: PipelineContext) -> Event:
+def _stub_registry() -> PluginRegistry:
+    registry = PluginRegistry()
+    registry.register(PluginCategory.FRAME_EXTRACTOR, "stub_frames", StubFrameExtractor)
+    registry.register(PluginCategory.FRAME_EXTRACTOR, "blocking_frames", BlockingFrameExtractor)
+    registry.register(PluginCategory.SIGNAL_EXTRACTOR, "stub_signals", StubSignalExtractor)
+    registry.register(PluginCategory.SIGNAL_EXTRACTOR, "emitting_signals", EmittingSignalExtractor)
+    registry.register(PluginCategory.ANALYZER, "stub_analyzer", StubAnalyzer)
+    registry.register(PluginCategory.ANALYZER, "failing_analyzer", FailingAnalyzer)
+    return registry
+
+
+def _make_run_config(pipeline_id: str | None = None, *, num_frames: int = 4) -> dict[str, Any]:
+    config: dict[str, Any] = {
+        "schema_version": "1.0",
+        "pipeline": {
+            "frame_extractor": {"name": "stub_frames", "params": {"num_frames": num_frames}},
+            "signal_extractor": {"name": "stub_signals"},
+            "analyzers": [{"name": "stub_analyzer"}],
+        },
+    }
+    if pipeline_id is not None:
+        config["id"] = pipeline_id
+    return config
+
+
+def _make_pipeline_event(pipeline_id: str) -> Event:
     return PipelineEvent.create(
-        pipeline_id=pipeline_id,
-        context=context,
+        config=_make_run_config(pipeline_id),
         source="test",
     )
 
 
 def _event_pipeline_id(event: Event) -> str:
+    if event.event_type == PipelineEvent.event_type:
+        return str(PipelineEvent.parse(event).config["id"])
     return event.require("pipeline_id")
 
 
@@ -350,6 +371,7 @@ def _make_orchestrator_with_branching(
     )
     orchestrator = PipelineOrchestrator(
         runner=runner,
+        registry=_stub_registry(),
         bus=trigger_bus,
         domain_bus=domain_bus,
     )
@@ -408,7 +430,7 @@ class BranchingRuleTests(unittest.TestCase):
         rule = AlwaysMatchRule()
         event = Event("any_event", "src")
         self.assertTrue(rule.matches(event))
-        self.assertIsNotNone(rule.build_context(event).frame_extractor)
+        self.assertEqual(rule.build_config(event)["pipeline"]["frame_extractor"]["name"], "stub_frames")
 
     def test_selective_rule_matches_target(self):
         rule = SelectiveRule("tracking_lost")
@@ -479,13 +501,12 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
         bus = EventBus()
         monitor = FakePipelineMonitor()
         runner = FakePipelineRunner(monitor)
-        orch = PipelineOrchestrator(runner=runner, bus=bus)
+        orch = PipelineOrchestrator(runner=runner, registry=_stub_registry(), bus=bus)
         return bus, runner, monitor, orch
 
     def test_pipeline_event_triggers_monitor_runner(self):
         bus, runner, monitor, orch = self._make()
-        context = _make_context()
-        bus.dispatch(_make_pipeline_event("x", context))
+        bus.dispatch(_make_pipeline_event("x"))
 
         self.assertEqual(len(runner.submitted), 1)
         self.assertEqual(runner.submitted[0][0], "x")
@@ -494,7 +515,7 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
     def test_run_executes_synchronously_without_event_bus(self):
         _, runner, _, orch = self._make()
 
-        outputs = orch.run(_make_context())
+        outputs = orch.run_context(_make_context())
 
         self.assertEqual(len(outputs.results), 1)
         self.assertEqual(len(runner.ran), 1)
@@ -505,7 +526,7 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
         runner = FakePipelineRunner(monitor)
         orch = PipelineOrchestrator(runner=runner)
 
-        future = orch.submit(_make_context(), pipeline_id="direct")
+        future = orch.submit_context(_make_context(), id="direct")
 
         self.assertIsInstance(future, Future)
         self.assertEqual(len(runner.submitted), 1)
@@ -538,7 +559,7 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
         orch = PipelineOrchestrator(runner=runner, pipeline_factory=factory)
         context = _make_context()
 
-        orch.submit(context, pipeline_id="factory")
+        orch.submit_context(context, id="factory")
 
         self.assertEqual(factory.created, [context])
         self.assertEqual(len(runner.submitted), 1)
@@ -552,7 +573,7 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
             Event(
                 event_type=PipelineEvent.event_type,
                 source="test",
-                payload={"pipeline_id": "invalid", "context": object()},
+                payload={"config": object()},
             )
         )
 
@@ -563,16 +584,15 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
         runner = FakePipelineRunner(
             fail_submit_with=PipelineRunAlreadyActiveError("already active")
         )
-        PipelineOrchestrator(runner=runner, bus=bus)
+        PipelineOrchestrator(runner=runner, registry=_stub_registry(), bus=bus)
 
-        bus.dispatch(_make_pipeline_event("duplicate", _make_context()))
+        bus.dispatch(_make_pipeline_event("duplicate"))
 
         self.assertEqual(runner.submitted, [])
 
     def test_terminate_delegates_best_effort_cancel_to_runner(self):
         bus, runner, monitor, orch = self._make()
-        context = _make_context()
-        bus.dispatch(_make_pipeline_event("p1", context))
+        bus.dispatch(_make_pipeline_event("p1"))
 
         cancelled = orch.terminate("p1")
 
@@ -583,7 +603,7 @@ class PipelineOrchestratorUnitTests(unittest.TestCase):
     def test_multiple_events_each_trigger_chain(self):
         bus, runner, monitor, orch = self._make()
         for i in range(3):
-            bus.dispatch(_make_pipeline_event(f"p{i}", _make_context()))
+            bus.dispatch(_make_pipeline_event(f"p{i}"))
 
         self.assertEqual(len(runner.submitted), 3)
 
@@ -595,13 +615,12 @@ class PipelineOrchestratorIntegrationTests(unittest.TestCase):
         bus = EventBus()
         monitor = InMemoryPipelineMonitor()
         runner = ThreadedPipelineRunner(monitor=monitor, lifecycle_bus=bus)
-        orch = PipelineOrchestrator(runner=runner, bus=bus)
+        orch = PipelineOrchestrator(runner=runner, registry=_stub_registry(), bus=bus)
 
         payloads: list[Event] = []
         bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
 
-        context = _make_context()
-        bus.dispatch(_make_pipeline_event("run-1", context))
+        bus.dispatch(_make_pipeline_event("run-1"))
 
         _wait_until_idle(orch)
 
@@ -613,13 +632,13 @@ class PipelineOrchestratorIntegrationTests(unittest.TestCase):
         bus = EventBus()
         monitor = InMemoryPipelineMonitor()
         runner = ThreadedPipelineRunner(monitor=monitor, lifecycle_bus=bus)
-        orch = PipelineOrchestrator(runner=runner, bus=bus)
+        orch = PipelineOrchestrator(runner=runner, registry=_stub_registry(), bus=bus)
 
         order: list[str] = []
         bus.subscribe(PipelineLifecycleEvent.BEFORE_RUN, lambda _: order.append("before"))
         bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, lambda _: order.append("after"))
 
-        bus.dispatch(_make_pipeline_event("x", _make_context()))
+        bus.dispatch(_make_pipeline_event("x"))
         _wait_until_idle(orch)
 
         self.assertEqual(order, ["before", "after"])
@@ -628,9 +647,9 @@ class PipelineOrchestratorIntegrationTests(unittest.TestCase):
         bus = EventBus()
         monitor = InMemoryPipelineMonitor()
         runner = ThreadedPipelineRunner(monitor=monitor, lifecycle_bus=bus)
-        orch = PipelineOrchestrator(runner=runner, bus=bus)
+        orch = PipelineOrchestrator(runner=runner, registry=_stub_registry(), bus=bus)
 
-        bus.dispatch(_make_pipeline_event("x", _make_context()))
+        bus.dispatch(_make_pipeline_event("x"))
         _wait_until_idle(orch)
 
         self.assertEqual(orch.active_ids(), [])
@@ -852,7 +871,7 @@ class OrchestratorBranchingTests(unittest.TestCase):
         trigger_bus, orch, context = _make_orchestrator_with_branching(rules=[AlwaysMatchRule()])
         payloads: list[Event] = []
         trigger_bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
-        orch.submit(context, pipeline_id="primary")
+        orch.submit_context(context, id="primary")
 
         _wait_until_idle(orch, timeout=10)
 
@@ -865,7 +884,7 @@ class OrchestratorBranchingTests(unittest.TestCase):
         trigger_bus, orch, context = _make_orchestrator_with_branching(rules=[SelectiveRule("other_event")])
         payloads: list[Event] = []
         trigger_bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
-        orch.submit(context, pipeline_id="primary")
+        orch.submit_context(context, id="primary")
 
         _wait_until_idle(orch, timeout=10)
 
@@ -876,7 +895,7 @@ class OrchestratorBranchingTests(unittest.TestCase):
         trigger_bus, orch, context = _make_orchestrator_with_branching(rules=[AlwaysMatchRule(), AlwaysMatchRule()])
         payloads: list[Event] = []
         trigger_bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, payloads.append)
-        orch.submit(context, pipeline_id="primary")
+        orch.submit_context(context, id="primary")
 
         _wait_until_idle(orch, timeout=10)
 
@@ -887,7 +906,7 @@ class OrchestratorBranchingTests(unittest.TestCase):
         trigger_bus, orch, context = _make_orchestrator_with_branching(rules=[AlwaysMatchRule()])
         lifecycle_payloads: list = []
         trigger_bus.subscribe(PipelineLifecycleEvent.AFTER_RUN, lifecycle_payloads.append)
-        orch.submit(context, pipeline_id="primary")
+        orch.submit_context(context, id="primary")
 
         _wait_until_idle(orch, timeout=10)
 
@@ -908,6 +927,7 @@ class FluentBuilderContextTests(unittest.TestCase):
         )
         orchestrator = PipelineOrchestrator(
             runner=runner,
+            registry=_stub_registry(),
             bus=trigger_bus,
             domain_bus=domain_bus,
         )
@@ -921,7 +941,7 @@ class FluentBuilderContextTests(unittest.TestCase):
             .add_analyzer(StubAnalyzer())
             .build_context()
         )
-        orchestrator.submit(context, pipeline_id="primary")
+        orchestrator.submit_context(context, id="primary")
 
         _wait_until_idle(orchestrator, timeout=10)
 
@@ -945,7 +965,7 @@ class FluentBuilderContextTests(unittest.TestCase):
         context = _make_context()
         orchestrator = PipelineOrchestrator()
 
-        outputs = orchestrator.run(context)
+        outputs = orchestrator.run_context(context)
 
         self.assertEqual(len(outputs.results), 1)
 
@@ -956,7 +976,7 @@ class FluentBuilderContextTests(unittest.TestCase):
         orchestrator = PipelineOrchestrator(bus=bus)
 
         context = _make_context()
-        orchestrator.submit(context, pipeline_id="solo")
+        orchestrator.submit_context(context, id="solo")
 
         _wait_until_idle(orchestrator, timeout=10)
 

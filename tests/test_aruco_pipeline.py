@@ -210,13 +210,15 @@ class ArucoPipelineTests(unittest.TestCase):
         registry = create_builtin_registry()
         context = ConfigPipelineBuilder(registry).build_context(
             {
-                "pipeline": {
+                "run": {
                     "runtime": {
                         "frame_buffer_size": 4,
                         "signal_buffer_size": 4,
                         "data_buffer_size": 4,
                         "latency_policy": {"name": "blocking", "params": {}},
                     },
+                },
+                "pipeline": {
                     "frame_extractor": {
                         "name": "opencv_buffered",
                         "params": {

@@ -59,37 +59,54 @@ def test_builder_normalizes_legacy_unversioned_configs() -> None:
     assert context.source_config["schema_version"] == CURRENT_PIPELINE_CONFIG_VERSION
 
 
-def test_builder_preserves_top_level_run_options_for_reproducibility() -> None:
+def test_builder_preserves_top_level_run_for_reproducibility() -> None:
     context = ConfigPipelineBuilder(_registry()).build_context(
         {
             "schema_version": CURRENT_PIPELINE_CONFIG_VERSION,
-            "run_options": {"execution_plan": "summary", "reproducibility": True},
+            "run": {"execution_plan": "summary", "reproducibility": True},
             "pipeline": _pipeline_section(),
         }
     )
 
-    assert context.source_config["run_options"] == {"execution_plan": "summary", "reproducibility": True}
+    assert context.source_config["run"] == {"execution_plan": "summary", "reproducibility": True}
 
 
-def test_builder_rejects_unsupported_run_options_fields() -> None:
-    with pytest.raises(ConfigSchemaError, match="run_options.diagnostics"):
+def test_builder_rejects_unsupported_run_fields() -> None:
+    with pytest.raises(ConfigSchemaError, match="run.diagnostics"):
         ConfigPipelineBuilder(_registry()).build_context(
             {
                 "schema_version": CURRENT_PIPELINE_CONFIG_VERSION,
-                "run_options": {"diagnostics": "summary"},
+                "run": {"diagnostics": "summary"},
                 "pipeline": _pipeline_section(),
             }
         )
 
 
-def test_builder_normalizes_legacy_frame_cleaners_key() -> None:
+def test_builder_rejects_legacy_run_options_key() -> None:
+    with pytest.raises(ConfigSchemaError, match="run_options"):
+        ConfigPipelineBuilder(_registry()).build_context(
+            {
+                "schema_version": CURRENT_PIPELINE_CONFIG_VERSION,
+                "run_options": {"execution_plan": "summary"},
+                "pipeline": _pipeline_section(),
+            }
+        )
+
+
+def test_builder_rejects_legacy_frame_cleaners_key() -> None:
     pipeline = _pipeline_section()
     pipeline["frame_cleaners"] = []
 
-    context = ConfigPipelineBuilder(_registry()).build_context({"pipeline": pipeline})
+    with pytest.raises(ConfigSchemaError, match="pipeline.frame_cleaners"):
+        ConfigPipelineBuilder(_registry()).build_context({"pipeline": pipeline})
 
-    assert "frame_processors" in context.source_config["pipeline"]
-    assert "frame_cleaners" not in context.source_config["pipeline"]
+
+def test_builder_rejects_pipeline_runtime_key() -> None:
+    pipeline = _pipeline_section()
+    pipeline["runtime"] = {"frame_buffer_size": 4}
+
+    with pytest.raises(ConfigSchemaError, match="pipeline.runtime"):
+        ConfigPipelineBuilder(_registry()).build_context({"pipeline": pipeline})
 
 
 def test_builder_rejects_unsupported_schema_version() -> None:
