@@ -8,7 +8,7 @@ from sef.core.pipeline.PipelineContext import PipelineContext
 from sef.core.pipeline.PipelineExecutionPlan import PipelineExecutionPlan
 from sef.core.pipeline.PipelineExecutionResult import PipelineExecutionResult
 from sef.core.pipeline.PipelineRunOptions import (
-    PipelineDiagnosticsLevel,
+    PipelineExecutionPlanLevel,
     PipelineRunOptions,
 )
 from sef.core.visualization.PipelineOutputs import PipelineOutputs
@@ -75,9 +75,9 @@ class PipelineOutputAssembler:
     def _execution_plan_metadata(self) -> dict[str, Any]:
         if self._execution_plan is None:
             return {}
-        if self._run_options.diagnostics is PipelineDiagnosticsLevel.SUMMARY:
+        if self._run_options.execution_plan is PipelineExecutionPlanLevel.SUMMARY:
             return self._execution_plan.as_summary_dict()
-        if self._run_options.diagnostics is PipelineDiagnosticsLevel.FULL:
+        if self._run_options.execution_plan is PipelineExecutionPlanLevel.FULL:
             return self._execution_plan.as_dict()
         return {}
 
@@ -86,7 +86,7 @@ class PipelineOutputAssembler:
         from sef.core.pipeline.PipelineConfigExporter import PipelineConfigExporter
 
         config_exporter = PipelineConfigExporter()
-        export_config = config_exporter.export(self._context, outputs)
+        export_config = config_exporter.export(self._context, outputs, run_options=self._run_options)
         reproducibility = {
             "config": export_config,
             "json": config_exporter.to_json(export_config),

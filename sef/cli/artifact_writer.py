@@ -23,7 +23,7 @@ from sef.core.visualization.VisualArtifact import (
 
 
 class ArtifactWriter:
-    """Persists run summaries, normalized config, execution plans, and artifacts."""
+    """Persists run summaries, normalized config, optional plans, and artifacts."""
 
     def __init__(self, output_dir: Path | str) -> None:
         self._output_dir = Path(output_dir)
@@ -35,15 +35,16 @@ class ArtifactWriter:
         *,
         outputs: PipelineOutputs | None,
         config: Mapping[str, Any],
-        execution_plan: PipelineExecutionPlan,
+        execution_plan: PipelineExecutionPlan | None,
         dry_run: bool = False,
     ) -> list[Path]:
         """Persist supported output files and return created paths."""
         self._output_dir.mkdir(parents=True, exist_ok=True)
         created: list[Path] = []
         created.append(self._write_json("config.normalized.json", dict(config)))
-        created.append(self._write_json("execution_plan.json", execution_plan.as_dict()))
-        created.append(self._write_text("execution_plan.txt", execution_plan.as_text()))
+        if execution_plan is not None:
+            created.append(self._write_json("execution_plan.json", execution_plan.as_dict()))
+            created.append(self._write_text("execution_plan.txt", execution_plan.as_text()))
 
         if outputs is not None:
             created.append(self._write_json("summary.json", self._summary(outputs, dry_run=dry_run)))

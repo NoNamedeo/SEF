@@ -90,9 +90,10 @@ SEF is **not** a model-training framework, a dashboard application, or a generic
 
 It is an architectural layer that sits **between raw computer-vision libraries and domain-specific applications**, making video-to-signal pipelines easier to build, explain, benchmark, and evolve.
 
-## Reproducibility First
+## Reproducibility On Demand
 
-Every execution produces a reproducible description of the experiment itself.
+Executions can produce a reproducible description of the experiment itself when
+requested through run options.
 
 SEF can automatically generate:
 
@@ -170,12 +171,23 @@ outputs = pipeline.run(
 )
 ```
 
-For compact diagnostics without JSON/YAML/Python reproducibility exports:
+For compact execution-plan metadata without JSON/YAML/Python reproducibility exports:
 
 ```python
 outputs = pipeline.run(
-    run_options=sef.PipelineRunOptions(diagnostics="summary"),
+    run_options=sef.PipelineRunOptions(execution_plan="summary"),
 )
+```
+
+The same controls can be declared in YAML/JSON configs:
+
+```yaml
+schema_version: "1.0"
+run_options:
+  execution_plan: summary  # none | summary | full; true maps to full
+  reproducibility: true
+pipeline:
+  ...
 ```
 
 The facade accepts registered plugin names, component classes, component instances, or plain Python callables:

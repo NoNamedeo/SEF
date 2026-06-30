@@ -38,6 +38,6 @@ class IPipelineFactory(ABC):
         Notes
         -----
         Implementations should forward ``run_options`` without eagerly
-        constructing diagnostics or reproducibility exports.
+        constructing execution plans or reproducibility exports.
         """
         ...

@@ -74,7 +74,7 @@ def _add_run_parser(subcommands: Any) -> None:
     run_parser.add_argument("--pipeline-id", help="Optional pipeline id for metadata and artifacts.")
     run_parser.add_argument("--dry-run", action="store_true", help="Build and explain the pipeline without executing it.")
     run_parser.add_argument("--explain", action="store_true", help="Print the execution plan.")
-    run_parser.add_argument("--output", help="Directory for run summaries, plans, normalized config, and artifacts.")
+    run_parser.add_argument("--output", help="Directory for run summaries, normalized config, and artifacts.")
     run_parser.add_argument("--debug", action="store_true", help="Print full tracebacks for CLI errors.")
     run_parser.set_defaults(handler=run_pipeline)
 

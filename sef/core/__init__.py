@@ -33,7 +33,7 @@ __all__ = [
     "PipelineContextError",
     "PipelineEvent",
     "PipelineExecutionError",
-    "PipelineDiagnosticsLevel",
+    "PipelineExecutionPlanLevel",
     "PipelineLifecycleEvent",
     "PipelineOrchestrator",
     "PipelineRunOptions",

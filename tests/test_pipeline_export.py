@@ -251,9 +251,14 @@ class PipelineExportTests(unittest.TestCase):
         self.assertEqual(exported_config["artifacts"][0]["kind"], "text")
         self.assertEqual(exported_config["components"][0]["order"], 0)
         self.assertEqual(exported_config["components"][0]["registered_name"], "export_frame_extractor")
+        self.assertEqual(
+            exported_config["run_options"],
+            {"execution_plan": "full", "reproducibility": True},
+        )
 
         json_export = json.loads(reproducibility["json"])
         self.assertEqual(json_export["pipeline"]["analyzers"][0]["name"], "export_analyzer")
+        self.assertEqual(json_export["run_options"]["execution_plan"], "full")
         self.assertIn("pipeline:", reproducibility["yaml"])
 
         rebuilt_context = ConfigPipelineBuilder(registry).build_context(exported_config)
@@ -263,6 +268,8 @@ class PipelineExportTests(unittest.TestCase):
         namespace: dict[str, Any] = {}
         exec(reproducibility["python_builder_code"], namespace)
         self.assertEqual(namespace["PIPELINE_CONFIG"]["schema_version"], CURRENT_PIPELINE_CONFIG_VERSION)
+        self.assertEqual(namespace["PIPELINE_CONFIG"]["run_options"]["execution_plan"], "full")
+        self.assertEqual(namespace["build_run_options"](), PipelineRunOptions.full())
         code_context = namespace["build_context"](registry)
         self.assertEqual(context_signature(code_context), context_signature(original_context))
 

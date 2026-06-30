@@ -11,6 +11,11 @@ from sef.cli.constants import UNKNOWN_FIELD_DOC
 from sef.cli.diagnostics import DiagnosticItem
 from sef.core.errors import ConfigSchemaError
 from sef.core.pipeline.PipelineExportUtils import yaml_dumps
+from sef.core.pipeline.PipelineRunOptions import (
+    RUN_OPTIONS_CONFIG_KEY,
+    RUN_OPTIONS_EXECUTION_PLAN_CONFIG_KEY,
+    RUN_OPTIONS_REPRODUCIBILITY_CONFIG_KEY,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,7 +34,7 @@ class ConfigInspectionResult:
 class ConfigInspector:
     """Performs practical CLI config checks before the core builder runs."""
 
-    _TOP_LEVEL_KEYS = frozenset({"schema_version", "pipeline"})
+    _TOP_LEVEL_KEYS = frozenset({"schema_version", "pipeline", RUN_OPTIONS_CONFIG_KEY})
     _PIPELINE_KEYS = frozenset(
         {
             "frame_extractor",
@@ -55,6 +60,12 @@ class ConfigInspector:
     )
     _RUNTIME_KEYS = frozenset({"frame_buffer_size", "signal_buffer_size", "data_buffer_size", "latency_policy"})
     _LATENCY_POLICY_KEYS = frozenset({"name", "params"})
+    _RUN_OPTIONS_KEYS = frozenset(
+        {
+            RUN_OPTIONS_EXECUTION_PLAN_CONFIG_KEY,
+            RUN_OPTIONS_REPRODUCIBILITY_CONFIG_KEY,
+        }
+    )
 
     def inspect(self, config: Mapping[str, Any], *, strict: bool = False) -> ConfigInspectionResult:
         """Return unknown-field diagnostics for the public config shape."""
@@ -65,6 +76,9 @@ class ConfigInspector:
         pipeline = config.get("pipeline")
         if isinstance(pipeline, Mapping):
             self._inspect_pipeline(pipeline, strict, warnings, errors)
+        run_options = config.get(RUN_OPTIONS_CONFIG_KEY)
+        if isinstance(run_options, Mapping):
+            self._unknown_keys(run_options, self._RUN_OPTIONS_KEYS, RUN_OPTIONS_CONFIG_KEY, strict, warnings, errors)
 
         return ConfigInspectionResult(tuple(warnings), tuple(errors))
 
@@ -210,6 +224,20 @@ def public_config_schema() -> dict[str, Any]:
         "required": ["schema_version", "pipeline"],
         "properties": {
             "schema_version": {"type": "string", "example": "1.0"},
+            RUN_OPTIONS_CONFIG_KEY: {
+                "type": "object",
+                "description": "Optional run metadata controls. Omit for lowest-overhead execution.",
+                "properties": {
+                    RUN_OPTIONS_EXECUTION_PLAN_CONFIG_KEY: {
+                        "oneOf": [
+                            {"type": "boolean"},
+                            {"enum": ["none", "summary", "full"]},
+                        ],
+                        "description": "Optional execution-plan metadata. true maps to full; false maps to none.",
+                    },
+                    RUN_OPTIONS_REPRODUCIBILITY_CONFIG_KEY: {"type": "boolean", "default": False},
+                },
+            },
             "pipeline": {
                 "type": "object",
                 "required": ["frame_extractor", "signal_extractor", "analyzers"],

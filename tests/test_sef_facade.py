@@ -36,6 +36,54 @@ def test_pipeline_facade_runs_registered_plugin_names() -> None:
     assert outputs.final_artifacts[0].content == "Sample count: 3.0"
 
 
+def test_from_config_preserves_run_options() -> None:
+    outputs = sef.from_config(
+        {
+            "schema_version": "1.0",
+            "run_options": {
+                "execution_plan": "summary",
+                "reproducibility": True,
+            },
+            "pipeline": {
+                "frame_extractor": {"name": "demo_frames", "params": {"frame_count": 2}},
+                "signal_extractor": {"name": "demo_signals"},
+                "analyzers": [{"name": "sample_count"}],
+            },
+        },
+        registry=build_registry(),
+    ).run()
+
+    assert outputs.metadata.execution_plan["stage_count"] == 3
+    assert "stages" not in outputs.metadata.execution_plan
+    assert outputs.metadata.reproducibility["config"]["run_options"] == {
+        "execution_plan": "summary",
+        "reproducibility": True,
+    }
+
+
+def test_explicit_run_options_override_configured_run_options() -> None:
+    facade = sef.from_config(
+        {
+            "schema_version": "1.0",
+            "run_options": {
+                "execution_plan": "full",
+                "reproducibility": True,
+            },
+            "pipeline": {
+                "frame_extractor": {"name": "demo_frames", "params": {"frame_count": 2}},
+                "signal_extractor": {"name": "demo_signals"},
+                "analyzers": [{"name": "sample_count"}],
+            },
+        },
+        registry=build_registry(),
+    )
+
+    outputs = facade.run(run_options=sef.PipelineRunOptions.lightweight())
+
+    assert outputs.metadata.execution_plan == {}
+    assert outputs.metadata.reproducibility == {}
+
+
 def test_pipeline_facade_auto_registers_component_classes() -> None:
     outputs = (
         sef.pipeline("class-components", include_builtins=False)

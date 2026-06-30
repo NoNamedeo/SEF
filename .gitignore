@@ -55,3 +55,4 @@ sef.egg-info/
 .pytest_cache/
 site/
 build/
+benchmarks/

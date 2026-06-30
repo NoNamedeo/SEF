@@ -10,6 +10,7 @@ from sef.core.artifacts.data.TwoDimGraphData import TwoDimGraphData
 from sef.core.artifacts.Frame import Frame
 from sef.core.artifacts.Signal import Signal
 from sef.core.artifacts.signal_sample.BoxSignalSample import BoxSignalSample
+from sef.core.errors import ConfigSchemaError
 from sef.core.interfaces.IAnalyzer import IAnalyzer
 from sef.core.interfaces.IFrameExtractor import IFrameExtractor
 from sef.core.interfaces.ISignal import ISignal
@@ -17,7 +18,7 @@ from sef.core.interfaces.ISignalExtractor import ISignalExtractor
 from sef.core.pipeline.Pipeline import Pipeline
 from sef.core.pipeline.PipelineContext import PipelineContext
 from sef.core.pipeline.PipelineRunOptions import (
-    PipelineDiagnosticsLevel,
+    PipelineExecutionPlanLevel,
     PipelineRunOptions,
 )
 
@@ -81,11 +82,11 @@ def test_lightweight_run_skips_planner_and_reproducibility_exports() -> None:
     assert outputs.metadata.reproducibility == {}
 
 
-def test_summary_diagnostics_exclude_per_stage_payloads() -> None:
+def test_summary_execution_plan_excludes_per_stage_payloads() -> None:
     outputs = Pipeline(
         _context(),
         run_options=PipelineRunOptions(
-            diagnostics=PipelineDiagnosticsLevel.SUMMARY,
+            execution_plan=PipelineExecutionPlanLevel.SUMMARY,
         ),
     ).run()
 
@@ -97,11 +98,11 @@ def test_summary_diagnostics_exclude_per_stage_payloads() -> None:
     assert outputs.metadata.reproducibility == {}
 
 
-def test_full_diagnostics_can_be_enabled_without_reproducibility() -> None:
+def test_full_execution_plan_can_be_enabled_without_reproducibility() -> None:
     outputs = Pipeline(
         _context(),
         run_options=PipelineRunOptions(
-            diagnostics=PipelineDiagnosticsLevel.FULL,
+            execution_plan=PipelineExecutionPlanLevel.FULL,
             reproducibility=False,
         ),
     ).run()
@@ -110,7 +111,7 @@ def test_full_diagnostics_can_be_enabled_without_reproducibility() -> None:
     assert outputs.metadata.reproducibility == {}
 
 
-def test_reproducibility_can_be_enabled_without_diagnostics() -> None:
+def test_reproducibility_can_be_enabled_without_execution_plan() -> None:
     outputs = Pipeline(
         _context(),
         run_options=PipelineRunOptions(reproducibility=True),
@@ -121,6 +122,40 @@ def test_reproducibility_can_be_enabled_without_diagnostics() -> None:
     assert "json" in outputs.metadata.reproducibility
     assert "yaml" in outputs.metadata.reproducibility
     assert "python_builder_code" in outputs.metadata.reproducibility
+
+
+def test_run_options_can_be_read_from_config() -> None:
+    options = PipelineRunOptions.from_config(
+        {
+            "run_options": {
+                "execution_plan": "summary",
+                "reproducibility": True,
+            }
+        }
+    )
+
+    assert options.execution_plan is PipelineExecutionPlanLevel.SUMMARY
+    assert options.reproducibility is True
+
+
+def test_execution_plan_bool_config_maps_to_level() -> None:
+    assert (
+        PipelineRunOptions.from_config({"run_options": {"execution_plan": True}}).execution_plan
+        is PipelineExecutionPlanLevel.FULL
+    )
+    assert (
+        PipelineRunOptions.from_config({"run_options": {"execution_plan": False}}).execution_plan
+        is PipelineExecutionPlanLevel.NONE
+    )
+
+
+def test_run_options_merge_cli_requirements_without_downgrading_config() -> None:
+    options = PipelineRunOptions(execution_plan=PipelineExecutionPlanLevel.SUMMARY, reproducibility=True)
+
+    merged = options.with_required(execution_plan=PipelineExecutionPlanLevel.FULL, reproducibility=False)
+
+    assert merged.execution_plan is PipelineExecutionPlanLevel.FULL
+    assert merged.reproducibility is True
 
 
 def test_execution_plan_remains_available_on_lightweight_pipeline() -> None:
@@ -134,8 +169,14 @@ def test_execution_plan_remains_available_on_lightweight_pipeline() -> None:
 
 
 def test_run_options_reject_invalid_values() -> None:
-    with pytest.raises(ValueError, match="diagnostics must be one of"):
-        PipelineRunOptions(diagnostics="verbose")
+    with pytest.raises(ValueError, match="execution_plan must be one of"):
+        PipelineRunOptions(execution_plan="verbose")
 
     with pytest.raises(TypeError, match="reproducibility must be a boolean"):
         PipelineRunOptions(reproducibility=1)
+
+    with pytest.raises(ConfigSchemaError, match="run_options.execution_plan"):
+        PipelineRunOptions.from_config({"run_options": {"execution_plan": "verbose"}})
+
+    with pytest.raises(ConfigSchemaError, match="Unsupported field 'run_options.diagnostics'"):
+        PipelineRunOptions.from_config({"run_options": {"diagnostics": "verbose"}})

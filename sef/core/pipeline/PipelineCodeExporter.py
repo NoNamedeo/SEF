@@ -44,6 +44,7 @@ class PipelineCodeExporter:
                 from sef.core.pipeline.ConfigPipelineBuilder import ConfigPipelineBuilder
                 from sef.core.pipeline.Pipeline import Pipeline
                 from sef.core.pipeline.PipelineOrchestrator import PipelineOrchestrator
+                from sef.core.pipeline.PipelineRunOptions import PipelineRunOptions
                 from sef.api import default_registry
                 from sef.core.plugins.PluginRegistry import PluginRegistry
 
@@ -53,6 +54,8 @@ class PipelineCodeExporter:
                     "schema_version": PIPELINE_EXPORT.get("schema_version", "1.0"),
                     "pipeline": PIPELINE_EXPORT["pipeline"],
                 }
+                if "run_options" in PIPELINE_EXPORT:
+                    PIPELINE_CONFIG["run_options"] = PIPELINE_EXPORT["run_options"]
 
 
                 def build_registry() -> PluginRegistry:
@@ -71,6 +74,11 @@ class PipelineCodeExporter:
                     return ConfigPipelineBuilder(resolved_registry).build_context(PIPELINE_CONFIG)
 
 
+                def build_run_options() -> PipelineRunOptions:
+                    """Rebuild execution-plan/reproducibility settings from the exported config."""
+                    return PipelineRunOptions.from_config(PIPELINE_CONFIG)
+
+
                 def build_pipeline(
                     registry: PluginRegistry | None = None,
                     pipeline_id: str | None = None,
@@ -81,6 +89,7 @@ class PipelineCodeExporter:
                         build_context(registry),
                         pipeline_id=pipeline_id,
                         execution_metadata=execution_metadata,
+                        run_options=build_run_options(),
                     )
 
 
@@ -91,6 +100,7 @@ class PipelineCodeExporter:
                         build_context(registry),
                         pipeline_id=execution.get("pipeline_id"),
                         execution_metadata=execution.get("metadata", {}),
+                        run_options=build_run_options(),
                     )
 
 

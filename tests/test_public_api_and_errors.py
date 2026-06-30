@@ -12,8 +12,8 @@ from sef.core import (
     PipelineConfigurationError,
     PipelineContext,
     PipelineContextError,
-    PipelineDiagnosticsLevel,
     PipelineExecutionError,
+    PipelineExecutionPlanLevel,
     PipelineRunOptions,
     PluginCategory,
     PluginResolutionError,
@@ -43,7 +43,7 @@ def test_core_public_api_exports_stable_entry_points() -> None:
     assert SignalBuffer is not None
     assert ImageArtifact is not None
     assert PipelineOutputs is not None
-    assert PipelineRunOptions.lightweight().diagnostics is PipelineDiagnosticsLevel.NONE
+    assert PipelineRunOptions.lightweight().execution_plan is PipelineExecutionPlanLevel.NONE
 
 
 def test_pipeline_error_exports_are_identity_stable() -> None:

@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from sef.core.pipeline.PipelineErrors import ConfigSchemaError, ConfigVersionError
+from sef.core.pipeline.PipelineRunOptions import RUN_OPTIONS_CONFIG_KEY, PipelineRunOptions
 
 PIPELINE_CONFIG_VERSION_KEY = "schema_version"
 CURRENT_PIPELINE_CONFIG_VERSION = "1.0"
@@ -84,10 +85,14 @@ class VersionedPipelineConfig:
 
     def source_config(self) -> dict[str, Any]:
         """Return a compact source config safe to store in `PipelineContext`."""
-        return {
+        source = {
             PIPELINE_CONFIG_VERSION_KEY: self.schema_version,
             "pipeline": dict(self.pipeline),
         }
+        if RUN_OPTIONS_CONFIG_KEY in self.root:
+            run_options = self.root[RUN_OPTIONS_CONFIG_KEY]
+            source[RUN_OPTIONS_CONFIG_KEY] = dict(run_options) if isinstance(run_options, Mapping) else run_options
+        return source
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,6 +144,11 @@ class PipelineConfigVersionManager:
         canonical_root = dict(migrated_root)
         canonical_root[PIPELINE_CONFIG_VERSION_KEY] = self.current_version
         canonical_root["pipeline"] = canonical_pipeline
+        run_options = self._canonical_run_options(migrated_root)
+        if run_options:
+            canonical_root[RUN_OPTIONS_CONFIG_KEY] = run_options
+        else:
+            canonical_root.pop(RUN_OPTIONS_CONFIG_KEY, None)
         return VersionedPipelineConfig(
             root=canonical_root,
             pipeline=canonical_pipeline,
@@ -161,6 +171,13 @@ class PipelineConfigVersionManager:
         if legacy_frame_processors is not None and "frame_processors" not in canonical:
             canonical["frame_processors"] = legacy_frame_processors
         return canonical
+
+    @staticmethod
+    def _canonical_run_options(root: Mapping[str, Any]) -> dict[str, Any]:
+        """Return normalized run options, or an empty mapping for defaults."""
+        if RUN_OPTIONS_CONFIG_KEY not in root:
+            return {}
+        return PipelineRunOptions.from_mapping(root[RUN_OPTIONS_CONFIG_KEY]).to_config()
 
     def _read_version(self, root: Mapping[str, Any]) -> tuple[str, bool]:
         raw_version = root.get(PIPELINE_CONFIG_VERSION_KEY)

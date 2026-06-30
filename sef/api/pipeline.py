@@ -44,6 +44,7 @@ class PipelineFacade:
     _intermediate_frames: dict[str, Any] | None = None
     _runtime: dict[str, Any] | None = None
     _source_config: Mapping[str, Any] | None = None
+    _run_options: PipelineRunOptions | None = None
 
     def frames(self, component: ComponentRef, **params: Any) -> PipelineFacade:
         """Set the frame source using a plugin name, class, instance, or callable."""
@@ -160,6 +161,10 @@ class PipelineFacade:
         """Return the runtime execution plan for the current facade."""
         return PipelineExecutionPlanner().build(self.build_context())
 
+    def configured_run_options(self) -> PipelineRunOptions:
+        """Return run options declared by config, or the lightweight default."""
+        return self._run_options or PipelineRunOptions.lightweight()
+
     def run(
         self,
         *,
@@ -174,14 +179,15 @@ class PipelineFacade:
         scripts. It does not create a shared orchestrator runner; use
         ``sef.orchestrator()`` for lifecycle observation, async submission, or
         branching. Diagnostics and reproducibility are disabled unless supplied
-        through ``run_options``.
+        through ``run_options`` or declared in a loaded config. An explicit
+        ``run_options`` argument takes precedence over config-declared options.
         """
         resolved_pipeline_id = pipeline_id or self.pipeline_id
         return Pipeline(
             self.build_context(),
             pipeline_id=resolved_pipeline_id,
             execution_metadata=dict(execution_metadata or {}),
-            run_options=run_options,
+            run_options=run_options if run_options is not None else self._run_options,
         ).run()
 
     def _compile(self) -> tuple[dict[str, Any], PluginRegistry]:
@@ -297,8 +303,10 @@ def from_config(
     include_builtins: bool = True,
 ) -> PipelineFacade:
     """Create a runnable facade from an existing SEF config mapping."""
+    source_config = normalize_config(config)
     return PipelineFacade(
         pipeline_id=pipeline_id,
         _registry=clone_registry(registry) if registry is not None else default_registry(include_builtins=include_builtins),
-        _source_config=normalize_config(config),
+        _source_config=source_config,
+        _run_options=PipelineRunOptions.from_config(source_config),
     )

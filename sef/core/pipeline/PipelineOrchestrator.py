@@ -83,7 +83,7 @@ class PipelineOrchestrator:
             Optional metadata propagated into pipeline events, visualizer
             contexts, output metadata, and reproducibility data.
         run_options:
-            Optional diagnostics and reproducibility settings for this run.
+            Optional execution-plan and reproducibility settings for this run.
 
         Returns
         -------

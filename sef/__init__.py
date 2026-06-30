@@ -39,13 +39,13 @@ from sef.api import (
     visualizer,
     webcam,
 )
-from sef.core import PipelineDiagnosticsLevel, PipelineExecutionError, PipelineRunOptions
+from sef.core import PipelineExecutionError, PipelineExecutionPlanLevel, PipelineRunOptions
 
 __all__ = [
     "OrchestratorFacade",
     "PipelineFacade",
     "PipelineExecutionError",
-    "PipelineDiagnosticsLevel",
+    "PipelineExecutionPlanLevel",
     "analyzer",
     "cleaner",
     "default_registry",

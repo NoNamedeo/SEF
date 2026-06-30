@@ -22,6 +22,10 @@ iterate on. With `--strict`, unknown fields become blocking errors.
 ```python
 {
     "schema_version": "1.0",
+    "run_options": {
+        "execution_plan": "summary",
+        "reproducibility": True,
+    },
     "pipeline": {
         ...
     },
@@ -30,6 +34,8 @@ iterate on. With `--strict`, unknown fields become blocking errors.
 
 `schema_version` is optional for legacy configs. Missing version means `1.0`.
 New tools should always write it explicitly.
+
+`run_options` is optional. Omit it for the lowest-overhead execution path.
 
 ## Pipeline Section
 
@@ -49,6 +55,31 @@ Optional fields:
 
 Legacy configs that use `frame_cleaners` are normalized to `frame_processors`.
 New configs should always write `frame_processors`.
+
+## Run Options
+
+```python
+{
+    "execution_plan": "summary",
+    "reproducibility": True,
+}
+```
+
+Run options control metadata attached to completed outputs. They do not change
+the pipeline graph, so they live at the top level instead of inside
+`pipeline.runtime`.
+
+Fields:
+
+- `execution_plan`: `none`, `summary`, or `full`. `none` is the lightweight
+  default and does not build an execution plan for output metadata. Boolean
+  values are also accepted: `True` maps to `full`, `False` maps to `none`.
+- `reproducibility`: when `True`, outputs include normalized config, JSON/YAML
+  exports, and generated Python rebuild code.
+
+CLI `sef run --output` writes summaries, normalized config, and artifacts
+without forcing execution-plan metadata. Use `--explain` when you also want the
+CLI to print and persist `execution_plan.*` files.
 
 ## No Orchestration in Config
 

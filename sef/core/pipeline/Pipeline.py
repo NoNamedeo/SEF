@@ -16,7 +16,7 @@ from sef.core.pipeline.PipelineExecutionPolicy import (
 )
 from sef.core.pipeline.PipelineOutputAssembler import PipelineOutputAssembler
 from sef.core.pipeline.PipelineRunOptions import (
-    PipelineDiagnosticsLevel,
+    PipelineExecutionPlanLevel,
     PipelineRunOptions,
 )
 from sef.core.pipeline.PipelineStageExecutor import PipelineStageExecutor
@@ -42,7 +42,7 @@ class Pipeline:
     ----------------
     - Validate no business rule directly; validation belongs to
       ``PipelineContext`` and the concrete components.
-    - Build execution diagnostics lazily when requested.
+    - Build execution-plan metadata lazily when requested.
     - Keep execution-mode decisions behind ``PipelineExecutionPolicy``.
     - Inject runtime event metadata into event-aware components.
     - Delegate execution to ``SegmentedPipelineExecutor``.
@@ -84,7 +84,7 @@ class Pipeline:
             Optional strategy used by planner and runtime to choose batch or
             streaming execution for each stage.
         run_options:
-            Optional diagnostics and reproducibility settings. Defaults to the
+            Optional execution-plan and reproducibility settings. Defaults to the
             lightweight path with both features disabled.
         """
         self._context = context
@@ -104,7 +104,7 @@ class Pipeline:
         -------
         PipelineOutputs
             Final analyzer results, visual artifacts, debug artifacts,
-            execution metadata, and any explicitly requested diagnostics or
+            execution metadata, and any explicitly requested execution-plan or
             reproducibility exports.
 
         Raises
@@ -118,7 +118,7 @@ class Pipeline:
             event_bus=self._event_bus,
             metadata=runtime_metadata,
         )
-        execution_plan = self._diagnostic_execution_plan()
+        execution_plan = self._optional_execution_plan()
         self._log_execution_plan(execution_plan)
         execution_result = self._build_executor().run()
         return self._build_output_assembler(execution_plan).build(execution_result)
@@ -128,7 +128,8 @@ class Pipeline:
         Return the adaptive execution plan that will be used by ``run``.
 
         The plan is computed lazily and cached. Lightweight runs that do not
-        request diagnostics therefore avoid planning and serialization entirely.
+        request execution-plan metadata therefore avoid planning and
+        serialization entirely.
         """
         if self._execution_plan is None:
             self._execution_plan = PipelineExecutionPlanner(self._execution_policy).build(
@@ -164,7 +165,7 @@ class Pipeline:
             run_options=self._run_options,
         )
 
-    def _diagnostic_execution_plan(self) -> PipelineExecutionPlan | None:
+    def _optional_execution_plan(self) -> PipelineExecutionPlan | None:
         if not self._run_options.includes_execution_plan:
             return None
         return self.execution_plan()
@@ -175,7 +176,7 @@ class Pipeline:
     ) -> None:
         if execution_plan is None or not log.isEnabledFor(logging.INFO):
             return
-        if self._run_options.diagnostics is PipelineDiagnosticsLevel.FULL:
+        if self._run_options.execution_plan is PipelineExecutionPlanLevel.FULL:
             log.info("%s", execution_plan.as_text())
             return
         summary = execution_plan.as_summary_dict()

@@ -19,7 +19,7 @@ from sef.core.pipeline.PipelineConfigVersioning import (
     PipelineConfigMigration,
     PipelineConfigVersionManager,
 )
-from sef.core.pipeline.PipelineErrors import ConfigVersionError
+from sef.core.pipeline.PipelineErrors import ConfigSchemaError, ConfigVersionError
 from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
 
 
@@ -57,6 +57,29 @@ def test_builder_normalizes_legacy_unversioned_configs() -> None:
     context = ConfigPipelineBuilder(_registry()).build_context({"pipeline": _pipeline_section()})
 
     assert context.source_config["schema_version"] == CURRENT_PIPELINE_CONFIG_VERSION
+
+
+def test_builder_preserves_top_level_run_options_for_reproducibility() -> None:
+    context = ConfigPipelineBuilder(_registry()).build_context(
+        {
+            "schema_version": CURRENT_PIPELINE_CONFIG_VERSION,
+            "run_options": {"execution_plan": "summary", "reproducibility": True},
+            "pipeline": _pipeline_section(),
+        }
+    )
+
+    assert context.source_config["run_options"] == {"execution_plan": "summary", "reproducibility": True}
+
+
+def test_builder_rejects_unsupported_run_options_fields() -> None:
+    with pytest.raises(ConfigSchemaError, match="run_options.diagnostics"):
+        ConfigPipelineBuilder(_registry()).build_context(
+            {
+                "schema_version": CURRENT_PIPELINE_CONFIG_VERSION,
+                "run_options": {"diagnostics": "summary"},
+                "pipeline": _pipeline_section(),
+            }
+        )
 
 
 def test_builder_normalizes_legacy_frame_cleaners_key() -> None:

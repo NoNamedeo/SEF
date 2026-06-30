@@ -85,6 +85,7 @@ def test_cli_prints_config_schema(capsys) -> None:
     payload = json.loads(captured.out)
     assert "frame_processors" in payload["properties"]["pipeline"]["properties"]
     assert "runtime" in payload["properties"]["pipeline"]["properties"]
+    assert "run_options" in payload["properties"]
 
 
 def test_cli_init_creates_default_scaffold(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -184,6 +185,33 @@ def test_cli_validate_reports_top_level_unknown_fields(tmp_path: Path, capsys) -
     assert "Unknown field `config.unexpected_top_level`" in captured.err
 
 
+def test_cli_validate_accepts_run_options_in_strict_mode(tmp_path: Path, capsys) -> None:
+    config_path = _write_json_config(tmp_path)
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    payload["run_options"] = {"execution_plan": "summary", "reproducibility": True}
+    config_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    exit_code = main(["validate", str(config_path), "--strict"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "valid:" in captured.out
+    assert "Unknown field `config.run_options`" not in captured.err
+
+
+def test_cli_validate_rejects_invalid_run_options(tmp_path: Path, capsys) -> None:
+    config_path = _write_json_config(tmp_path)
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    payload["run_options"] = {"diagnostics": "verbose"}
+    config_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    exit_code = main(["validate", str(config_path)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "run_options.diagnostics" in captured.err
+
+
 def test_cli_inspects_local_plugin(tmp_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.chdir(tmp_path)
     _write_local_plugin(tmp_path, suffix="inspect")
@@ -255,7 +283,7 @@ def test_cli_run_dry_run_explain_uses_local_plugins(tmp_path: Path, monkeypatch,
     assert "cli_local_analyzer_dry_run" in captured.out or "FunctionAnalyzer" in captured.out
 
 
-def test_cli_run_output_writes_summary_config_and_plan(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_cli_run_output_writes_summary_config_and_artifacts_without_plan(tmp_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.chdir(tmp_path)
     _write_local_plugin(tmp_path, suffix="output")
     config_path = _write_local_plugin_config(tmp_path, suffix="output")
@@ -268,8 +296,23 @@ def test_cli_run_output_writes_summary_config_and_plan(tmp_path: Path, monkeypat
     assert "output:" in captured.out
     assert (output_dir / "summary.json").exists()
     assert (output_dir / "config.normalized.json").exists()
-    assert (output_dir / "execution_plan.txt").exists()
+    assert not (output_dir / "execution_plan.txt").exists()
     assert list((output_dir / "artifacts").glob("*.md"))
+
+
+def test_cli_run_output_writes_plan_only_when_explained(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.chdir(tmp_path)
+    _write_local_plugin(tmp_path, suffix="output_explain")
+    config_path = _write_local_plugin_config(tmp_path, suffix="output_explain")
+    output_dir = tmp_path / "run-output-explain"
+
+    exit_code = main(["run", str(config_path), "--output", str(output_dir), "--explain"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Pipeline execution plan:" in captured.out
+    assert (output_dir / "execution_plan.txt").exists()
+    assert (output_dir / "execution_plan.json").exists()
 
 
 def test_cli_doctor_warning_only_exit_zero(tmp_path: Path, monkeypatch, capsys) -> None:

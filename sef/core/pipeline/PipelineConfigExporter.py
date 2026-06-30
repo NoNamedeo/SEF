@@ -14,6 +14,7 @@ from sef.core.pipeline.PipelineExportUtils import (
     to_exportable_data,
     yaml_dumps,
 )
+from sef.core.pipeline.PipelineRunOptions import RUN_OPTIONS_CONFIG_KEY, PipelineRunOptions
 from sef.core.pipeline.SingleFrameProcessorAdapter import SingleFrameProcessorAdapter
 from sef.core.pipeline.VisualizerBinding import VisualizerBinding
 from sef.core.plugins.PluginRegistry import PluginCategory, PluginRegistry
@@ -54,6 +55,7 @@ class PipelineConfigExporter:
         context: PipelineContext,
         outputs: PipelineOutputs | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> dict[str, Any]:
         """
         Return a JSON/YAML-safe export containing config and run metadata.
@@ -70,6 +72,9 @@ class PipelineConfigExporter:
             "execution": self._execution_metadata(outputs, execution_metadata),
             "artifacts": self._artifact_metadata(outputs),
         }
+        configured_run_options = self._run_options_config(context, run_options)
+        if configured_run_options:
+            export[RUN_OPTIONS_CONFIG_KEY] = configured_run_options
         return to_exportable_data(export)
 
     def export_json(
@@ -77,18 +82,20 @@ class PipelineConfigExporter:
         context: PipelineContext,
         outputs: PipelineOutputs | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> str:
         """Return the pipeline export as formatted JSON."""
-        return self.to_json(self.export(context, outputs, execution_metadata))
+        return self.to_json(self.export(context, outputs, execution_metadata, run_options=run_options))
 
     def export_yaml(
         self,
         context: PipelineContext,
         outputs: PipelineOutputs | None = None,
         execution_metadata: Mapping[str, Any] | None = None,
+        run_options: PipelineRunOptions | None = None,
     ) -> str:
         """Return the pipeline export as dependency-free YAML."""
-        return self.to_yaml(self.export(context, outputs, execution_metadata))
+        return self.to_yaml(self.export(context, outputs, execution_metadata, run_options=run_options))
 
     @staticmethod
     def to_json(export_config: Mapping[str, Any]) -> str:
@@ -140,6 +147,19 @@ class PipelineConfigExporter:
                 config[key] = to_exportable_data(value)
 
         return config
+
+    @staticmethod
+    def _run_options_config(
+        context: PipelineContext,
+        run_options: PipelineRunOptions | None,
+    ) -> dict[str, Any]:
+        if run_options is not None:
+            return run_options.to_config()
+
+        source_run_options = context.source_config.get(RUN_OPTIONS_CONFIG_KEY)
+        if isinstance(source_run_options, Mapping):
+            return dict(source_run_options)
+        return {}
 
     def _frame_processor_entries(self, context: PipelineContext, source_entries: Any) -> list[dict[str, Any]]:
         sources = source_entries if isinstance(source_entries, list) else []
